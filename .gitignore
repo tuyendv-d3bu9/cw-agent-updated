@@ -2,8 +2,6 @@ node_modules
 .env
 
 .backup/
-OUTPUT/
-OUTPUT/
 
 INPUT/raw 
 
@@ -19,3 +17,5 @@ TODO.md
 .docs/
 
 .playwright-mcp/
+
+*.DS_Store
