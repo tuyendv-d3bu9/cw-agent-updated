@@ -31,6 +31,7 @@ knowledge/                      BỘ NÃO TRI THỨC VĨNH VIỄN (SSOT)
 
 agents/                         HỆ THỐNG 8 CHUYÊN GIA QA NỘI BỘ
   qa-lead/AGENT.md              TỔNG CHỈ HUY — Cổng số 0 tiếp nhận & điều phối toàn bộ
+  qa-lead/skills/               system-upgrade-governance: nâng cấp chính hệ thống agent
   core/QA_STANDARD.md           Luật chung: verdict · guard · FACT · 06W · risk matrix
   qa-analyst/                   01->04: Tóm tắt yêu cầu, 06W kẽ hở, viewpoint, test idea
   qa-test-design/               05->06: Test case 8 trường, rà soát độ phủ 3 góc nhìn
@@ -39,7 +40,26 @@ agents/                         HỆ THỐNG 8 CHUYÊN GIA QA NỘI BỘ
   qa-ui-review/                 08: Phân tích ảnh màn hình (Vision)
   qa-reporter/                  13: Chuẩn hóa bug report 7 trường & Daily QA summary
   qa-automation/                Playwright E2E: Gom cụm luồng, sinh POM, chạy test & chụp evidence
+  templates/                    Khuôn mẫu + 7 bước dựng agent mới
+  workflows/                    Bản đồ pipeline & các runbook chạy sẵn
   tools/                        Công cụ convert docx, sync map, merge testcases, doctor, export, jira
+
+automation/                     TẦNG KIỂM THỬ TỰ ĐỘNG PLAYWRIGHT
+  pages/                        Page Object Model: BasePage, ShopPage, CheckoutPage, LoginModal
+  tests/                        Kịch bản test (smoke.spec.ts là bộ mồi đã chạy xanh)
+
+DE-BAI/                         BỘ ĐỀ — PHÁT CHO HỌC VIÊN
+  README.md                     Luật chung, phân đề, cách nộp bài
+  DE-01.md … DE-04.md           4 đề cho 4 nhóm
+  SETUP.md                      Chuẩn bị môi trường, gửi trước buổi học
+  CHEATSHEET-CAU-CHAT.md        Bộ câu chat mẫu để ra lệnh cho Agent
+  RUBRIC.md                     Thang điểm chấm
+  VI-DU-BIEN-BAN-NANG-CAP.md    Biên bản nâng cấp mẫu đã điền đầy đủ
+
+GIANG-VIEN/                     ⛔ KHÔNG PHÁT CHO HỌC VIÊN — xoá trước khi gửi
+  DAP-AN.md                     Danh mục bẫy đã gài + gợi ý dẫn dắt
+  KICH-BAN-GIANG-DAY.md         Kịch bản điều hành buổi học theo mốc thời gian
+  bai-giai-tham-khao/           Bài giải mẫu đã chạy xanh
 ```
 
 **Thứ tự quy trình**:
