@@ -16,7 +16,11 @@
     "knowledge:conflicts": "node agents/tools/conflict-detector.js",
     "knowledge:init": "node agents/tools/bootstrap-knowledge.js",
     "intake": "node agents/tools/intake.js",
-    "data:gen": "node agents/tools/generate-dataset.js"
+    "data:gen": "node agents/tools/generate-dataset.js",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:report": "playwright show-report automation/playwright-report"
   },
   "license": "ISC",
   "type": "commonjs",
@@ -25,5 +29,8 @@
     "mammoth": "^1.12.1",
     "pdf-parse": "^2.4.5",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
   }
 }

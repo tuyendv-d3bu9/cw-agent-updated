@@ -19,3 +19,11 @@ TODO.md
 .docs/
 
 .playwright-mcp/
+
+# Playwright
+automation/test-results/
+automation/playwright-report/
+playwright/.cache/
+
+# Tai lieu giang vien - KHONG commit vao nhanh phat cho hoc vien
+GIANG-VIEN/
