@@ -37,9 +37,11 @@ workflows/
 | **A · Pipeline chính** | `01 => 02 => 03 => 04 => 05 => 06` | Luôn chạy. Đây là xương sống requirement => test case. |
 | **B · Nhánh dữ liệu** | `09 => 10 => 11 => 12` | Chạy **sau** `05`, khi cần dataset để execute. |
 | **C · Độc lập** | `07` (exploratory) · `08` (UI screenshot) | Gọi bất cứ lúc nào, không chặn nhánh A/B. |
-| **D · Báo cáo lỗi** | `13` (gen-bug-report) | Chạy khi Tester có bug notes thô cần chuẩn hóa thành Jira Bug Report. |
+| **D · Báo cáo lỗi** | `13` (gen-bug-report) · `14` (gen-daily-summary) | Chạy khi Tester có bug notes thô cần chuẩn hóa thành Jira Bug Report. |
+| **E · Quản trị hệ thống** | `system-upgrade-governance` | **Không thuộc pipeline kiểm thử.** Chạy khi cần nâng cấp chính bộ agent: thêm skill, dựng agent mới, tinh chỉnh skill cũ. |
 
 `07` cần risk area từ `03`. `08` cần ảnh đính kèm, không cần bước nào trước. `13` cần file bug notes thô và file rules.
+Nhánh `E` chạy độc lập hoàn toàn, không cần deliverable nào của A/B/C/D — nhưng **sau khi chạy xong phải smoke lại một chặng của nhánh A** để chứng minh luồng cũ không vỡ.
 
 ---
 
@@ -79,7 +81,16 @@ workflows/
 | 13 | `qa-reporter` | `gen-bug-report` | File bug notes + `knowledge/` | `OUTPUT/reports/bug-report-<slug>.md` |
 | 14 | `qa-reporter` | `gen-daily-summary` | Sprint data JSON + audience | `outputs/reports/daily-summary-<audience>.md` |
 
-Mọi output nhánh A-C nằm trong `OUTPUT/<task-slug>/`, kèm `_index.md`. Nhánh D ghi tại `OUTPUT/reports/` hoặc `outputs/reports/`.
+### Nhánh E — Quản trị & Nâng cấp Hệ thống (System Governance)
+
+| # | Agent | Skill | Vào | Ra |
+|---|---|---|---|---|
+| — | `qa-lead` | `system-upgrade-governance` | Yêu cầu nâng cấp của người dùng (hoặc file `.md` họ đưa) + `knowledge/_system_map.json` + `agents/templates/` | `OUTPUT/_upgrades/<ngày>_<tên>.md`<br>**và** thay đổi thật trong `agents/`, `WORKFLOW.md`, `_system_map.json` |
+
+> Nhánh E **không mang số `NN`** vì nó không sinh deliverable trong pipeline kiểm thử của một `task-slug`.
+> Đây là skill duy nhất được phép ghi vào `agents/` và `knowledge/_system_map.json`.
+
+Mọi output nhánh A-C nằm trong `OUTPUT/<task-slug>/`, kèm `_index.md`. Nhánh D ghi tại `OUTPUT/reports/` hoặc `outputs/reports/`. Nhánh E ghi tại `OUTPUT/_upgrades/`.
 
 ---
 
@@ -137,6 +148,7 @@ Chạy lần 2  =>  01/02 đọc knowledge trước  =>  ít [GIẢ ĐỊNH] hơ
 | `workflows/re-run-testcase.md` | Chạy lại từ bước bị ảnh hưởng | Đã chạy 1 lần, dừng ở `ASK`/`FIX`, nay đã có câu trả lời BA. Vòng 2 của vòng knowledge (§4). |
 | `workflows/verify-testcase.md` | Chỉ `06` + kiểm tay 4 mũi | Đã có `05`, cần nghiệm thu trước khi bàn giao. Không sinh mới. |
 | `workflows/flow.md` | Kịch bản luồng tự động | Trỏ file để agent tự xác định bước đang kích hoạt. |
+| `workflows/run-graduation.md` | Nhánh A `01 → 06` **rồi tiếp** nhánh Automation `B7 → B10` | Chạy một mạch từ requirement thô tới test đã chạy có ảnh bằng chứng. Có 2 điểm dừng bắt buộc: sau `02` (ASK) và trước Automation (cổng biên giới). Dùng cho project tốt nghiệp trên SUT ShopGo. |
 
 Thêm runbook mới: tạo `workflows/run-<mục-tiêu>.md`, khai vào bảng này. Không sửa bản đồ.
 

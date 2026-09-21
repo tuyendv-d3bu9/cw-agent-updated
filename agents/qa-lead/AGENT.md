@@ -32,6 +32,17 @@ Khi nhận yêu cầu từ User, QA Leader tự động đọc `knowledge/_syste
 | **Chạy Test & Chụp Evidence (Theo Ticket)** | `qa-automation` | `test-runner-evidence.md` | `runs/<run-id>/run_result.md`<br>`evidence/*.png` |
 | **Chuẩn hóa Bug Report 7 trường** | `qa-reporter` | `gen-bug-report.md` | `OUTPUT/reports/bug-report-<slug>.md` |
 | **Tạo Daily QA Summary 4 section** | `qa-reporter` | `gen-daily-summary.md` | `OUTPUT/reports/daily-summary-<audience>.md` |
+| **Nâng cấp chính hệ thống Agent**<br>(thêm skill · dựng agent mới · tinh chỉnh) | `qa-lead` (tự làm) | `skills/system-upgrade-governance.md` | `OUTPUT/_upgrades/<ngày>_<tên>.md`<br>+ sửa `agents/`, `WORKFLOW.md`, `_system_map.json` |
+
+---
+
+## 2.1. Skill Sở Hữu Của Chính QA Leader
+
+QA Leader chủ yếu **điều phối**, nhưng có một việc không uỷ quyền được cho ai — vì nó tác động lên chính hệ thống agent:
+
+- `system-upgrade-governance` — Nhận yêu cầu nâng cấp hệ thống → quyết định `[A]` thêm skill vào agent đã có / `[B]` dựng agent mới / `[C]` tinh chỉnh tại chỗ → lan truyền ra 6 điểm neo → chạy cổng nghiệm thu.
+
+> **Vì sao QA Leader tự làm, không giao cho sub-agent**: sub-agent chỉ nhìn thấy phạm vi của nó, không có bản đồ toàn cục để biết một thay đổi sẽ lan tới đâu. Chỉ QA Leader đọc `_system_map.json` + `WORKFLOW.md` + toàn bộ ma trận điều phối, nên chỉ QA Leader đánh giá được bán kính ảnh hưởng.
 
 ---
 
@@ -96,6 +107,10 @@ Khi nhận yêu cầu từ User, QA Leader tự động đọc `knowledge/_syste
 | *"BA đã chốt: [nội dung câu trả lời]"* | Tự nạp vào `knowledge/features/<slug>.md` Mục 8 (`GIẢ ĐỊNH ĐÃ CHỐT`) và tự chạy sync bản đồ. |
 | *"Tôi có ghi chép bug thô, chuẩn hóa để log Jira"*<br>*"Chuyển bug notes thành bug report"* | Ủy quyền cho `qa-reporter` chạy `gen-bug-report.md` và xuất ra `OUTPUT/reports/bug-report-<slug>.md`. |
 | *"Tạo báo cáo daily QA hôm nay cho [dev/pm]"*<br>*"Tổng kết sprint hôm nay từ JSON"* | Ủy quyền cho `qa-reporter` chạy `gen-daily-summary.md` và xuất ra `outputs/reports/daily-summary-<audience>.md`. |
+| *"Hãy giúp tôi nâng cấp skill [tên]"*<br>*"Tôi muốn test case có thêm trường [X]"*<br>*"Skill [tên] đang thiếu [Y], bổ sung giúp tôi"* | Tự chạy `skills/system-upgrade-governance.md` — cây quyết định thường ra **`[C]` tinh chỉnh tại chỗ**. Sửa skill xong tự rà lại điểm neo N3/N5 rồi chạy cổng nghiệm thu. |
+| *"Tôi có file skill.md này, nên thêm agent mới hay thêm vào agent đã có?"* | Tự chạy `system-upgrade-governance.md` chế độ `PHAN_TICH` — trả về **bảng quyết định A/B/C** kèm lý do từng câu, chờ người dùng chốt rồi mới thi công. |
+| *"Thêm cho tôi một agent chuyên về [miền X]"*<br>*"Hệ thống cần biết làm thêm việc [X]"* | Tự chạy `system-upgrade-governance.md` — nếu ra `[B]`, thi công **đủ 7 bước** của `agents/templates/README.md` rồi lan truyền 6 điểm neo. |
+| *"Nâng cấp xong rồi, kiểm tra hệ thống còn chạy được không"*<br>*"Sửa cái này có ảnh hưởng gì không?"* | Tự chạy `system-upgrade-governance.md` chế độ `NGHIEM_THU`: `agent:check` → `agent:check --impact` → `map:sync` → smoke một chặng cũ, rồi báo cáo bảng kết quả thật. |
 
 ---
 
