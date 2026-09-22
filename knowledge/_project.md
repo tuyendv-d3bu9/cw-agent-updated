@@ -3,41 +3,44 @@
 > Tri thức nền cấp **dự án**, không đổi theo từng tính năng. Mọi skill đọc file này.
 > Trống mục nào thì agent phải gắn `[GIẢ ĐỊNH]` khi cần tới — điền dần để giảm giả định.
 
-Dự án: `<Tên Dự Án>` · Cập nhật lần cuối: `<YYYY-MM-DD>`
+Dự án: `ShopGo` · Cập nhật lần cuối: `2026-09-20`
 
 ---
 
 ## 1. Quy ước định danh
 | Đối tượng | Format | Ví dụ |
 |---|---|---|
-| Module prefix cho `TC_ID` | `<3–4 ký tự hoa>` | `AUTH`, `CART`, `PAY`, `PROD` |
-| Mã nghiệp vụ (mã đơn, mã giao dịch…) | `[A-Z0-9]{3,20}` | `ORD123456`, `TXN-9876` |
+| Module prefix cho `TC_ID` | `<3–5 ký tự hoa>` | `AUTH`, `CART`, `PAY`, `PROD`, `VOUCH` |
+| Mã nghiệp vụ (mã đơn, mã giao dịch…) | `[A-Z0-9]{3,20}` | `ORD123456`, `TXN-9876`, `VOUCHER10K` |
 
 ## 2. Định dạng dữ liệu
 | Loại | Quy ước | Ghi chú |
 |---|---|---|
 | Ngày / Giờ | `YYYY-MM-DD` / `YYYY-MM-DD HH:mm:ss` | Chuẩn ISO 8601, không mix định dạng khác |
-| Tiền tệ | `VNĐ`, dấu chấm `.` phân cách hàng nghìn | Ví dụ `100.000 VNĐ`. Không có phần thập phân (hoặc tùy dự án) |
+| Tiền tệ | `VNĐ`, dấu chấm `.` phân cách hàng nghìn | Ví dụ `100.000 VNĐ`. Không có phần thập phân |
 | Timezone | `Asia/Ho_Chi_Minh (GMT+7)` | Múi giờ chuẩn của hệ thống |
 | NULL vs rỗng | Hệ thống phân biệt tường minh | Input rỗng `""` báo lỗi nhập liệu; Backend xử lý `NULL` an toàn |
 
 ## 3. Bối cảnh nghiệp vụ dùng chung
-> Các mục mà skill `01` hay phải gắn `[CONTEXT_MISSING]`. Điền được thì báo cáo rủi ro chính xác hơn.
+> Trích xuất từ tài liệu tổng quan ShopGo (01_business)
 
-| Khía cạnh | Hướng dẫn / Nội dung mẫu |
+| Khía cạnh | Nội dung đặc thù ShopGo |
 |---|---|
-| User Context | Khách hàng cá nhân / doanh nghiệp; người dùng vãng lai (Guest) vs người dùng định danh (Registered) |
-| Usage Context | Web responsive (Desktop & Mobile Web) hoặc Mobile App / API backend |
-| Financial / Business Context | Quy trình thanh toán, xử lý hóa đơn, chính sách giá, chiết khấu hoặc hạch toán |
-| Operational Context | SLA phản hồi API, luồng background job, cơ chế retry khi timeout |
-| Criticality Context | Các luồng sống còn (Core Flow) của hệ thống cần độ tin cậy tuyệt đối |
+| User Context | Khách mua hàng tại Việt Nam. Khách vãng lai (Guest - xem hàng, thêm vào giỏ, phải đăng nhập khi thanh toán) và Khách hàng (Customer - đã đăng ký, có Ví ShopGo, lịch sử đơn hàng). |
+| Usage Context | Web app responsive (Desktop & Mobile Web); hỗ trợ Chrome, Edge, Safari. Ngôn ngữ tiếng Việt. |
+| Financial / Business Context | Bán lẻ trực tuyến (general retail). Thanh toán: COD, Thẻ (bên thứ ba), Ví ShopGo. Mã giảm giá Voucher (% hoặc tiền cố định VND, có min order value, max discount cap). Đơn vị tiền tệ VNĐ. |
+| Operational Context | Tích hợp cổng thanh toán thẻ, dịch vụ Email/SMS xác nhận, đơn vị vận chuyển tính phí ship. SLA trang chính tải < 3s. |
+| Criticality Context | Các luồng mua hàng, giỏ hàng, áp mã giảm giá và thanh toán là luồng sống còn (Core Flows). |
 
 ## 4. Môi trường test
 | Thuộc tính | Nội dung |
 |---|---|
-| Môi trường | `Staging / Test / UAT` |
-| Cách seed data | `SQL script trực tiếp`, `API Fixtures`, hoặc qua UI Admin |
-| Có được dùng dữ liệu giống production? | Sử dụng dữ liệu đã ẩn danh hóa (anonymized data) tuân thủ bảo mật |
+| Môi trường Staging / Test | `https://cwshopgo.github.io/` (Ứng dụng Web Live) |
+| Cách seed data | Đã tích hợp sẵn dữ liệu mẫu (mock products & preset vouchers: GIAM50K, SALE20, HETHAN) |
+| Cổng xác thực (Auth Gate) | Bắt buộc đăng nhập để truy cập trang Thanh toán và Đặt hàng. Khách vãng lai bấm "Thanh toán" sẽ kích hoạt modal đăng nhập (`#modal-auth`). |
+| Tài khoản kiểm thử cố định | 1. Chuẩn: `khachhang@shopgo.vn` / `123456` (Nguyễn Văn An)<br>2. VIP: `vip@shopgo.vn` / `123456` (Trần Thị Mai) |
+| Có được dùng dữ liệu giống production? | Sử dụng dữ liệu sandbox / demo nội bộ |
+
 
 ## 5. Test Management Tool & ALM Integration
 ### 5.1. Jira Xray (Khuyến nghị)
