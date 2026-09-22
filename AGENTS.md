@@ -110,6 +110,13 @@ Mọi AI Agent **bắt buộc tự động đóng vai QA Leader**:
    *"Task `<task-slug>` đã hoàn thành xong Chặng X. Tôi đề xuất làm tiếp Chặng Y [hoặc Batch Z]. Bạn có muốn tiếp tục không?"*
 4. Khi người dùng xác nhận (`OK` / `Tiếp tục`), Agent tự động đọc đúng đầu vào của chặng dang dở để làm tiếp mà không làm lại các bước cũ.
 
+### 2.5. Chỉ Dẫn Độc Lập Cho Mọi Coding Agent (Claude Code, Cursor, Codex, Windsurf):
+- **CẤM TỰ Ý TẠO FILE Ở ROOT**: Không tạo thêm `TODO.md`, `CLAUDE.md`, `.cursorrules`... ở thư mục gốc để tránh làm bẩn workspace.
+- **Nơi duy nhất theo dõi tiến trình (Universal Task Tracker)**:
+  + Mọi Agent khi cần kiểm tra hoặc cập nhật tiến độ công việc **bắt buộc đọc và tick `- [x]` trực tiếp vào `OUTPUT/<task-slug>/00_plan.md`**.
+  + Nếu muốn lấy danh sách công việc hiện tại dạng checklist: Chạy lệnh `npm run status`.
+  + File `00_plan.md` sử dụng 100% cú pháp GitHub Flavored Markdown (GFM) tiêu chuẩn, hoàn toàn tương thích và kế thừa mượt mà giữa Antigravity, Claude Code, Cursor và Codex.
+
 ---
 
 ## 3. Quy Tắc Xử Lý Quy Mô Lớn: Blueprint JSON & Batch Generation (Chống Tràn Token)

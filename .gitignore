@@ -19,6 +19,7 @@ TODO.md
 .docs/
 
 .playwright-mcp/
+.cursor/
 
 PLAN.md
 VIDEO_RECORDING_SCRIPT.md
