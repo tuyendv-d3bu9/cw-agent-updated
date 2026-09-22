@@ -1,0 +1,1 @@
+Mức hóa đơn tối thiểu áp mã là 200k

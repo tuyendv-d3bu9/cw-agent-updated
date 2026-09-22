@@ -8,12 +8,15 @@ Cấu trúc thư mục file (sau khi đã gom agent):
 
 ```
 agents/
+    qa-lead/
     qa-analyst/
     qa-test-design/
     qa-test-data/
     qa-exploratory/
     qa-ui-review/
     qa-reporter/
+    qa-automation/
+    qa-readiness-evaluator/
 
 agents/
     core/QA_STANDARD.md
@@ -37,9 +40,10 @@ workflows/
 | **A · Pipeline chính** | `01 => 02 => 03 => 04 => 05 => 06` | Luôn chạy. Đây là xương sống requirement => test case. |
 | **B · Nhánh dữ liệu** | `09 => 10 => 11 => 12` | Chạy **sau** `05`, khi cần dataset để execute. |
 | **C · Độc lập** | `07` (exploratory) · `08` (UI screenshot) | Gọi bất cứ lúc nào, không chặn nhánh A/B. |
-| **D · Báo cáo lỗi** | `13` (gen-bug-report) | Chạy khi Tester có bug notes thô cần chuẩn hóa thành Jira Bug Report. |
+| **D · Báo cáo lỗi** | `13` (gen-bug-report) · `14` (gen-daily-summary) | Chạy khi Tester có bug notes thô cần chuẩn hóa hoặc tổng kết sprint. |
+| **E · Chốt chặn Automation** | `15` (gen-readiness-report) | Chạy sau thiết kế/data, trước khi viết Playwright Automation để đánh giá Go/No-Go. |
 
-`07` cần risk area từ `03`. `08` cần ảnh đính kèm, không cần bước nào trước. `13` cần file bug notes thô và file rules.
+`07` cần risk area từ `03`. `08` cần ảnh đính kèm, không cần bước nào trước. `13` cần file bug notes thô và file rules. `15` cần các design-time artifacts (specs, coverage plan, test cases CSV, data validation report, reviews).
 
 ---
 
@@ -79,7 +83,13 @@ workflows/
 | 13 | `qa-reporter` | `gen-bug-report` | File bug notes + `knowledge/` | `OUTPUT/reports/bug-report-<slug>.md` |
 | 14 | `qa-reporter` | `gen-daily-summary` | Sprint data JSON + audience | `outputs/reports/daily-summary-<audience>.md` |
 
-Mọi output nhánh A-C nằm trong `OUTPUT/<task-slug>/`, kèm `_index.md`. Nhánh D ghi tại `OUTPUT/reports/` hoặc `outputs/reports/`.
+### Nhánh E — Đánh giá độ sẵn sàng kiểm thử (Design-time QA Readiness Gate)
+
+| # | Agent | Skill | Vào | Ra |
+|---|---|---|---|---|
+| 15 | `qa-readiness-evaluator` | `gen-readiness-report` | `coverage-plan.json` + `testcases/*.csv` + `validation-report.md` + `specs` + `reviews/` | `outputs/reports/readiness-report.md` |
+
+Mọi output nhánh A-C nằm trong `OUTPUT/<task-slug>/`, kèm `_index.md`. Nhánh D & E ghi tại `OUTPUT/reports/` hoặc `outputs/reports/`.
 
 ---
 

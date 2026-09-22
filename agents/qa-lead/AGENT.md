@@ -32,6 +32,7 @@ Khi nhận yêu cầu từ User, QA Leader tự động đọc `knowledge/_syste
 | **Chạy Test & Chụp Evidence (Theo Ticket)** | `qa-automation` | `test-runner-evidence.md` | `runs/<run-id>/run_result.md`<br>`evidence/*.png` |
 | **Chuẩn hóa Bug Report 7 trường** | `qa-reporter` | `gen-bug-report.md` | `OUTPUT/reports/bug-report-<slug>.md` |
 | **Tạo Daily QA Summary 4 section** | `qa-reporter` | `gen-daily-summary.md` | `OUTPUT/reports/daily-summary-<audience>.md` |
+| **Đánh giá độ sẵn sàng (Readiness Gate)** | `qa-readiness-evaluator` | `gen-readiness-report.md` | `outputs/reports/readiness-report.md` (Khuyến nghị GO / NO-GO) |
 
 ---
 
@@ -50,11 +51,12 @@ Khi nhận yêu cầu từ User, QA Leader tự động đọc `knowledge/_syste
      * **Mode 1 — Manual Test Cases Only**: Phân tích và sinh Master Test Spec (Chặng 1 đến 6). **DỪNG TẠI ĐÂY**, không làm automation.
      * **Mode 2 — Manual + Realistic Test Data**: Chặng 1-6 kết hợp Chặng 9-12 (Data Class, Dataset sinh bằng engine `data:gen`, Boundary).
      * **Mode 3 — Web Journey & Gherkin BDD**: Khám phá web bằng Playwright và xuất kịch bản Gherkin BDD (`07_web_journey_discovery.md`).
-     * **Mode 4 — Full Automation POM & Execution**: Gom cụm luồng, sinh code POM Playwright và chạy test theo Ticket có bằng chứng hình ảnh (Chỉ kích hoạt khi đã có web và User yêu cầu).
+     * **Mode 4 — Full Automation POM & Execution**: Đối soát độ sẵn sàng bằng `gen-readiness-report` (phải đạt `RECOMMEND GO` hoặc được QA Lead phê duyệt), sau đó gom cụm luồng, sinh code POM Playwright và chạy test theo Ticket có bằng chứng hình ảnh.
 
-0.1. **Quy Tắc Biên Giới Nghiêm Ngặt (Boundary Gate)**:
+0.1. **Quy Tắc Biên Giới Nghiêm Ngặt (Boundary Gate & Readiness Gate)**:
    - **CẤM** tự ý chạy một mạch từ Test Case sang Automation Playwright nếu người dùng chưa yêu cầu hoặc ứng dụng web chưa sẵn sàng.
-   - Chặng 6 (`06_coverage_review.md`) là **điểm dừng hoàn tất tự nhiên** của quy trình thiết kế kiểm thử tiêu chuẩn. Chỉ chuyển sang Tầng Thực Thi (`runs/`) hoặc Automation khi có lệnh rõ ràng từ người dùng.
+   - Chặng 6 (`06_coverage_review.md`) là điểm dừng hoàn tất tự nhiên của quy trình thiết kế kiểm thử tiêu chuẩn.
+   - Trước khi bước vào Automation, bắt buộc kích hoạt chốt chặn sẵn sàng kiểm thử (`qa-readiness-evaluator` qua `gen-readiness-report.md`) để đối soát chéo Traceability, Data FACT và các Gap còn tồn đọng. Chỉ chuyển sang Tầng Thực Thi (`runs/`) hoặc Automation khi có lệnh rõ ràng từ người dùng kèm khuyến nghị GO.
 
 1. **Khởi tạo & Duy trì `00_plan.md`**:
    - Trước khi bắt đầu bất kỳ task nào, QA Leader tạo `OUTPUT/<task-slug>/00_plan.md` phản ánh đúng Mode đã chọn.
@@ -96,6 +98,7 @@ Khi nhận yêu cầu từ User, QA Leader tự động đọc `knowledge/_syste
 | *"BA đã chốt: [nội dung câu trả lời]"* | Tự nạp vào `knowledge/features/<slug>.md` Mục 8 (`GIẢ ĐỊNH ĐÃ CHỐT`) và tự chạy sync bản đồ. |
 | *"Tôi có ghi chép bug thô, chuẩn hóa để log Jira"*<br>*"Chuyển bug notes thành bug report"* | Ủy quyền cho `qa-reporter` chạy `gen-bug-report.md` và xuất ra `OUTPUT/reports/bug-report-<slug>.md`. |
 | *"Tạo báo cáo daily QA hôm nay cho [dev/pm]"*<br>*"Tổng kết sprint hôm nay từ JSON"* | Ủy quyền cho `qa-reporter` chạy `gen-daily-summary.md` và xuất ra `outputs/reports/daily-summary-<audience>.md`. |
+| *"Đánh giá mức độ sẵn sàng kiểm thử"*<br>*"Kiểm tra test design đã đủ điều kiện viết automation chưa"*<br>*"Xuất báo cáo readiness report"* | Ủy quyền cho `qa-readiness-evaluator` chạy `gen-readiness-report.md` và xuất ra `outputs/reports/readiness-report.md`. |
 
 ---
 

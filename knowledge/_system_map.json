@@ -1,7 +1,7 @@
 {
   "system_name": "CW QA Agent Ecosystem",
   "version": "2.0.0",
-  "last_updated": "2026-09-18",
+  "last_updated": "2026-09-20",
   "ssot_policy": "Tri thức trong knowledge/ là tối cao. CẤM đọc dò từng file, tra cứu bảng routing_table để mở đúng file đích.",
   "project_conventions": {
     "project_name": "<Tên Dự Án>",
@@ -24,6 +24,7 @@
     "sync_system_map_command": "npm run map:sync",
     "generate_bug_report": "agents/qa-reporter/skills/gen-bug-report.md",
     "generate_daily_summary": "agents/qa-reporter/skills/gen-daily-summary.md",
+    "generate_readiness_report": "agents/qa-readiness-evaluator/skills/gen-readiness-report.md",
     "web_journey_discovery": "agents/qa-exploratory/skills/web-journey-discovery.md",
     "flow_clustering": "agents/qa-automation/skills/flow-clustering.md",
     "pom_generator": "agents/qa-automation/skills/pom-generator.md",
@@ -70,7 +71,23 @@
       "path": "agents/qa-automation/AGENT.md",
       "skills_path": "agents/qa-automation/skills/",
       "role": "Gom cụm luồng hành trình, sinh POM và thực thi Playwright E2E bắt evidence"
+    },
+    "qa_readiness_evaluator": {
+      "path": "agents/qa-readiness-evaluator/AGENT.md",
+      "skills_path": "agents/qa-readiness-evaluator/skills/",
+      "role": "Đánh giá mức độ sẵn sàng kiểm thử (Design-time QA Readiness) trước khi chuyển sang Test Automation"
     }
   },
-  "features_inventory": {}
+  "features_inventory": {
+    "function-d-voucher": {
+      "name": "function-d-voucher",
+      "input_file": "INPUT/function-d-voucher",
+      "knowledge_file": "knowledge/features/function-d-voucher.md",
+      "output_dir": "OUTPUT/function-d-voucher/",
+      "plan_file": "OUTPUT/function-d-voucher/00_plan.md",
+      "status": "COMPLETED (PASS)",
+      "total_testcases": 34,
+      "last_verdict": "PASS"
+    }
+  }
 }

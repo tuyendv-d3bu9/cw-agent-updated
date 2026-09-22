@@ -29,7 +29,7 @@ knowledge/                      BỘ NÃO TRI THỨC VĨNH VIỄN (SSOT)
   _template.md                  Mẫu chuẩn tạo tri thức tính năng mới
   features/<feature-slug>.md    Quy tắc đã chốt · câu trả lời BA · giả định đã chốt · domain constant
 
-agents/                         HỆ THỐNG 8 CHUYÊN GIA QA NỘI BỘ
+agents/                         HỆ THỐNG 9 CHUYÊN GIA QA NỘI BỘ
   qa-lead/AGENT.md              TỔNG CHỈ HUY — Cổng số 0 tiếp nhận & điều phối toàn bộ
   core/QA_STANDARD.md           Luật chung: verdict · guard · FACT · 06W · risk matrix
   qa-analyst/                   01->04: Tóm tắt yêu cầu, 06W kẽ hở, viewpoint, test idea
@@ -38,6 +38,7 @@ agents/                         HỆ THỐNG 8 CHUYÊN GIA QA NỘI BỘ
   qa-exploratory/               07: Thăm dò theo charter & Mò web quét DOM thực tế
   qa-ui-review/                 08: Phân tích ảnh màn hình (Vision)
   qa-reporter/                  13: Chuẩn hóa bug report 7 trường & Daily QA summary
+  qa-readiness-evaluator/       15: Đánh giá độ sẵn sàng kiểm thử (Design-time QA Readiness Gate)
   qa-automation/                Playwright E2E: Gom cụm luồng, sinh POM, chạy test & chụp evidence
   tools/                        Công cụ convert docx, sync map, merge testcases, doctor, export, jira
 ```

@@ -47,10 +47,11 @@ Dự án được phân định rạch ròi thành 4 khu vực chức năng. Age
 - User **CHỈ CẦN GIAO TIẾP VỚI QA LEADER**. Không cần nhớ hay gọi trực tiếp từng sub-agent con.
 - QA Leader tự động nắm bắt ý định của User, tra cứu `_system_map.json`, lập `00_plan.md` và giao việc cho đúng chuyên gia (`qa-analyst`, `qa-test-design`, `qa-automation`...).
 
-### 1.5. Quy Tắc Biên Giới Nghiêm Ngặt (Boundary Gate — Không Tự Ý Sinh Automation):
+### 1.5. Quy Tắc Biên Giới Nghiêm Ngặt (Boundary Gate & Readiness Gate):
 - **CẤM** tự ý chạy một mạch từ thiết kế Test Cases sang viết script Automation Playwright nếu ứng dụng web chưa sẵn sàng hoặc người dùng chỉ yêu cầu thiết kế Test Case Manual.
 - **Điểm Dừng Chuẩn**: Chặng 6 (`06_coverage_review.md`) là điểm hoàn tất tự nhiên của quy trình thiết kế kiểm thử.
-- Chỉ kích hoạt Tầng Thực Thi (`runs/`) hoặc Automation khi có yêu cầu rõ ràng từ người dùng kèm URL môi trường cụ thể.
+- **Chốt chặn sẵn sàng (Readiness Gate)**: Trước khi kích hoạt Automation, hệ thống yêu cầu đối soát chéo qua `qa-readiness-evaluator` (`gen-readiness-report.md` ➔ `outputs/reports/readiness-report.md`) để xác nhận độ chín của thiết kế và dữ liệu FACT.
+- Chỉ kích hoạt Tầng Thực Thi (`runs/`) hoặc Automation khi có yêu cầu rõ ràng từ người dùng kèm URL môi trường cụ thể và khuyến nghị GO.
 
 ---
 
@@ -86,6 +87,7 @@ Ngày tạo: YYYY-MM-DD · Người lập: <Agent/Tool> · Trạng thái: IN-PRO
 - [ ] **Chặng 5**: Sinh Test Case chi tiết 8 trường [qa-test-design/skills/test-case-generation.md] ➔ Ra `05_test_case_spec.md`
 - [ ] **Chặng 6**: Rà soát độ phủ 3 góc nhìn & Nghiệm thu [qa-test-design/skills/coverage-review.md] ➔ Ra `06_coverage_review.md`
 - [ ] **Bổ trợ Dữ liệu (Nếu cần)**: Data Class [qa-test-data/skills/data-class-map.md] · Dataset [qa-test-data/skills/dataset-generation.md] · Boundary [qa-test-data/skills/boundary-negative-dataset.md] · Traceability [qa-test-data/skills/data-validation-traceability.md]
+- [ ] **Chốt chặn Sẵn sàng (Khi sang Automation)**: Đánh giá độ chín test design [qa-readiness-evaluator/skills/gen-readiness-report.md] ➔ Ra `outputs/reports/readiness-report.md`
 
 ### 2.4. Cơ Chế "QA Leader Tự Nắm Tiến Độ" (Zero-Path Typing):
 Người dùng **KHÔNG CẦN** nhớ đường dẫn hay gõ lại `OUTPUT/.../00_plan.md`.
