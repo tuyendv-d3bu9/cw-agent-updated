@@ -1,17 +1,17 @@
-# Project Knowledge — quy ước dùng cho MỌI feature
+# Project Knowledge — Quy ước dùng chung cho MỌI feature
 
-> Tri thức nền cấp **dự án**, không đổi theo từng tính năng. Mọi skill đọc file này.
-> Trống mục nào thì agent phải gắn `[GIẢ ĐỊNH]` khi cần tới — điền dần để giảm giả định.
+> Tri thức nền cấp **dự án**, không đổi theo từng tính năng. Mọi skill và agent đều đọc file này đầu tiên.
+> Trống mục nào thì agent phải gắn `[GIẢ ĐỊNH]` khi cần tới — người dùng/BA điền dần để giảm thiểu giả định.
 
-Dự án: `ShopGo` · Cập nhật lần cuối: `2026-09-20`
+Dự án: `<Tên Dự Án>` · Cập nhật lần cuối: `YYYY-MM-DD`
 
 ---
 
 ## 1. Quy ước định danh
 | Đối tượng | Format | Ví dụ |
 |---|---|---|
-| Module prefix cho `TC_ID` | `<3–5 ký tự hoa>` | `AUTH`, `CART`, `PAY`, `PROD`, `VOUCH` |
-| Mã nghiệp vụ (mã đơn, mã giao dịch…) | `[A-Z0-9]{3,20}` | `ORD123456`, `TXN-9876`, `VOUCHER10K` |
+| Module prefix cho `TC_ID` | `<3–5 ký tự hoa>` | `AUTH`, `CART`, `PAY`, `PROD`, `USER` |
+| Mã nghiệp vụ (mã đơn, mã giao dịch…) | `[A-Z0-9]{3,20}` | `ORD123456`, `TXN-9876`, `VCHR-2026` |
 
 ## 2. Định dạng dữ liệu
 | Loại | Quy ước | Ghi chú |
@@ -22,32 +22,31 @@ Dự án: `ShopGo` · Cập nhật lần cuối: `2026-09-20`
 | NULL vs rỗng | Hệ thống phân biệt tường minh | Input rỗng `""` báo lỗi nhập liệu; Backend xử lý `NULL` an toàn |
 
 ## 3. Bối cảnh nghiệp vụ dùng chung
-> Trích xuất từ tài liệu tổng quan ShopGo (01_business)
+> Các thông tin bối cảnh chung của sản phẩm giúp Agent đánh giá mức độ nghiêm trọng (Severity) và rủi ro (Risk) chính xác.
 
-| Khía cạnh | Nội dung đặc thù ShopGo |
+| Khía cạnh | Hướng dẫn & Quy ước dự án |
 |---|---|
-| User Context | Khách mua hàng tại Việt Nam. Khách vãng lai (Guest - xem hàng, thêm vào giỏ, phải đăng nhập khi thanh toán) và Khách hàng (Customer - đã đăng ký, có Ví ShopGo, lịch sử đơn hàng). |
-| Usage Context | Web app responsive (Desktop & Mobile Web); hỗ trợ Chrome, Edge, Safari. Ngôn ngữ tiếng Việt. |
-| Financial / Business Context | Bán lẻ trực tuyến (general retail). Thanh toán: COD, Thẻ (bên thứ ba), Ví ShopGo. Mã giảm giá Voucher (% hoặc tiền cố định VND, có min order value, max discount cap). Đơn vị tiền tệ VNĐ. |
-| Operational Context | Tích hợp cổng thanh toán thẻ, dịch vụ Email/SMS xác nhận, đơn vị vận chuyển tính phí ship. SLA trang chính tải < 3s. |
-| Criticality Context | Các luồng mua hàng, giỏ hàng, áp mã giảm giá và thanh toán là luồng sống còn (Core Flows). |
+| User Context | _[Phân nhóm người dùng: Khách vãng lai (Guest), Khách đã đăng ký (User/Customer), Quản trị viên (Admin)...]_ |
+| Usage Context | _[Nền tảng: Web Responsive (Desktop/Mobile), App iOS/Android; Giờ cao điểm, lưu lượng truy cập dự kiến...]_ |
+| Financial / Business Context | _[Mô hình kinh doanh: Bán lẻ, B2B, SaaS, Fintech... Phương thức thanh toán hỗ trợ, chính sách hoàn tiền...]_ |
+| Operational Context | _[Tích hợp bên thứ ba: Cổng thanh toán, SMS OTP, Email, Đơn vị vận chuyển; SLA phản hồi hệ thống...]_ |
+| Criticality Context | _[Các luồng nghiệp vụ sống còn (Core Flows) không được phép xảy ra lỗi: Đăng nhập, Giỏ hàng, Thanh toán...]_ |
 
 ## 4. Môi trường test
-| Thuộc tính | Nội dung |
+| Thuộc tính | Cấu hình / Hướng dẫn |
 |---|---|
-| Môi trường Staging / Test | `https://cwshopgo.github.io/` (Ứng dụng Web Live) |
-| Cách seed data | Đã tích hợp sẵn dữ liệu mẫu (mock products & preset vouchers: GIAM50K, SALE20, HETHAN) |
-| Cổng xác thực (Auth Gate) | Bắt buộc đăng nhập để truy cập trang Thanh toán và Đặt hàng. Khách vãng lai bấm "Thanh toán" sẽ kích hoạt modal đăng nhập (`#modal-auth`). |
-| Tài khoản kiểm thử cố định | 1. Chuẩn: `khachhang@shopgo.vn` / `123456` (Nguyễn Văn An)<br>2. VIP: `vip@shopgo.vn` / `123456` (Trần Thị Mai) |
-| Có được dùng dữ liệu giống production? | Sử dụng dữ liệu sandbox / demo nội bộ |
-
+| Môi trường Staging / Test | _[URL môi trường test: ví dụ https://staging.example.com/]_ |
+| Cách seed data | _[SQL script trực tiếp, API Fixtures, hoặc qua UI Admin...]_ |
+| Cổng xác thực (Auth Gate) | _[Quy tắc đăng nhập: ví dụ bắt buộc đăng nhập ở bước checkout, hoặc session timeout sau 30 phút...]_ |
+| Tài khoản kiểm thử cố định | _[Tài khoản test chuẩn: user / pass để automation thực thi...]_ |
+| Quy định dữ liệu | Sử dụng dữ liệu Sandbox / Anonymized Data, tuyệt đối không dùng thông tin cá nhân thật của khách hàng |
 
 ## 5. Test Management Tool & ALM Integration
 ### 5.1. Jira Xray (Khuyến nghị)
 | Thuộc tính | Cấu hình chuẩn | Ý nghĩa / Ghi chú |
 |---|---|---|
-| Issue Type | `Test` | Loại issue đại diện cho Test Case trong Xray |
-| Summary Format | `[<TC_ID>] <Title>` | Ví dụ: `[AUTH-001] Verify đăng nhập thành công...` |
+| Issue Type | `Test` | Loại issue đại diện cho Test Case trong Jira Xray |
+| Summary Format | `[<TC_ID>] <Title>` | Ví dụ: `[AUTH-001] Verify đăng nhập thành công với email hợp lệ` |
 | Manual Steps | `Action`, `Data`, `Expected Result` | 3 cột chuẩn của bảng Manual Test Step trong Xray |
 | Preconditions | `Preconditions` (Text/Wiki) | Tiền điều kiện trước khi thực hiện test |
 | Priority | `Blocker`, `Critical`, `High`, `Medium`, `Low` | Mức độ ưu tiên thực thi |
@@ -68,4 +67,4 @@ Dự án: `ShopGo` · Cập nhật lần cuối: `2026-09-20`
 ## 6. Ràng buộc riêng của dự án
 > Ghi chú các quy tắc nghiệp vụ đặc thù áp dụng xuyên suốt toàn bộ hệ thống (nếu có).
 - _[Quy tắc 1: Ví dụ - Ô nhập text tự động trim() khoảng trắng đầu và cuối chuỗi]_
-- _[Quy tắc 2: Ví dụ - Cơ chế phòng thủ brute-force hoặc rate-limit cho các luồng nhạy cảm]_
+- _[Quy tắc 2: Ví dụ - Cơ chế phòng thủ brute-force hoặc rate-limit cho các luồng nhạy cảm: 5 lần sai / 5 phút tạm khóa]_
