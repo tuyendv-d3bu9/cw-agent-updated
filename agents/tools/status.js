@@ -53,16 +53,26 @@ tasks.forEach(slug => {
     completedMilestones = checked;
     totalMilestones = checked + unchecked;
 
-    if (planText.includes('Verdict: ASK') || planText.includes('| ASK |')) {
-      status = 'WAITING_FOR_BA (BLOCKED - ASK)';
-      stopReason = 'Ambiguity detected in business logic; pending clarification from BA/PO.';
-      nextAction = `Clarify with BA and update knowledge/features/${slug}.md`;
+    const missingReportFile = path.join(taskDir, '02_missing_rule_report.md');
+    let hasUnresolvedAsk = planText.includes('Verdict: ASK') || planText.includes('| ASK |');
+    
+    if (fs.existsSync(missingReportFile)) {
+      const missingText = fs.readFileSync(missingReportFile, 'utf8');
+      if (missingText.includes('Verdict: ASK') || missingText.includes('| ASK |')) {
+        hasUnresolvedAsk = true;
+      }
+    }
+
+    if (hasUnresolvedAsk) {
+      status = '⛔ HARD_STOP_BLOCKED (WAITING FOR BA/USER - ASK)';
+      stopReason = 'Phát hiện kẽ hở logic hoặc câu hỏi treo chưa được xác nhận. TUYỆT ĐỐI CẤM nhảy cóc sang Test Case!';
+      nextAction = `Cần User/BA trả lời các câu hỏi tại 02_missing_rule_report.md hoặc cập nhật Mục 8 vào knowledge/features/${slug}.md`;
     } else if (unchecked === 0 && totalMilestones > 0) {
-      status = 'COMPLETED (PASS)';
-      nextAction = 'Test suite ready for review/acceptance.';
+      status = '✅ COMPLETED (PASS)';
+      nextAction = 'Toàn bộ các chặng đã hoàn tất và sẵn sàng nghiệm thu.';
     } else {
-      status = 'IN-PROGRESS';
-      nextAction = `Execute Milestone ${completedMilestones + 1}`;
+      status = '🔄 IN-PROGRESS';
+      nextAction = `Kích hoạt Chặng ${completedMilestones + 1}`;
     }
   }
 

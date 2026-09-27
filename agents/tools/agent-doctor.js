@@ -65,6 +65,7 @@ const PIPELINE_DEPENDENCIES = {
     consumed_by: [
       { step: '06', name: 'qa-test-design/coverage-review', reason: 'Reviews test case execution coverage' },
       { step: '12', name: 'qa-test-data/data-validation-traceability', reason: 'Maps test datasets to specific TC_IDs' },
+      { step: 'readiness', name: 'qa-readiness-evaluator/gen-readiness-report', reason: 'Cross-checks test cases CSV/spec against coverage plan & rules before automation' },
       { step: 'automation', name: 'qa-automation/flow-clustering & pom-generator', reason: 'Clusters flows, generates POM, and executes Playwright E2E' }
     ]
   },
@@ -74,6 +75,13 @@ const PIPELINE_DEPENDENCIES = {
     consumed_by: [
       { step: '10', name: 'qa-test-data/dataset-generation', reason: 'Uses field maps to generate realistic datasets' },
       { step: '11', name: 'qa-test-data/boundary-negative-dataset', reason: 'Uses min/max boundaries to generate edge datasets' }
+    ]
+  },
+  'readiness': {
+    skill: 'agents/qa-readiness-evaluator/skills/gen-readiness-report.md',
+    produces: 'outputs/reports/readiness-report.md',
+    consumed_by: [
+      { step: 'automation', name: 'qa-automation/flow-clustering & pom-generator', reason: 'Acts as Go/No-Go gate before implementing POM and running Playwright E2E' }
     ]
   }
 };
@@ -98,6 +106,8 @@ if (targetImpact) {
     matchedStep = '05';
   } else if (targetImpact.includes('qa-test-data') || targetImpact === 'test-data') {
     matchedStep = '09';
+  } else if (targetImpact.includes('qa-readiness-evaluator') || targetImpact === 'readiness') {
+    matchedStep = 'readiness';
   }
 
   if (matchedStep && PIPELINE_DEPENDENCIES[matchedStep]) {
@@ -128,7 +138,7 @@ console.log('===============================================================');
 console.log('           AGENT ECOSYSTEM HEALTH & INTEGRITY CHECK            ');
 console.log('===============================================================\n');
 
-const agentDirs = ['qa-lead', 'qa-analyst', 'qa-test-design', 'qa-test-data', 'qa-exploratory', 'qa-ui-review', 'qa-reporter', 'qa-automation'];
+const agentDirs = ['qa-lead', 'qa-analyst', 'qa-test-design', 'qa-test-data', 'qa-exploratory', 'qa-ui-review', 'qa-reporter', 'qa-automation', 'qa-readiness-evaluator'];
 let totalErrors = 0;
 
 agentDirs.forEach(agentName => {
