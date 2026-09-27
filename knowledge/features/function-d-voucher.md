@@ -95,6 +95,10 @@ Chức năng **Function D: Áp dụng Mã Giảm Giá (Voucher)** nằm ở bư�
 | 5 | MR-05 | Chống spam click nút Áp dụng | Disable nút Áp dụng trong thời gian xử lý request | BA / User | 2026-09-20 |
 | 6 | MR-06 | Trừ hạn mức lượt dùng voucher | Trừ lượt dùng tại thời điểm Đặt hàng thành công | BA / User | 2026-09-20 |
 | 7 | MR-07 | Hoàn mã khi hủy đơn hàng | Tự động phục hồi lại quyền sử dụng voucher cho khách hàng nếu mã còn hạn | BA / User | 2026-09-20 |
+| 8 | GAP-D1 | `discount_value`: có chấp nhận phần trăm thập phân không? | **Chỉ chấp nhận phần trăm số nguyên** (10%, 20%, 30%); không hỗ trợ 7.5% / 12.5% | BA / User | 2026-09-27 |
+| 9 | GAP-D2 | `order_subtotal`: có trần giá trị đơn hàng tối đa được áp mã không? | **Không giới hạn trần** — đơn giá trị lớn vẫn áp mã bình thường | BA / User | 2026-09-27 |
+| 10 | GAP-E1 | Môi trường Live có backend không? | **Không có backend** — ứng dụng là SPA thuần frontend, dữ liệu đơn hàng lưu ở `localStorage` (`shopgo_orders`). Kỳ vọng kiểm thử chỉ đối chiếu theo hành vi FE | BA / User | 2026-09-27 |
+| 11 | GAP-E2 | Sản phẩm "Phụ kiện móc khóa 60.000 ₫" | **Không tồn tại** — catalog thật gồm 6 sản phẩm: 150.000 / 350.000 / 200.000 / 280.000 / 190.000 / 120.000 ₫ | BA / User | 2026-09-27 |
 
 ---
 

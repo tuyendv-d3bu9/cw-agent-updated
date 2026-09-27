@@ -20,12 +20,12 @@
 
 ---
 
-## 2. Field thiếu rule — Cần Clarify
+## 2. Field thiếu rule — Đã Được BA/PO Chốt (2026-09-27)
 
 | Field | Thiếu gì | Giả định tạm | Câu hỏi cho BA/PO | Trạng thái |
 |---|---|---|---|---|
-| `discount_value` | Hệ thống có chấp nhận số % lẻ (ví dụ: 12.5%) không? | `[GIẢ ĐỊNH]` Hệ thống ShopGo chỉ áp dụng số nguyên phần trăm (Integer: 10%, 20%, 30%). | Xác nhận ShopGo có cho phép tạo mã giảm giá với số thập phân (vd: 7.5%, 12.5%) tại Back-office không? | Đã gắn nhãn `[GIẢ ĐỊNH]` |
-| `order_subtotal` | Giới hạn đơn hàng tối đa (Max Order Amount) | `[GIẢ ĐỊNH]` Không giới hạn trần đơn hàng (hoặc max 500.000.000 VNĐ). | Đơn hàng mua sỉ trên 100 triệu VNĐ có được áp dụng mã voucher thông thường không? | Đã gắn nhãn `[GIẢ ĐỊNH]` |
+| `discount_value` | Hệ thống có chấp nhận số % lẻ (ví dụ: 12.5%) không? | Chỉ áp dụng số nguyên phần trăm (Integer: 10%, 20%, 30%). | Xác nhận ShopGo có cho phép tạo mã giảm giá với số thập phân (vd: 7.5%, 12.5%) tại Back-office không? | **`Confirmed`** — BA/PO chốt 2026-09-27: *"chỉ cho số nguyên"*. Gỡ nhãn `[GIẢ ĐỊNH]`. |
+| `order_subtotal` | Giới hạn đơn hàng tối đa (Max Order Amount) | Không giới hạn trần giá trị đơn hàng. | Đơn hàng mua sỉ trên 100 triệu VNĐ có được áp dụng mã voucher thông thường không? | **`Confirmed`** — BA/PO chốt 2026-09-27: *"có áp mã bình thường"*. Gỡ nhãn `[GIẢ ĐỊNH]`. |
 
 ---
 

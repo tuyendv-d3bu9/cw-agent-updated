@@ -1,120 +1,141 @@
 # QA Design-time Readiness Report: Function D — Áp Dụng Mã Giảm Giá (Voucher) · `function-d-voucher`
-Owner: `agents/qa-readiness-evaluator/skills/gen-readiness-report.md` · Nguồn: `03_viewpoint_report.md`, `04_test_idea_report.md`, `05_test_blueprint.json`, `05_test_case_spec.md`, `testcases/batch_01.md`, `10_dataset.md`, `11_boundary_negative_dataset.md`, `12_data_validation_traceability.md`, `06_coverage_review.md`, `07_web_journey_discovery.md`, `INPUT/.../03_dev/environment.md`, `04_design/live_ui_locators.md` · Ngày lập: 2026-09-27 · **Verdict: `RECOMMEND NO-GO`**
+Owner: `agents/qa-readiness-evaluator/skills/gen-readiness-report.md` · Nguồn: `03_viewpoint_report.md`, `04_test_idea_report.md`, `05_test_blueprint.json`, `05_test_case_spec.md`, `testcases/batch_01.md`, `07_web_journey_discovery.md`, `07b_ui_locator_map.md`, `09_data_class_map.md`, `10_dataset.md`, `11_boundary_negative_dataset.md`, `12_data_validation_traceability.md`, `06_coverage_review.md`, `INPUT/.../03_dev/environment.md`, bundle FE Live · Phiên bản: **v2** (2026-09-27, thay thế bản v1 `RECOMMEND NO-GO`) · **Verdict: `RECOMMEND CONDITIONAL GO`**
 
 ## 1. Tổng quan (Overview)
-- **Feature / Phạm vi:** Áp dụng mã giảm giá (voucher) tại màn hình Thanh toán của ShopGo — 34 test case (`VCHR-001` → `VCHR-034`) trải trên 06 viewpoint, đối chiếu môi trường Web Live `https://cwshopgo.github.io/`.
-- **Mục tiêu báo cáo:** Đánh giá độ chín của test design trước khi tiến hành Execution / Automation (Playwright E2E).
+- **Feature / Phạm vi:** Áp dụng mã giảm giá tại màn hình Thanh toán ShopGo — 34 test case (`VCHR-001` → `VCHR-034`), 06 viewpoint, đối chiếu Web Live `https://cwshopgo.github.io/`.
+- **Mục tiêu báo cáo:** Đánh giá độ chín test design trước khi viết kịch bản Playwright E2E.
+- **Thay đổi so với bản v1:** Toàn bộ 03 Data Issue mức chặn đã được khắc phục và **đã kiểm chứng lại độc lập**; 04 giả định treo đã được BA/PO chốt; `GAP-L1` đã đóng bằng bản đồ locator trích từ mã nguồn ứng dụng thật. Đổi lại, việc bóc tách mã nguồn FE làm lộ **một nhóm lệch mới giữa kỳ vọng thiết kế và hành vi FE** (Mục 4.2) — đây là lý do vẫn ở mức `CONDITIONAL GO` thay vì `GO`.
 - **Nguồn dữ liệu đã nạp:**
-  - `outputs/coverage-plan.json` (Trạng thái: **Không tìm thấy** — thay thế bằng `03_viewpoint_report.md` + `04_test_idea_report.md`, là kế hoạch slot chính thức của dự án này)
-  - `outputs/testcases/*.csv` (Trạng thái: **Không tìm thấy file CSV** — test case lưu dạng Markdown có cấu trúc; đã parse bằng **field-aware record parser** theo block `### TC_ID:` trên `05_test_case_spec.md` và `testcases/batch_01.md`, không dùng đếm dòng thô)
-  - `outputs/testdata/validation-report.md` (Trạng thái: **Đã nạp** dưới tên `12_data_validation_traceability.md`)
-  - `outputs/specs/voucher-spec.json` (Trạng thái: **Không tìm thấy** — thay thế bằng `01_requirement_risk_summary.md`, `02_missing_rule_report.md`, `knowledge/features/function-d-voucher.md`)
-  - `outputs/reviews/` (Trạng thái: **Đã nạp 1 file review**: `06_coverage_review.md`; kèm các verdict gate tại `01`, `02`, `03`, `04`, `12`)
-
-> **Ghi chú tên file:** Dự án dùng bộ tên chuẩn `01_` → `12_` theo `AGENTS.md` thay cho bộ tên mặc định của skill. Ánh xạ nguồn đã nêu tường minh ở trên để bảo toàn khả năng truy vết.
+  - Kế hoạch slot: `03_viewpoint_report.md` + `04_test_idea_report.md` (**Đã nạp** — dự án không dùng `coverage-plan.json`)
+  - Test case: `05_test_case_spec.md`, `testcases/batch_01.md` (**Đã nạp** — định dạng Markdown có cấu trúc, parse bằng field-aware record parser theo block `### TC_ID:`, không đếm dòng thô)
+  - Test data & validation: `10_dataset.md`, `11_boundary_negative_dataset.md`, `12_data_validation_traceability.md` (**Đã nạp**)
+  - Spec & rule: `01_requirement_risk_summary.md`, `02_missing_rule_report.md`, `knowledge/features/function-d-voucher.md` (**Đã nạp**)
+  - Review: `06_coverage_review.md` (**Đã nạp 1 file**)
+  - Môi trường: `environment.md`, `live_ui_locators.md`, `07b_ui_locator_map.md` (**Đã nạp**)
 
 ## 2. Coverage (Planned Slots vs. Actual Test Cases)
 
-| Viewpoint ID | Tên Viewpoint | Planned Slots | Actual Test Cases | Delta (Actual - Plan) | Ghi chú & Nhận diện Drift |
+| Viewpoint ID | Tên Viewpoint | Planned Slots | Actual Test Cases | Delta | Ghi chú & Nhận diện Drift |
 |---|---|---|---|---|---|
-| `VP-01` | Happy Path | 5 | 5 | 0 | Khớp tuyệt đối (TI-01→TI-05). Không có drift. |
-| `VP-02` | Negative | 8 | 8 | 0 | Khớp tuyệt đối (TI-06→TI-13). Không có drift. |
-| `VP-03` | Boundary | 9 | 9 | 0 | Khớp tuyệt đối (TI-14→TI-22). Không có drift. |
-| `VP-04` | Security | 5 | 5 | 0 | Khớp tuyệt đối (TI-23→TI-27). Không có drift. |
-| `VP-05` | UX/Usability | 3 | 3 | 0 | Khớp tuyệt đối (TI-28→TI-30). Không có drift. |
-| `VP-06` | Integration | 4 | 4 | 0 | Khớp tuyệt đối (TI-31→TI-34). Không có drift. |
-| **TỔNG** | | **34** | **34** | **0** | Blueprint 34 mục ↔ Spec 34 bản ghi ↔ Batch 34 bản ghi, không thiếu, không trùng ID. |
+| `VP-01` | Happy Path | 5 | 5 | 0 | Khớp tuyệt đối (TI-01→TI-05) |
+| `VP-02` | Negative | 8 | 8 | 0 | Khớp tuyệt đối (TI-06→TI-13) |
+| `VP-03` | Boundary | 9 | 9 | 0 | Khớp tuyệt đối (TI-14→TI-22) |
+| `VP-04` | Security | 5 | 5 | 0 | Khớp tuyệt đối (TI-23→TI-27) |
+| `VP-05` | UX/Usability | 3 | 3 | 0 | Khớp tuyệt đối (TI-28→TI-30) |
+| `VP-06` | Integration | 4 | 4 | 0 | Khớp tuyệt đối (TI-31→TI-34) |
+| **TỔNG** | | **34** | **34** | **0** | Blueprint 34 ↔ Spec 34 ↔ Batch 34, tập ID trùng khớp 100% |
 
-*Phân tích Delta:*
-- Delta = 0 trên toàn bộ 06 viewpoint. Không phát hiện coverage drift. Mỗi Test Idea được giữ (34/38) chuyển thành đúng 01 test case, 04 ý tưởng bị loại đều có lý do giải trình trong `04_test_idea_report.md`.
-- Đối soát định danh: `05_test_blueprint.json` (34) ↔ `05_test_case_spec.md` (34) ↔ `testcases/batch_01.md` (34); tập ID trùng khớp 100%, không có ID thừa/thiếu ở cả hai chiều.
-- Thống kê slot có trạng thái `assumed`: **0** slot ở tầng viewpoint. *(Ghi nhận riêng: 02 trường dữ liệu mang nhãn `[GIẢ ĐỊNH]` chưa chốt tại `09_data_class_map.md` §2 — xem Mục 5.)*
-- Thống kê slot có trạng thái `context_limited`: **CHƯA XÁC ĐỊNH** (kế hoạch slot của dự án không dùng cờ này). Tuy nhiên đối soát môi trường phát hiện **09 test case bị giới hạn khả năng thực thi trên Web Live** — xem Mục 4 và Mục 7.
+*Phân tích Delta:* Không có coverage drift. Slot `assumed`: 0. Slot `context_limited`: **14 test case** bị giới hạn bởi năng lực thực tế của môi trường FE (chi tiết Mục 4.2 và Mục 7).
 
 ## 3. Ma trận Truy vết (Traceability)
-- **Tỷ lệ Test Case có Trace:** **100%** (34 / 34) — mỗi bản ghi đều mang đủ `Rule#`, `Viewpoint#`, `Module#` trong trường `Tags`; 0 bản ghi thiếu trace.
-- **Kiểm tra cấu trúc 8 trường:** 34/34 test case đủ 8 trường (`TC_ID`, `Title`, `Precondition`, `Test Steps`, `Test Data`, `Expected Result`, `Priority`, `Tags`), không trường rỗng.
-- **Độ phủ rule (đếm từ tag):** `BR-01`:3 · `BR-02`:5 · `BR-03`:2 · `BR-04`:9 · `BR-05`:5 · `BR-06`:7 · `BR-07`:2 · `BR-08`:1 · `BR-09`:1 · `BR-10`:4 → 10/10 Business Rule đều có ≥ 1 test case.
-- **Cảnh báo Rule chưa Confirm:** **Không có.** Toàn bộ `BR-01`→`BR-10` và 07 Missing Rule `MR-01`→`MR-07` đã ở trạng thái `Confirmed` (có phản hồi chính thức của BA/PO ghi tại `02_missing_rule_report.md` §3 và `knowledge/features/function-d-voucher.md` §7–§8). Không test case nào map vào rule mang cờ `needs_clarification`.
-- **⚠️ Lệch ánh xạ Test Case ↔ Dữ liệu (phát hiện khi đối soát chéo):** Ma trận tại `12_data_validation_traceability.md` §3 gán **sai ngữ nghĩa test case cho ít nhất 07 ID** so với `05_test_case_spec.md`:
-
-| TC ID | Tên trong `12_..._traceability.md` | Tên thực tế trong `05_test_case_spec.md` |
-|---|---|---|
-| `VCHR-005` | Áp mã viết thường (auto uppercase) | Bấm trực tiếp badge gợi ý `GIAM50K` để tự điền và áp mã |
-| `VCHR-013` | Chọn nhanh voucher từ danh sách gợi ý | Chỉ ghi nhận mã mới nhất khi áp liên tiếp 2 voucher khác nhau |
-| `VCHR-023` | Nhập mã có khoảng trắng ở giữa chuỗi | Chặn ký tự đặc biệt hoặc emoji |
-| `VCHR-024` | Nhập toàn bộ chuỗi là khoảng trắng | Chặn submit mã có khoảng trắng ở giữa (`GIAM 50K`) |
-| `VCHR-029` | Khách vãng lai bấm thanh toán bị chặn bởi login | Hiển thị tiền giảm màu xanh lá, dấu trừ và badge mã |
-| `VCHR-030` | Phản hồi nhanh giao diện khi áp mã (< 500ms) | Giao diện responsive Desktop & Mobile |
-| `VCHR-034` | Luồng E2E hoàn chỉnh từ đăng nhập đến đặt hàng | Bản ghi đơn hàng lưu đủ `subtotal`, `discount`, `appliedCode`, `shippingFee`, `total` |
-
-  ➔ Hệ quả: nếu tầng Automation nạp dữ liệu theo ma trận này, script sẽ được cấp **sai bộ dữ liệu cho 7 kịch bản**. Con số "truy vết 100%" trong `12_...` vì vậy **chưa đáng tin ở cấp nội dung**, dù đạt 100% ở cấp định danh.
+- **Tỷ lệ Test Case có Trace:** **100%** (34/34) — đủ `Rule#`, `Viewpoint#`, `Module#`; 0 bản ghi thiếu trace.
+- **Cấu trúc 8 trường:** 34/34 đầy đủ, không trường rỗng.
+- **Độ phủ rule:** `BR-01`:3 · `BR-02`:5 · `BR-03`:2 · `BR-04`:9 · `BR-05`:5 · `BR-06`:7 · `BR-07`:2 · `BR-08`:1 · `BR-09`:1 · `BR-10`:4 → 10/10 BR có ≥ 1 test case.
+- **Cảnh báo Rule chưa Confirm:** **Không có.** `BR-01`→`BR-10`, `MR-01`→`MR-07` và 04 gap mới (`GAP-D1`, `GAP-D2`, `GAP-E1`, `GAP-E2`) đều ở trạng thái `Confirmed`. Không test case nào map vào rule có cờ `needs_clarification`.
+- **Ánh xạ Test Case ↔ Dữ liệu:** **Đã khắc phục.** Kiểm chứng lại 34/34 dòng ma trận `12_...` khớp đúng tiêu đề trong `05_test_case_spec.md`; `VCHR-011` đã đồng bộ (300.000 ₫ → 150.000 ₫).
 
 ## 4. Sẵn sàng về Dữ liệu Kiểm thử (Data Readiness)
-- **Tóm tắt FACT trên Test Data** *(nguyên văn kết luận của `12_data_validation_traceability.md` §2, kèm kết quả đối soát độc lập của báo cáo này)*:
-  - **Faithful (Factual):** Báo cáo dữ liệu tự đánh giá **PASS**. ➔ **Đối soát độc lập: KHÔNG ĐẠT** — `VCHR-031` dùng sản phẩm *"Phụ kiện móc khóa" 60.000 ₫* không tồn tại trong catalog Web Live (chỉ có 3 sản phẩm: 150.000 ₫ / 200.000 ₫ / 350.000 ₫ theo `live_ui_locators.md`).
-  - **Accurate:** Báo cáo dữ liệu tự đánh giá **PASS**. ➔ **Đối soát độc lập: KHÔNG ĐẠT** — 09/10 bản ghi `DS-VAL-*` tính phí ship 30.000 ₫ cho đơn ≥ 200.000 ₫, trái với `FREESHIP_THRESHOLD = 200.000 VNĐ` (`environment.md` §2, `knowledge/features/function-d-voucher.md` §9) và trái với hành vi Live đã chụp bằng chứng tại `07_web_journey_discovery.md` (đơn 350.000 ₫ + `GIAM50K` ➔ *"Miễn phí (Freeship)"*, tổng **300.000 ₫**, không phải 330.000 ₫).
-  - **Complete:** **PASS** — phủ đủ 5 Data Class (Valid, Boundary, Invalid, Null/Empty, Special) và chuỗi biên 6 mốc độ dài mã `[3, 20]`.
-  - **Testable:** **PASS** — mỗi record có `Test Purpose` và kỳ vọng nhị phân (mã lỗi / số tiền giảm / tổng thanh toán).
-- **Danh sách Data Issues còn tồn đọng** *(phát hiện qua đối soát chéo; báo cáo này không sửa dữ liệu)*:
-  1. **[DATA-01 · Blocking]** Mâu thuẫn phí vận chuyển: `DS-VAL-01` (350.000 ₫ → total 330.000 ₫), `DS-VAL-02`, `DS-VAL-03`, `DS-VAL-04`, `DS-VAL-05`, `DS-VAL-06`, `DS-VAL-08`, `DS-VAL-09`, `DS-VAL-10` đều cộng 30.000 ₫ ship cho đơn đã đạt ngưỡng freeship 200.000 ₫. Mọi assertion `total_payment` sinh từ tập này sẽ sai lệch 30.000 ₫ so với hệ thống thật.
-  2. **[DATA-02 · Blocking]** Ma trận truy vết gán sai test case cho ≥ 07 ID (bảng tại Mục 3).
-  3. **[DATA-03 · Major]** `12_..._traceability.md` §4 khẳng định *"Không có record mồ côi (Zero Orphan Data Records)"*, nhưng đối soát thực tế cho thấy **14/36 record chưa từng được ma trận tham chiếu**: `DS-VAL-03`, `DS-VAL-04`, `DS-VAL-07`, `DS-BND-03`, `DS-BND-06`, `DS-BND-07`, `DS-BND-09`, `DS-BND-11`, `DS-BND-12`, `DS-BND-13`, `DS-NEG-03`, `DS-NEG-07`, `DS-NEG-10`, `DS-NEG-11`.
-  4. **[DATA-04 · Major]** Dữ liệu không tái hiện được trên Web Live: catalog chỉ có 3 mức giá (150.000 / 200.000 / 350.000 ₫), nên các subtotal yêu cầu **199.000 ₫** (`VCHR-014`), **250.000 ₫** (`VCHR-009`, `VCHR-011`), **299.000 ₫** (`VCHR-016`), **333.333 ₫** (`VCHR-019`), **499.000 ₫** (`VCHR-018`), **210.000 ₫** (`VCHR-031`) đều **không tổ hợp được** qua UI. *(Mốc 200.000 / 300.000 / 500.000 ₫ thì tái hiện được.)*
-  5. **[DATA-05 · Major]** Lệch dữ liệu nội bộ: `VCHR-011` trong `05_test_case_spec.md` mô tả 2 × Áo Polo = 300.000 ₫ → giảm còn 150.000 ₫, trong khi ma trận `12_...` mô tả cùng ca này là 200.000 ₫ → 150.000 ₫.
-  6. **[DATA-06 · Minor]** 02 trường dữ liệu vẫn treo nhãn `[GIẢ ĐỊNH]` chưa có phản hồi BA/PO (`09_data_class_map.md` §2): `discount_value` (có chấp nhận % thập phân?) và `order_subtotal` (có trần đơn hàng tối đa?).
+
+### 4.1. FACT Check — đã kiểm chứng lại độc lập
+| Tiêu chí | Kết quả v1 | Kết quả v2 (đối soát lại 2026-09-27) |
+|---|---|---|
+| **F** — Factual | ❌ Không đạt | ✅ **Đạt** — mã voucher, tài khoản, ngưỡng đều khớp mã nguồn FE. *(Còn 1 tồn đọng: `VCHR-031` vẫn dùng sản phẩm "Phụ kiện móc khóa" không tồn tại — xem `FIX-01`.)* |
+| **A** — Accurate | ❌ Không đạt | ✅ **Đạt** — 0/10 bản ghi `DS-VAL-*` còn vi phạm freeship; công thức `total = subtotal − discount + ship` đúng 100%. Khớp logic FE: `shippingFee = subtotal >= 200.000 ? 0 : 30.000`. |
+| **C** — Complete | ✅ Đạt | ✅ **Đạt** — phủ đủ 5 Data Class và chuỗi biên 6 mốc. |
+| **T** — Testable | ✅ Đạt | ✅ **Đạt** — mỗi record có mục đích và kỳ vọng nhị phân. |
+
+**Data Issues v1 — trạng thái xử lý:**
+| Mã | Nội dung | Trạng thái |
+|---|---|---|
+| `DATA-01` | 9/10 bản ghi `DS-VAL-*` cộng phí ship cho đơn đã freeship | ✅ **Đã sửa & kiểm chứng** (0 vi phạm) |
+| `DATA-02` | Ma trận truy vết gán sai ngữ nghĩa 7 TC ID | ✅ **Đã sửa & kiểm chứng** |
+| `DATA-03` | 14 record mồ côi trái khẳng định "Zero Orphan" | ✅ **Đã sửa & kiểm chứng** (0 record mồ côi) |
+| `DATA-05` | Lệch dữ liệu `VCHR-011` giữa spec và ma trận | ✅ **Đã sửa** |
+| `DATA-06` | 02 trường treo nhãn `[GIẢ ĐỊNH]` | ✅ **Đã chốt** — `GAP-D1`: chỉ số nguyên phần trăm · `GAP-D2`: không giới hạn trần đơn hàng |
+| `DATA-04` | 06 mốc subtotal không tái hiện được | 🟡 **Đã có phương án** — catalog thật có **6 sản phẩm** (không phải 3), cho phép thay bằng cặp biên khả thi (Mục 4.3). Còn 1 mốc không thay được: 333.333 ₫. |
+
+### 4.2. ⚠️ Phát hiện mới: Lệch giữa kỳ vọng thiết kế và hành vi Frontend thật
+Bóc tách mã nguồn ứng dụng Live cho thấy **FE chưa hiện thực một số quy tắc mà BA/PO đã chốt**. Đây **không phải lỗi thiết kế test** — mà là các điểm sẽ FAIL khi chạy, cần BA/Dev quyết định là *bug cần sửa* hay *hạ kỳ vọng theo FE*:
+
+| TC ID | Kỳ vọng theo rule đã chốt | Hành vi FE thật | Rule liên quan |
+|---|---|---|---|
+| `VCHR-011` | Tự động **gỡ** voucher + disable form + toast cảnh báo | FE **giữ nguyên mã**, chỉ hiện cảnh báo vàng `Mã "X" chưa đủ điều kiện áp dụng` và đặt `discount = 0` | `MR-02` |
+| `VCHR-028` | Nút Áp dụng bị `disabled` + spinner khi submit | FE **không có** thuộc tính `disabled`, không có trạng thái loading | `MR-05` |
+| `VCHR-020` | Mã 2 ký tự ➔ lỗi "quá ngắn / sai định dạng" | FE báo `Mã giảm giá "V1" không tồn tại trên hệ thống.` | `MR-01` |
+| `VCHR-022` | Ô input chặn không cho gõ ký tự thứ 21 | FE **không có `maxlength`** — gõ được không giới hạn | `MR-01` |
+| `VCHR-023` | Ký tự đặc biệt / emoji ➔ `"Mã không đúng định dạng."` | FE **không có regex** `^[A-Z0-9]{3,20}$`, báo "không tồn tại" | `MR-01` |
+| `VCHR-024` | `GIAM 50K` ➔ `"Mã không đúng định dạng."` | FE chỉ `trim()` hai đầu, báo "không tồn tại" | `MR-01` |
+| `VCHR-025` / `VCHR-026` | Chặn XSS / SQLi kèm cảnh báo định dạng | FE an toàn (React tự escape) nhưng thông báo là "không tồn tại" | `BR-05`, `MR-01` |
+| `VCHR-031` | Giảm 50.000 ₫ trên tiền hàng, **giữ nguyên phí ship 30.000 ₫** | **Không quan sát được**: ngưỡng freeship (200k) trùng mức sàn voucher (200k) ➔ mọi đơn áp được mã đều đã freeship | `BR-09` |
+| `VCHR-019` | Chiết khấu % làm tròn xuống `Math.floor()` | FE **không gọi `Math.floor()`**; và giá lẻ 333.333 ₫ không tạo được (mọi giá là bội số 10.000 ₫) | `MR-04` |
+
+**Tính năng không tồn tại trên FE (không có backend):**
+| TC ID | Tính năng cần có | Hiện trạng |
+|---|---|---|
+| `VCHR-027` | Rate limiting chống brute-force | Không có cơ chế nào |
+| `VCHR-032` | Trừ lượt dùng voucher khi đặt hàng | Voucher **không có trường `usageLimit`/`usageCount`** |
+| `VCHR-033` | Hoàn lượt dùng khi hủy đơn | **Không có thao tác hủy từng đơn** — chỉ có "xóa sạch toàn bộ lịch sử" |
+
+> ✅ **Tin tốt cho `VCHR-034`**: đơn hàng lưu ở `localStorage["shopgo_orders"]` với đủ trường `orderId`, `userId`, `date`, `items`, `subtotal`, `shippingFee`, `discount`, `total`, `appliedCode` ➔ Playwright **kiểm chứng được** bằng `page.evaluate(() => localStorage.getItem('shopgo_orders'))`.
+
+### 4.3. Mốc biên thay thế (tái hiện được trên catalog thật)
+| Mục tiêu | Giá trị cũ | Giá trị thay thế | Giỏ hàng |
+|---|---|---|---|
+| Cận dưới sàn 200k (`VCHR-014`) | 199.000 ₫ | **190.000 ₫** | `prod-005` × 1 |
+| Dưới min SALE20 (`VCHR-009`) | 250.000 ₫ | **200.000 ₫** | `prod-003` × 1 |
+| Cận dưới min SALE20 (`VCHR-016`) | 299.000 ₫ | **280.000 ₫** | `prod-004` × 1 |
+| Cận dưới trần maxCap (`VCHR-018`) | 499.000 ₫ | **490.000 ₫** (giảm 98.000 ₫) | `prod-001` × 2 + `prod-005` × 1 |
+| Chạm trần maxCap (`VCHR-018`) | 500.000 ₫ | 500.000 ₫ (giữ nguyên) | `prod-001` × 1 + `prod-002` × 1 |
+| Tiền lẻ `Math.floor()` (`VCHR-019`) | 333.333 ₫ | **Không thay thế được** | — |
 
 ## 5. Danh sách Gaps & Giả định (Gaps & Assumptions)
 
-| Gap ID | Mô tả Chi tiết | Status (Confirmed / Treo) | Giả định hiện tại (Working Assumption) | Cần BA làm rõ? (Yes/No) |
+| Gap ID | Mô tả | Status | Quyết định / Giả định hiện tại | Cần BA làm rõ? |
 |---|---|---|---|---|
-| `MR-01` | Kiểm soát format input lạ (ký tự đặc biệt, SQLi, space giữa) | **Confirmed** (BA/PO 2026-09-20) | Chặn tại client theo regex `^[A-Z0-9]{3,20}$`, báo "Mã không đúng định dạng" | No |
-| `MR-02` | Giỏ hàng tụt dưới mức sàn sau khi đã áp mã | **Confirmed** | Tự động gỡ + disable voucher kèm toast cảnh báo | No |
-| `MR-03` | Mức sàn áp mã toàn hệ thống | **Confirmed** | `200.000 VNĐ` (bác bỏ mốc 300k trong `spec.txt`) | No |
-| `MR-04` | Làm tròn tiền lẻ voucher % | **Confirmed** | `Math.floor()` xuống hàng đồng | No |
-| `MR-05` | Chống double-click nút Áp dụng | **Confirmed** | Disable nút + trạng thái loading khi submit | No |
-| `MR-06` | Thời điểm trừ lượt dùng voucher | **Confirmed** | Trừ khi Đặt hàng thành công, không trừ khi Áp dụng | No |
-| `MR-07` | Hoàn lượt dùng khi hủy đơn | **Confirmed** | Phục hồi lượt dùng nếu mã còn hạn | No |
-| `GAP-D1` | `discount_value`: hệ thống có chấp nhận % thập phân (7.5%, 12.5%)? | **Treo** | `[GIẢ ĐỊNH]` Chỉ áp dụng % số nguyên | **Yes** |
-| `GAP-D2` | `order_subtotal`: có trần giá trị đơn hàng tối đa được áp mã? | **Treo** | `[GIẢ ĐỊNH]` Không giới hạn trần | **Yes** |
-| `GAP-E1` | Web Live là SPA frontend (React state), chưa có backend lưu lượt dùng / quản lý đơn | **Treo** | `[GIẢ ĐỊNH]` `VCHR-027`, `VCHR-032`, `VCHR-033` chưa kiểm chứng được end-to-end trên môi trường hiện tại | **Yes** (cần Dev/PO xác nhận môi trường có backend) |
-| `GAP-E2` | Catalog Live chỉ có 3 sản phẩm cố định, không có cơ chế đặt subtotal tùy ý | **Treo** | `[GIẢ ĐỊNH]` Cần seed dữ liệu / sản phẩm phụ trợ hoặc can thiệp state để tái hiện biên | **Yes** |
-| `GAP-L1` | Chưa có locator cho: nút tăng/giảm số lượng trong giỏ, vùng thông báo lỗi/toast, màn hình Quản lý đơn hàng & nút Hủy đơn | **Treo** | `[GIẢ ĐỊNH]` Phải bổ sung khi xây Page Object Model | **Yes** (Dev bổ sung `data-testid`) |
+| `MR-01` → `MR-07` | 07 kẽ hở 06W | **Confirmed** (2026-09-20) | Đã chốt đầy đủ phương án | No |
+| `GAP-D1` | `discount_value` có chấp nhận % thập phân? | **Confirmed** (2026-09-27) | **Chỉ số nguyên phần trăm** | No |
+| `GAP-D2` | Trần giá trị đơn hàng tối đa? | **Confirmed** (2026-09-27) | **Không giới hạn** — đơn lớn vẫn áp mã bình thường | No |
+| `GAP-E1` | Môi trường có backend không? | **Confirmed** (2026-09-27) | **Không có backend** — SPA thuần FE, dữ liệu ở `localStorage`; kỳ vọng đối chiếu theo FE | No |
+| `GAP-E2` | Sản phẩm "Phụ kiện móc khóa 60.000 ₫" | **Confirmed** (2026-09-27) | **Không tồn tại** — catalog thật 6 sản phẩm (150k/350k/200k/280k/190k/120k) | No |
+| `GAP-L1` | Thiếu locator cho giỏ hàng, toast, hủy đơn | **Đã đóng** (2026-09-27) | Bản đồ locator đầy đủ tại `07b_ui_locator_map.md`, trích từ mã nguồn Live | No |
+| `GAP-F1` | FE chưa hiện thực `MR-01` (regex format), `MR-02` (tự gỡ mã), `MR-05` (disable nút) | **Treo** | Chưa rõ là *bug cần Dev sửa* hay *hạ kỳ vọng theo FE* | **Yes** |
+| `GAP-F2` | Ngưỡng freeship (200k) trùng mức sàn voucher (200k) khiến `BR-09` không quan sát được | **Treo** | Chỉ khẳng định gián tiếp qua công thức tổng tiền | **Yes** |
 
 ## 6. Kết quả Review Thiết kế (Review Findings)
-- **Tally Kết quả Review:** `PASS`: **6** (Chặng 1, 2, 3, 4, 6 và Data Validation) | `FIX`: **0** | `ASK`: **0 đang mở** *(Chặng 1 từng ở `ASK`, đã đóng sau phản hồi BA/PO ngày 2026-09-20)*.
-- **Danh sách điểm ASK / Điểm cần can thiệp:**
-  - `06_coverage_review.md` §3 (Practical Observation): *"Test case `VCHR-032` (trừ lượt dùng) và `VCHR-033` (hoàn lượt dùng khi hủy đơn) đòi hỏi API Backend có database lưu trữ session người dùng để kiểm chứng toàn vẹn."* — điểm này **chưa được đóng**.
-  - `06_coverage_review.md` §4 (Human-Final Decision Scope) còn **04 mục chờ QA Lead / PO thẩm định**: mức nghiêm trọng của `VCHR-011`; 34 TC đã đủ sâu chưa (có cần bổ sung concurrency đa tab?); tác động chéo sang VAT / báo cáo doanh thu; kịch bản network throttling 3G.
-  - **Sai lệch trạng thái điều hành:** `00_plan.md` dòng tiêu đề Giai đoạn 3 vẫn ghi `VERDICT: ASK` trong khi nội dung bên dưới và `06_coverage_review.md` đều ghi nhận đã nghiệm thu `PASS` ngày 2026-09-27. Cần QA Lead thống nhất nhãn.
+- **Tally:** `PASS`: **6** | `FIX`: **0** | `ASK`: **0 đang mở**.
+- **Điểm đã đóng từ v1:** 03 Data Issue chặn; nhãn verdict Giai đoạn 3 trong `00_plan.md` đã thống nhất về `PASS`; ghi chú backend tại `06_coverage_review.md` §3 nay đã có kết luận chính thức (không có backend).
+- **Còn chờ Human-Final** (`06_coverage_review.md` §4): mức nghiêm trọng nghiệp vụ của `VCHR-011`; 34 TC đã đủ sâu chưa (có cần ca concurrency đa tab?); tác động chéo sang VAT / báo cáo doanh thu; ca network throttling 3G.
 
 ## 7. Khuyến nghị Go / No-Go cho Automation
-- **Khuyến nghị của Agent:** **`RECOMMEND NO-GO`**
-- **Căn cứ khuyến nghị:**
-  - ✅ **Đạt:** Tỷ lệ Trace 100% (34/34); Delta coverage = 0; 10/10 BR và 7/7 MR đã `Confirmed`; 34/34 test case đủ 8 trường; không tồn đọng mục `FIX`.
-  - ❌ **Không đạt (yếu tố kích hoạt NO-GO):** Tồn tại **Data Issue chưa giải quyết** ở mức chặn — `DATA-01` (09/10 bản ghi valid sai phí ship so với quy tắc freeship 200k và so với hành vi Live đã có bằng chứng) và `DATA-02` (ma trận dữ liệu gán sai test case cho ≥ 07 ID). Viết script Playwright trên nền dữ liệu này sẽ tạo ra assertion sai ngay từ happy path, gây hàng loạt false-fail và phải làm lại.
-  - ⚠️ **Rủi ro kèm theo:** 09/34 test case (~26%) hiện **không thực thi trọn vẹn được** trên môi trường Live — 06 ca do subtotal không tái hiện được (`DATA-04`), 03 ca do phụ thuộc backend chưa có (`VCHR-027`, `VCHR-032`, `VCHR-033`).
-- **Điều kiện tiên quyết cần hoàn thành trước khi chuyển sang Automation:**
-  1. **[DATA-01]** `qa-test-data` hiệu chỉnh lại toàn bộ bản ghi `DS-VAL-*`: đơn ≥ 200.000 ₫ phải là freeship (`shipping_fee = 0`), tính lại `total_payment` tương ứng; hoặc BA xác nhận chính thức rằng quy tắc freeship không áp dụng cho Function D.
-  2. **[DATA-02 + DATA-05]** Dựng lại ma trận truy vết `12_...` bám đúng tiêu đề trong `05_test_case_spec.md` cho 07 ID lệch và thống nhất dữ liệu `VCHR-011`.
-  3. **[DATA-03]** Xử lý 14 record mồ côi: gắn vào test case tương ứng hoặc loại bỏ, đồng thời chỉnh lại khẳng định "Zero Orphan Data Records".
-  4. **[DATA-04 / GAP-E2]** QA Lead + Dev chốt cách tái hiện subtotal biên (199.000 / 250.000 / 299.000 / 333.333 / 499.000 / 210.000 ₫): bổ sung sản phẩm vào catalog, seed giỏ hàng qua state, hay chuyển các ca này sang Manual / API-level.
-  5. **[GAP-E1]** Xác nhận môi trường backend cho `VCHR-027`, `VCHR-032`, `VCHR-033`; nếu chưa có, chính thức khoanh 03 ca này ra khỏi phạm vi Automation đợt này.
-  6. **[GAP-L1]** Dev bổ sung locator ổn định (`data-testid`) cho nút tăng/giảm số lượng, vùng toast/thông báo lỗi, màn hình Quản lý đơn hàng & nút Hủy đơn — hiện chỉ 10/34 test case có selector cụ thể.
-  7. **[GAP-D1 / GAP-D2]** BA/PO trả lời 02 giả định treo trong `09_data_class_map.md` §2.
-  8. QA Lead thống nhất nhãn verdict Giai đoạn 3 trong `00_plan.md` và đóng 04 mục Human-Final tại `06_coverage_review.md` §4.
-- *(Lưu ý: Đây là khuyến nghị kỹ thuật dựa trên dữ liệu. Quyết định Go/No-Go cuối cùng thuộc về QA Lead / Quản lý dự án).*
+- **Khuyến nghị của Agent:** **`RECOMMEND CONDITIONAL GO`**
+- **Căn cứ:**
+  - ✅ Trace 100% (34/34) · Delta coverage 0 · 34/34 đủ 8 trường · 10/10 BR + 7/7 MR + 4 GAP mới đều `Confirmed` · 0 mục `FIX` · Dữ liệu đạt đủ 4 tiêu chí FACT sau khắc phục · Locator đã đầy đủ và trích từ mã nguồn thật.
+  - 🟡 Chưa đạt `GO` vì: **11 test case** có kỳ vọng lệch hành vi FE (`GAP-F1`, `GAP-F2`) cần BA/Dev phân định bug-hay-hạ-kỳ-vọng, và **03 test case** không có tính năng tương ứng trên FE.
 
-> **Lộ trình rút gọn:** Nếu chỉ hoàn thành điều kiện **1, 2, 3, 6**, mức khuyến nghị có thể nâng lên `RECOMMEND CONDITIONAL GO` cho **25/34 test case** khả thi trên Live (loại trừ 06 ca subtotal không tái hiện được và 03 ca phụ thuộc backend).
+- **Phân loại 34 test case theo mức sẵn sàng Automation:**
+
+| Nhóm | Số lượng | Test Case | Hành động |
+|---|---|---|---|
+| ✅ **Sẵn sàng viết script ngay** | **16** | `VCHR-001`→`008`, `010`, `012`, `013`, `015`, `017`, `029`, `030`, `034` | Triển khai POM + script |
+| 🔵 **Sẵn sàng sau khi đổi giá trị biên** | **4** | `VCHR-009`, `014`, `016`, `018` | Áp bảng thay thế Mục 4.3 |
+| 🟡 **Chờ BA/Dev phân định trước khi code** | **11** | `VCHR-011`, `019`, `020`, `021`, `022`, `023`, `024`, `025`, `026`, `028`, `031` | Xem Mục 4.2 |
+| ⛔ **Ngoài phạm vi Automation đợt này** | **3** | `VCHR-027`, `032`, `033` | Tính năng không tồn tại trên FE |
+
+> **Phạm vi khuyến nghị mở cổng:** **20/34 test case** (nhóm ✅ và 🔵) được phép chuyển sang `qa-automation` ngay. 11 ca nhóm 🟡 chờ quyết định, 3 ca nhóm ⛔ đóng lại đợt này.
+
+- **Điều kiện tiên quyết còn lại:**
+  1. **`FIX-01`** — `qa-test-design` sửa `VCHR-031`: bỏ sản phẩm "Phụ kiện móc khóa", và xử lý xung đột ngưỡng freeship ↔ mức sàn voucher (`GAP-F2`).
+  2. **`FIX-02`** — Cập nhật giá trị biên cho `VCHR-009`, `014`, `016`, `018` theo bảng Mục 4.3, đồng bộ lại `11_boundary_negative_dataset.md` và ma trận truy vết.
+  3. **`ASK-01`** — BA/Dev phân định nhóm 🟡: FE thiếu `MR-01`/`MR-02`/`MR-05` là bug cần sửa (giữ nguyên kỳ vọng, chấp nhận FAIL để báo lỗi) hay hạ kỳ vọng theo FE hiện tại?
+  4. **`FIX-03`** — Sau khi có `ASK-01`, cập nhật Expected Result của 11 test case nhóm 🟡.
+  5. **`FIX-04`** — Loại `VCHR-027`, `032`, `033` khỏi phạm vi Automation, ghi chú lý do vào `06_coverage_review.md`.
+- *(Lưu ý: Đây là khuyến nghị kỹ thuật dựa trên dữ liệu. Quyết định Go/No-Go cuối cùng thuộc về QA Lead / Quản lý dự án).*
 
 ---
 ## ❓ CÂU HỎI MỞ (Cần BA / PO / Tech Lead xác nhận)
-1. **Phí vận chuyển & freeship:** Với đơn ≥ 200.000 ₫ đã áp voucher, tổng thanh toán là `subtotal − discount` (freeship, đúng như Web Live) hay vẫn cộng 30.000 ₫ phí ship như bộ dữ liệu `10_dataset.md` đang giả định? *(Chặn `DATA-01`.)*
-2. **Tái hiện giá trị biên:** Hệ thống sẽ bổ sung sản phẩm/cơ chế nào để tạo được subtotal 199.000 / 250.000 / 299.000 / 333.333 / 499.000 / 210.000 ₫? Nếu không có, các ca biên này chuyển sang kiểm thử tầng API hay chấp nhận bỏ? *(Chặn `DATA-04`.)*
-3. **Sản phẩm không tồn tại:** `VCHR-031` dùng *"Phụ kiện móc khóa" 60.000 ₫* — sản phẩm này sẽ được thêm vào catalog hay test case cần thiết kế lại theo 3 sản phẩm hiện có?
-4. **Môi trường backend:** Có môi trường nào có API + database để kiểm chứng trừ/hoàn lượt dùng voucher (`VCHR-032`, `VCHR-033`) và rate limiting chống brute-force (`VCHR-027`) không? Nếu không, 03 ca này xử lý thế nào trong đợt Automation này?
-5. **Màn hình Quản lý đơn hàng:** `VCHR-033` yêu cầu thao tác "Hủy đơn hàng" nhưng danh mục locator hiện chưa có màn hình này. Chức năng đã tồn tại trên Live chưa?
-6. **`discount_value`:** ShopGo có cho phép tạo mã giảm giá với phần trăm thập phân (7.5%, 12.5%) tại Back-office không? *(`GAP-D1`, đang mang nhãn `[GIẢ ĐỊNH]`.)*
-7. **`order_subtotal`:** Có trần giá trị đơn hàng tối đa được phép áp voucher (ví dụ đơn mua sỉ > 100 triệu ₫) không? *(`GAP-D2`, đang mang nhãn `[GIẢ ĐỊNH]`.)*
-8. **Ngưỡng phản hồi UI:** `VCHR-030` theo ma trận dữ liệu yêu cầu phản hồi "< 500ms" — đây có phải tiêu chí nghiệm thu chính thức của PO, hay chỉ là kỳ vọng nội bộ của QA?
-9. **Human-Final tồn đọng từ `06_coverage_review.md` §4:** (a) mức nghiêm trọng nghiệp vụ của `VCHR-011`; (b) 34 test case đã đủ sâu chưa hay cần bổ sung ca concurrency đa tab; (c) tác động chéo sang VAT / báo cáo doanh thu; (d) có cần ca kiểm thử mạng chập chờn (3G throttling) khi bấm Áp dụng không?
+1. **`GAP-F1` — FE thiếu 3 quy tắc đã chốt:** Không có regex chặn định dạng (`MR-01`), không tự gỡ voucher khi giỏ tụt dưới mức sàn (`MR-02`), không disable nút Áp dụng (`MR-05`). Đây là **bug cần Dev sửa**, hay chấp nhận hành vi FE hiện tại và hạ kỳ vọng test case?
+2. **`GAP-F2` — Xung đột ngưỡng:** Miễn phí vận chuyển từ 200.000 ₫ trùng đúng mức sàn voucher 200.000 ₫, khiến `BR-09` (voucher không giảm phí ship) không thể quan sát trực tiếp. Có điều chỉnh một trong hai ngưỡng, hay chấp nhận kiểm chứng gián tiếp qua công thức tổng tiền?
+3. **`VCHR-019` — Làm tròn `Math.floor()`:** Mọi giá sản phẩm đều là bội số 10.000 ₫ nên không bao giờ phát sinh tiền lẻ; FE cũng không gọi `Math.floor()`. Có cần thêm sản phẩm giá lẻ để kiểm chứng `MR-04`, hay đóng test case này?
+4. **`VCHR-027` / `032` / `033`:** Xác nhận chính thức đóng 03 ca này khỏi phạm vi đợt hiện tại (không có rate limiting, không có hạn mức lượt dùng, không có chức năng hủy từng đơn)?
+5. **Bổ sung `id` cho nút tăng/giảm số lượng:** Hiện phải định vị gián tiếp qua DOM cha của `#input-qty-prod-00X`. Dev có bổ sung `id` ổn định không (ảnh hưởng độ bền script `VCHR-011`)?
+6. **Human-Final tồn đọng** (`06_coverage_review.md` §4): (a) mức nghiêm trọng nghiệp vụ của `VCHR-011`; (b) có cần bổ sung ca concurrency đa tab; (c) tác động chéo sang VAT / báo cáo doanh thu; (d) có cần ca network throttling 3G?
