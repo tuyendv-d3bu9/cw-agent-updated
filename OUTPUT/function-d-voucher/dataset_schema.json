@@ -1,0 +1,25 @@
+{
+  "user_email": {
+    "type": "enum",
+    "values": ["khachhang@shopgo.vn", "vip@shopgo.vn"]
+  },
+  "voucher_code": {
+    "type": "enum",
+    "values": ["GIAM50K", "SALE20", "VOUCHER10", "FREESHIP"]
+  },
+  "discount_type": {
+    "type": "enum",
+    "values": ["FIXED_AMOUNT", "PERCENTAGE"]
+  },
+  "order_subtotal": {
+    "type": "currency_vnd",
+    "min": 200000,
+    "max": 1000000,
+    "step": 50000,
+    "formatted": false
+  },
+  "shipping_fee": {
+    "type": "enum",
+    "values": [30000, 50000, 0]
+  }
+}
