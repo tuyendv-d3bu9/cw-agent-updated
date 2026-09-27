@@ -97,6 +97,6 @@ Hiểu sẵn hệ thống sẽ giúp bạn nhanh hơn rất nhiều ở phần �
 | File | Vì sao nên đọc |
 |---|---|
 | [README.md](README.md) | Luật chơi của buổi học |
-| Đề của nhóm mình | Biết trước mình phải làm gì |
+| Đề mình đã chọn | Biết trước mình phải làm gì |
 | [CHEATSHEET-CAU-CHAT.md](CHEATSHEET-CAU-CHAT.md) | Biết cách ra lệnh cho Agent |
 | `knowledge/features/shopgo-ui-map.md` | Hiểu hệ thống dưới thử nghiệm |

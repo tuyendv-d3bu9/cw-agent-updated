@@ -1,9 +1,9 @@
 # VÍ DỤ — Biên Bản Nâng Cấp Đã Điền Đầy Đủ
 
-> Đây là **bản mẫu tham khảo**, không phải bài của nhóm nào.
+> Đây là **bản mẫu tham khảo**, không phải bài của học viên nào.
 > Nội dung là lần nâng cấp có thật đã thực hiện trên chính repo này: thêm skill `system-upgrade-governance` cho QA Leader — tức là thêm cho hệ thống năng lực tự nâng cấp chính nó.
 >
-> Đọc file này để biết một biên bản đạt yêu cầu trông như thế nào. Biên bản của nhóm đặt tại `OUTPUT/_upgrades/<ngày>_<tên>.md`.
+> Đọc file này để biết một biên bản đạt yêu cầu trông như thế nào. Biên bản của bạn đặt tại `OUTPUT/_upgrades/<ngày>_<tên>.md`.
 
 ---
 
@@ -73,4 +73,4 @@ Owner: agents/qa-lead/skills/system-upgrade-governance.md · Ngày: 2026-09-21 �
 | Skill này được phép ghi vào `agents/` — phân vùng mà mọi agent khác bị cấm ghi | **Cao** | Đây là ngoại lệ có chủ ý và **duy nhất**. Đã ghi rõ trong phần mở đầu của skill. Nếu sau này có skill thứ hai xin quyền tương tự thì phải xem lại thiết kế |
 | Quyết định `[A]` hay `[B]` khi ranh giới mập mờ | Trung bình | Skill chỉ **đề xuất**. Người dùng quyết. Đã ghi vào mục `Human-Final` §6 |
 | Dãy số `NN` ghi cứng trong skill (`01`–`14` đã dùng) sẽ lạc hậu sau vài lần nâng cấp | Thấp | Skill đã tự cảnh báo: *"Luôn kiểm tra lại thực tế, đừng tin con số này"* |
-| Chưa có cách kiểm tự động việc "đã lan truyền đủ điểm neo chưa" | Trung bình | Hiện phụ thuộc vào kỷ luật của người thực hiện. Đây là **cơ hội cải tiến** cho nhóm nào muốn lấy điểm thưởng: mở rộng `agent-doctor.js` để kiểm chéo giữa `AGENT.md`, `WORKFLOW.md` và `_system_map.json` |
+| Chưa có cách kiểm tự động việc "đã lan truyền đủ điểm neo chưa" | Trung bình | Hiện phụ thuộc vào kỷ luật của người thực hiện. Đây là **cơ hội cải tiến** cho học viên nào muốn lấy điểm thưởng: mở rộng `agent-doctor.js` để kiểm chéo giữa `AGENT.md`, `WORKFLOW.md` và `_system_map.json` |

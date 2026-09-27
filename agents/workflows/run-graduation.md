@@ -12,11 +12,11 @@ Runbook này gộp **nhánh A (`01`→`06`)** và **nhánh Automation** thành m
 
 | Tham số | Giá trị | Ghi chú |
 |---|---|---|
-| `task-slug` | một trong: `shopgo-voucher` · `shopgo-cart-qty` · `shopgo-auth` · `shopgo-checkout` | Theo đề bài của nhóm |
+| `task-slug` | một trong: `shopgo-voucher` (DE-01) · `shopgo-cart-qty` (DE-02) | Theo đề học viên đã chọn |
 | `input` | `INPUT/<task-slug>/` | Có sẵn 2 ngăn: `01_business/`, `02_ba/` |
 | `feature knowledge` | `knowledge/features/<task-slug>.md` | Chưa có thì tạo từ `knowledge/_template.md` |
 | `SUT` | `https://cwshopgo.github.io` | |
-| `ticket` | `<mã ticket của nhóm>` | Dùng đặt tên thư mục run, ví dụ `RUN-01_VCHR-Regression` |
+| `ticket` | `<mã ticket của học viên>` | Dùng đặt tên thư mục run, ví dụ `RUN-01_VCHR-Regression` |
 
 ## 1. Nạp trước (đọc một lần, đầu phiên)
 

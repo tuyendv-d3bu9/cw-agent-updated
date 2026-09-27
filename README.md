@@ -50,7 +50,7 @@ automation/                     TẦNG KIỂM THỬ TỰ ĐỘNG PLAYWRIGHT
 
 DE-BAI/                         BỘ ĐỀ — PHÁT CHO HỌC VIÊN
   README.md                     Luật chung, phân đề, cách nộp bài
-  DE-01.md … DE-04.md           4 đề cho 4 nhóm
+  DE-01.md · DE-02.md           2 đề — mỗi học viên chọn 1 đề, làm cá nhân
   SETUP.md                      Chuẩn bị môi trường, gửi trước buổi học
   CHEATSHEET-CAU-CHAT.md        Bộ câu chat mẫu để ra lệnh cho Agent
   RUBRIC.md                     Thang điểm chấm

@@ -1,7 +1,8 @@
 # THANG ĐIỂM CHẤM — Project Tốt Nghiệp
 
 > Dành cho giảng viên. Học viên cũng nên đọc để biết mình được chấm theo tiêu chí nào.
-> Tổng 100 điểm. Đạt từ 60 điểm.
+> Mỗi học viên làm và được chấm **riêng**. Tổng 100 điểm, cộng thưởng tối đa +10.
+> **Đạt từ 60 điểm**, tính trên **điểm cuối cùng** (sau khi cộng thưởng và trừ vi phạm).
 
 ---
 
@@ -10,10 +11,18 @@
 | Phần | Điểm |
 |---|---|
 | A — Nâng cấp hệ thống Agent | 40 |
-| B — Test case & Automation | 45 |
-| C — Trình bày & Báo cáo | 15 |
+| B — Test case & Automation | 47 |
+| C — Báo cáo & Bài nộp | 13 |
 | **Tổng** | **100** |
 | Điểm thưởng (tối đa) | +10 |
+
+**Cách tính điểm cuối cùng:**
+
+```
+Điểm cuối cùng = (A + B + C) + Thưởng − Trừ        (tối đa 110)
+```
+
+> **Luật trừ điểm — mỗi vi phạm chỉ trừ MỘT lần.** Mọi vi phạm được trừ tại bảng [TRỪ ĐIỂM](#trừ-điểm). Khi chấm các mục A, B, C, **không** hạ điểm thêm vì chính vi phạm đó.
 
 ---
 
@@ -28,7 +37,7 @@
 | 3–5 | Kết luận đúng nhưng không có lập luận, hoặc chỉ làm theo đề bài mà không tự phân tích |
 | 0–2 | Không có bảng quyết định |
 
-> **Lưu ý chấm**: kết luận **khác** gợi ý trong đề vẫn được điểm tối đa nếu lập luận vững và nhóm lan truyền đúng theo nhánh mình chọn. Chấm tư duy, không chấm sự trùng khớp.
+> **Lưu ý chấm**: kết luận **khác** gợi ý trong đề vẫn được điểm tối đa nếu lập luận vững và học viên lan truyền đúng theo nhánh mình chọn. Chấm tư duy, không chấm sự trùng khớp.
 
 ### A2. Chất lượng nội dung sửa/tạo (12 điểm)
 
@@ -41,31 +50,36 @@
 
 ### A3. Lan truyền điểm neo (12 điểm)
 
-Chấm theo số điểm neo bắt buộc của từng đề (Đề 01 ít nhất, Đề 03 đủ sáu).
+Chấm theo điểm neo bắt buộc của từng đề:
+
+| Đề | Điểm neo bắt buộc |
+|---|---|
+| DE-01 `[C]` | **N1** bắt buộc. N3 và N5 chỉ bắt buộc nếu việc sửa làm đổi Vào/Ra của skill. N2, N4, N6 thường không áp dụng, nhưng **vẫn phải ghi lý do** |
+| DE-02 `[A]` | **N1–N5** bắt buộc. N6 làm, hoặc ghi `KHÔNG ÁP DỤNG` kèm lý do |
 
 | Điểm | Mô tả |
 |---|---|
 | 11–12 | Đủ mọi điểm neo bắt buộc. Điểm không áp dụng đều có **lý do** cụ thể, không bỏ trống |
-| 8–10 | Thiếu 1 điểm neo phụ (ví dụ `agent-doctor.js`) |
+| 8–10 | Thiếu 1 điểm neo phụ (ví dụ `agent-doctor.js`), hoặc một dòng `KHÔNG ÁP DỤNG` không có lý do |
 | 4–7 | Thiếu điểm neo chính: `AGENT.md` hoặc `WORKFLOW.md` hoặc `_system_map.json` |
 | 0–3 | Chỉ sửa nội dung, không khai báo ở đâu cả |
 
-> **Trừ thẳng 4 điểm** nếu tên skill khai trong `AGENT.md` không khớp tên file trên đĩa — đây là lỗi làm agent gọi sai skill.
+> Tên skill khai trong `AGENT.md` không khớp tên file trên đĩa: trừ ở bảng Trừ điểm (**P5**), không hạ thêm điểm A3.
 
 ### A4. Cổng nghiệm thu (6 điểm)
 
 | Điểm | Mô tả |
 |---|---|
 | 6 | Cả 4 cổng `G1`–`G4` có **kết quả thật** dán vào biên bản. `agent:check` xanh. Có smoke lại luồng cũ |
-| 4–5 | Chạy 2–3 cổng, có kết quả thật |
-| 2–3 | Chỉ ghi "đã kiểm tra, OK" mà không có kết quả thật |
-| 0–1 | Không chạy cổng nào |
+| 4–5 | 2–3 cổng có kết quả thật |
+| 2–3 | Chỉ 1 cổng có kết quả thật |
+| 0–1 | Không cổng nào có kết quả thật |
 
-> Riêng **Đề 04** bắt buộc có bằng chứng đã thử lại 3 câu lệnh cũ. Thiếu thì tối đa 3 điểm ở mục này.
+> Ghi "OK" cho một cổng mà thực tế chưa chạy: trừ ở bảng Trừ điểm (**P2**). Cổng đó tính là không có kết quả thật.
 
 ---
 
-## PHẦN B — Test case & Automation (45 điểm)
+## PHẦN B — Test case & Automation (47 điểm)
 
 ### B1. Chất lượng phân tích, Chặng 01–04 (10 điểm)
 
@@ -76,9 +90,11 @@ Chấm theo số điểm neo bắt buộc của từng đề (Đề 01 ít nhấ
 | 3–5 | Thiếu một chặng, hoặc có rule không dẫn được nguồn |
 | 0–2 | Nhảy cóc, thiếu từ hai chặng trở lên |
 
+> Rule bịa không có nguồn, không gắn `[GIẢ ĐỊNH]`: trừ ở bảng Trừ điểm (**P3**).
+
 ### B2. Xử lý vòng `ASK` và tích luỹ tri thức (8 điểm)
 
-**Đây là hạng mục phân loại rõ nhất giữa các nhóm.**
+**Đây là hạng mục phân loại học viên rõ nhất.**
 
 | Điểm | Mô tả |
 |---|---|
@@ -102,64 +118,80 @@ Chấm theo số điểm neo bắt buộc của từng đề (Đề 01 ít nhấ
 
 | Điểm | Mô tả |
 |---|---|
-| 9–10 | Tái sử dụng POM có sẵn, không trùng lặp. Locator theo đúng thứ tự ưu tiên. **Không có `page.goto` nào ngoài `BasePage.open()`**. So tiền qua `parseMoney()`. `beforeEach` dọn trạng thái |
+| 9–10 | Tái sử dụng POM có sẵn, không trùng lặp. Locator theo đúng thứ tự ưu tiên. So tiền qua `parseMoney()`. `beforeEach` dọn trạng thái |
 | 6–8 | Chạy được, đúng ràng buộc chính, nhưng có chỗ trùng lặp hoặc locator yếu |
-| 3–5 | Vi phạm một ràng buộc cứng: dùng `page.goto` chuyển màn, hoặc dùng XPath tuyệt đối / class băm |
+| 3–5 | Vi phạm một ràng buộc kỹ thuật: dùng XPath tuyệt đối / class băm, so tiền bằng chuỗi thô, hoặc không dọn trạng thái giữa các ca |
 | 0–2 | Code không chạy được |
 
-> **Trừ thẳng 5 điểm** nếu dùng `page.goto(<path>)` để chuyển màn — đây là ràng buộc đã ghi rõ ở ba nơi.
+> Dùng `page.goto(<path>)` để chuyển màn (ngoài `BasePage.open()`): trừ ở bảng Trừ điểm (**P6**), không hạ thêm điểm B4.
 
-### B5. Thực thi & Bằng chứng (5 điểm)
+### B5. Thực thi & Bằng chứng (7 điểm)
 
 | Điểm | Mô tả |
 |---|---|
-| 5 | Đủ số ca tối thiểu, chạy thật, `run_result.md` đầy đủ, mỗi ca `FAIL` có ảnh bằng chứng và giải trình nguyên nhân |
-| 3–4 | Chạy thật nhưng thiếu ca, hoặc thiếu ảnh cho một số ca |
-| 1–2 | Chỉ có code, chưa chạy |
+| 7 | Đủ số ca tối thiểu, chạy thật, `run_result.md` đầy đủ, mỗi ca `FAIL` có ảnh bằng chứng và giải trình nguyên nhân trong `run_defects.md` |
+| 4–6 | Chạy thật nhưng thiếu ca, hoặc thiếu ảnh / giải trình cho một số ca |
+| 1–3 | Chỉ có code, chưa chạy |
 | 0 | Không có phần automation |
 
-> **Ca `FAIL` không bị trừ điểm** nếu nhóm giải trình được đó là lệch giữa tài liệu và hệ thống thật. Bị trừ khi `FAIL` mà không biết vì sao.
+> **Ca `FAIL` không bị trừ điểm** nếu học viên giải trình được đó là lệch giữa tài liệu và hệ thống thật. Bị trừ khi `FAIL` mà không biết vì sao.
 
 ---
 
-## PHẦN C — Trình bày & Báo cáo (15 điểm)
+## PHẦN C — Báo cáo & Bài nộp (13 điểm)
 
-| Hạng mục | Điểm | Tiêu chí |
-|---|---|---|
-| `BAO-CAO.md` | 6 | Đủ 4 mục theo mẫu, số liệu khớp với file thật trong bài nộp |
-| Cấu trúc bài nộp | 4 | Đúng cây thư mục quy định, không lẫn `node_modules/` hay `test-results/` |
-| Trình bày 5 phút | 5 | Nói rõ nâng cấp gì, luồng thay đổi ra sao, trả lời được câu hỏi phản biện |
+Không có phần trình bày trực tiếp. `BAO-CAO.md` là nơi học viên giải thích mình đã làm gì và vì sao.
+
+### C1. `BAO-CAO.md` (9 điểm)
+
+| Điểm | Mô tả |
+|---|---|
+| 8–9 | Đủ 4 mục theo mẫu. Số liệu khớp với file thật trong bài nộp. Giải thích được **vì sao** chọn nhánh A/B/C và vì sao chạm/không chạm từng điểm neo. Phát hiện có dẫn nguồn |
+| 5–7 | Đủ 4 mục nhưng có 1–2 số liệu lệch với file thật, hoặc phần giải thích sơ sài |
+| 2–4 | Thiếu mục, hoặc số liệu không khớp nhiều chỗ |
+| 0–1 | Không có `BAO-CAO.md` |
+
+### C2. Cấu trúc bài nộp (4 điểm)
+
+| Điểm | Mô tả |
+|---|---|
+| 4 | Tên file đúng mẫu. Đúng cây thư mục quy định. Không lẫn `node_modules/`, `automation/test-results/`, `automation/playwright-report/` |
+| 2–3 | Sai tên file, hoặc thiếu một thư mục bắt buộc |
+| 0–1 | Thiếu nhiều thư mục bắt buộc, hoặc nén lẫn `node_modules/` |
 
 ---
 
 ## ĐIỂM THƯỞNG (tối đa +10)
 
-| Việc làm được | Thưởng |
-|---|---|
-| Phát hiện **lệch giữa tài liệu BA và hệ thống thật**, có dẫn chứng cụ thể ở cả hai phía | +3 mỗi phát hiện, tối đa +6 |
-| Dùng chính thành quả Phần A vào Phần B (Đề 01 dùng trường mới trong test case · Đề 02 dùng skill chọn hồi quy · Đề 03 chạy `a11y-audit` · Đề 04 dùng runbook mới) | +3 |
-| Chỉ ra được một điểm yếu **thật** của hệ thống Agent kèm đề xuất cải tiến cụ thể | +2 |
-| Ca automation phát hiện lỗi thật của ứng dụng, không phải lỗi kịch bản | +2 |
+| Mã | Việc làm được | Thưởng |
+|---|---|---|
+| BN1 | Phát hiện **lệch giữa tài liệu BA và hệ thống thật**, có dẫn chứng cụ thể ở cả hai phía | +3 mỗi phát hiện, tối đa +6 |
+| BN2 | Chỉ ra được một điểm yếu **thật** của hệ thống Agent kèm đề xuất cải tiến cụ thể | +2 |
+| BN3 | Ca automation phát hiện lỗi thật của ứng dụng, không phải lỗi kịch bản | +2 |
+
+> Việc dùng thành quả Phần A vào Phần B là **yêu cầu bắt buộc** (checklist `B.5` của mỗi đề), không phải điểm thưởng.
 
 ---
 
 ## TRỪ ĐIỂM
 
-| Vi phạm | Trừ |
-|---|---|
-| Tự ý **sửa tài liệu trong `INPUT/`** cho khớp hệ thống | −10 |
-| Ghi kết quả kiểm tra là "OK" mà thực tế chưa chạy | −5 |
-| Bịa Business Rule không có trong nguồn, không gắn `[GIẢ ĐỊNH]` | −5 mỗi rule, tối đa −10 |
-| Sinh file rác ngoài `OUTPUT/` và `automation/` | −3 |
-| Tên skill trong `AGENT.md` không khớp file thật | −4 |
-| Dùng `page.goto(<path>)` để chuyển màn | −5 |
+Mỗi vi phạm chỉ trừ **một lần**, tại bảng này.
+
+| Mã | Vi phạm | Trừ |
+|---|---|---|
+| P1 | Tự ý **sửa tài liệu trong `INPUT/`** cho khớp hệ thống | −10 |
+| P2 | Ghi kết quả kiểm tra là "OK" mà thực tế chưa chạy | −5 |
+| P3 | Bịa Business Rule không có trong nguồn, không gắn `[GIẢ ĐỊNH]` | −5 mỗi rule, tối đa −10 |
+| P4 | Sinh file rác ngoài `OUTPUT/` và `automation/` | −3 |
+| P5 | Tên skill trong `AGENT.md` không khớp file thật | −4 |
+| P6 | Dùng `page.goto(<path>)` để chuyển màn | −5 |
 
 ---
 
 ## Bảng chấm nhanh (in ra dùng khi chấm)
 
 ```
-Nhóm: ____  Đề: ____
+Học viên: ______________________  Đề: ____
 
 PHẦN A                                    Điểm      /40
   A1 Chất lượng quyết định                ____      /10
@@ -167,19 +199,19 @@ PHẦN A                                    Điểm      /40
   A3 Lan truyền điểm neo                  ____      /12
   A4 Cổng nghiệm thu                      ____      /6
 
-PHẦN B                                    Điểm      /45
+PHẦN B                                    Điểm      /47
   B1 Phân tích 01-04                      ____      /10
   B2 Vòng ASK & knowledge                 ____      /8
   B3 Test case 05-06                      ____      /12
   B4 Code automation                      ____      /10
-  B5 Thực thi & bằng chứng                ____      /5
+  B5 Thực thi & bằng chứng                ____      /7
 
-PHẦN C                                    Điểm      /15
-  Báo cáo                                 ____      /6
-  Cấu trúc bài nộp                        ____      /4
-  Trình bày                               ____      /5
+PHẦN C                                    Điểm      /13
+  C1 BAO-CAO.md                           ____      /9
+  C2 Cấu trúc bài nộp                     ____      /4
 
-Thưởng  +____        Trừ  −____
+Thưởng (tối đa +10)   BN1 ____  BN2 ____  BN3 ____   = +____
+Trừ                   P1 __ P2 __ P3 __ P4 __ P5 __ P6 __ = −____
 
-TỔNG: ____ /100
+ĐIỂM CUỐI CÙNG: ____ /100 (+10)        ĐẠT khi ≥ 60
 ```

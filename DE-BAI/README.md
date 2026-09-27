@@ -1,7 +1,7 @@
 # PROJECT TỐT NGHIỆP — Hướng Dẫn Chung
 
-> Đọc file này **trước** khi mở đề của nhóm mình.
-> Thời lượng: 1 buổi (3–4 giờ) · Hình thức: 4 nhóm làm song song, mỗi nhóm một đề
+> Đọc file này **trước** khi mở đề của mình.
+> Thời lượng: 1 buổi (khoảng 3 giờ 15 phút) · Hình thức: **mỗi học viên tự chọn 1 trong 2 đề và làm cá nhân**. Những người chọn cùng một đề thuộc cùng một nhóm đề, nhưng mỗi người làm và nộp bài riêng
 
 ---
 
@@ -11,8 +11,11 @@ Bạn không viết test case bằng tay, cũng không tự gõ code Playwright.
 
 | Phần | Nội dung | Thời lượng gợi ý |
 |---|---|---|
-| **A — Nâng cấp hệ thống** | Chat với QA Leader để mở rộng chính bộ agent: sửa skill có sẵn, thêm skill mới, dựng agent mới, hoặc nâng cấp tầng điều phối | 60 phút |
+| **A — Nâng cấp hệ thống** | Chat với QA Leader để mở rộng chính bộ agent: tinh chỉnh một skill có sẵn (DE-01) hoặc thêm skill mới vào agent có sẵn (DE-02) | 60 phút |
 | **B — Chạy một mạch** | Từ tài liệu BA thô → phân tích → test case → automation Playwright chạy thật, có ảnh bằng chứng | 105 phút |
+| **Báo cáo & nộp bài** | Viết `BAO-CAO.md`, nén zip, nộp | 15 phút |
+
+Thời gian làm bài: **3 giờ**. Cộng 15 phút mở đầu (kiểm tra máy, mở đề đã chọn), cả buổi khoảng **3 giờ 15 phút**. Không có phần trình bày trực tiếp.
 
 Phần A là phần **khó hơn và đáng giá hơn**. Ai cũng chạy được pipeline; nhưng nâng cấp được hệ thống mà không làm vỡ luồng cũ mới là năng lực thật.
 
@@ -20,12 +23,16 @@ Phần A là phần **khó hơn và đáng giá hơn**. Ai cũng chạy được
 
 ## 2. Phân đề
 
-| Nhóm | Đề | Kiểu nâng cấp (Phần A) | Nghiệp vụ (Phần B) | `task-slug` |
-|---|---|---|---|---|
-| Nhóm 1 | [DE-01](DE-01.md) | Tinh chỉnh một skill đã có | Voucher & Chiết khấu | `shopgo-voucher` |
-| Nhóm 2 | [DE-02](DE-02.md) | Thêm skill mới vào agent đã có | Giỏ hàng & Số lượng | `shopgo-cart-qty` |
-| Nhóm 3 | [DE-03](DE-03.md) | Dựng một agent hoàn toàn mới | Đăng nhập & Phân hạng | `shopgo-auth` |
-| Nhóm 4 | [DE-04](DE-04.md) | Nâng cấp tầng điều phối (QA Leader + runbook) | Thanh toán & Đơn hàng | `shopgo-checkout` |
+Mỗi học viên **tự chọn một đề** trên web (Tab Tốt Nghiệp) trước buổi thi. Buổi thi bắt đầu thì không đổi đề nữa.
+
+| Đề | Kiểu nâng cấp (Phần A) | Nghiệp vụ (Phần B) | `task-slug` |
+|---|---|---|---|
+| [DE-01](DE-01.md) | `[C]` Tinh chỉnh một skill đã có | Voucher & Chiết khấu | `shopgo-voucher` |
+| [DE-02](DE-02.md) | `[A]` Thêm skill mới vào agent đã có | Giỏ hàng & Số lượng | `shopgo-cart-qty` |
+
+Mỗi người làm trên **bản repo riêng** của mình. Bài nộp, điểm và kết quả Đạt/Không đạt tính cho từng người.
+
+**Được trao đổi bình thường** với các bạn khác trong lúc thi, kể cả bạn làm khác đề. Mục tiêu là bạn **hiểu và tự làm được** bài, nên `BAO-CAO.md` phải do chính bạn viết.
 
 ---
 
@@ -75,7 +82,7 @@ Pipeline sẽ **dừng lại** ở Chặng 2 và hỏi bạn một loạt câu h
 Khi gặp `ASK`, bạn **đóng vai BA** và trả lời dứt khoát. Câu trả lời được ghi vào `knowledge/features/<task-slug>.md` mục 7 và 8. Chạy lại thì agent **không được hỏi lại** những gì đã chốt — nếu nó hỏi lại, đó mới là lỗi.
 
 ### Luật 3 — Nâng cấp phải lan truyền đủ
-Sửa một file rồi dừng là **chưa xong**. Mỗi thay đổi phải được khai báo ra tới 6 điểm neo của hệ thống. Chi tiết ở `agents/qa-lead/skills/system-upgrade-governance.md` §4. Đề của bạn sẽ ghi rõ nhóm phải chạm những điểm nào.
+Sửa một file rồi dừng là **chưa xong**. Mỗi thay đổi phải được khai báo ra tới 6 điểm neo của hệ thống. Chi tiết ở `agents/qa-lead/skills/system-upgrade-governance.md` §4. Đề của bạn sẽ ghi rõ phải chạm những điểm nào.
 
 ---
 
@@ -90,7 +97,7 @@ Khi phát hiện lệch, **không được tự ý sửa tài liệu**. Việc �
 3. Đưa ra đề xuất xử lý và hỏi BA để chốt.
 4. Sau khi chốt, ghi xuống mục 8 kèm người phê duyệt và ngày.
 
-Phát hiện được lệch tài liệu là **điểm cộng lớn**. Bỏ qua nó mới là điểm trừ.
+Phát hiện được lệch tài liệu là **điểm cộng lớn** (+3 mỗi phát hiện, tối đa +6). Tự ý sửa tài liệu trong `INPUT/` bị trừ 10 điểm.
 
 ---
 
@@ -99,18 +106,20 @@ Phát hiện được lệch tài liệu là **điểm cộng lớn**. Bỏ qua 
 Nén thư mục dự án thành một file zip, đặt tên:
 
 ```
-NOP-BAI_Nhom-<số>_De-<số>.zip
+NOP-BAI_<HoTenKhongDau>_De-<số>.zip
 ```
+
+Họ tên viết liền, không dấu, viết hoa chữ cái đầu mỗi từ. Ví dụ: `NOP-BAI_NguyenVanAn_De-01.zip`.
 
 Bên trong **bắt buộc** có:
 
 ```
-agents/                      toàn bộ — để thấy phần nâng cấp của nhóm
+agents/                      toàn bộ — để thấy phần nâng cấp của bạn
 OUTPUT/<task-slug>/          00_plan.md · 01_ → 06_ · _index.md · runs/
 OUTPUT/_upgrades/            biên bản nâng cấp hệ thống (Phần A)
 knowledge/                   _system_map.json đã đồng bộ · features/<task-slug>.md
 automation/pages/            POM
-automation/tests/            kịch bản test của nhóm
+automation/tests/            kịch bản test của bạn
 BAO-CAO.md                   báo cáo tổng kết (mẫu ở §8)
 ```
 
@@ -120,11 +129,11 @@ BAO-CAO.md                   báo cáo tổng kết (mẫu ở §8)
 
 ## 8. Mẫu `BAO-CAO.md`
 
-Viết đúng một trang, đặt ở thư mục gốc.
+Viết đúng một trang, đặt ở thư mục gốc. Vì không có phần trình bày trực tiếp, đây là nơi duy nhất bạn giải thích **vì sao** mình làm như vậy.
 
 ```markdown
 # BÁO CÁO PROJECT TỐT NGHIỆP
-Nhóm: <số> · Đề: <số> · Thành viên: <liệt kê> · Ngày: <YYYY-MM-DD>
+Học viên: <họ tên> · Email: <email> · Đề: <số> · Ngày: <YYYY-MM-DD>
 
 ## 1. Phần A — Nâng cấp hệ thống
 - Đã nâng cấp gì: <mô tả 2-3 câu>
@@ -156,6 +165,11 @@ Thang điểm chi tiết: [RUBRIC.md](RUBRIC.md)
 | Hạng mục | Điểm |
 |---|---|
 | Phần A — Nâng cấp hệ thống | 40 |
-| Phần B — Test case & Automation | 45 |
-| Trình bày & Báo cáo | 15 |
+| Phần B — Test case & Automation | 47 |
+| Phần C — Báo cáo & Bài nộp | 13 |
 | **Tổng** | **100** |
+| Điểm thưởng | tối đa +10 |
+
+- Đồ án **Đạt** khi điểm cuối cùng (sau thưởng và trừ) **≥ 60**.
+- Mỗi vi phạm chỉ bị trừ **một lần**, theo bảng Trừ điểm trong `RUBRIC.md`.
+- **Tốt nghiệp** khi Đạt **cả hai**: Đồ án ≥ 60 **và** bài Thi trắc nghiệm trên web đạt ngưỡng của kỳ thi. Hai điểm không cộng gộp.
