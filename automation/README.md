@@ -112,16 +112,14 @@ test('VCHR-003 Áp mã SALE20 chạm trần giảm 100.000 đ', async ({ page })
 
 ## Mẹo tiết kiệm thời gian
 
-**Dùng QA Panel để dựng sẵn giỏ hàng.** Sau khi đăng nhập, nút `#btn-toggle-qa-panel` mở bảng có các preset:
+**Không dùng QA Panel.** Nút `#btn-toggle-qa-panel` có trên nav nhưng không có preset nào bấm được (`knowledge/features/shopgo-ui-map.md` §4). Dựng giỏ hàng bằng hàm POM có sẵn, gom vào một hàm dùng chung trong `beforeEach` để đỡ lặp:
 
-| Preset | Dựng ra |
+| Trạng thái | Dựng bằng |
 |---|---|
-| `giam50k_ok` | 2 × Áo thun (300.000 ₫) + áp sẵn `GIAM50K` |
-| `sale20_max_cap` | 2 × Tai nghe (700.000 ₫) + `SALE20` chạm trần |
-| `all_invalid_qty` | Hai dòng hàng đều lỗi số lượng (`"abc"` và `"-5"`) |
-| `reset` | Xoá sạch giỏ hàng |
-
-Dùng preset thay cho chuỗi thao tác setup dài — nhanh hơn và ít vỡ hơn.
+| Đơn đủ điều kiện `GIAM50K` | 2 × `prod-001` (300.000 ₫), áp `GIAM50K` |
+| `SALE20` chạm trần | 2 × `prod-002` (700.000 ₫), áp `SALE20` |
+| Hai dòng lỗi số lượng | `setQuantity('prod-001', 'abc')` · `setQuantity('prod-002', '-5')` |
+| Giỏ sạch | `resetState()` |
 
 ---
 

@@ -55,7 +55,7 @@ Nguồn: bóc tách trực tiếp từ bundle production `https://cwshopgo.githu
 | Vào Hồ sơ (trong menu) | `#btn-menu-profile` | Phải mở `#btn-user-profile` trước |
 | Vào Đơn hàng (trong menu) | `#btn-menu-orders` | Phải mở `#btn-user-profile` trước |
 | Đăng xuất | `#btn-logout` | Phải mở `#btn-user-profile` trước |
-| Mở QA Panel | `#btn-toggle-qa-panel` | Xem §4 |
+| Mở QA Panel | `#btn-toggle-qa-panel` | Có nút, nhưng **không có preset nào dùng được**. Xem §4 |
 
 ### 3.2. Màn Cửa hàng (`shop`)
 
@@ -102,18 +102,23 @@ Các dòng tổng kết tiền (assert bằng text): `Tạm tính (Subtotal):` �
 | Xác nhận xoá | `#btn-profile-confirm-clear` | `profile` |
 | Huỷ xoá | `#btn-profile-cancel-clear` | `profile` |
 
-## 4. QA Panel — công cụ seed dữ liệu hợp lệ
+## 4. QA Panel — KHÔNG dùng được để seed dữ liệu
 
-Mở bằng `#btn-toggle-qa-panel` (chỉ hiện khi đã đăng nhập). Các preset dựng sẵn giỏ hàng:
+> ### ⚠️ Không có preset nào bấm được
+>
+> Đã kiểm bundle production: hàm `applyPreset` có định nghĩa 4 preset (`giam50k_ok`, `sale20_max_cap`, `all_invalid_qty`, `reset`) nhưng **không nơi nào gọi tới nó**, và không có component nào render các preset. Cả app chỉ có đúng một id liên quan là `#btn-toggle-qa-panel` trên thanh nav.
+>
+> **Hệ quả:** không hướng dẫn người dùng bấm preset, không viết automation dựa vào preset. Dựng dữ liệu bằng thao tác UI (thêm giỏ `#btn-add-*`, sửa số lượng `#input-qty-*`, áp mã `#input-voucher-code` hoặc chip `#badge-voucher-*`), hoặc ghi thẳng `localStorage`.
 
-| Preset | Dựng ra trạng thái gì |
+Định nghĩa preset trong bundle vẫn là **gợi ý tốt** cho các trạng thái nên dựng bằng tay:
+
+| Trạng thái | Dựng bằng UI |
 |---|---|
-| `giam50k_ok` | 2 × `prod-001` (2 × 150.000 = 300.000 ₫) + áp sẵn `GIAM50K` thành công |
-| `sale20_max_cap` | 2 × `prod-002` (2 × 350.000 = 700.000 ₫) + áp `SALE20`, chạm **trần giảm 100.000 ₫** |
-| `all_invalid_qty` | `prod-001` số lượng `"abc"` + `prod-002` số lượng `"-5"` — cả hai đều lỗi |
-| `reset` | Xoá sạch giỏ hàng, quay về màn `shop` |
+| Đơn đủ điều kiện `GIAM50K` | 2 × `prod-001` (2 × 150.000 = 300.000 ₫), áp `GIAM50K` |
+| `SALE20` chạm trần giảm | 2 × `prod-002` (2 × 350.000 = 700.000 ₫), áp `SALE20`. Định nghĩa preset ghi trần **100.000 ₫**, cần xác nhận bằng thao tác thật |
+| Hai dòng lỗi số lượng | `prod-001` nhập `abc`, `prod-002` nhập `-5` |
 
-> Dùng preset để bỏ qua bước setup thủ công — tiết kiệm rất nhiều thời gian khi chạy test.
+Ba mã giảm giá có thật và dùng được: `GIAM50K`, `SALE20`, `HETHAN`.
 
 ## 5. Dọn trạng thái giữa các ca kiểm thử
 

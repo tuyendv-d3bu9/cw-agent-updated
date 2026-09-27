@@ -1,7 +1,7 @@
-# CHUẨN BỊ MÔI TRƯỜNG — Làm Trước Buổi Học
+# CHUẨN BỊ MÔI TRƯỜNG — Làm Trước Khi Bắt Đầu
 
-> **Gửi học viên trước buổi học ít nhất 1 ngày.**
-> Việc này tải khoảng **150 MB** và mất 5–10 phút tuỳ mạng. Làm ở nhà để buổi học không mất thời gian chờ.
+> **Làm bước này trước khi bắt đầu làm bài.**
+> Việc này tải khoảng **150 MB** và mất 5–10 phút tuỳ mạng.
 
 ---
 
@@ -26,9 +26,9 @@ mở thư mục đó, rồi đọc và làm đúng theo file DE-BAI/BAT-DAU.md.
 Tự chạy mọi lệnh, đừng bảo tôi gõ terminal.
 ```
 
-Agent sẽ tự clone repo, chạy 4 lệnh bên dưới, hỏi bạn họ tên, email và **đề đã chọn trên web**, rồi ghi lại vào `OUTPUT/_session.md`. Bạn chỉ cần trả lời câu hỏi và cho phép agent chạy lệnh khi IDE hỏi.
+Agent sẽ tự clone repo, chạy 4 lệnh bên dưới, hỏi bạn họ tên, email và **đề bạn quyết định làm**, rồi ghi lại vào `OUTPUT/_session.md`. Bạn chỉ cần trả lời câu hỏi và cho phép agent chạy lệnh khi IDE hỏi.
 
-> Chọn đề trên web (Tab Tốt Nghiệp) **trước** khi dán câu này.
+> Nên đọc lướt [DE-01](DE-01.md) và [DE-02](DE-02.md) để quyết định đề **trước** khi dán câu này. Sau này muốn đổi đề thì dán lại câu này là được.
 
 ### Bốn lệnh agent sẽ chạy (để bạn biết, hoặc tự chạy nếu agent không chạy được)
 
@@ -84,7 +84,7 @@ ok 5 SMOKE-05 Áp mã GIAM50K cho đơn đủ điều kiện thì giảm đúng 
 | `npm install` báo lỗi mạng | Proxy công ty chặn | Thử mạng khác (điện thoại phát wifi), hoặc `npm config set registry https://registry.npmjs.org/` |
 | `npx playwright install` tải mãi không xong | File trình duyệt lớn, mạng chậm | Để chạy nền, đừng tắt terminal. Có thể mất tới 15 phút |
 | Test đỏ, báo `net::ERR_` hoặc timeout khi mở trang | Không vào được `https://cwshopgo.github.io` | Mở trang đó bằng trình duyệt kiểm tra. Nếu trình duyệt cũng không vào được thì là vấn đề mạng, báo giảng viên |
-| Test đỏ nhưng trang web mở bình thường | Có thể site vừa đổi nội dung | Chụp màn hình lỗi gửi giảng viên trước buổi học |
+| Test đỏ nhưng trang web mở bình thường | Có thể site vừa đổi nội dung | Chụp màn hình lỗi gửi giảng viên trước khi bắt đầu làm bài |
 | `node` không nhận lệnh | Chưa cài Node.js hoặc chưa thêm vào PATH | Cài lại từ nodejs.org, chọn bản LTS |
 
 ---
@@ -97,8 +97,7 @@ Mở `https://cwshopgo.github.io` bằng trình duyệt và thử 5 phút:
 2. Thêm vài sản phẩm vào giỏ.
 3. Bấm **Thanh toán** — chú ý xem điều gì xảy ra khi chưa đăng nhập.
 4. Đăng nhập bằng `khachhang@shopgo.vn` / `123456`.
-5. Thử áp mã `GIAM50K`, rồi `SALE20`, rồi một mã bịa ra.
-6. Sau khi đăng nhập, để ý nút **QA Panel** trên thanh điều hướng — bấm thử xem có gì.
+5. Thử áp mã `GIAM50K`, rồi `SALE20`, rồi `HETHAN`, rồi một mã bịa ra.
 
 Hiểu sẵn hệ thống sẽ giúp bạn nhanh hơn rất nhiều ở phần đóng vai BA trả lời câu hỏi.
 
@@ -108,7 +107,7 @@ Hiểu sẵn hệ thống sẽ giúp bạn nhanh hơn rất nhiều ở phần �
 
 | File | Vì sao nên đọc |
 |---|---|
-| [README.md](README.md) | Luật chơi của buổi học |
+| [README.md](README.md) | Luật chơi của bài thi |
 | Đề mình đã chọn | Biết trước mình phải làm gì |
 | [CHEATSHEET-CAU-CHAT.md](CHEATSHEET-CAU-CHAT.md) | Biết cách ra lệnh cho Agent |
 | `knowledge/features/shopgo-ui-map.md` | Hiểu hệ thống dưới thử nghiệm |

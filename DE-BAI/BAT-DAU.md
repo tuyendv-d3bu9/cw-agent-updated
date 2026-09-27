@@ -1,9 +1,9 @@
-# BẮT ĐẦU — Runbook chuẩn bị trước buổi thi
+# BẮT ĐẦU — Runbook chuẩn bị trước khi làm bài
 
 > **File này để AI Agent CHẠY, không phải để học viên đọc.**
 > Học viên chỉ cần dán **câu khởi động** dưới đây vào AI Agent của mình (Antigravity IDE · Claude Code · Cursor · GitHub Copilot…). Agent tự làm phần còn lại.
 >
-> Mục tiêu: máy của mọi học viên ra **cùng một trạng thái** trước buổi thi. Repo đúng nhánh, môi trường chạy xanh, đề đã chọn được ghi lại theo cùng một mẫu.
+> Mục tiêu: máy của mọi học viên ra **cùng một trạng thái** trước khi bắt đầu làm bài. Repo đúng nhánh, môi trường chạy xanh, đề đã chọn được ghi lại theo cùng một mẫu.
 
 ## Câu khởi động (học viên dán nguyên văn)
 
@@ -23,7 +23,7 @@ Agent **bắt buộc** tuân thủ trong suốt runbook:
 |---|---|
 | L1 | **Tự chạy mọi lệnh.** Không bảo học viên gõ terminal. Ngoại lệ duy nhất: cài Node.js, Git hoặc IDE, vì đó là phần mềm hệ thống (Bước 1) |
 | L2 | **Chỉ ghi đúng một file:** `OUTPUT/_session.md`. Không sửa, không tạo file nào khác trong repo |
-| L3 | **Không bắt đầu bài thi.** Không đọc `INPUT/`, không tạo `OUTPUT/<task-slug>/`, không lập `00_plan.md`, không chạy Chặng nào, không nâng cấp agent. Các việc đó được chấm điểm và phải làm trong buổi thi |
+| L3 | **Không bắt đầu bài thi.** Không đọc `INPUT/`, không tạo `OUTPUT/<task-slug>/`, không lập `00_plan.md`, không chạy Chặng nào, không nâng cấp agent. Các việc đó được chấm điểm, học viên sẽ tự bắt đầu khi làm bài |
 | L4 | **Dán kết quả thật.** Mỗi lệnh phải trích nguyên văn các dòng kết quả chính. Không được ghi "OK" khi chưa chạy |
 | L5 | **Lỗi thì dừng và báo, không tự "chữa cháy".** Cấm sửa code, test, cấu hình trong `agents/` hay `automation/` để lệnh chạy xanh |
 | L6 | **Làm tuần tự Bước 0 → 5.** Bước nào chưa đạt thì không sang bước sau |
@@ -79,13 +79,13 @@ Rồi hỏi **gộp một lần**:
 
 ```
 1. Họ tên đầy đủ của bạn (có dấu)?
-2. Email bạn dùng để đăng nhập web khoá học?
-3. Bạn đã chọn đề nào trên web (Tab Tốt Nghiệp): DE-01 hay DE-02?
+2. Email của bạn (email dùng cho khoá học)?
+3. Bạn quyết định làm đề nào: DE-01 hay DE-02?
 ```
 
 | Câu trả lời | Xử lý |
 |---|---|
-| Chưa chọn đề trên web | Nhắc học viên vào web chọn đề trước. Đề trong repo **phải trùng** đề trên web. Chờ học viên chọn xong rồi hỏi lại câu 3 |
+| Chưa quyết định được đề | Tóm tắt lại khác biệt của 2 đề ở bảng trên, gợi ý học viên đọc nhanh `DE-BAI/DE-01.md` và `DE-BAI/DE-02.md`, rồi hỏi lại câu 3 |
 | Trả lời khác `DE-01` / `DE-02` | Hỏi lại. Chỉ có 2 đề |
 | Thiếu họ tên hoặc email | Hỏi lại phần còn thiếu |
 
@@ -93,7 +93,7 @@ Rồi hỏi **gộp một lần**:
 
 Tính tên file nộp bài từ họ tên: bỏ dấu tiếng Việt (`đ` → `d`, `Đ` → `D`), bỏ khoảng trắng, viết hoa chữ cái đầu mỗi từ. Ví dụ `Nguyễn Văn An`, DE-01 → `NOP-BAI_NguyenVanAn_De-01.zip`.
 
-Thư mục `OUTPUT/` chưa có thì tạo (thư mục này không nằm trong git). Ghi **đúng** mẫu sau (không thêm, không bớt mục; mục 4 `Nộp bài` sẽ do `DE-BAI/NOP-BAI.md` thêm vào cuối buổi thi):
+Thư mục `OUTPUT/` chưa có thì tạo (thư mục này không nằm trong git). Ghi **đúng** mẫu sau (không thêm, không bớt mục; mục 4 `Nộp bài` sẽ do `DE-BAI/NOP-BAI.md` thêm vào khi nộp bài):
 
 ```markdown
 # PHIÊN LÀM BÀI · <Họ tên>
@@ -118,7 +118,7 @@ Owner: DE-BAI/BAT-DAU.md · Ngày chuẩn bị: <YYYY-MM-DD> · Verdict: <PASS /
 | npm run agent:check | <trích dòng kết quả> |
 | npm run test:e2e | <trích dòng `N passed`> |
 
-## 3. Việc cần làm trước buổi thi
+## 3. Việc cần làm trước khi bắt đầu
 - [ ] Đọc `DE-BAI/README.md` và `DE-BAI/<DE-0x>.md`
 - [ ] Đọc lướt `DE-BAI/CHEATSHEET-CAU-CHAT.md`
 - [ ] Mở `https://cwshopgo.github.io`, làm 6 bước làm quen ở `DE-BAI/SETUP.md` §5
@@ -137,18 +137,18 @@ In đúng khối sau, rồi **dừng hẳn**. Không đề xuất làm tiếp Ph
 Môi trường: agent:check <kết quả> · test:e2e <N passed>
 File nộp bài của bạn sẽ tên là: <NOP-BAI_..._De-0x.zip>
 
-Trước buổi thi, bạn nên:
+Trước khi bắt đầu làm bài, bạn nên:
   1. Đọc DE-BAI/README.md và DE-BAI/<DE-0x>.md
   2. Đọc lướt DE-BAI/CHEATSHEET-CAU-CHAT.md
   3. Mở https://cwshopgo.github.io và thử 6 bước ở DE-BAI/SETUP.md §5
 
-Vào buổi thi, mở repo này trong IDE và gõ câu đầu tiên:
+Khi bắt đầu làm bài, mở repo này trong IDE và gõ câu đầu tiên:
   "Chào QA Leader. Đọc AGENTS.md và knowledge/_system_map.json để nắm luật dự án.
-   Hôm nay tôi làm đề <số>, task-slug là <slug>. Cho tôi biết hệ thống hiện có gì
+   Tôi làm đề <số>, task-slug là <slug>. Cho tôi biết hệ thống hiện có gì
    và ta bắt đầu từ đâu."
 ```
 
-Nếu `Verdict: FIX`, thay dòng `✅ CHUẨN BỊ XONG` bằng `⚠️ CHƯA XONG — còn lỗi ở: <lệnh>`, và nhắc học viên gửi ảnh lỗi cho giảng viên trước buổi thi.
+Nếu `Verdict: FIX`, thay dòng `✅ CHUẨN BỊ XONG` bằng `⚠️ CHƯA XONG — còn lỗi ở: <lệnh>`, và nhắc học viên gửi ảnh lỗi cho giảng viên trước khi bắt đầu làm bài.
 
 ---
 
@@ -159,7 +159,7 @@ Nếu `OUTPUT/_session.md` **đã có**:
 1. In lại mục 1 của file đó cho học viên xem.
 2. Hỏi: *"Bạn muốn kiểm tra lại môi trường, hay đổi thông tin/đề?"*
 3. Kiểm tra lại → làm lại Bước 0–2, cập nhật mục 2 và `Verdict`.
-4. Đổi đề → chỉ được đổi **trước khi buổi thi bắt đầu**, và phải đổi trên web trước. Ghi đè mục 1.
+4. Đổi đề → hỏi lại câu 3 ở Bước 3, ghi đè mục 1 (đề, `task-slug`, tên file nộp bài). Nhắc học viên: phần đã làm cho đề cũ trong `OUTPUT/` và `knowledge/` không dùng được cho đề mới.
 
 ## Lỗi hay gặp
 

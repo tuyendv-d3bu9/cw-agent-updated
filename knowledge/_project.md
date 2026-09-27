@@ -39,7 +39,7 @@ URL môi trường test: `https://cwshopgo.github.io`
 | Thuộc tính | Nội dung |
 |---|---|
 | Môi trường | Production-like tĩnh: `https://cwshopgo.github.io` (không có staging riêng) |
-| Cách seed data | **Không có DB server.** Dùng 1 trong 3 cách: (a) thao tác UI, (b) bấm preset trong **QA Panel** (`#btn-toggle-qa-panel`), (c) ghi thẳng `localStorage` |
+| Cách seed data | **Không có DB server.** Dùng 1 trong 2 cách: (a) thao tác UI, (b) ghi thẳng `localStorage`. **QA Panel không có preset nào dùng được** (`shopgo-ui-map.md` §4) |
 | Dọn dữ liệu giữa các ca test | `localStorage.clear()` hoặc xoá 4 khoá: `shopgo_user`, `shopgo_orders`, `shopgo_sqlite_orders_v1`, `shopgo_sqlite_queries_log` |
 | Có được dùng dữ liệu giống production? | Có — đây là site demo, dữ liệu là dữ liệu mẫu công khai, không có PII thật |
 
@@ -73,6 +73,6 @@ URL môi trường test: `https://cwshopgo.github.io`
 1. **Không có điều hướng bằng URL.** App không dùng router — chuyển màn bằng state nội bộ (`shop` / `checkout` / `orders` / `profile`). Mọi kịch bản automation **BẮT BUỘC** điều hướng bằng cách click nút nav, **CẤM** dùng `page.goto('/cart')` hay tương tự.
 2. **Không có `data-testid`.** Ưu tiên locator theo thứ tự: `#id` có sẵn (xem `knowledge/features/shopgo-ui-map.md`) → `getByRole` → `getByPlaceholder` → `getByText`.
 3. **State nằm ở `localStorage`**, sống qua reload. Test case nào cần trạng thái sạch phải khai rõ bước dọn ở phần Precondition.
-4. **QA Panel là công cụ hợp lệ để seed dữ liệu** (`#btn-toggle-qa-panel`), có các preset: `giam50k_ok`, `sale20_max_cap`, `all_invalid_qty`, `reset`.
+4. **QA Panel KHÔNG dùng được để seed dữ liệu.** Nút `#btn-toggle-qa-panel` có trên nav, nhưng các preset (`giam50k_ok`, `sale20_max_cap`, `all_invalid_qty`, `reset`) chỉ được định nghĩa trong code, không được render. Dựng dữ liệu bằng thao tác UI.
 5. **Dòng hàng có số lượng lỗi bị loại khỏi `subtotal`** — ảnh hưởng dây chuyền tới điều kiện tối thiểu của voucher và ngưỡng miễn phí vận chuyển.
 6. Ô nhập số lượng nhận **chuỗi tự do** (`rawInput`), không phải `<input type=number>` bị chặn sẵn — nhập được chữ, dấu âm, khoảng trắng.

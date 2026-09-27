@@ -1,9 +1,9 @@
 # NỘP BÀI — Runbook đóng gói bài thi
 
 > **File này để AI Agent CHẠY, không phải để học viên đọc.**
-> Dùng ở mốc **Báo cáo & nộp bài** (15 phút cuối). Học viên dán **câu nộp bài** dưới đây vào AI Agent.
+> Dùng khi học viên đã làm xong bài. Học viên dán **câu nộp bài** dưới đây vào AI Agent.
 >
-> Mục tiêu: mọi bài nộp **cùng một chuẩn**: đúng tên file, đúng cấu trúc, số liệu trong `BAO-CAO.md` khớp file thật. Bộ kiểm tra ở Bước 2 **giống hệt** bộ kiểm tra web chạy khi nhận bài, nên kết quả ở đây là kết quả web sẽ thấy.
+> Mục tiêu: mọi bài nộp **cùng một chuẩn**: đúng tên file, đúng cấu trúc, số liệu trong `BAO-CAO.md` khớp file thật. Bộ kiểm tra ở Bước 2 bám theo **đúng bộ tiêu chí giảng viên dùng khi chấm** (`DE-BAI/RUBRIC.md`), nên học viên biết trước chỗ nào sẽ bị trừ điểm.
 
 ## Câu nộp bài (học viên dán nguyên văn)
 
@@ -22,7 +22,7 @@ và đóng gói bài nộp. Tự chạy mọi lệnh, đừng bảo tôi gõ ter
 | L2 | **Không âm thầm sửa bài.** Kiểm tra thấy thiếu thì báo và hỏi học viên. Chỉ sửa khi học viên đồng ý, và sửa theo đúng runbook của phần đó (`run-graduation.md`, skill tương ứng) |
 | L3 | **Không bịa số liệu.** Mọi con số trong `BAO-CAO.md` phải **đếm từ file thật** ở Bước 3 |
 | L4 | **File zip đặt ngoài repo**, ở thư mục cha của repo, để zip không tự chứa chính nó và không sinh file rác trong repo |
-| L5 | **Không tự nộp lên web.** Agent chỉ đóng gói. Học viên tự tải file lên Tab Tốt Nghiệp |
+| L5 | **Không nộp hộ.** Agent chỉ đóng gói. Học viên tự gửi file zip cho giảng viên |
 | L6 | **Dán kết quả thật** của mọi lệnh. Không ghi "OK" khi chưa chạy |
 
 ---
@@ -34,7 +34,7 @@ và đóng gói bài nộp. Tự chạy mọi lệnh, đừng bảo tôi gõ ter
 | Tình huống | Xử lý |
 |---|---|
 | Không có `OUTPUT/_session.md` | DỪNG. Bảo học viên chạy `DE-BAI/BAT-DAU.md` trước (câu khởi động trong `DE-BAI/SETUP.md` §2), rồi quay lại |
-| Có file | In lại 4 thông tin trên và hỏi: *"Đúng thông tin của bạn chưa?"* Sai thì DỪNG, nhắc học viên báo giảng viên. **Không** đổi đề ở bước nộp bài |
+| Có file | In lại 4 thông tin trên và hỏi: *"Đúng thông tin của bạn chưa?"* Sai thì DỪNG. **Bước nộp bài không phải chỗ để đổi đề**: muốn đổi đề hoặc sửa họ tên, email thì chạy lại `DE-BAI/BAT-DAU.md` trước, rồi quay lại đây |
 
 Bảng tra theo đề:
 
@@ -53,7 +53,7 @@ Bảng tra theo đề:
 
 `agent:check` báo lỗi thì thường là tên skill khai trong `AGENT.md` không khớp file thật (trừ 4 điểm, P5). Báo học viên và hỏi có muốn sửa trước khi nộp không.
 
-## Bước 2 — Kiểm tra trước (giống web)
+## Bước 2 — Kiểm tra trước (theo tiêu chí chấm)
 
 Kiểm **đủ** các dòng sau. Mỗi dòng ghi `ĐẠT` hoặc `CẢNH BÁO` kèm chi tiết:
 
@@ -80,7 +80,7 @@ Còn <n> cảnh báo ở trên. Bạn muốn:
   (2) Vẫn đóng gói như hiện tại
 ```
 
-Chọn (1) → giúp học viên sửa từng mục (theo L2), rồi **chạy lại Bước 2**. Chọn (2) → ghi nhận và sang Bước 3. Web cũng chỉ cảnh báo, không chặn nộp.
+Chọn (1) → giúp học viên sửa từng mục (theo L2), rồi **chạy lại Bước 2**. Chọn (2) → ghi nhận và sang Bước 3.
 
 ## Bước 3 — Đối soát `BAO-CAO.md` với file thật
 
@@ -159,10 +159,8 @@ Kiểm tra trước: <n>/12 ĐẠT · Cảnh báo: <danh sách mã, hoặc "khô
 BAO-CAO.md: <khớp file thật / còn lệch: …>
 
 Việc còn lại của bạn:
-  1. Vào web khoá học → Tab Tốt Nghiệp → Nộp bài
-  2. Tải lên đúng file trên
-  3. Xem kết quả kiểm tra của web: phải giống bảng ở đây
-Được nộp lại tới hạn chót. Muốn nộp lại thì sửa bài rồi dán lại câu nộp bài.
+  1. Gửi đúng file trên cho giảng viên, theo cách và hạn nộp giảng viên hướng dẫn
+  2. Muốn sửa bài rồi gửi bản mới: sửa xong thì dán lại câu nộp bài để đóng gói lại
 ```
 
 ---

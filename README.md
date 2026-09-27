@@ -53,7 +53,7 @@ DE-BAI/                         BỘ ĐỀ — PHÁT CHO HỌC VIÊN
   DE-01.md · DE-02.md           2 đề — mỗi học viên chọn 1 đề, làm cá nhân
   BAT-DAU.md                    Runbook cho AI Agent: clone, chuẩn bị môi trường, chọn đề → OUTPUT/_session.md
   NOP-BAI.md                    Runbook cho AI Agent: kiểm tra bài, đối soát BAO-CAO.md, nén zip đúng tên
-  SETUP.md                      Chuẩn bị môi trường, gửi trước buổi học
+  SETUP.md                      Chuẩn bị môi trường, làm trước khi bắt đầu
   CHEATSHEET-CAU-CHAT.md        Bộ câu chat mẫu để ra lệnh cho Agent
   RUBRIC.md                     Thang điểm chấm
   VI-DU-BIEN-BAN-NANG-CAP.md    Biên bản nâng cấp mẫu đã điền đầy đủ

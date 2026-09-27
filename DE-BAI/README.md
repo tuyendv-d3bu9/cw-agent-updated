@@ -1,11 +1,11 @@
 # PROJECT TỐT NGHIỆP — Hướng Dẫn Chung
 
 > Đọc file này **trước** khi mở đề của mình.
-> Thời lượng: 1 buổi (khoảng 3 giờ 15 phút) · Hình thức: **mỗi học viên tự chọn 1 trong 2 đề và làm cá nhân**. Những người chọn cùng một đề thuộc cùng một nhóm đề, nhưng mỗi người làm và nộp bài riêng
+> Hình thức: **làm ở nhà, tự sắp xếp thời gian** · **Mỗi học viên tự chọn 1 trong 2 đề và làm cá nhân**. Những người chọn cùng một đề thuộc cùng một nhóm đề, nhưng mỗi người làm và nộp bài riêng
 
 ---
 
-## 1. Bạn sẽ làm gì trong buổi này
+## 1. Bạn sẽ làm gì
 
 Bạn không viết test case bằng tay, cũng không tự gõ code Playwright. Bạn **chỉ huy một hệ thống Agent QA** bằng tiếng Việt tự nhiên, qua hai phần:
 
@@ -13,9 +13,9 @@ Bạn không viết test case bằng tay, cũng không tự gõ code Playwright.
 |---|---|---|
 | **A — Nâng cấp hệ thống** | Chat với QA Leader để mở rộng chính bộ agent: tinh chỉnh một skill có sẵn (DE-01) hoặc thêm skill mới vào agent có sẵn (DE-02) | 60 phút |
 | **B — Chạy một mạch** | Từ tài liệu BA thô → phân tích → test case → automation Playwright chạy thật, có ảnh bằng chứng | 105 phút |
-| **Báo cáo & nộp bài** | Viết `BAO-CAO.md`, nén zip, nộp | 15 phút |
+| **Báo cáo & nộp bài** | Viết `BAO-CAO.md`, nén zip, gửi giảng viên | 15 phút |
 
-Thời gian làm bài: **3 giờ**. Cộng 15 phút mở đầu (kiểm tra máy, mở đề đã chọn), cả buổi khoảng **3 giờ 15 phút**. Không có phần trình bày trực tiếp.
+Các con số trên là **thời lượng gợi ý** để bạn ước lượng công sức, không phải mốc thời gian cố định. Bạn làm ở nhà và tự sắp xếp thời gian. Không có phần trình bày trực tiếp.
 
 Phần A là phần **khó hơn và đáng giá hơn**. Ai cũng chạy được pipeline; nhưng nâng cấp được hệ thống mà không làm vỡ luồng cũ mới là năng lực thật.
 
@@ -23,7 +23,7 @@ Phần A là phần **khó hơn và đáng giá hơn**. Ai cũng chạy được
 
 ## 2. Phân đề
 
-Mỗi học viên **tự chọn một đề** trên web (Tab Tốt Nghiệp) trước buổi thi. Buổi thi bắt đầu thì không đổi đề nữa.
+Mỗi học viên **tự chọn một đề**. Chọn đề nào thì làm đề đó. Muốn đổi đề thì chạy lại runbook chuẩn bị [BAT-DAU.md](BAT-DAU.md) để ghi lại lựa chọn mới.
 
 | Đề | Kiểu nâng cấp (Phần A) | Nghiệp vụ (Phần B) | `task-slug` |
 |---|---|---|---|
@@ -32,7 +32,7 @@ Mỗi học viên **tự chọn một đề** trên web (Tab Tốt Nghiệp) tr�
 
 Mỗi người làm trên **bản repo riêng** của mình. Bài nộp, điểm và kết quả Đạt/Không đạt tính cho từng người.
 
-**Được trao đổi bình thường** với các bạn khác trong lúc thi, kể cả bạn làm khác đề. Mục tiêu là bạn **hiểu và tự làm được** bài: agent làm hộ phần gõ, nhưng bạn phải giải thích được mọi thứ trong bài nộp của mình.
+**Được trao đổi bình thường** với các bạn khác trong lúc làm bài, kể cả bạn làm khác đề. Mục tiêu là bạn **hiểu và tự làm được** bài: agent làm hộ phần gõ, nhưng bạn phải giải thích được mọi thứ trong bài nộp của mình.
 
 ---
 
@@ -46,7 +46,8 @@ Mỗi người làm trên **bản repo riêng** của mình. Bài nộp, điểm
 | **Không có điều hướng bằng URL** | App đổi màn bằng trạng thái nội bộ. Automation **cấm** dùng `page.goto('/cart')`, phải bấm nút nav |
 | **Màn Thanh toán cần đăng nhập** | Chặn ngay ở bước điều hướng, không phải lúc bấm đặt hàng |
 | Bản đồ giao diện | Đã dựng sẵn: [`knowledge/features/shopgo-ui-map.md`](../knowledge/features/shopgo-ui-map.md) — **đọc file này, đừng tự mò DOM** |
-| Bảng QA Panel | Nút `QA Panel` trên thanh điều hướng (hiện sau khi đăng nhập) có sẵn các preset dựng giỏ hàng — dùng để tiết kiệm thời gian |
+| Mã giảm giá có thật | `GIAM50K` · `SALE20` · `HETHAN`. Có chip gợi ý ngay dưới ô nhập mã ở màn Thanh toán |
+| Dựng dữ liệu test | Thao tác trên giao diện (thêm giỏ, sửa số lượng, áp mã). Nút `QA Panel` trên thanh điều hướng **không có preset nào dùng được**, đừng dựa vào nó |
 
 ---
 
@@ -66,7 +67,7 @@ Bạn **không phải** làm lại các việc sau:
 | Bộ câu chat mẫu | [CHEATSHEET-CAU-CHAT.md](CHEATSHEET-CAU-CHAT.md) |
 | Biên bản nâng cấp mẫu đã điền đầy đủ | [VI-DU-BIEN-BAN-NANG-CAP.md](VI-DU-BIEN-BAN-NANG-CAP.md) |
 
-Chuẩn bị trước buổi học: [SETUP.md](SETUP.md). Dán câu khởi động trong đó vào AI Agent, agent sẽ chạy [BAT-DAU.md](BAT-DAU.md) và ghi `OUTPUT/_session.md`.
+Chuẩn bị trước khi làm bài: [SETUP.md](SETUP.md). Dán câu khởi động trong đó vào AI Agent, agent sẽ chạy [BAT-DAU.md](BAT-DAU.md) và ghi `OUTPUT/_session.md`.
 
 ---
 
@@ -110,7 +111,7 @@ Tôi làm xong rồi. Đọc và làm đúng theo file DE-BAI/NOP-BAI.md để k
 và đóng gói bài nộp. Tự chạy mọi lệnh, đừng bảo tôi gõ terminal.
 ```
 
-Xong thì tự tải file zip lên web (Tab Tốt Nghiệp → Nộp bài). Được nộp lại tới hạn chót.
+Xong thì **gửi file zip cho giảng viên** theo cách và hạn nộp giảng viên hướng dẫn. Giảng viên nhận file và chấm theo [RUBRIC.md](RUBRIC.md).
 
 Tên file, đặt theo mẫu:
 
