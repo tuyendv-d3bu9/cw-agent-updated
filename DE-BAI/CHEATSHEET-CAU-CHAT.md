@@ -184,8 +184,11 @@ Viết vào BAO-CAO.md theo mẫu ở DE-BAI/README.md mục 8.
 ```
 
 ```
-Chạy lại kiểm tra toàn vẹn hệ thống lần cuối và đồng bộ bản đồ.
+Tôi làm xong rồi. Đọc và làm đúng theo file DE-BAI/NOP-BAI.md để kiểm tra
+và đóng gói bài nộp. Tự chạy mọi lệnh, đừng bảo tôi gõ terminal.
 ```
+
+Câu này tự chạy lại kiểm tra toàn vẹn, đồng bộ bản đồ, đối soát số liệu báo cáo và nén zip đúng tên.
 
 ---
 

@@ -93,7 +93,7 @@ Rồi hỏi **gộp một lần**:
 
 Tính tên file nộp bài từ họ tên: bỏ dấu tiếng Việt (`đ` → `d`, `Đ` → `D`), bỏ khoảng trắng, viết hoa chữ cái đầu mỗi từ. Ví dụ `Nguyễn Văn An`, DE-01 → `NOP-BAI_NguyenVanAn_De-01.zip`.
 
-Thư mục `OUTPUT/` chưa có thì tạo (thư mục này không nằm trong git). Ghi **đúng** mẫu sau (không thêm, không bớt mục):
+Thư mục `OUTPUT/` chưa có thì tạo (thư mục này không nằm trong git). Ghi **đúng** mẫu sau (không thêm, không bớt mục; mục 4 `Nộp bài` sẽ do `DE-BAI/NOP-BAI.md` thêm vào cuối buổi thi):
 
 ```markdown
 # PHIÊN LÀM BÀI · <Họ tên>

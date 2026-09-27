@@ -32,7 +32,7 @@ Mỗi học viên **tự chọn một đề** trên web (Tab Tốt Nghiệp) tr�
 
 Mỗi người làm trên **bản repo riêng** của mình. Bài nộp, điểm và kết quả Đạt/Không đạt tính cho từng người.
 
-**Được trao đổi bình thường** với các bạn khác trong lúc thi, kể cả bạn làm khác đề. Mục tiêu là bạn **hiểu và tự làm được** bài, nên `BAO-CAO.md` phải do chính bạn viết.
+**Được trao đổi bình thường** với các bạn khác trong lúc thi, kể cả bạn làm khác đề. Mục tiêu là bạn **hiểu và tự làm được** bài: agent làm hộ phần gõ, nhưng bạn phải giải thích được mọi thứ trong bài nộp của mình.
 
 ---
 
@@ -103,7 +103,16 @@ Phát hiện được lệch tài liệu là **điểm cộng lớn** (+3 mỗi 
 
 ## 7. Nộp bài
 
-Nén thư mục dự án thành một file zip, đặt tên:
+**Cách làm:** dán câu sau vào AI Agent. Agent chạy runbook [NOP-BAI.md](NOP-BAI.md): kiểm tra bài giống hệt cách web kiểm, đối soát số liệu `BAO-CAO.md`, rồi nén zip đúng tên và cấu trúc bên dưới.
+
+```
+Tôi làm xong rồi. Đọc và làm đúng theo file DE-BAI/NOP-BAI.md để kiểm tra
+và đóng gói bài nộp. Tự chạy mọi lệnh, đừng bảo tôi gõ terminal.
+```
+
+Xong thì tự tải file zip lên web (Tab Tốt Nghiệp → Nộp bài). Được nộp lại tới hạn chót.
+
+Tên file, đặt theo mẫu:
 
 ```
 NOP-BAI_<HoTenKhongDau>_De-<số>.zip
