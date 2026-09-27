@@ -4,7 +4,7 @@
   "last_updated": "2026-09-20",
   "ssot_policy": "Tri thức trong knowledge/ là tối cao. CẤM đọc dò từng file, tra cứu bảng routing_table để mở đúng file đích.",
   "project_conventions": {
-    "project_name": "<Tên Dự Án>",
+    "project_name": "CW ShopGO",
     "currency": "VNĐ",
     "timezone": "Asia/Ho_Chi_Minh (GMT+7)",
     "rule_file": "knowledge/_project.md",
