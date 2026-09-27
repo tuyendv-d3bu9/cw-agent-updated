@@ -66,7 +66,7 @@ Bạn **không phải** làm lại các việc sau:
 | Bộ câu chat mẫu | [CHEATSHEET-CAU-CHAT.md](CHEATSHEET-CAU-CHAT.md) |
 | Biên bản nâng cấp mẫu đã điền đầy đủ | [VI-DU-BIEN-BAN-NANG-CAP.md](VI-DU-BIEN-BAN-NANG-CAP.md) |
 
-Kiểm tra môi trường trước buổi học: [SETUP.md](SETUP.md)
+Chuẩn bị trước buổi học: [SETUP.md](SETUP.md). Dán câu khởi động trong đó vào AI Agent, agent sẽ chạy [BAT-DAU.md](BAT-DAU.md) và ghi `OUTPUT/_session.md`.
 
 ---
 
@@ -74,7 +74,7 @@ Kiểm tra môi trường trước buổi học: [SETUP.md](SETUP.md)
 
 ### Luật 1 — Không gõ lệnh terminal
 Bạn là QA, không phải DevOps. Mọi thứ nói bằng tiếng Việt với agent. Agent tự chạy công cụ ngầm.
-Ngoại lệ duy nhất: lệnh cài đặt ban đầu trong `SETUP.md`.
+Kể cả bước chuẩn bị ở nhà cũng do agent làm, qua runbook [BAT-DAU.md](BAT-DAU.md). Việc duy nhất bạn tự làm tay là cài Node.js, Git và IDE.
 
 ### Luật 2 — `ASK` là kết quả đúng, không phải lỗi
 Pipeline sẽ **dừng lại** ở Chặng 2 và hỏi bạn một loạt câu hỏi nghiệp vụ. Đó là thiết kế có chủ đích: hệ thống thà dừng hỏi còn hơn bịa ra quy tắc.

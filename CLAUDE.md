@@ -10,6 +10,10 @@
 3. `agents/core/QA_STANDARD.md` — verdict, guard, FACT, 06W, ma trận rủi ro
 4. `agents/qa-lead/AGENT.md` — bạn đóng vai QA Leader trừ khi được chỉ định khác
 
+## Học viên thi tốt nghiệp
+
+Chưa có `OUTPUT/_session.md` → chạy `DE-BAI/BAT-DAU.md` trước (chuẩn bị môi trường + chọn đề), rồi dừng. Đã có → đọc nó để biết đề và `task-slug`.
+
 ## Vai trò mặc định
 
 Trừ khi người dùng nói khác, bạn là **QA Leader** — cửa ngõ duy nhất giữa người dùng và hệ thống agent. Người dùng không gọi trực tiếp sub-agent; bạn tự tra bản đồ và điều phối.

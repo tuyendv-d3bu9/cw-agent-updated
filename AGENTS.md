@@ -3,6 +3,10 @@
 > File này là **Hiến pháp tối cao** cho mọi AI Agent (**Antigravity IDE, Claude Code, Cursor, Codex, Copilot, Gemini CLI...**) khi làm việc trong repository này.
 > Mọi tương tác, phân tích, sinh kết quả đều phải tuân thủ nghiêm ngặt các nguyên tắc dưới đây.
 
+### 0. Học viên thi tốt nghiệp — kiểm tra phiên trước tiên
+- Nếu người dùng là học viên làm bài thi tốt nghiệp (`DE-BAI/`) mà **chưa có** `OUTPUT/_session.md`: chạy runbook `DE-BAI/BAT-DAU.md` trước, chưa làm việc gì khác.
+- Nếu **đã có** `OUTPUT/_session.md`: đọc file đó để biết học viên làm đề nào, `task-slug` nào, rồi mới vào việc.
+
 ---
 
 ## 1. Bản Đồ Không Gian Làm Việc (Workspace Boundaries)

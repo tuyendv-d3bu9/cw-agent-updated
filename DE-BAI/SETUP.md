@@ -16,9 +16,21 @@
 
 ---
 
-## 2. Bốn lệnh cần chạy
+## 2. Cách làm: nhờ AI Agent làm hộ
 
-Mở terminal tại thư mục dự án, chạy lần lượt:
+Mở IDE có Agent Coding, dán **nguyên văn** câu sau vào khung chat:
+
+```
+Clone repo https://github.com/tuyendv-d3bu9/cw-agent-updated nhánh exam,
+mở thư mục đó, rồi đọc và làm đúng theo file DE-BAI/BAT-DAU.md.
+Tự chạy mọi lệnh, đừng bảo tôi gõ terminal.
+```
+
+Agent sẽ tự clone repo, chạy 4 lệnh bên dưới, hỏi bạn họ tên, email và **đề đã chọn trên web**, rồi ghi lại vào `OUTPUT/_session.md`. Bạn chỉ cần trả lời câu hỏi và cho phép agent chạy lệnh khi IDE hỏi.
+
+> Chọn đề trên web (Tab Tốt Nghiệp) **trước** khi dán câu này.
+
+### Bốn lệnh agent sẽ chạy (để bạn biết, hoặc tự chạy nếu agent không chạy được)
 
 ```bash
 # 1. Cài thư viện
@@ -34,7 +46,7 @@ npm run agent:check
 npm run test:e2e
 ```
 
-> Đây là **lần duy nhất** bạn phải gõ lệnh terminal. Trong buổi học, mọi thứ nói bằng tiếng Việt với Agent.
+> Bình thường bạn **không cần** gõ các lệnh này, agent tự chạy. Chỉ tự gõ khi agent báo không chạy được lệnh trên máy bạn.
 
 ---
 
