@@ -1,0 +1,308 @@
+[
+  {
+    "tc_id": "VCHR-001",
+    "module": "VCHR",
+    "rule_id": "BR-01",
+    "viewpoint_id": "VP-01",
+    "purpose": "Verify áp dụng thành công mã giảm tiền cố định GIAM50K cho đơn hàng đạt mức sàn 200.000 VNĐ",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-002",
+    "module": "VCHR",
+    "rule_id": "BR-01",
+    "viewpoint_id": "VP-01",
+    "purpose": "Verify áp dụng thành công mã phần trăm SALE20 cho đơn hàng 350.000 VNĐ giảm đúng 20%",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-003",
+    "module": "VCHR",
+    "rule_id": "BR-07",
+    "viewpoint_id": "VP-01",
+    "purpose": "Verify áp dụng mã SALE20 cho đơn hàng 600.000 VNĐ kích hoạt đúng mức trần chiết khấu maxCap 100.000 VNĐ",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-004",
+    "module": "VCHR",
+    "rule_id": "BR-06",
+    "viewpoint_id": "VP-01",
+    "purpose": "Verify tự động chuẩn hóa trim khoảng trắng và uppercase khi nhập mã giam50k chữ thường",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-005",
+    "module": "VCHR",
+    "rule_id": "BR-04",
+    "viewpoint_id": "VP-01",
+    "purpose": "Verify bấm trực tiếp vào badge gợi ý GIAM50K tự động điền mã và áp dụng thành công",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-006",
+    "module": "VCHR",
+    "rule_id": "BR-03",
+    "viewpoint_id": "VP-02",
+    "purpose": "Verify từ chối áp dụng mã voucher đã hết hạn HETHAN kèm thông báo lỗi phù hợp",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-007",
+    "module": "VCHR",
+    "rule_id": "BR-05",
+    "viewpoint_id": "VP-02",
+    "purpose": "Verify từ chối áp dụng mã voucher không tồn tại trong hệ thống kèm thông báo lỗi",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-008",
+    "module": "VCHR",
+    "rule_id": "BR-10",
+    "viewpoint_id": "VP-02",
+    "purpose": "Verify từ chối áp dụng mã khi đơn hàng dưới mức sàn tối thiểu 200.000 VNĐ",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-009",
+    "module": "VCHR",
+    "rule_id": "BR-02",
+    "viewpoint_id": "VP-02",
+    "purpose": "Verify từ chối mã SALE20 cho đơn hàng 250.000 VNĐ do chưa đạt điều kiện tối thiểu 300.000 VNĐ của mã",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-010",
+    "module": "VCHR",
+    "rule_id": "BR-06",
+    "viewpoint_id": "VP-02",
+    "purpose": "Verify báo lỗi yêu cầu nhập mã khi bỏ trống hoặc chỉ nhập khoảng trắng rồi bấm Áp dụng",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-011",
+    "module": "VCHR",
+    "rule_id": "BR-10",
+    "viewpoint_id": "VP-02",
+    "purpose": "Verify hệ thống tự động gỡ voucher và disable kèm thông báo khi giảm giỏ hàng xuống dưới 200.000 VNĐ",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-012",
+    "module": "VCHR",
+    "rule_id": "BR-08",
+    "viewpoint_id": "VP-02",
+    "purpose": "Verify bấm nút Gỡ bỏ voucher để hủy mã đang áp dụng và hoàn lại tổng tiền thanh toán gốc",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-013",
+    "module": "VCHR",
+    "rule_id": "BR-04",
+    "viewpoint_id": "VP-02",
+    "purpose": "Verify chỉ ghi nhận mã mới nhất khi người dùng áp dụng liên tiếp 2 voucher khác nhau trên cùng đơn hàng",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-014",
+    "module": "VCHR",
+    "rule_id": "BR-10",
+    "viewpoint_id": "VP-03",
+    "purpose": "Verify từ chối áp dụng mã GIAM50K cho đơn hàng ở giá trị cận biên dưới 199.000 VNĐ",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-015",
+    "module": "VCHR",
+    "rule_id": "BR-10",
+    "viewpoint_id": "VP-03",
+    "purpose": "Verify chấp nhận áp dụng mã GIAM50K cho đơn hàng ở đúng giá trị biên chuẩn 200.000 VNĐ",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-016",
+    "module": "VCHR",
+    "rule_id": "BR-02",
+    "viewpoint_id": "VP-03",
+    "purpose": "Verify từ chối áp dụng mã SALE20 cho đơn hàng ở giá trị cận biên dưới 299.000 VNĐ",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-017",
+    "module": "VCHR",
+    "rule_id": "BR-02",
+    "viewpoint_id": "VP-03",
+    "purpose": "Verify chấp nhận áp dụng mã SALE20 cho đơn hàng ở đúng giá trị biên chuẩn 300.000 VNĐ giảm 60.000 VNĐ",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-018",
+    "module": "VCHR",
+    "rule_id": "BR-07",
+    "viewpoint_id": "VP-03",
+    "purpose": "Verify chiết khấu mã SALE20 tại đơn hàng 499.000 VNĐ giảm 99.800 VNĐ và 500.000 VNĐ giảm đúng trần 100.000 VNĐ",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-019",
+    "module": "VCHR",
+    "rule_id": "BR-01",
+    "viewpoint_id": "VP-03",
+    "purpose": "Verify làm tròn số tiền chiết khấu lẻ của voucher % bằng hàm Math.floor() với đơn hàng lẻ 333.333 VNĐ",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-020",
+    "module": "VCHR",
+    "rule_id": "BR-06",
+    "viewpoint_id": "VP-03",
+    "purpose": "Verify từ chối xử lý mã voucher có độ dài 2 ký tự dưới ngưỡng tối thiểu quy định",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-021",
+    "module": "VCHR",
+    "rule_id": "BR-06",
+    "viewpoint_id": "VP-03",
+    "purpose": "Verify chấp nhận xử lý mã voucher có độ dài đúng 20 ký tự chạm ngưỡng tối đa",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-022",
+    "module": "VCHR",
+    "rule_id": "BR-06",
+    "viewpoint_id": "VP-03",
+    "purpose": "Verify ô input chặn không cho nhập ký tự thứ 21 khi người dùng gõ chuỗi vượt quá 20 ký tự",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-023",
+    "module": "VCHR",
+    "rule_id": "BR-06",
+    "viewpoint_id": "VP-04",
+    "purpose": "Verify chặn nhập ký tự đặc biệt hoặc emoji vào ô mã voucher với cảnh báo không đúng định dạng",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-024",
+    "module": "VCHR",
+    "rule_id": "BR-06",
+    "viewpoint_id": "VP-04",
+    "purpose": "Verify chặn không cho submit mã có khoảng trắng ở giữa chuỗi như GIAM 50K",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-025",
+    "module": "VCHR",
+    "rule_id": "BR-05",
+    "viewpoint_id": "VP-04",
+    "purpose": "Verify hệ thống phòng thủ an toàn trước payload XSS nhập vào ô voucher",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-026",
+    "module": "VCHR",
+    "rule_id": "BR-05",
+    "viewpoint_id": "VP-04",
+    "purpose": "Verify hệ thống phòng thủ an toàn trước payload SQL Injection nhập vào ô voucher",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-027",
+    "module": "VCHR",
+    "rule_id": "BR-05",
+    "viewpoint_id": "VP-04",
+    "purpose": "Verify cơ chế phòng thủ khi người dùng nhập sai mã liên tục 20 lần trong 10 giây",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-028",
+    "module": "VCHR",
+    "rule_id": "BR-04",
+    "viewpoint_id": "VP-05",
+    "purpose": "Verify disable nút Áp dụng và hiển thị trạng thái loading khi bấm submit để chống spam double click",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-029",
+    "module": "VCHR",
+    "rule_id": "BR-04",
+    "viewpoint_id": "VP-05",
+    "purpose": "Verify hiển thị tiền giảm với màu xanh lá, tiền tố dấu trừ và badge tên mã đang kích hoạt",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-030",
+    "module": "VCHR",
+    "rule_id": "BR-04",
+    "viewpoint_id": "VP-05",
+    "purpose": "Verify giao diện form voucher và danh sách badge hiển thị chuẩn responsive trên cả Desktop và Mobile",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-031",
+    "module": "VCHR",
+    "rule_id": "BR-09",
+    "viewpoint_id": "VP-06",
+    "purpose": "Verify voucher chỉ giảm trên tiền hàng và không khấu trừ vào phí vận chuyển",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-032",
+    "module": "VCHR",
+    "rule_id": "BR-04",
+    "viewpoint_id": "VP-06",
+    "purpose": "Verify hạn mức lượt dùng voucher chỉ bị trừ chính thức tại thời điểm Đặt hàng thành công",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-033",
+    "module": "VCHR",
+    "rule_id": "BR-03",
+    "viewpoint_id": "VP-06",
+    "purpose": "Verify tự động hoàn lại lượt dùng voucher cho khách hàng khi đơn hàng bị hủy",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-034",
+    "module": "VCHR",
+    "rule_id": "BR-04",
+    "viewpoint_id": "VP-06",
+    "purpose": "Verify bản ghi đơn hàng lưu đầy đủ các trường subtotal, discount, appliedCode, shippingFee và total",
+    "priority": "High",
+    "batch": 1
+  }
+]
