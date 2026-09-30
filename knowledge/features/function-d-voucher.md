@@ -75,10 +75,10 @@ Chức năng **Function D: Áp dụng Mã Giảm Giá (Voucher)** nằm ở bư�
 | ID | Mô tả kẽ hở nghiệp vụ | Nhóm 06W | Mức rủi ro | Đề xuất mặc định của QA | Câu hỏi xác nhận cho BA/PO | Phản hồi chính thức của BA/PO | Trạng thái |
 |---|---|---|---|---|---|---|---|
 | MR-01 | Kiểm soát format input lạ (ký tự đặc biệt, SQLi, space) | W1 (Input) | MED | Chặn client regex `^[A-Z0-9]{3,20}$` | Chặn tại client với thông báo "Mã không đúng định dạng" hay gửi lên server? | **Chặn ký tự lạ** | `Confirmed` |
-| MR-02 | Giảm giỏ hàng sau khi đã áp mã xuống dưới mức sàn | W2 (State) | HIGH | Tự động gỡ voucher ngay khi subtotal < điều kiện | Gỡ voucher ngay lập tức kèm cảnh báo hay chờ đến nút Đặt hàng? | **Hệ thống tự gỡ và disable voucher có kèm thông báo** | `Confirmed` |
+| MR-02 | Giảm giỏ hàng sau khi đã áp mã xuống dưới mức sàn | W2 (State) | HIGH | Tự động gỡ voucher ngay khi subtotal < điều kiện | Gỡ voucher ngay lập tức kèm cảnh báo hay chờ đến nút Đặt hàng? | **Hệ thống tự gỡ và disable voucher có kèm thông báo** ➔ *thay bởi `GAP-F1b` / Mục 8 #12 (theo web)* | `Confirmed` |
 | MR-03 | Mức sàn đơn hàng áp mã voucher toàn hệ thống | W3 (Data) | CRITICAL | Mức sàn chung toàn hệ thống | Xác nhận mức sàn là 200k hay 300k? | **Mức sàn là 200k (không phải 300k)** | `Confirmed` |
 | MR-04 | Làm tròn số tiền lẻ của voucher % | W3 (Data) | MED | Làm tròn xuống hàng đồng `Math.floor()` | Làm tròn xuống `floor()` hay làm tròn toán học `round()`? | **Đồng ý (Làm tròn xuống hàng đồng)** | `Confirmed` |
-| MR-05 | Chống double click / spam nút Áp dụng | W4 (Timing) | MED | Disable nút Áp dụng + hiển thị spinner loading | Có disable nút và khóa click trong lúc chờ response không? | **Disable nút khi đang áp dụng** | `Confirmed` |
+| MR-05 | Chống double click / spam nút Áp dụng | W4 (Timing) | MED | Disable nút Áp dụng + hiển thị spinner loading | Có disable nút và khóa click trong lúc chờ response không? | **Disable nút khi đang áp dụng** ➔ *thay bởi `GAP-F1c` / Mục 8 #13 (theo web)* | `Confirmed` |
 | MR-06 | Khóa race condition khi còn 1 lượt dùng voucher | W5 (Who else) | HIGH | Trừ lượt dùng chính thức khi Đặt hàng | Trừ lượt dùng tại bước Áp dụng hay bước Đặt hàng thành công? | **Đồng ý (Trừ khi Đặt hàng thành công)** | `Confirmed` |
 | MR-07 | Hoàn lại lượt dùng voucher khi đơn hàng bị hủy | W6 (Side effect) | LOW | Phục hồi lượt dùng nếu mã còn hạn | Khách hủy đơn hàng thì voucher có được hoàn lại lượt dùng không? | **Phục hồi lại quyền dùng voucher** | `Confirmed` |
 

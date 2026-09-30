@@ -17,12 +17,12 @@
     - *Integration & Cross-System (VP-06)*: 4 TCs (11.8%)
   - Tỷ lệ cân đối hài hòa giữa kiểm thử chức năng (Happy), kiểm thử phòng thủ (Negative/Boundary/Security ~ 64.7%) và tích hợp/UX (~ 20.6%).
 - **Góc nhìn 3 (Boundary Completeness)**:
-  - Kiểm tra triệt để các chuỗi giá trị biên 2 điểm / 3 điểm *(các mốc 199.000 / 299.000 / 499.000 / 333.333 ₫ đã được thay ở §6)*:
-    - Mức sàn hệ thống 200.000 VNĐ: Biên dưới (199.000 ₫ ➔ `VCHR-014`), Biên chuẩn (200.000 ₫ ➔ `VCHR-015`).
-    - Điều kiện riêng mã SALE20 300.000 VNĐ: Biên dưới (299.000 ₫ ➔ `VCHR-016`), Biên chuẩn (300.000 ₫ ➔ `VCHR-017`).
-    - Mức trần maxCap 100.000 VNĐ: Cận trần (499.000 ₫ giảm 99.800 ₫ ➔ `VCHR-018`), Chạm trần (500.000 ₫ giảm 100.000 ₫ ➔ `VCHR-018`), Vượt trần (600.000 ₫ giảm 100.000 ₫ ➔ `VCHR-003`).
+  - Kiểm tra triệt để các chuỗi giá trị biên 2 điểm / 3 điểm *(mốc theo catalog thật, chi tiết §6.4)*:
+    - Mức sàn 200.000 VNĐ: Biên dưới (190.000 ₫ ➔ `VCHR-014`), Biên chuẩn (200.000 ₫ ➔ `VCHR-015`).
+    - Điều kiện riêng mã SALE20 300.000 VNĐ: Biên dưới (280.000 ₫ ➔ `VCHR-016`), Biên chuẩn (300.000 ₫ ➔ `VCHR-017`).
+    - Mức trần maxCap 100.000 VNĐ: Cận trần (490.000 ₫ giảm 98.000 ₫ ➔ `VCHR-018`), Chạm trần (500.000 ₫ giảm 100.000 ₫ ➔ `VCHR-018`), Vượt trần (600.000 ₫ giảm 100.000 ₫ ➔ `VCHR-003`).
     - Độ dài ký tự input `[3, 20]`: Cận dưới (2 ký tự ➔ `VCHR-020`), Biên trên (20 ký tự ➔ `VCHR-021`), Vượt biên (21 ký tự ➔ `VCHR-022`).
-    - Làm tròn tiền lẻ: Đơn 333.333 ₫ áp hàm `Math.floor()` ra 66.666 ₫ (`VCHR-019`).
+    - Làm tròn tiền lẻ: `VCHR-019` tạm đóng (không tạo được tiền lẻ trên catalog).
 
 ---
 
@@ -31,15 +31,15 @@
 | Rule# | Mô tả Business Rule | Test Case IDs cover | Gap & Recommendation |
 |:---|:---|:---|:---|
 | **BR-01** | Phân loại Voucher (% và VNĐ) & Tính chiết khấu | `VCHR-001`, `VCHR-002`, `VCHR-019` | Đạt. Đã cover cả mã tiền cố định, mã %, và thuật toán làm tròn `floor()`. |
-| **BR-02** | Điều kiện giá trị đơn tối thiểu của từng voucher | `VCHR-001`, `VCHR-002`, `VCHR-009`, `VCHR-016`, `VCHR-017` | Đạt. Đã đối soát cả biên chuẩn 300k, cận biên 299k, và đơn 250k. |
+| **BR-02** | Điều kiện giá trị đơn tối thiểu của từng voucher | `VCHR-001`, `VCHR-002`, `VCHR-009`, `VCHR-016`, `VCHR-017` | Đạt. Đã đối soát biên chuẩn 300.000 ₫, cận biên 280.000 ₫ và đơn 200.000 ₫. |
 | **BR-03** | Hạn sử dụng của mã voucher | `VCHR-006`, `VCHR-033` | Đạt. Đã cover mã hết hạn `HETHAN` và hoàn mã còn hạn khi hủy đơn. |
-| **BR-04** | Áp dụng thành công & Cập nhật tổng tiền | `VCHR-001`, `VCHR-002`, `VCHR-005`, `VCHR-013`, `VCHR-028`, `VCHR-029`, `VCHR-030`, `VCHR-032`, `VCHR-034` | Đạt. Đã cover hiển thị UI, spam click, lưu dữ liệu DB và trừ lượt dùng. |
+| **BR-04** | Áp dụng thành công & Cập nhật tổng tiền | `VCHR-001`, `VCHR-002`, `VCHR-005`, `VCHR-013`, `VCHR-028`, `VCHR-029`, `VCHR-030`, `VCHR-032`, `VCHR-034` | Đạt. Đã cover hiển thị UI, bấm lặp nút Áp dụng, dữ liệu đơn lưu trong `localStorage`. Trừ lượt dùng (`VCHR-032`) ngoài phạm vi. |
 | **BR-05** | Xử lý lỗi mã không hợp lệ & Phòng thủ an ninh | `VCHR-006`, `VCHR-007`, `VCHR-025`, `VCHR-026`, `VCHR-027` | Đạt. Đã cover mã không tồn tại, payload XSS, SQLi và brute-force. |
 | **BR-06** | Chuẩn hóa input (trim, uppercase) & Format lạ | `VCHR-004`, `VCHR-010`, `VCHR-020`, `VCHR-021`, `VCHR-022`, `VCHR-023`, `VCHR-024` | Đạt. Đã cover trim space, uppercase, bỏ trống, min/max length, ký tự lạ, space giữa. |
-| **BR-07** | Mức trần chiết khấu tối đa (maxCap) | `VCHR-003`, `VCHR-018` | Đạt. Đã cover cận biên trần 499k, đúng trần 500k và vượt trần 600k. |
+| **BR-07** | Mức trần chiết khấu tối đa (maxCap) | `VCHR-003`, `VCHR-018` | Đạt. Đã cover cận trần 490.000 ₫, đúng trần 500.000 ₫ và vượt trần 600.000 ₫. |
 | **BR-08** | Hỗ trợ hủy / gỡ bỏ mã voucher | `VCHR-012` | Đạt. Đã cover hủy mã và phục hồi chính xác giá trị đơn hàng gốc. |
 | **BR-09** | Voucher chỉ giảm tiền hàng, không giảm phí ship | `VCHR-031` | Đạt. Đã cô lập bài toán khấu trừ giữa subtotal và shippingFee. |
-| **BR-10** | Mức sàn đơn hàng toàn hệ thống (200.000 VNĐ) | `VCHR-001`, `VCHR-008`, `VCHR-011`, `VCHR-014`, `VCHR-015` | Đạt. Đã cover cận biên 199k, biên 200k, dưới sàn 150k và giỏ hàng giảm dưới 200k. |
+| **BR-10** | Mức sàn đơn hàng toàn hệ thống (200.000 VNĐ) | `VCHR-001`, `VCHR-008`, `VCHR-011`, `VCHR-014`, `VCHR-015` | Đạt. Đã cover cận biên 190.000 ₫, biên 200.000 ₫, dưới sàn 150.000 ₫ và giỏ hàng giảm dưới 200.000 ₫. |
 
 ---
 
@@ -47,13 +47,13 @@
 - **Rà soát chuyên sâu 06W**: Toàn bộ 7 Missing Rules (`MR-01` đến `MR-07`) đã được thiết kế thành các ca kiểm thử cụ thể trong suite (`VCHR-011`, `VCHR-019`, `VCHR-023`, `VCHR-028`, `VCHR-032`, `VCHR-033`).
 - **Ghi nhận điểm cần lưu ý thực tế (Practical Observation)**:
   - Trên môi trường Web Live (`cwshopgo.github.io`), các mã khuyến mãi được demo ở tầng Frontend State (React Memory).
-  - Test case `VCHR-032` (trừ lượt dùng) và `VCHR-033` (hoàn lượt dùng khi hủy đơn) đòi hỏi API Backend có database lưu trữ session người dùng để kiểm chứng toàn vẹn.
+  - Web không có backend/API (Phụ lục 02 E-01); voucher không có hạn mức lượt dùng và không hủy được từng đơn ➔ `VCHR-032`, `VCHR-033` ngoài phạm vi Automation (`knowledge` Mục 8 #16).
 
 ---
 
 ## 4. Human-Final Decision Scope (Bàn giao QA Lead / PO thẩm định)
 > Tuân thủ Hiến pháp: AI không tự đóng vai người duyệt rủi ro cuối cùng mà bàn giao các khía cạnh kinh doanh cho con người thẩm định:
-1. **Business Criticality**: Xác nhận mức độ nghiêm trọng của việc chặn voucher khi giỏ hàng tụt dưới 200k (`VCHR-011`) đã thỏa mãn chính sách chống gian lận thương mại điện tử chưa.
+1. **Business Criticality**: Xác nhận mức độ nghiêm trọng của việc chặn voucher khi giỏ hàng tụt dưới 200.000 ₫ (`VCHR-011`) đã thỏa mãn chính sách chống gian lận thương mại điện tử chưa.
 2. **Actual Risk Sufficiency**: 34 Test Cases đã đủ độ sâu cho đợt phát hành Function D (Voucher) chưa hay cần bổ sung thêm các case kiểm thử đồng thời (Concurrency) giữa nhiều tab trình duyệt?
 3. **Cross-system Impact**: Tác động của mã giảm giá tới phân hệ Tính Thuế VAT (nếu có trong tương lai) và báo cáo doanh thu tài chính.
 4. **Exploratory Insights**: Các trường hợp mạng chập chờn (Network Throttling 3G) trong lúc bấm nút Áp dụng.
@@ -88,7 +88,7 @@
 - **Theo hành vi web**: `VCHR-011` (giữ mã + cảnh báo vàng), `028` (bấm nhiều lần chỉ giảm 1 lần), `031` (kiểm chứng BR-09 qua công thức tổng tiền).
 - **Theo Phụ lục 01**: `VCHR-020`→`026` giữ kỳ vọng kiểm tra định dạng. Web chưa làm nên **6 ca dự kiến FAIL** (`020`, `022`→`026`) và lập defect; `VCHR-021` (20 ký tự hợp lệ) dự kiến PASS.
 - **Ca mới** (Human-Final #2, QA Lead quyết theo uỷ quyền, #19): `VCHR-035` tải lại trang; `VCHR-036` đặt hàng ở 2 tab. Bỏ ca mạng 3G (không có lời gọi mạng) và VAT (không có phân hệ).
-- Sửa tên sản phẩm không tồn tại ("Áo thun Polo…", "Bình giữ nhiệt Thông Minh") về đúng catalog; viết đủ số tiền (bỏ dạng `200k`); `VCHR-013`, `030` chuyển sang Automated, `030` viết lại kỳ vọng đo được.
+- Sửa tên sản phẩm không tồn tại ("Áo thun Polo…", "Bình giữ nhiệt Thông Minh") về đúng catalog; viết đủ số tiền (bỏ dạng viết tắt `k`); `VCHR-013`, `030` chuyển sang Automated, `030` viết lại kỳ vọng đo được.
 
 ### 6.3. Viewpoint Balance (36 TCs)
 | Viewpoint | Số TC | Tỷ lệ |
