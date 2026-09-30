@@ -1,0 +1,10 @@
+---
+description: "Universal Agent & Progress Tracking Rule"
+globs: ["*"]
+alwaysApply: true
+---
+# Cursor Agent Rule
+- Always read and follow `AGENTS.md` before analyzing requirements or writing test code.
+- Task planning and progress MUST be tracked inside `OUTPUT/<task-slug>/00_plan.md`.
+- NEVER create `TODO.md` or clutter the root directory with ad-hoc plan files.
+- To view available tasks and blockers, run `npm run status`.
