@@ -11,7 +11,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Title**: Verify áp dụng thành công mã giảm tiền cố định GIAM50K cho đơn hàng đạt mức sàn 200.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập tài khoản "khachhang@shopgo.vn" / "123456" (Nguyễn Văn An).
-  - Giỏ hàng có 1 sản phẩm "Bình giữ nhiệt Thông Minh" trị giá 200.000 VNĐ (đạt mức sàn 200.000 VNĐ).
+  - Giỏ hàng có 1 sản phẩm "Bình nước giữ nhiệt Kim Loại" (`prod-003`) trị giá 200.000 VNĐ (đạt mức sàn 200.000 VNĐ).
   - Người dùng đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "GIAM50K" vào ô nhập mã khuyến mãi.
@@ -51,7 +51,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Title**: Verify áp dụng mã SALE20 cho đơn hàng 600.000 VNĐ kích hoạt đúng mức trần chiết khấu maxCap 100.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập tài khoản "khachhang@shopgo.vn" / "123456".
-  - Giỏ hàng có 4 sản phẩm "Áo thun Polo Thể Thao Nam" (150.000 VNĐ x 4 = 600.000 VNĐ).
+  - Giỏ hàng có 4 sản phẩm "Áo thun Trendy Unisex" (`prod-001`) (150.000 VNĐ x 4 = 600.000 VNĐ).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "SALE20" vào ô mã khuyến mãi.
@@ -139,7 +139,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Title**: Verify từ chối áp dụng mã khi đơn hàng dưới mức sàn tối thiểu 200.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập tài khoản "khachhang@shopgo.vn".
-  - Giỏ hàng chỉ có 1 sản phẩm "Áo thun Polo Thể Thao Nam" trị giá 150.000 VNĐ (subtotal < 200.000 VNĐ).
+  - Giỏ hàng chỉ có 1 sản phẩm "Áo thun Trendy Unisex" (`prod-001`) trị giá 150.000 VNĐ (subtotal < 200.000 VNĐ).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "GIAM50K" vào ô nhập mã khuyến mãi.
@@ -149,8 +149,8 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Tạm tính đơn hàng (Subtotal): 150.000 VNĐ
 - **Expected Result**:
   - Hệ thống từ chối áp dụng mã.
-  - Hiển thị cảnh báo đơn hàng chưa đạt giá trị tối thiểu 200.000 VNĐ để áp dụng mã giảm giá.
-  - Chiết khấu giữ nguyên 0 VNĐ.
+  - Hiển thị thông báo: "Đơn hàng chưa đạt mức tối thiểu 200.000 ₫ (Hiện có 150.000 ₫)."
+  - Giảm giá 0 VNĐ; phí ship 30.000 VNĐ; tổng thanh toán 180.000 ₫.
 - **Priority**: High
 - **Tags**: Rule#BR-10, Viewpoint#VP-02, Module#VCHR, Automated
 
@@ -158,7 +158,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Title**: Verify từ chối mã SALE20 cho đơn hàng 200.000 VNĐ do chưa đạt điều kiện tối thiểu 300.000 VNĐ của mã
 - **Precondition**:
   - Khách hàng đã đăng nhập.
-  - Giỏ hàng có "Bình nước giữ nhiệt Kim Loại" (`prod-003`) × 1 = 200.000 VNĐ (đạt mức sàn chung 200k nhưng chưa đạt mức riêng 300k của SALE20).
+  - Giỏ hàng có "Bình nước giữ nhiệt Kim Loại" (`prod-003`) × 1 = 200.000 VNĐ (đạt mức sàn chung 200.000 ₫ nhưng chưa đạt mức riêng 300.000 ₫ của SALE20).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "SALE20" vào ô nhập mã khuyến mãi.
@@ -184,8 +184,8 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Test Data**:
   - Input: "" (chuỗi rỗng)
 - **Expected Result**:
-  - Hệ thống chặn submit và hiển thị thông báo lỗi: "Vui lòng nhập mã khuyến mãi."
-  - Không gửi request xử lý lên backend.
+  - Hiển thị thông báo lỗi: "Vui lòng nhập mã khuyến mãi."
+  - Không áp dụng giảm giá, tổng thanh toán giữ nguyên.
 - **Priority**: Medium
 - **Tags**: Rule#BR-06, Viewpoint#VP-02, Module#VCHR, Automated
 
@@ -203,7 +203,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Expected Result**:
   - Mã "GIAM50K" vẫn được giữ trong form voucher (không tự gỡ) — theo quyết định `knowledge` Mục 8 #12.
   - Hiển thị cảnh báo vàng: "Mã \"GIAM50K\" chưa đủ điều kiện áp dụng".
-  - Giảm giá = 0 VNĐ; phí ship = 30.000 VNĐ (do < 200k); tổng thanh toán `#label-total-payable` = 180.000 ₫.
+  - Giảm giá = 0 VNĐ; phí ship = 30.000 VNĐ (do < 200.000 ₫); tổng thanh toán `#label-total-payable` = 180.000 ₫.
 - **Priority**: High
 - **Tags**: Rule#BR-10, Rule#MR-02, Viewpoint#VP-02, Module#VCHR, Automated
 
@@ -238,16 +238,16 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Expected Result**:
   - Mã "GIAM50K" cũ bị thay thế bởi mã mới "SALE20".
   - Hệ thống chỉ áp dụng duy nhất 1 voucher chiết khấu: 20% của 350.000 VNĐ = 70.000 VNĐ.
-  - Không xảy ra tình trạng cộng dồn 2 mã (50k + 70k = 120k).
+  - Không xảy ra tình trạng cộng dồn 2 mã (50.000 ₫ + 70.000 ₫ = 120.000 ₫).
   - Tổng thanh toán hiển thị: 280.000 VNĐ.
 - **Priority**: Medium
-- **Tags**: Rule#BR-04, Viewpoint#VP-02, Module#VCHR, Manual
+- **Tags**: Rule#BR-04, Viewpoint#VP-02, Module#VCHR, Automated
 
 ### TC_ID: VCHR-014
 - **Title**: Verify từ chối áp dụng mã GIAM50K cho đơn hàng ở giá trị cận biên dưới 190.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập.
-  - Giỏ hàng được thiết lập có "Sạc dự phòng Siêu Nhanh 20W" (`prod-005`) × 1 = 190.000 VNĐ (mốc gần nhất dưới 200k tạo được trên catalog thật).
+  - Giỏ hàng được thiết lập có "Sạc dự phòng Siêu Nhanh 20W" (`prod-005`) × 1 = 190.000 VNĐ (mốc gần nhất dưới 200.000 ₫ tạo được trên catalog thật).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "GIAM50K" vào ô mã khuyến mãi.
@@ -266,7 +266,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Title**: Verify chấp nhận áp dụng mã GIAM50K cho đơn hàng ở đúng giá trị biên chuẩn 200.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập.
-  - Giỏ hàng có 1 sản phẩm đúng giá trị biên chuẩn 200.000 VNĐ ("Bình giữ nhiệt Thông Minh").
+  - Giỏ hàng có 1 sản phẩm đúng giá trị biên chuẩn 200.000 VNĐ ("Bình nước giữ nhiệt Kim Loại" (`prod-003`)).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "GIAM50K".
@@ -285,7 +285,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Title**: Verify từ chối áp dụng mã SALE20 cho đơn hàng ở giá trị cận biên dưới 280.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập.
-  - Giỏ hàng có "Balo Chống Nước Oxford" (`prod-004`) × 1 = 280.000 VNĐ (mốc gần nhất dưới 300k tạo được trên catalog thật).
+  - Giỏ hàng có "Balo Chống Nước Oxford" (`prod-004`) × 1 = 280.000 VNĐ (mốc gần nhất dưới 300.000 ₫ tạo được trên catalog thật).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "SALE20".
@@ -304,7 +304,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Title**: Verify chấp nhận áp dụng mã SALE20 cho đơn hàng ở đúng giá trị biên chuẩn 300.000 VNĐ giảm 60.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập.
-  - Giỏ hàng có giá trị tạm tính đúng 300.000 VNĐ (2 Áo thun Polo x 150.000 VNĐ).
+  - Giỏ hàng có giá trị tạm tính đúng 300.000 VNĐ ("Áo thun Trendy Unisex" (`prod-001`) × 2).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "SALE20".
@@ -330,8 +330,8 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Đơn 1: Subtotal 490.000 VNĐ *(thay 499.000 VNĐ — không tạo được, `07b` §4)*
   - Đơn 2: Subtotal 500.000 VNĐ
 - **Expected Result**:
-  - Tại đơn 490.000 VNĐ: giảm 20% × 490.000 = 98.000 VNĐ (< maxCap 100k); tổng = 392.000 ₫.
-  - Tại đơn 500.000 VNĐ: giảm đúng 100.000 VNĐ (chạm ngưỡng maxCap 100k); tổng = 400.000 ₫.
+  - Tại đơn 490.000 VNĐ: giảm 20% × 490.000 = 98.000 VNĐ (< maxCap 100.000 ₫); tổng = 392.000 ₫.
+  - Tại đơn 500.000 VNĐ: giảm đúng 100.000 VNĐ (chạm ngưỡng maxCap 100.000 ₫); tổng = 400.000 ₫.
 - **Priority**: High
 - **Tags**: Rule#BR-07, Viewpoint#VP-03, Module#VCHR, Automated
 
@@ -369,7 +369,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Hiển thị thông báo lỗi "Mã giảm giá không đúng định dạng." (vi phạm F-01: tối thiểu 3 ký tự — `INPUT/function-d-voucher/02_ba/spec_function_d_addendum_01_voucher_format.md`).
   - Không tra cứu mã, không áp dụng giảm giá.
 - **Priority**: Medium
-- **Tags**: Rule#BR-06, Viewpoint#VP-03, Module#VCHR, Automated
+- **Tags**: Rule#BR-06, Rule#MR-01, Viewpoint#VP-03, Module#VCHR, Automated
 
 ### TC_ID: VCHR-021
 - **Title**: Verify chấp nhận xử lý mã voucher có độ dài đúng 20 ký tự chạm ngưỡng tối đa
@@ -386,7 +386,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Mã qua được kiểm tra định dạng (F-01, F-02) và được tra cứu: hiển thị "Mã giảm giá \"VOUCHERCHINHHANG2026\" không tồn tại trên hệ thống."
   - Không hiển thị lỗi "không đúng định dạng".
 - **Priority**: Medium
-- **Tags**: Rule#BR-06, Viewpoint#VP-03, Module#VCHR, Automated
+- **Tags**: Rule#BR-06, Rule#MR-01, Viewpoint#VP-03, Module#VCHR, Automated
 
 ### TC_ID: VCHR-022
 - **Title**: Verify ô input chặn không cho nhập ký tự thứ 21 khi người dùng gõ chuỗi vượt quá 20 ký tự
@@ -400,7 +400,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Ô nhập không nhận ký tự thứ 21 (F-03 — `INPUT/function-d-voucher/02_ba/spec_function_d_addendum_01_voucher_format.md`).
   - Giá trị lưu trong input chỉ dừng lại ở đúng 20 ký tự đầu tiên: "ABCDE12345ABCDE12345".
 - **Priority**: Medium
-- **Tags**: Rule#BR-06, Viewpoint#VP-03, Module#VCHR, Automated
+- **Tags**: Rule#BR-06, Rule#MR-01, Viewpoint#VP-03, Module#VCHR, Automated
 
 ### TC_ID: VCHR-023
 - **Title**: Verify chặn nhập ký tự đặc biệt hoặc emoji vào ô mã voucher với cảnh báo không đúng định dạng
@@ -416,7 +416,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Hiển thị thông báo lỗi "Mã giảm giá không đúng định dạng." (vi phạm F-02 — `INPUT/function-d-voucher/02_ba/spec_function_d_addendum_01_voucher_format.md`).
   - Không tra cứu mã, không áp dụng giảm giá.
 - **Priority**: High
-- **Tags**: Rule#BR-06, Viewpoint#VP-04, Module#VCHR, Automated
+- **Tags**: Rule#BR-06, Rule#MR-01, Viewpoint#VP-04, Module#VCHR, Automated
 
 ### TC_ID: VCHR-024
 - **Title**: Verify chặn không cho submit mã có khoảng trắng ở giữa chuỗi như GIAM 50K
@@ -432,7 +432,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Hệ thống không cho phép áp dụng mã có chứa khoảng trắng bên trong chuỗi.
   - Hiển thị thông báo lỗi "Mã giảm giá không đúng định dạng." (vi phạm F-05).
 - **Priority**: Medium
-- **Tags**: Rule#BR-06, Viewpoint#VP-04, Module#VCHR, Automated
+- **Tags**: Rule#BR-06, Rule#MR-01, Viewpoint#VP-04, Module#VCHR, Automated
 
 ### TC_ID: VCHR-025
 - **Title**: Verify hệ thống phòng thủ an toàn trước payload XSS nhập vào ô voucher
@@ -449,7 +449,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Chuỗi hiển thị lại (nếu có) được escape, không render thành thẻ HTML.
   - Hiển thị thông báo lỗi "Mã giảm giá không đúng định dạng." (vi phạm F-02).
 - **Priority**: High
-- **Tags**: Rule#BR-05, Viewpoint#VP-04, Module#VCHR, Automated
+- **Tags**: Rule#BR-05, Rule#MR-01, Viewpoint#VP-04, Module#VCHR, Automated
 
 ### TC_ID: VCHR-026
 - **Title**: Verify hệ thống phòng thủ an toàn trước payload SQL Injection nhập vào ô voucher
@@ -465,7 +465,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Không áp dụng giảm giá, giao diện không lỗi, không lộ thông tin kỹ thuật (app không có backend — `knowledge` Mục 8 #10).
   - Hiển thị thông báo lỗi "Mã giảm giá không đúng định dạng." (vi phạm F-02).
 - **Priority**: High
-- **Tags**: Rule#BR-05, Viewpoint#VP-04, Module#VCHR, Automated
+- **Tags**: Rule#BR-05, Rule#MR-01, Viewpoint#VP-04, Module#VCHR, Automated
 
 ### TC_ID: VCHR-027
 - **Title**: Verify cơ chế phòng thủ khi người dùng nhập sai mã liên tục 20 lần trong 10 giây
@@ -524,10 +524,11 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Test Data**:
   - Viewports: Desktop 1440px vs Mobile 375px
 - **Expected Result**:
-  - Trên Desktop: Form voucher và bảng thanh toán nằm ở cột bên phải cân đối, không tràn màn hình.
-  - Trên Mobile: Giao diện tự động co dãn 1 cột, ô input và nút Áp dụng hiển thị vừa vặn, danh sách badge không bị che khuất chữ.
+  - Ở cả 2 viewport: trang không có thanh cuộn ngang (`document.documentElement.scrollWidth <= window.innerWidth`).
+  - `#input-voucher-code`, `#btn-apply-voucher` và 3 badge `#badge-voucher-*` hiển thị, nằm trọn trong chiều ngang viewport (không bị cắt).
+  - Ở Mobile 375px: ô nhập mã và nút Áp dụng có chiều rộng > 0 và không chồng lên nhau.
 - **Priority**: Medium
-- **Tags**: Rule#BR-04, Viewpoint#VP-05, Module#VCHR, Manual
+- **Tags**: Rule#BR-04, Viewpoint#VP-05, Module#VCHR, Automated
 
 ### TC_ID: VCHR-031
 - **Title**: Verify voucher chỉ giảm trên tiền hàng, không khấu trừ vào phí vận chuyển (kiểm chứng gián tiếp qua công thức tổng tiền)
@@ -541,7 +542,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Test Data**:
   - Subtotal: 350.000 VNĐ · Mã: GIAM50K
 - **Expected Result**:
-  - Hiển thị: Tạm tính 350.000 ₫ · Phí vận chuyển 0 ₫ (freeship ≥ 200k) · Giảm giá -50.000 ₫ · Tổng 300.000 ₫.
+  - Hiển thị: Tạm tính 350.000 ₫ · Phí vận chuyển 0 ₫ (freeship ≥ 200.000 ₫) · Giảm giá -50.000 ₫ · Tổng 300.000 ₫.
   - Bản ghi đơn: `subtotal = 350000`, `shippingFee = 0`, `discount = 50000`, `total = 300000`, thoả `total = subtotal + shippingFee − discount`.
   - `discount` không vượt quá `subtotal` (giảm giá chỉ tính trên tiền hàng).
   - Ghi chú: ngưỡng freeship trùng mức sàn voucher nên không có trạng thái "có phí ship và áp được mã" — theo quyết định `knowledge` Mục 8 #14.
@@ -621,7 +622,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Vẫn ở trạng thái đăng nhập (`localStorage["shopgo_user"]` còn tồn tại).
   - Giỏ hàng trống, không còn mã "GIAM50K" được áp — giỏ hàng và voucher chỉ lưu trong bộ nhớ phiên, không ghi `localStorage` (đối chiếu mã nguồn FE Live 2026-09-30).
 - **Priority**: Medium
-- **Tags**: Rule#GAP-H2, Viewpoint#VP-06, Module#VCHR, Automated
+- **Tags**: Rule#GAP-H2, Spec#PL02-E02, Spec#PL02-E03, Viewpoint#VP-06, Module#VCHR, Automated
 
 ### TC_ID: VCHR-036
 - **Title**: Verify đặt hàng có voucher ở hai tab trình duyệt thì cả hai đơn đều được lưu, không ghi đè nhau
@@ -638,7 +639,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - [GIẢ ĐỊNH – rủi ro MED] Lịch sử có đủ **2 đơn** (300.000 ₫ và 230.000 ₫), mỗi đơn `appliedCode = "GIAM50K"`; không đơn nào bị mất.
   - Ghi chú: mã nguồn FE chỉ đọc danh sách đơn một lần khi khởi động, khi lưu thì ghi đè cả mảng và không lắng nghe sự kiện `storage` ➔ dự báo đơn của Tab A bị mất (lost update). Kỳ vọng "không mất đơn" do QA Lead chốt theo uỷ quyền (`knowledge` Mục 8 #19); cần BA xác nhận nếu FAIL.
 - **Priority**: High
-- **Tags**: Rule#GAP-H2, Viewpoint#VP-06, Module#VCHR, Automated
+- **Tags**: Rule#GAP-H2, Spec#PL02-E02, Viewpoint#VP-06, Module#VCHR, Automated
 
 ---
 

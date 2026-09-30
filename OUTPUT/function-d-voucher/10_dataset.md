@@ -18,7 +18,7 @@
 | `DS-VAL-05` | `khachhang@shopgo.vn` | `SALE20` | `SALE20` | `PERCENTAGE` | `prod-003` × 4 | 800.000 ₫ | 0 ₫ | 100.000 ₫ | 700.000 ₫ | Vượt trần, chặn ở 100.000 ₫ |
 | `DS-VAL-06` | `khachhang@shopgo.vn` | `GIAM50K` | `GIAM50K` | `FIXED_AMOUNT` | `prod-003` × 1 | 200.000 ₫ | 0 ₫ | 50.000 ₫ | 150.000 ₫ | Đúng mức sàn 200.000 ₫ |
 | `DS-VAL-07` | `khachhang@shopgo.vn` | `GIAM50K` | `GIAM50K` | `FIXED_AMOUNT` | `prod-004` × 1 | 280.000 ₫ | 0 ₫ | 50.000 ₫ | 230.000 ₫ | Đơn thứ hai của ca 2 tab (`VCHR-036`) |
-| `DS-VAL-08` | `khachhang@shopgo.vn` | `giam50k` | `GIAM50K` | `FIXED_AMOUNT` | `prod-003` × 2 | 400.000 ₫ | 0 ₫ | 50.000 ₫ | 350.000 ₫ | Tự chuyển chữ hoa |
+| `DS-VAL-08` | `khachhang@shopgo.vn` | `  giam50k  ` | `GIAM50K` | `FIXED_AMOUNT` | `prod-002` × 1 | 350.000 ₫ | 0 ₫ | 50.000 ₫ | 300.000 ₫ | Tự bỏ khoảng trắng hai đầu và chuyển chữ hoa (`VCHR-004`) |
 | `DS-VAL-09` | `vip@shopgo.vn` | `  SALE20  ` | `SALE20` | `PERCENTAGE` | `prod-002` × 1 | 350.000 ₫ | 0 ₫ | 70.000 ₫ | 280.000 ₫ | Tự bỏ khoảng trắng hai đầu |
 | `DS-VAL-10` | — | — | — | — | — | — | — | — | — | ⏸️ **TẠM ĐÓNG** — tiền lẻ để kiểm làm tròn không tạo được trên catalog (`knowledge` Mục 8 #15). Không dùng trong CSV/JSON |
 | `DS-VAL-11` | `khachhang@shopgo.vn` | `SALE20` | `SALE20` | `PERCENTAGE` | `prod-001` × 4 | 600.000 ₫ | 0 ₫ | 100.000 ₫ | 500.000 ₫ | Vượt trần (`VCHR-003`) |
@@ -48,7 +48,7 @@ DS-VAL-04,vip@shopgo.vn,SALE20,SALE20,PERCENTAGE,prod-001x1+prod-002x1,500000,0,
 DS-VAL-05,khachhang@shopgo.vn,SALE20,SALE20,PERCENTAGE,prod-003x4,800000,0,100000,700000
 DS-VAL-06,khachhang@shopgo.vn,GIAM50K,GIAM50K,FIXED_AMOUNT,prod-003x1,200000,0,50000,150000
 DS-VAL-07,khachhang@shopgo.vn,GIAM50K,GIAM50K,FIXED_AMOUNT,prod-004x1,280000,0,50000,230000
-DS-VAL-08,khachhang@shopgo.vn,giam50k,GIAM50K,FIXED_AMOUNT,prod-003x2,400000,0,50000,350000
+DS-VAL-08,khachhang@shopgo.vn,"  giam50k  ",GIAM50K,FIXED_AMOUNT,prod-002x1,350000,0,50000,300000
 DS-VAL-09,vip@shopgo.vn,"  SALE20  ",SALE20,PERCENTAGE,prod-002x1,350000,0,70000,280000
 DS-VAL-11,khachhang@shopgo.vn,SALE20,SALE20,PERCENTAGE,prod-001x4,600000,0,100000,500000
 ```
@@ -58,10 +58,14 @@ DS-VAL-11,khachhang@shopgo.vn,SALE20,SALE20,PERCENTAGE,prod-001x4,600000,0,10000
 [
   {"record_id": "DS-VAL-01", "user_account": "khachhang@shopgo.vn", "voucher_input": "GIAM50K", "cart": {"prod-002": 1}, "subtotal": 350000, "shipping_fee": 0, "discount_amount": 50000, "total_payment": 300000},
   {"record_id": "DS-VAL-02", "user_account": "vip@shopgo.vn", "voucher_input": "SALE20", "cart": {"prod-001": 2}, "subtotal": 300000, "shipping_fee": 0, "discount_amount": 60000, "total_payment": 240000},
+  {"record_id": "DS-VAL-03", "user_account": "khachhang@shopgo.vn", "voucher_input": "SALE20", "cart": {"prod-001": 3}, "subtotal": 450000, "shipping_fee": 0, "discount_amount": 90000, "total_payment": 360000},
   {"record_id": "DS-VAL-04", "user_account": "vip@shopgo.vn", "voucher_input": "SALE20", "cart": {"prod-001": 1, "prod-002": 1}, "subtotal": 500000, "shipping_fee": 0, "discount_amount": 100000, "total_payment": 400000},
+  {"record_id": "DS-VAL-05", "user_account": "khachhang@shopgo.vn", "voucher_input": "SALE20", "cart": {"prod-003": 4}, "subtotal": 800000, "shipping_fee": 0, "discount_amount": 100000, "total_payment": 700000},
   {"record_id": "DS-VAL-06", "user_account": "khachhang@shopgo.vn", "voucher_input": "GIAM50K", "cart": {"prod-003": 1}, "subtotal": 200000, "shipping_fee": 0, "discount_amount": 50000, "total_payment": 150000},
   {"record_id": "DS-VAL-07", "user_account": "khachhang@shopgo.vn", "voucher_input": "GIAM50K", "cart": {"prod-004": 1}, "subtotal": 280000, "shipping_fee": 0, "discount_amount": 50000, "total_payment": 230000},
+  {"record_id": "DS-VAL-08", "user_account": "khachhang@shopgo.vn", "voucher_input": "  giam50k  ", "cart": {"prod-002": 1}, "subtotal": 350000, "shipping_fee": 0, "discount_amount": 50000, "total_payment": 300000},
   {"record_id": "DS-VAL-09", "user_account": "vip@shopgo.vn", "voucher_input": "  SALE20  ", "cart": {"prod-002": 1}, "subtotal": 350000, "shipping_fee": 0, "discount_amount": 70000, "total_payment": 280000},
+  {"record_id": "DS-VAL-11", "user_account": "khachhang@shopgo.vn", "voucher_input": "SALE20", "cart": {"prod-001": 4}, "subtotal": 600000, "shipping_fee": 0, "discount_amount": 100000, "total_payment": 500000},
   {"record_id": "DS-VAL-12", "user_account": "khachhang@shopgo.vn", "voucher_input": "GIAM50K", "cart_before": {"prod-001": 2}, "cart_after": {"prod-001": 1}, "total_before": 250000, "subtotal_after": 150000, "shipping_fee_after": 30000, "discount_after": 0, "total_after": 180000, "expected_warning": "Mã \"GIAM50K\" chưa đủ điều kiện áp dụng"}
 ]
 ```
@@ -84,4 +88,4 @@ DS-VAL-11,khachhang@shopgo.vn,SALE20,SALE20,PERCENTAGE,prod-001x4,600000,0,10000
 - [x] Không còn mã `VOUCHER10` / `FREESHIP` không tồn tại.
 - [x] Phí ship đúng quy tắc miễn phí từ 200.000 ₫.
 - [x] Số tiền ghi đủ, không viết tắt `k`.
-- [x] 11 record dùng được (`DS-VAL-10` tạm đóng).
+- [x] 11 record dùng được (`DS-VAL-10` tạm đóng). JSON §3.2 có đủ 11 record; CSV §3.1 không có `DS-VAL-12` vì là record chuyển trạng thái 2 bước, không biểu diễn được trên 1 dòng.

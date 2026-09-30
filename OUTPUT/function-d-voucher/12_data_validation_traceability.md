@@ -9,13 +9,13 @@
 ## 1. Kết Quả Thẩm Định Dữ Liệu
 
 - **Review Verdict**: `PASS`
-- **Thay đổi so với v1**: bỏ mã `VOUCHER10`; bỏ 2 record API (`DS-NEG-03`, `DS-NEG-11`); thay 6 mốc tiền không tạo được; sửa phí ship 30.000 ₫ ➔ 0 ₫ cho đơn từ 200.000 ₫; thêm `DS-VAL-11`, `DS-VAL-12`, `DS-NEG-12`, `DS-NEG-13`; tạm đóng `DS-VAL-10`.
+- **Thay đổi so với v1**: bỏ mã `VOUCHER10`; bỏ 2 record API (`DS-NEG-03`, `DS-NEG-11`); thay 6 mốc tiền không tạo được; sửa phí ship 30.000 ₫ ➔ 0 ₫ cho đơn từ 200.000 ₫; thêm `DS-VAL-11`, `DS-VAL-12`, `DS-NEG-12`, `DS-NEG-13`, `DS-NEG-14`; tạm đóng `DS-VAL-10`.
 
 | # | Nhóm dữ liệu | Số record | Logic & format | Quy tắc nghiệp vụ | Kết luận |
 |---|---|:---:|---|---|:---:|
 | 1 | Valid (`10_dataset.md`) | 11 (+1 tạm đóng) | Mọi tiền hàng ghép được từ catalog, có tổ hợp giỏ hàng | Đúng công thức `Tiền hàng + Phí ship − Giảm giá`, freeship từ 200.000 ₫ | **PASS** |
 | 2 | Boundary (`11_...`) | 15 | 6 mốc độ dài 3–20; 3 ngưỡng tiền với mốc ±1 gần nhất tạo được | Khớp Phụ lục 01 và 02 | **PASS** |
-| 3 | Negative / Null / Special (`11_...`) | 11 | Không còn record API | Thông báo lỗi khớp mã nguồn FE hoặc Phụ lục 01 | **PASS** |
+| 3 | Negative / Null / Special (`11_...`) | 12 | Không còn record API | Thông báo lỗi khớp mã nguồn FE hoặc Phụ lục 01 | **PASS** |
 
 ---
 
@@ -39,12 +39,12 @@
 | `VCHR-001` | Verify áp dụng thành công mã giảm tiền cố định GIAM50K cho đơn hàng đạt mức sàn 200.000 VNĐ | `DS-VAL-06`, `DS-BND-02` | Valid | `prod-003` × 1 = 200.000 ₫, `GIAM50K` ➔ giảm 50.000 ₫, ship 0 ₫, tổng 150.000 ₫ |
 | `VCHR-002` | Verify áp dụng thành công mã phần trăm SALE20 cho đơn hàng 350.000 VNĐ giảm đúng 20% | `DS-VAL-09`, `DS-VAL-03` | Valid | `prod-002` × 1 = 350.000 ₫, `SALE20` ➔ giảm 70.000 ₫, tổng 280.000 ₫ (thêm `DS-VAL-03`: 450.000 ₫ ➔ giảm 90.000 ₫) |
 | `VCHR-003` | Verify áp dụng mã SALE20 cho đơn hàng 600.000 VNĐ kích hoạt đúng mức trần chiết khấu maxCap 100.000 VNĐ | `DS-VAL-11`, `DS-VAL-05` | Valid (Edge) | `prod-001` × 4 = 600.000 ₫, `SALE20` ➔ giảm chặn trần 100.000 ₫, tổng 500.000 ₫ (thêm `DS-VAL-05`: 800.000 ₫ ➔ 100.000 ₫) |
-| `VCHR-004` | Verify tự động chuẩn hóa trim khoảng trắng và uppercase khi nhập mã giam50k chữ thường | `DS-VAL-08` | Valid (Format) | Nhập `giam50k` ➔ chuẩn hoá `GIAM50K`, giảm 50.000 ₫ |
+| `VCHR-004` | Verify tự động chuẩn hóa trim khoảng trắng và uppercase khi nhập mã giam50k chữ thường | `DS-VAL-08` | Valid (Format) | Nhập `"  giam50k  "` trên 350.000 ₫ ➔ chuẩn hoá `GIAM50K`, giảm 50.000 ₫, tổng 300.000 ₫ |
 | `VCHR-005` | Verify bấm trực tiếp vào badge gợi ý GIAM50K tự động điền mã và áp dụng thành công | `DS-VAL-01` | Valid (UI) | Bấm `#badge-voucher-GIAM50K` ➔ giảm 50.000 ₫, tổng 300.000 ₫ |
 | `VCHR-006` | Verify từ chối áp dụng mã voucher đã hết hạn HETHAN kèm thông báo lỗi phù hợp | `DS-NEG-04` | Invalid | `HETHAN` ➔ "Mã giảm giá \"HETHAN\" đã hết hạn sử dụng." |
 | `VCHR-007` | Verify từ chối áp dụng mã voucher không tồn tại trong hệ thống kèm thông báo lỗi | `DS-NEG-05` | Invalid | Mã không tồn tại (TC dùng `KHONGCOMA`, record dùng `SAI123`) ➔ "... không tồn tại trên hệ thống." |
 | `VCHR-008` | Verify từ chối áp dụng mã khi đơn hàng dưới mức sàn tối thiểu 200.000 VNĐ | `DS-NEG-13`, `DS-BND-01`, `DS-NEG-10` | Invalid (Sub) | `prod-001` × 1 = 150.000 ₫ + ship 30.000 ₫ ➔ từ chối, tổng 180.000 ₫; giỏ trống 0 ₫ ➔ từ chối |
-| `VCHR-009` | Verify từ chối mã SALE20 cho đơn hàng 200.000 VNĐ do chưa đạt điều kiện tối thiểu 300.000 VNĐ của mã | `DS-VAL-06` (giỏ hàng), `DS-BND-04` | Invalid (Sub) | `prod-003` × 1 = 200.000 ₫, `SALE20` ➔ "Đơn hàng chưa đạt mức tối thiểu 300.000 ₫ (Hiện có 200.000 ₫)." |
+| `VCHR-009` | Verify từ chối mã SALE20 cho đơn hàng 200.000 VNĐ do chưa đạt điều kiện tối thiểu 300.000 VNĐ của mã | `DS-NEG-14` | Invalid (Sub) | `prod-003` × 1 = 200.000 ₫, `SALE20` ➔ "Đơn hàng chưa đạt mức tối thiểu 300.000 ₫ (Hiện có 200.000 ₫)." |
 | `VCHR-010` | Verify báo lỗi yêu cầu nhập mã khi bỏ trống hoặc chỉ nhập khoảng trắng rồi bấm Áp dụng | `DS-NEG-01`, `DS-NEG-02` | Null/Empty | `""` / `"   "` ➔ "Vui lòng nhập mã khuyến mãi." |
 | `VCHR-011` | Verify giữ mã GIAM50K kèm cảnh báo chưa đủ điều kiện và không giảm tiền khi giảm giỏ hàng xuống dưới 200.000 VNĐ | `DS-VAL-12` | State Transition | `prod-001` × 2 ➔ × 1: tổng 250.000 ₫ ➔ 180.000 ₫ (ship 30.000 ₫, giảm 0 ₫), mã giữ nguyên, cảnh báo vàng |
 | `VCHR-012` | Verify bấm nút Gỡ bỏ voucher để hủy mã đang áp dụng và hoàn lại tổng tiền thanh toán gốc | `DS-VAL-01` | Valid (Action) | Đang giảm 50.000 ₫ ➔ bấm `#btn-remove-voucher` ➔ tổng về 350.000 ₫ |
@@ -80,7 +80,8 @@
 - **Test case không có dữ liệu**: 0.
 - **Record mồ côi (không test case nào dùng)**: 0.
 - **Ca ngoài phạm vi Automation**: `VCHR-027`, `032`, `033` (⛔) · **tạm đóng**: `VCHR-019` (⏸️).
-- **Ca dự kiến FAIL do FE thiếu quy tắc định dạng** (Phụ lục 01): `VCHR-020`, `022`, `023`, `024`, `025`, `026`. Dự báo FAIL do ghi đè đơn giữa 2 tab: `VCHR-036`.
+- **Ca dự kiến FAIL do FE thiếu quy tắc định dạng** (Phụ lục 01): `VCHR-020`, `022`, `023`, `024`, `025` (phần thông báo; phần "không chạy script" dự kiến PASS), `026`. `VCHR-021` dự kiến PASS.
+- **Giá trị trong TC khác record** (cùng lớp dữ liệu, không đổi kỳ vọng): `VCHR-002`, `007`, `020`, `021`, `022`, `023`, `025` — khi viết script dùng giá trị trong test case. Dự báo FAIL do ghi đè đơn giữa 2 tab: `VCHR-036`.
 
 ---
 

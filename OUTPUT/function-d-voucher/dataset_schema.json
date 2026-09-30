@@ -12,11 +12,9 @@
     "values": ["FIXED_AMOUNT", "PERCENTAGE"]
   },
   "order_subtotal": {
-    "type": "currency_vnd",
-    "min": 200000,
-    "max": 1000000,
-    "step": 10000,
-    "formatted": false
+    "type": "enum",
+    "values": [200000, 240000, 300000, 350000, 400000, 450000, 500000, 600000, 800000],
+    "_note": "Chỉ các tiền hàng ghép được từ catalog thật (xem 10_dataset.md). SALE20 chỉ hợp lệ khi >= 300000 — lọc sau khi sinh."
   },
   "shipping_fee": {
     "type": "enum",

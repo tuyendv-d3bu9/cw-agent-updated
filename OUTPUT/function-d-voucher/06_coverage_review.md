@@ -86,9 +86,9 @@
 ### 6.2. Thay đổi test case
 - **Mốc biên theo catalog thật**: `VCHR-009` (200.000 ₫), `014` (190.000 ₫), `016` (280.000 ₫), `018` (490.000 / 500.000 ₫).
 - **Theo hành vi web**: `VCHR-011` (giữ mã + cảnh báo vàng), `028` (bấm nhiều lần chỉ giảm 1 lần), `031` (kiểm chứng BR-09 qua công thức tổng tiền).
-- **Theo Phụ lục 01**: `VCHR-020`→`026` giữ kỳ vọng kiểm tra định dạng — web chưa làm nên dự kiến FAIL và lập defect.
+- **Theo Phụ lục 01**: `VCHR-020`→`026` giữ kỳ vọng kiểm tra định dạng. Web chưa làm nên **6 ca dự kiến FAIL** (`020`, `022`→`026`) và lập defect; `VCHR-021` (20 ký tự hợp lệ) dự kiến PASS.
 - **Ca mới** (Human-Final #2, QA Lead quyết theo uỷ quyền, #19): `VCHR-035` tải lại trang; `VCHR-036` đặt hàng ở 2 tab. Bỏ ca mạng 3G (không có lời gọi mạng) và VAT (không có phân hệ).
-- Sửa tên sản phẩm không tồn tại ("Áo thun Polo…", "Bình giữ nhiệt Thông Minh") về đúng catalog.
+- Sửa tên sản phẩm không tồn tại ("Áo thun Polo…", "Bình giữ nhiệt Thông Minh") về đúng catalog; viết đủ số tiền (bỏ dạng `200k`); `VCHR-013`, `030` chuyển sang Automated, `030` viết lại kỳ vọng đo được.
 
 ### 6.3. Viewpoint Balance (36 TCs)
 | Viewpoint | Số TC | Tỷ lệ |
@@ -111,4 +111,5 @@
 ### 6.5. Khoảng trống còn lại
 - `BR-01` phần làm tròn và `MR-04` chưa kiểm chứng được (`VCHR-019` tạm đóng).
 - `MR-06`, `MR-07` không có tính năng trên web.
-- **Verdict**: `PASS` — không phát sinh `ASK` mới.
+- `VCHR-036`: kỳ vọng "không mất đơn giữa 2 tab" đang là `[GIẢ ĐỊNH]` — chờ BA xác nhận (Readiness v3 ❓).
+- **Verdict**: `PASS` — độ phủ đạt; còn 1 giả định treo ở `VCHR-036`, không chặn thiết kế.

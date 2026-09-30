@@ -53,6 +53,7 @@
 | `DS-NEG-09` | `' OR '1'='1` | Special (SQLi) | Chuỗi SQL độc hại | `BR-05`, `MR-01` | Giao diện không lỗi · "Mã giảm giá không đúng định dạng." |
 | `DS-NEG-10` | `GIAM50K` | Null/Empty | Giỏ hàng trống (tiền hàng 0 ₫, phí ship 0 ₫) | `BR-10` | [GIẢ ĐỊNH – LOW: form voucher vẫn hiển thị khi giỏ trống] "Đơn hàng chưa đạt mức tối thiểu 200.000 ₫ (Hiện có 0 ₫)." |
 | `DS-NEG-12` | `SALE🎉` | Special (emoji) | Emoji trong mã | `MR-01` | "Mã giảm giá không đúng định dạng." |
+| `DS-NEG-14` | `SALE20` | Invalid | Giỏ `prod-003` × 1 = 200.000 ₫ (đạt sàn chung, dưới mức riêng SALE20), phí ship 0 ₫ | `BR-02` | Từ chối: "Đơn hàng chưa đạt mức tối thiểu 300.000 ₫ (Hiện có 200.000 ₫)." · Tổng 200.000 ₫ |
 | `DS-NEG-13` | `GIAM50K` | Invalid | Giỏ `prod-001` × 1 = 150.000 ₫, phí ship 30.000 ₫ | `BR-10` | Từ chối: "Đơn hàng chưa đạt mức tối thiểu 200.000 ₫ (Hiện có 150.000 ₫)." · Tổng 180.000 ₫ |
 
 > ⚠️ Các record `DS-BND-10`, `DS-NEG-06`, `07`, `08`, `09`, `12` và `DS-BND-15` kỳ vọng theo Phụ lục 01. FE Live hiện **chưa** kiểm tra định dạng (`knowledge` Mục 8 #20) ➔ dự kiến FAIL và lập defect.
@@ -101,4 +102,4 @@
 - [x] Không còn record kiểm thử API/HTTP (Phụ lục 02 E-04).
 - [x] Số tiền ghi đủ, không viết tắt `k`.
 - [x] Bảng đối chiếu độ phủ không có ô trống, mỗi `N/A` có lý do.
-- [x] Tổng: **15 record biên** + **11 record phủ định** = 26 record.
+- [x] Tổng: **15 record biên** + **12 record phủ định** = 27 record.

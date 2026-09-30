@@ -46,7 +46,7 @@ Chức năng **Function D: Áp dụng Mã Giảm Giá (Voucher)** nằm ở bư�
 2. **Bước 2 (Chọn hàng)**: Thêm sản phẩm vào giỏ hàng đảm bảo tổng tiền hàng `subtotal >= 200.000 VNĐ` (ví dụ: Tai nghe 350.000 VNĐ).
 3. **Bước 3 (Vào thanh toán)**: Bấm tab "Thanh toán" để mở màn hình giỏ hàng và thanh toán.
 4. **Bước 4 (Nhập/chọn mã)**: Khách hàng nhập mã giảm giá vào ô input (`#input-voucher-code`) hoặc bấm chọn nhanh từ danh sách mã gợi ý (ví dụ: `GIAM50K`).
-5. **Bước 5 (Áp dụng)**: Khách hàng bấm nút “Áp dụng” (`#btn-apply-voucher`). Nút áp dụng được disable và hiển thị trạng thái xử lý chống spam click.
+5. **Bước 5 (Áp dụng)**: Khách hàng bấm nút “Áp dụng” (`#btn-apply-voucher`). Mã được áp ngay, nút không bị disable (Mục 8 #13).
 6. **Bước 6 (Kiểm tra chiết khấu)**: Hệ thống xác thực mã hợp lệ, tính toán giảm trừ (ví dụ giảm 50.000 VNĐ), hiển thị dòng `Giảm giá voucher: -50.000 ₫`, tổng thanh toán cập nhật thành `300.000 ₫`. Nút "Gỡ mã" (`#btn-remove-voucher`) xuất hiện.
 7. **Bước 7 (Đặt hàng)**: Bấm nút "Tiến hành Đặt hàng" (`#btn-submit-checkout`). Hệ thống hiển thị modal xử lý giao dịch và xác nhận "Đặt hàng thành công!" kèm mã đơn hàng `SG-XXXXXX`.
 
@@ -58,8 +58,8 @@ Chức năng **Function D: Áp dụng Mã Giảm Giá (Voucher)** nằm ở bư�
 - **E2 - Mã không tồn tại**: Nhập mã lạ ➔ Thông báo lỗi `"Mã giảm giá \"<MÃ>\" không tồn tại trên hệ thống."`.
 - **E3 - Không đạt giá trị đơn tối thiểu**: Đơn hàng có `subtotal < 200.000 VNĐ` (hoặc `< minSubtotal` của mã) ➔ Báo lỗi đơn hàng chưa đạt mức tối thiểu.
 - **E4 - Bỏ trống ô nhập**: Bấm áp dụng khi chưa nhập mã ➔ Báo lỗi `"Vui lòng nhập mã khuyến mãi."`.
-- **E5 - Ký tự lạ hoặc không đúng format**: Nhập ký tự đặc biệt, khoảng trắng giữa chuỗi ➔ Chặn và báo `"Mã không đúng định dạng."`.
-- **E6 - Giảm giỏ hàng dưới mức điều kiện**: Đang áp mã mà giảm số lượng sản phẩm khiến `subtotal < 200.000 VNĐ` ➔ Tự động gỡ bỏ voucher và disable kèm toast thông báo cảnh báo.
+- **E5 - Ký tự lạ hoặc không đúng format**: Nhập ký tự đặc biệt, khoảng trắng giữa chuỗi ➔ Báo `"Mã giảm giá không đúng định dạng."` (Phụ lục 01; FE Live chưa hiện thực — Mục 8 #20).
+- **E6 - Giảm giỏ hàng dưới mức điều kiện**: Đang áp mã mà giảm số lượng sản phẩm khiến `subtotal < 200.000 VNĐ` ➔ Mã vẫn giữ, hiện cảnh báo vàng `Mã "<MÃ>" chưa đủ điều kiện áp dụng`, giảm giá = 0 (Mục 8 #12).
 
 ---
 
@@ -103,10 +103,10 @@ Chức năng **Function D: Áp dụng Mã Giảm Giá (Voucher)** nằm ở bư�
 | # | Mã liên quan | Vấn đề nghiệp vụ | Quyết định chính thức của BA/PO | Người phê duyệt | Ngày chốt |
 |---|---|---|---|---|---|
 | 1 | MR-01 | Định dạng input ký tự đặc biệt | Chặn ký tự lạ, regex `^[A-Z0-9]{3,20}$`, báo lỗi không đúng format · ⚠️ *Đính chính 2026-09-30: BA chỉ chốt "chặn ký tự lạ"; phần độ dài/regex/thông báo là đề xuất của QA Agent, đã chốt lại tại `GAP-F1a` / Mục 8 #20, căn cứ INPUT: `02_ba/spec_function_d_addendum_01_voucher_format.md`* | BA / User | 2026-09-20 |
-| 2 | MR-02 | Thay đổi giỏ hàng sau khi áp mã | Tự động gỡ và disable voucher kèm thông báo cảnh báo | BA / User | 2026-09-20 |
+| 2 | MR-02 | Thay đổi giỏ hàng sau khi áp mã | ~~Tự động gỡ và disable voucher kèm thông báo cảnh báo~~ ➔ **thay bởi #12** | BA / User | 2026-09-20 |
 | 3 | MR-03 | Mức sàn áp mã toàn hệ thống | Mức hóa đơn tối thiểu để áp mã là **200.000 VNĐ** (khớp hoàn toàn với Web Live) | BA / User | 2026-09-20 |
 | 4 | MR-04 | Quy tắc làm tròn tiền voucher % | Làm tròn xuống hàng đơn vị đồng `Math.floor()` | BA / User | 2026-09-20 |
-| 5 | MR-05 | Chống spam click nút Áp dụng | Disable nút Áp dụng trong thời gian xử lý request | BA / User | 2026-09-20 |
+| 5 | MR-05 | Chống spam click nút Áp dụng | ~~Disable nút Áp dụng trong thời gian xử lý request~~ ➔ **thay bởi #13** | BA / User | 2026-09-20 |
 | 6 | MR-06 | Trừ hạn mức lượt dùng voucher | Trừ lượt dùng tại thời điểm Đặt hàng thành công | BA / User | 2026-09-20 |
 | 7 | MR-07 | Hoàn mã khi hủy đơn hàng | Tự động phục hồi lại quyền sử dụng voucher cho khách hàng nếu mã còn hạn | BA / User | 2026-09-20 |
 | 8 | GAP-D1 | `discount_value`: có chấp nhận phần trăm thập phân không? | **Chỉ chấp nhận phần trăm số nguyên** (10%, 20%, 30%); không hỗ trợ 7.5% / 12.5% | BA / User | 2026-09-27 |
@@ -121,7 +121,7 @@ Chức năng **Function D: Áp dụng Mã Giảm Giá (Voucher)** nằm ở bư�
 | 17 | GAP-L2 | Nút +/− số lượng thiếu `id` | **Dev sẽ bổ sung `id`**. Trong lúc chờ, script nhập trực tiếp vào `#input-qty-prod-00X` | BA / User | 2026-09-30 |
 | 18 | GAP-H1 · `VCHR-011` | Mức nghiêm trọng | **Không áp dụng** — đã chọn theo web ở #12 nên không phải bug | QA Lead / User | 2026-09-30 |
 | 19 | GAP-H2 | Bổ sung ca Human-Final | **Ủy quyền QA Lead**: app FE-only, không DB ➔ bỏ ca 3G (không có network call) và VAT (không có phân hệ); xem xét ca đa tab/reload vì dữ liệu dùng chung `localStorage` | QA Lead / User | 2026-09-30 |
-| 20 | GAP-F1a · MR-01 · `VCHR-020`→`026` | Độ dài & bộ ký tự mã voucher | **Giữ quy tắc định dạng** theo Phụ lục 01: 3–20 ký tự, chỉ `A–Z` `0–9`, `maxlength=20`, khoảng trắng giữa chuỗi là sai, thông báo "Mã giảm giá không đúng định dạng.". FE Live chưa hiện thực ➔ 7 ca dự kiến FAIL, lập defect | BA / User | 2026-09-30 |
+| 20 | GAP-F1a · MR-01 · `VCHR-020`→`026` | Độ dài & bộ ký tự mã voucher | **Giữ quy tắc định dạng** theo Phụ lục 01: 3–20 ký tự, chỉ `A–Z` `0–9`, `maxlength=20`, khoảng trắng giữa chuỗi là sai, thông báo "Mã giảm giá không đúng định dạng.". FE Live chưa hiện thực ➔ 6 ca dự kiến FAIL (`VCHR-020`, `022`→`026`), lập defect; `VCHR-021` dự kiến PASS | BA / User | 2026-09-30 |
 | 21 | BR-09 · Phí vận chuyển | Ngưỡng miễn phí ship | **Miễn phí ship khi tiền hàng từ 200.000 ₫ trở lên** (`>=`), phí chuẩn 30.000 ₫. Ban hành `INPUT/function-d-voucher/02_ba/spec_function_d_addendum_02_environment_shipping.md` §2 | BA / User | 2026-09-30 |
 | 22 | GAP-E1 (bổ sung) | Ca kiểm thử API / HTTP / DB | **Không có API** ➔ ghi vào Phụ lục 02 §1 và **loại bỏ** mọi ca/record kiểm thử API (`DS-NEG-03` null payload, `DS-NEG-11` subtotal âm qua API) | BA / User | 2026-09-30 |
 | 23 | Quy ước tiền | Viết tắt `k` | `k` = nghìn đồng (`200k` = `200.000 ₫`). Dữ liệu test luôn ghi đủ số. Ghi tại `knowledge/_project.md` §2 | BA / User | 2026-09-30 |
