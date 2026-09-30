@@ -4,7 +4,7 @@
 > Lưu trữ toàn bộ dữ kiện nghiệp vụ ĐÃ XÁC NHẬN của tính năng Áp dụng Mã Giảm Giá (Voucher) - ShopGo.
 > Mọi Agent phân tích hay thiết kế kiểm thử đều đọc file này đầu tiên để không phải hỏi lại những gì đã chốt.
 
-Feature slug: `function-d-voucher` · Nguồn tài liệu: `INPUT/function-d-voucher/02_ba/spec_function_d.md` & `01_business/shopgo_overview.md` · Cập nhật lần cuối: `2026-09-20` · Trạng thái tổng thể: `DRAFT`
+Feature slug: `function-d-voucher` · Nguồn tài liệu: `INPUT/function-d-voucher/02_ba/spec_function_d.md` & `01_business/shopgo_overview.md` · Cập nhật lần cuối: `2026-09-30` · Trạng thái tổng thể: `DRAFT`
 
 ---
 
@@ -82,13 +82,27 @@ Chức năng **Function D: Áp dụng Mã Giảm Giá (Voucher)** nằm ở bư�
 | MR-06 | Khóa race condition khi còn 1 lượt dùng voucher | W5 (Who else) | HIGH | Trừ lượt dùng chính thức khi Đặt hàng | Trừ lượt dùng tại bước Áp dụng hay bước Đặt hàng thành công? | **Đồng ý (Trừ khi Đặt hàng thành công)** | `Confirmed` |
 | MR-07 | Hoàn lại lượt dùng voucher khi đơn hàng bị hủy | W6 (Side effect) | LOW | Phục hồi lượt dùng nếu mã còn hạn | Khách hủy đơn hàng thì voucher có được hoàn lại lượt dùng không? | **Phục hồi lại quyền dùng voucher** | `Confirmed` |
 
+> **Đợt 2 (2026-09-30)** — Phát sinh từ Readiness Gate v2 (`OUTPUT/function-d-voucher/reports/readiness-report.md` §4.2, §5, "❓ CÂU HỎI MỞ") và `06_coverage_review.md` §4 (Human-Final), sau khi đối chiếu mã nguồn FE Live.
+
+| ID | Mô tả kẽ hở | Nhóm 06W | Mức rủi ro | Đề xuất mặc định | Câu hỏi cho BA/PO | Phản hồi chính thức | Trạng thái |
+|---|---|---|---|---|---|---|---|
+| GAP-F1a | **Đính chính MR-01**: BA chỉ trả lời "chặn ký tự lạ". Độ dài 3–20, regex `^[A-Z0-9]{3,20}$`, `maxlength=20` và thông báo "Mã không đúng định dạng" là **đề xuất mặc định của QA Agent** trong `02_missing_rule_report.md`, **không có căn cứ trong INPUT** nhưng đã bị ghi nhầm như BA chốt. FE Live không có cả 4 điểm này | W1 (Input) | MED | Theo FE: không giới hạn độ dài, mã sai định dạng báo "không tồn tại" | Chấp nhận hành vi FE, hay giữ quy tắc định dạng và coi là bug? Nếu giữ thì độ dài và bộ ký tự do BA quy định là gì? | — | `New` |
+| GAP-F1b | FE không tự gỡ voucher khi subtotal tụt dưới mức sàn (lệch MR-02) | W2 (State) | HIGH | — | Bug hay hạ kỳ vọng theo FE? | **Theo web** | `Confirmed` |
+| GAP-F1c | FE không disable nút Áp dụng, không có loading (lệch MR-05) | W4 (Timing) | MED | — | Bug hay hạ kỳ vọng theo FE? | **Theo web** | `Confirmed` |
+| GAP-F2 | Ngưỡng freeship 200k trùng mức sàn voucher 200k ➔ BR-09 không quan sát trực tiếp | W3 (Data) | MED | Kiểm chứng gián tiếp qua công thức tổng tiền | Đổi ngưỡng hay kiểm chứng gián tiếp? | **Theo web** (kiểm chứng gián tiếp) | `Confirmed` |
+| GAP-F3 | Mọi giá là bội số 10.000 ₫ ➔ không phát sinh tiền lẻ để kiểm MR-04 | W3 (Data) | LOW | Tạm đóng ca | Thêm sản phẩm giá lẻ hay tạm đóng? | **Tạm đóng** (phương án B) | `Confirmed` |
+| GAP-S1 | FE không có rate limiting, hạn mức lượt dùng, hủy từng đơn (MR-06, MR-07) | W5/W6 | LOW | Loại khỏi phạm vi Automation | Đóng khỏi phạm vi đợt này? | **Loại khỏi phạm vi, giữ TC trong kho** | `Confirmed` |
+| GAP-L2 | Nút tăng/giảm số lượng không có `id` ổn định | — | LOW | Nhập trực tiếp vào `#input-qty-*` | Dev có bổ sung `id` không? | **Dev sẽ bổ sung `id`** | `Confirmed` |
+| GAP-H1 | Human-Final: mức nghiêm trọng `VCHR-011` | — | — | — | Critical/High/Medium/Low? | **Không áp dụng** — GAP-F1b chọn theo web nên không còn là bug | `Rejected` |
+| GAP-H2 | Human-Final: bổ sung ca concurrency đa tab / 3G / VAT | W5 (Who else) | MED | Chỉ giữ ca phù hợp app FE-only | Bổ sung ca nào? | **QA Lead quyết theo đặc thù web local, không DB** | `Confirmed` |
+
 ---
 
 ## 8. GIẢ ĐỊNH ĐÃ ĐƯỢC CHỐT (CONFIRMED ASSUMPTIONS LOG)
 
 | # | Mã liên quan | Vấn đề nghiệp vụ | Quyết định chính thức của BA/PO | Người phê duyệt | Ngày chốt |
 |---|---|---|---|---|---|
-| 1 | MR-01 | Định dạng input ký tự đặc biệt | Chặn ký tự lạ, regex `^[A-Z0-9]{3,20}$`, báo lỗi không đúng format | BA / User | 2026-09-20 |
+| 1 | MR-01 | Định dạng input ký tự đặc biệt | Chặn ký tự lạ, regex `^[A-Z0-9]{3,20}$`, báo lỗi không đúng format · ⚠️ *Đính chính 2026-09-30: BA chỉ chốt "chặn ký tự lạ"; phần độ dài/regex/thông báo là đề xuất của QA Agent, đang mở lại tại `GAP-F1a`* | BA / User | 2026-09-20 |
 | 2 | MR-02 | Thay đổi giỏ hàng sau khi áp mã | Tự động gỡ và disable voucher kèm thông báo cảnh báo | BA / User | 2026-09-20 |
 | 3 | MR-03 | Mức sàn áp mã toàn hệ thống | Mức hóa đơn tối thiểu để áp mã là **200.000 VNĐ** (khớp hoàn toàn với Web Live) | BA / User | 2026-09-20 |
 | 4 | MR-04 | Quy tắc làm tròn tiền voucher % | Làm tròn xuống hàng đơn vị đồng `Math.floor()` | BA / User | 2026-09-20 |
@@ -99,6 +113,14 @@ Chức năng **Function D: Áp dụng Mã Giảm Giá (Voucher)** nằm ở bư�
 | 9 | GAP-D2 | `order_subtotal`: có trần giá trị đơn hàng tối đa được áp mã không? | **Không giới hạn trần** — đơn giá trị lớn vẫn áp mã bình thường | BA / User | 2026-09-27 |
 | 10 | GAP-E1 | Môi trường Live có backend không? | **Không có backend** — ứng dụng là SPA thuần frontend, dữ liệu đơn hàng lưu ở `localStorage` (`shopgo_orders`). Kỳ vọng kiểm thử chỉ đối chiếu theo hành vi FE | BA / User | 2026-09-27 |
 | 11 | GAP-E2 | Sản phẩm "Phụ kiện móc khóa 60.000 ₫" | **Không tồn tại** — catalog thật gồm 6 sản phẩm: 150.000 / 350.000 / 200.000 / 280.000 / 190.000 / 120.000 ₫ | BA / User | 2026-09-27 |
+| 12 | GAP-F1b · MR-02 · `VCHR-011` | FE không tự gỡ voucher khi giỏ tụt dưới 200k | **Theo web**: giữ mã, hiện cảnh báo vàng `Mã "X" chưa đủ điều kiện áp dụng`, `discount = 0`. Thay thế kỳ vọng "tự gỡ + disable" của MR-02 | BA / User | 2026-09-30 |
+| 13 | GAP-F1c · MR-05 · `VCHR-028` | FE không disable nút Áp dụng | **Theo web**: nút không bị disable, không loading. Kỳ vọng mới: bấm nhiều lần liên tiếp, số tiền chỉ giảm 1 lần | BA / User | 2026-09-30 |
+| 14 | GAP-F2 · BR-09 · `VCHR-031` | Freeship 200k trùng mức sàn voucher 200k | **Theo web**: giữ nguyên 2 ngưỡng; kiểm chứng BR-09 gián tiếp qua `Tổng = Subtotal + Ship − Discount` và các trường trong `localStorage["shopgo_orders"]` | BA / User | 2026-09-30 |
+| 15 | GAP-F3 · MR-04 · `VCHR-019` | Không có giá lẻ để kiểm làm tròn | **Tạm đóng** `VCHR-019`: "chưa kiểm chứng được trên dữ liệu hiện tại"; mở lại khi catalog có giá lẻ | BA / User | 2026-09-30 |
+| 16 | GAP-S1 · `VCHR-027`, `032`, `033` | FE không có tính năng tương ứng | **Loại khỏi phạm vi Automation đợt này**, giữ TC trong Master Spec | BA / User | 2026-09-30 |
+| 17 | GAP-L2 | Nút +/− số lượng thiếu `id` | **Dev sẽ bổ sung `id`**. Trong lúc chờ, script nhập trực tiếp vào `#input-qty-prod-00X` | BA / User | 2026-09-30 |
+| 18 | GAP-H1 · `VCHR-011` | Mức nghiêm trọng | **Không áp dụng** — đã chọn theo web ở #12 nên không phải bug | QA Lead / User | 2026-09-30 |
+| 19 | GAP-H2 | Bổ sung ca Human-Final | **Ủy quyền QA Lead**: app FE-only, không DB ➔ bỏ ca 3G (không có network call) và VAT (không có phân hệ); xem xét ca đa tab/reload vì dữ liệu dùng chung `localStorage` | QA Lead / User | 2026-09-30 |
 
 ---
 
