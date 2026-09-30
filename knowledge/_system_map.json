@@ -1,7 +1,7 @@
 {
   "system_name": "CW QA Agent Ecosystem",
   "version": "2.0.0",
-  "last_updated": "2026-09-27",
+  "last_updated": "2026-09-30",
   "ssot_policy": "Tri thức trong knowledge/ là tối cao. CẤM đọc dò từng file, tra cứu bảng routing_table để mở đúng file đích.",
   "project_conventions": {
     "project_name": "CW ShopGO",
@@ -29,6 +29,8 @@
     "flow_clustering": "agents/qa-automation/skills/flow-clustering.md",
     "pom_generator": "agents/qa-automation/skills/pom-generator.md",
     "test_runner_evidence": "agents/qa-automation/skills/test-runner-evidence.md",
+    "jira_mcp_server": "agents/tools/jira-mcp-server.js",
+    "jira_mcp_guide": "agents/integrations/jira-mcp-guide.md",
     "template_input_dir": "INPUT/_template/",
     "template_run_dir": "OUTPUT/_template_run/"
   },

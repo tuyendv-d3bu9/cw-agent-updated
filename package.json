@@ -13,6 +13,7 @@
     "testcases:export": "node agents/tools/export-testcases.js",
     "jira:push": "node agents/tools/jira-client.js push",
     "jira:pull": "node agents/tools/jira-client.js pull",
+    "jira:mcp": "node agents/tools/jira-mcp-server.js",
     "knowledge:conflicts": "node agents/tools/conflict-detector.js",
     "knowledge:init": "node agents/tools/bootstrap-knowledge.js",
     "intake": "node agents/tools/intake.js",
