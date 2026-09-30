@@ -1,142 +1,87 @@
 # REALISTIC DATASET — FUNCTION-D-VOUCHER (ÁP DỤNG MÃ GIẢM GIÁ)
 
-> **Bộ phận**: `agents/qa-test-data` · **Kỹ năng**: `dataset-generation.md`  
-> **Nguồn đối chiếu**: `OUTPUT/function-d-voucher/09_data_class_map.md`, `01_requirement_risk_summary.md` & `environment.md`  
-> **Quy ước FACT**: Tiền tệ VNĐ, chính sách Freeship cho đơn ≥ 200.000 VNĐ (`shippingFee = 0 ₫`), định dạng ngày `YYYY-MM-DD`, tính toán khớp 100% Web Live.
+> **Bộ phận**: `agents/qa-test-data` · **Kỹ năng**: `dataset-generation.md`
+> **Nguồn đối chiếu**: `09_data_class_map.md`, `07b_ui_locator_map.md` §2–§3, `INPUT/function-d-voucher/02_ba/spec_function_d_addendum_02_environment_shipping.md`
+> **Phiên bản**: v2 (2026-09-30) — bỏ mã `VOUCHER10` (không tồn tại trên web), tạm đóng record tiền lẻ 333.333 ₫, bổ sung tổ hợp giỏ hàng cho từng record.
+> **Quy ước FACT**: Tiền VNĐ ghi đủ số (không viết tắt `k`); phí ship 30.000 ₫, **miễn phí khi tiền hàng từ 200.000 ₫ trở lên**; `Tổng = Tiền hàng + Phí ship − Giảm giá`.
 
 ---
 
-## 1. Bảng Dataset Sát Nghiệp Vụ (Valid Records)
+## 1. Bảng Dataset Sát Nghiệp Vụ
 
-| Record ID | User Account | Voucher Input | Voucher Thực Tế | Loại Voucher | Tiền hàng (`subtotal`) | Phí ship (`shippingFee`) | Tiền giảm (`discount`) | Tổng thanh toán (`totalPayment`) | Trạng thái / Ghi chú nghiệp vụ |
-|---|---|---|---|---|---|---|---|---|---|
-| `DS-VAL-01` | `khachhang@shopgo.vn` | `GIAM50K` | `GIAM50K` | `FIXED_AMOUNT` | 350.000 ₫ | 0 ₫ (Freeship) | 50.000 ₫ | 300.000 ₫ | Happy path chuẩn: Mã tiền cố định 50k, đơn hàng đạt ngưỡng Freeship (khớp 100% Web Live) |
-| `DS-VAL-02` | `vip@shopgo.vn` | `SALE20` | `SALE20` | `PERCENTAGE` | 300.000 ₫ | 0 ₫ (Freeship) | 60.000 ₫ | 240.000 ₫ | Đúng điều kiện tối thiểu mã SALE20 (minOrder = 300k), freeship |
-| `DS-VAL-03` | `khachhang@shopgo.vn` | `SALE20` | `SALE20` | `PERCENTAGE` | 450.000 ₫ | 0 ₫ (Freeship) | 90.000 ₫ | 360.000 ₫ | Chiết khấu 20% nằm dưới mức trần maxCap, freeship |
-| `DS-VAL-04` | `vip@shopgo.vn` | `SALE20` | `SALE20` | `PERCENTAGE` | 500.000 ₫ | 0 ₫ (Freeship) | 100.000 ₫ | 400.000 ₫ | Chạm đúng mức trần tối đa (maxCap = 100k, 500k * 20% = 100k), freeship |
-| `DS-VAL-05` | `khachhang@shopgo.vn` | `SALE20` | `SALE20` | `PERCENTAGE` | 800.000 ₫ | 0 ₫ (Freeship) | 100.000 ₫ | 700.000 ₫ | Vượt mức trần maxCap: Giảm chặn cứng tại 100.000 ₫, freeship |
-| `DS-VAL-06` | `khachhang@shopgo.vn` | `GIAM50K` | `GIAM50K` | `FIXED_AMOUNT` | 200.000 ₫ | 0 ₫ (Freeship) | 50.000 ₫ | 150.000 ₫ | Chạm đúng mức sàn áp voucher hệ thống ShopGo (200k, khớp VCHR-001) |
-| `DS-VAL-07` | `vip@shopgo.vn` | `VOUCHER10` | `VOUCHER10` | `PERCENTAGE` | 250.000 ₫ | 0 ₫ (Freeship) | 25.000 ₫ | 225.000 ₫ | Chiết khấu 10% cho đơn 250k, đạt ngưỡng Freeship |
-| `DS-VAL-08` | `khachhang@shopgo.vn` | `giam50k` | `GIAM50K` | `FIXED_AMOUNT` | 400.000 ₫ | 0 ₫ (Freeship) | 50.000 ₫ | 350.000 ₫ | Tự động chuyển ký tự thường sang chữ hoa (`toUpperCase`), freeship |
-| `DS-VAL-09` | `vip@shopgo.vn` | `  SALE20  ` | `SALE20` | `PERCENTAGE` | 350.000 ₫ | 0 ₫ (Freeship) | 70.000 ₫ | 280.000 ₫ | Tự động cắt bỏ khoảng trắng hai đầu (`trim`), freeship (khớp VCHR-002) |
-| `DS-VAL-10` | `khachhang@shopgo.vn` | `SALE20` | `SALE20` | `PERCENTAGE` | 333.333 ₫ | 0 ₫ (Freeship) | 66.666 ₫ | 266.667 ₫ | Số tiền lẻ: áp dụng quy tắc làm tròn xuống `Math.floor()`, freeship |
+| Record ID | Tài khoản | Mã nhập | Mã thực tế | Loại mã | Giỏ hàng | Tiền hàng | Phí ship | Giảm giá | Tổng thanh toán | Ghi chú |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `DS-VAL-01` | `khachhang@shopgo.vn` | `GIAM50K` | `GIAM50K` | `FIXED_AMOUNT` | `prod-002` × 1 | 350.000 ₫ | 0 ₫ | 50.000 ₫ | 300.000 ₫ | Happy path mã tiền cố định |
+| `DS-VAL-02` | `vip@shopgo.vn` | `SALE20` | `SALE20` | `PERCENTAGE` | `prod-001` × 2 | 300.000 ₫ | 0 ₫ | 60.000 ₫ | 240.000 ₫ | Đúng mức tối thiểu SALE20 |
+| `DS-VAL-03` | `khachhang@shopgo.vn` | `SALE20` | `SALE20` | `PERCENTAGE` | `prod-001` × 3 | 450.000 ₫ | 0 ₫ | 90.000 ₫ | 360.000 ₫ | 20% dưới trần |
+| `DS-VAL-04` | `vip@shopgo.vn` | `SALE20` | `SALE20` | `PERCENTAGE` | `prod-001` × 1 + `prod-002` × 1 | 500.000 ₫ | 0 ₫ | 100.000 ₫ | 400.000 ₫ | Chạm đúng trần 100.000 ₫ |
+| `DS-VAL-05` | `khachhang@shopgo.vn` | `SALE20` | `SALE20` | `PERCENTAGE` | `prod-003` × 4 | 800.000 ₫ | 0 ₫ | 100.000 ₫ | 700.000 ₫ | Vượt trần, chặn ở 100.000 ₫ |
+| `DS-VAL-06` | `khachhang@shopgo.vn` | `GIAM50K` | `GIAM50K` | `FIXED_AMOUNT` | `prod-003` × 1 | 200.000 ₫ | 0 ₫ | 50.000 ₫ | 150.000 ₫ | Đúng mức sàn 200.000 ₫ |
+| `DS-VAL-07` | `khachhang@shopgo.vn` | `GIAM50K` | `GIAM50K` | `FIXED_AMOUNT` | `prod-004` × 1 | 280.000 ₫ | 0 ₫ | 50.000 ₫ | 230.000 ₫ | Đơn thứ hai của ca 2 tab (`VCHR-036`) |
+| `DS-VAL-08` | `khachhang@shopgo.vn` | `giam50k` | `GIAM50K` | `FIXED_AMOUNT` | `prod-003` × 2 | 400.000 ₫ | 0 ₫ | 50.000 ₫ | 350.000 ₫ | Tự chuyển chữ hoa |
+| `DS-VAL-09` | `vip@shopgo.vn` | `  SALE20  ` | `SALE20` | `PERCENTAGE` | `prod-002` × 1 | 350.000 ₫ | 0 ₫ | 70.000 ₫ | 280.000 ₫ | Tự bỏ khoảng trắng hai đầu |
+| `DS-VAL-10` | — | — | — | — | — | — | — | — | — | ⏸️ **TẠM ĐÓNG** — tiền lẻ để kiểm làm tròn không tạo được trên catalog (`knowledge` Mục 8 #15). Không dùng trong CSV/JSON |
+| `DS-VAL-11` | `khachhang@shopgo.vn` | `SALE20` | `SALE20` | `PERCENTAGE` | `prod-001` × 4 | 600.000 ₫ | 0 ₫ | 100.000 ₫ | 500.000 ₫ | Vượt trần (`VCHR-003`) |
+| `DS-VAL-12` | `khachhang@shopgo.vn` | `GIAM50K` | `GIAM50K` | `FIXED_AMOUNT` | `prod-001` × 2 ➔ × 1 | 300.000 ₫ ➔ 150.000 ₫ | 0 ₫ ➔ 30.000 ₫ | 50.000 ₫ ➔ 0 ₫ | 250.000 ₫ ➔ 180.000 ₫ | Chuyển trạng thái: giảm số lượng sau khi áp mã; mã vẫn giữ, hiện cảnh báo vàng (`VCHR-011`) |
 
 ---
 
 ## 2. Giả Định Đã Dùng
 
-| # | Giả định | Vì sao cần | Chờ ai xác nhận | Trạng thái |
-|---|---|---|---|---|
-| 1 | `[GIẢ ĐỊNH]` Tài khoản người dùng kiểm thử mặc định là `khachhang@shopgo.vn` và `vip@shopgo.vn` (password: `123456`). | Web Live yêu cầu bắt buộc đăng nhập trước khi vào giỏ hàng và thanh toán. | Đã xác thực thực tế trên Web Live | Confirmed |
-| 2 | **Chính sách Freeship**: Hệ thống ShopGo áp dụng chính sách miễn phí vận chuyển cho mọi đơn hàng có `subtotal >= 200.000 VNĐ`. | Đảm bảo kết quả tính toán `totalPayment` khớp 100% với Web Live và Spec kỹ thuật. | Đã quy định tại `environment.md` & Live DOM | Confirmed |
+| # | Nội dung | Căn cứ | Trạng thái |
+|---|---|---|---|
+| 1 | Tài khoản kiểm thử `khachhang@shopgo.vn`, `vip@shopgo.vn` / `123456` | `knowledge/_project.md` §4 | Confirmed |
+| 2 | Miễn phí ship khi tiền hàng từ 200.000 ₫ trở lên | Phụ lục 02 S-02 · `knowledge` Mục 8 #21 | Confirmed |
+| 3 | Chỉ có 3 mã: `GIAM50K`, `SALE20`, `HETHAN` | `INPUT/function-d-voucher/03_dev/environment.md` | Confirmed |
 
 ---
 
-## 3. Export Dữ Liệu Thực Tế (CSV & JSON)
+## 3. Export Dữ Liệu (CSV & JSON)
 
-### 3.1. Định dạng CSV
+### 3.1. CSV
 ```csv
-record_id,user_account,voucher_input,voucher_code,discount_type,subtotal,shipping_fee,discount_amount,total_payment,note
-DS-VAL-01,khachhang@shopgo.vn,GIAM50K,GIAM50K,FIXED_AMOUNT,350000,0,50000,300000,Happy path co dinh 50k freeship
-DS-VAL-02,vip@shopgo.vn,SALE20,SALE20,PERCENTAGE,300000,0,60000,240000,Dung minOrder 300k cua SALE20 freeship
-DS-VAL-03,khachhang@shopgo.vn,SALE20,SALE20,PERCENTAGE,450000,0,90000,360000,Giam 20% duoi muc tran freeship
-DS-VAL-04,vip@shopgo.vn,SALE20,SALE20,PERCENTAGE,500000,0,100000,400000,Cham dung tran maxCap 100k freeship
-DS-VAL-05,khachhang@shopgo.vn,SALE20,SALE20,PERCENTAGE,800000,0,100000,700000,Vuot muc tran maxCap 100k freeship
-DS-VAL-06,khachhang@shopgo.vn,GIAM50K,GIAM50K,FIXED_AMOUNT,200000,0,50000,150000,Cham dung muc san he thong 200k freeship
-DS-VAL-07,vip@shopgo.vn,VOUCHER10,VOUCHER10,PERCENTAGE,250000,0,25000,225000,Giam 10% freeship
-DS-VAL-08,khachhang@shopgo.vn,giam50k,GIAM50K,FIXED_AMOUNT,400000,0,50000,350000,Kiem thu auto uppercase freeship
-DS-VAL-09,vip@shopgo.vn,"  SALE20  ",SALE20,PERCENTAGE,350000,0,70000,280000,Kiem thu auto trim space freeship
-DS-VAL-10,khachhang@shopgo.vn,SALE20,SALE20,PERCENTAGE,333333,0,66666,266667,Kiem thu lam tron tien le floor freeship
+record_id,user_account,voucher_input,voucher_code,discount_type,cart,subtotal,shipping_fee,discount_amount,total_payment
+DS-VAL-01,khachhang@shopgo.vn,GIAM50K,GIAM50K,FIXED_AMOUNT,prod-002x1,350000,0,50000,300000
+DS-VAL-02,vip@shopgo.vn,SALE20,SALE20,PERCENTAGE,prod-001x2,300000,0,60000,240000
+DS-VAL-03,khachhang@shopgo.vn,SALE20,SALE20,PERCENTAGE,prod-001x3,450000,0,90000,360000
+DS-VAL-04,vip@shopgo.vn,SALE20,SALE20,PERCENTAGE,prod-001x1+prod-002x1,500000,0,100000,400000
+DS-VAL-05,khachhang@shopgo.vn,SALE20,SALE20,PERCENTAGE,prod-003x4,800000,0,100000,700000
+DS-VAL-06,khachhang@shopgo.vn,GIAM50K,GIAM50K,FIXED_AMOUNT,prod-003x1,200000,0,50000,150000
+DS-VAL-07,khachhang@shopgo.vn,GIAM50K,GIAM50K,FIXED_AMOUNT,prod-004x1,280000,0,50000,230000
+DS-VAL-08,khachhang@shopgo.vn,giam50k,GIAM50K,FIXED_AMOUNT,prod-003x2,400000,0,50000,350000
+DS-VAL-09,vip@shopgo.vn,"  SALE20  ",SALE20,PERCENTAGE,prod-002x1,350000,0,70000,280000
+DS-VAL-11,khachhang@shopgo.vn,SALE20,SALE20,PERCENTAGE,prod-001x4,600000,0,100000,500000
 ```
 
-### 3.2. Định dạng JSON
+### 3.2. JSON
 ```json
 [
-  {
-    "record_id": "DS-VAL-01",
-    "user_account": "khachhang@shopgo.vn",
-    "voucher_input": "GIAM50K",
-    "voucher_code": "GIAM50K",
-    "discount_type": "FIXED_AMOUNT",
-    "subtotal": 350000,
-    "shipping_fee": 0,
-    "discount_amount": 50000,
-    "total_payment": 300000
-  },
-  {
-    "record_id": "DS-VAL-02",
-    "user_account": "vip@shopgo.vn",
-    "voucher_input": "SALE20",
-    "voucher_code": "SALE20",
-    "discount_type": "PERCENTAGE",
-    "subtotal": 300000,
-    "shipping_fee": 0,
-    "discount_amount": 60000,
-    "total_payment": 240000
-  },
-  {
-    "record_id": "DS-VAL-04",
-    "user_account": "vip@shopgo.vn",
-    "voucher_input": "SALE20",
-    "voucher_code": "SALE20",
-    "discount_type": "PERCENTAGE",
-    "subtotal": 500000,
-    "shipping_fee": 0,
-    "discount_amount": 100000,
-    "total_payment": 400000
-  },
-  {
-    "record_id": "DS-VAL-06",
-    "user_account": "khachhang@shopgo.vn",
-    "voucher_input": "GIAM50K",
-    "voucher_code": "GIAM50K",
-    "discount_type": "FIXED_AMOUNT",
-    "subtotal": 200000,
-    "shipping_fee": 0,
-    "discount_amount": 50000,
-    "total_payment": 150000
-  },
-  {
-    "record_id": "DS-VAL-09",
-    "user_account": "vip@shopgo.vn",
-    "voucher_input": "  SALE20  ",
-    "voucher_code": "SALE20",
-    "discount_type": "PERCENTAGE",
-    "subtotal": 350000,
-    "shipping_fee": 0,
-    "discount_amount": 70000,
-    "total_payment": 280000
-  },
-  {
-    "record_id": "DS-VAL-10",
-    "user_account": "khachhang@shopgo.vn",
-    "voucher_input": "SALE20",
-    "voucher_code": "SALE20",
-    "discount_type": "PERCENTAGE",
-    "subtotal": 333333,
-    "shipping_fee": 0,
-    "discount_amount": 66666,
-    "total_payment": 266667
-  }
+  {"record_id": "DS-VAL-01", "user_account": "khachhang@shopgo.vn", "voucher_input": "GIAM50K", "cart": {"prod-002": 1}, "subtotal": 350000, "shipping_fee": 0, "discount_amount": 50000, "total_payment": 300000},
+  {"record_id": "DS-VAL-02", "user_account": "vip@shopgo.vn", "voucher_input": "SALE20", "cart": {"prod-001": 2}, "subtotal": 300000, "shipping_fee": 0, "discount_amount": 60000, "total_payment": 240000},
+  {"record_id": "DS-VAL-04", "user_account": "vip@shopgo.vn", "voucher_input": "SALE20", "cart": {"prod-001": 1, "prod-002": 1}, "subtotal": 500000, "shipping_fee": 0, "discount_amount": 100000, "total_payment": 400000},
+  {"record_id": "DS-VAL-06", "user_account": "khachhang@shopgo.vn", "voucher_input": "GIAM50K", "cart": {"prod-003": 1}, "subtotal": 200000, "shipping_fee": 0, "discount_amount": 50000, "total_payment": 150000},
+  {"record_id": "DS-VAL-07", "user_account": "khachhang@shopgo.vn", "voucher_input": "GIAM50K", "cart": {"prod-004": 1}, "subtotal": 280000, "shipping_fee": 0, "discount_amount": 50000, "total_payment": 230000},
+  {"record_id": "DS-VAL-09", "user_account": "vip@shopgo.vn", "voucher_input": "  SALE20  ", "cart": {"prod-002": 1}, "subtotal": 350000, "shipping_fee": 0, "discount_amount": 70000, "total_payment": 280000},
+  {"record_id": "DS-VAL-12", "user_account": "khachhang@shopgo.vn", "voucher_input": "GIAM50K", "cart_before": {"prod-001": 2}, "cart_after": {"prod-001": 1}, "total_before": 250000, "subtotal_after": 150000, "shipping_fee_after": 30000, "discount_after": 0, "total_after": 180000, "expected_warning": "Mã \"GIAM50K\" chưa đủ điều kiện áp dụng"}
 ]
 ```
 
 ---
 
-## 4. Tự Soi 5 Bẫy Khi Sinh Dữ Liệu (Self-Correction Audit)
+## 4. Tự Soi 5 Bẫy Khi Sinh Dữ Liệu
 
-| # | Bẫy thường gặp | Đã kiểm | Kết quả đối chiếu |
-|---|---|:---:|---|
-| 1 | **Data lặp đơn điệu** | [x] | **ĐẠT**. Phân bổ cân đối giữa voucher tiền cố định và voucher %, bao gồm cả đơn sàn 200k, đơn điều kiện riêng 300k, đơn chạm trần 500k và vượt trần 800k. |
-| 2 | **Data phi thực tế** | [x] | **ĐẠT**. Toàn bộ mã (`GIAM50K`, `SALE20`, `VOUCHER10`), tài khoản đăng nhập và tính toán freeship đều khớp chính xác 100% với Web Live ShopGo. |
-| 3 | **Date logic sai** | [x] | **ĐẠT**. Tất cả các mã trong bộ Valid đều đang trong thời hạn hiệu lực (Active). |
-| 4 | **Giá trị bịa theo kiểu** | [x] | **ĐẠT**. Đúng quy tắc chiết khấu: `GIAM50K` trừ 50.000 ₫, `SALE20` chiết khấu 20% kèm chặn trần 100.000 ₫, đơn ≥ 200k freeship 0 ₫. |
-| 5 | **Thiếu edge tự nhiên** | [x] | **ĐẠT**. Đã đưa vào các điểm biên tự nhiên: đơn đúng sàn 200.000 ₫ (`DS-VAL-06`), đơn đúng điều kiện SALE20 300.000 ₫ (`DS-VAL-02`), đơn chạm trần maxCap (`DS-VAL-04`), và đơn tiền lẻ làm tròn `floor()` (`DS-VAL-10`). |
+| # | Bẫy | Kết quả |
+|---|---|---|
+| 1 | Data lặp đơn điệu | **ĐẠT** — trộn mã tiền cố định / %, đủ các mốc sàn, tối thiểu SALE20, chạm trần, vượt trần, chuyển trạng thái. |
+| 2 | Data phi thực tế | **ĐẠT** — chỉ dùng 3 mã có thật; mọi tiền hàng ghép được từ catalog 6 sản phẩm, trong giới hạn tồn kho. |
+| 3 | Date logic sai | **ĐẠT** — mã hợp lệ đều còn hạn; `HETHAN` chỉ dùng ở dataset phủ định. |
+| 4 | Giá trị bịa theo kiểu | **ĐẠT** — tính lại từng dòng theo công thức Phụ lục 02 S-04. |
+| 5 | Thiếu edge tự nhiên | **ĐẠT** — có đơn đúng sàn, đúng tối thiểu SALE20, chạm trần, và đơn đổi số lượng sau khi áp mã. |
 
 ---
 
-## 5. Chốt Chặn Nghiệm Thu (Quality Gates)
-- [x] Đã xử lý triệt để issue `DATA-01`: Cập nhật phí freeship 0 ₫ cho các đơn ≥ 200k, tổng thanh toán khớp 100% Web Live.
-- [x] Không lỗi cú pháp, tính toán số tiền chính xác 100% FACT.
-- [x] Dữ liệu có thể xuất và tiêu thụ trực tiếp (CSV, JSON).
-- [x] Xuất bản tại `OUTPUT/function-d-voucher/10_dataset.md`.
+## 5. Chốt Chặn Nghiệm Thu
+- [x] Không còn mã `VOUCHER10` / `FREESHIP` không tồn tại.
+- [x] Phí ship đúng quy tắc miễn phí từ 200.000 ₫.
+- [x] Số tiền ghi đủ, không viết tắt `k`.
+- [x] 11 record dùng được (`DS-VAL-10` tạm đóng).

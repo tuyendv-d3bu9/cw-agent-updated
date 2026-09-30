@@ -122,6 +122,9 @@ Chức năng **Function D: Áp dụng Mã Giảm Giá (Voucher)** nằm ở bư�
 | 18 | GAP-H1 · `VCHR-011` | Mức nghiêm trọng | **Không áp dụng** — đã chọn theo web ở #12 nên không phải bug | QA Lead / User | 2026-09-30 |
 | 19 | GAP-H2 | Bổ sung ca Human-Final | **Ủy quyền QA Lead**: app FE-only, không DB ➔ bỏ ca 3G (không có network call) và VAT (không có phân hệ); xem xét ca đa tab/reload vì dữ liệu dùng chung `localStorage` | QA Lead / User | 2026-09-30 |
 | 20 | GAP-F1a · MR-01 · `VCHR-020`→`026` | Độ dài & bộ ký tự mã voucher | **Giữ quy tắc định dạng** theo Phụ lục 01: 3–20 ký tự, chỉ `A–Z` `0–9`, `maxlength=20`, khoảng trắng giữa chuỗi là sai, thông báo "Mã giảm giá không đúng định dạng.". FE Live chưa hiện thực ➔ 7 ca dự kiến FAIL, lập defect | BA / User | 2026-09-30 |
+| 21 | BR-09 · Phí vận chuyển | Ngưỡng miễn phí ship | **Miễn phí ship khi tiền hàng từ 200.000 ₫ trở lên** (`>=`), phí chuẩn 30.000 ₫. Ban hành `INPUT/function-d-voucher/02_ba/spec_function_d_addendum_02_environment_shipping.md` §2 | BA / User | 2026-09-30 |
+| 22 | GAP-E1 (bổ sung) | Ca kiểm thử API / HTTP / DB | **Không có API** ➔ ghi vào Phụ lục 02 §1 và **loại bỏ** mọi ca/record kiểm thử API (`DS-NEG-03` null payload, `DS-NEG-11` subtotal âm qua API) | BA / User | 2026-09-30 |
+| 23 | Quy ước tiền | Viết tắt `k` | `k` = nghìn đồng (`200k` = `200.000 ₫`). Dữ liệu test luôn ghi đủ số. Ghi tại `knowledge/_project.md` §2 | BA / User | 2026-09-30 |
 
 ---
 

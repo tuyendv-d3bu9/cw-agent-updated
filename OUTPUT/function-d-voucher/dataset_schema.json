@@ -5,7 +5,7 @@
   },
   "voucher_code": {
     "type": "enum",
-    "values": ["GIAM50K", "SALE20", "VOUCHER10", "FREESHIP"]
+    "values": ["GIAM50K", "SALE20"]
   },
   "discount_type": {
     "type": "enum",
@@ -15,11 +15,11 @@
     "type": "currency_vnd",
     "min": 200000,
     "max": 1000000,
-    "step": 50000,
+    "step": 10000,
     "formatted": false
   },
   "shipping_fee": {
     "type": "enum",
-    "values": [30000, 50000, 0]
+    "values": [0]
   }
 }

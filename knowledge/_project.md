@@ -3,7 +3,7 @@
 > Tri thức nền cấp **dự án**, không đổi theo từng tính năng. Mọi skill đọc file này.
 > Trống mục nào thì agent phải gắn `[GIẢ ĐỊNH]` khi cần tới — điền dần để giảm giả định.
 
-Dự án: `ShopGo` · Cập nhật lần cuối: `2026-09-20`
+Dự án: `ShopGo` · Cập nhật lần cuối: `2026-09-30`
 
 ---
 
@@ -18,8 +18,9 @@ Dự án: `ShopGo` · Cập nhật lần cuối: `2026-09-20`
 |---|---|---|
 | Ngày / Giờ | `YYYY-MM-DD` / `YYYY-MM-DD HH:mm:ss` | Chuẩn ISO 8601, không mix định dạng khác |
 | Tiền tệ | `VNĐ`, dấu chấm `.` phân cách hàng nghìn | Ví dụ `100.000 VNĐ`. Không có phần thập phân |
+| Viết tắt `k` / `K` trong số tiền | **`k` = nghìn đồng**: `200k` = `200.000 ₫`, `50K` = `50.000 ₫` | Chỉ là cách nói tắt (thường do QA/BA ghi vội). **Khi sinh test data, test case, dataset luôn viết đủ số** `200.000 ₫`, không được đọc `200k` thành `200 ₫`. Chữ `K` trong mã voucher (vd `GIAM50K`) là một phần của mã, không phải số tiền |
 | Timezone | `Asia/Ho_Chi_Minh (GMT+7)` | Múi giờ chuẩn của hệ thống |
-| NULL vs rỗng | Hệ thống phân biệt tường minh | Input rỗng `""` báo lỗi nhập liệu; Backend xử lý `NULL` an toàn |
+| NULL vs rỗng | Chỉ kiểm được ở tầng UI | Input rỗng `""` hoặc chỉ khoảng trắng ➔ báo lỗi nhập liệu. **Không có API/backend** nên không có ca gửi `null` qua API |
 
 ## 3. Bối cảnh nghiệp vụ dùng chung
 > Trích xuất từ tài liệu tổng quan ShopGo (01_business)
@@ -36,6 +37,9 @@ Dự án: `ShopGo` · Cập nhật lần cuối: `2026-09-20`
 | Thuộc tính | Nội dung |
 |---|---|
 | Môi trường Staging / Test | `https://cwshopgo.github.io/` (Ứng dụng Web Live) |
+| Kiến trúc | **SPA thuần frontend, không có backend, không có API**. Đơn hàng lưu `localStorage["shopgo_orders"]`, phiên đăng nhập `localStorage["shopgo_user"]`; giỏ hàng & voucher chỉ nằm trong bộ nhớ phiên. **Không thiết kế ca kiểm thử API / HTTP status / DB** |
+| Phí vận chuyển | `30.000 ₫`; **miễn phí khi tiền hàng từ `200.000 ₫` trở lên** (hoặc giỏ trống) |
+| Catalog | 6 sản phẩm, giá đều là bội số `10.000 ₫`: 120.000 / 150.000 / 190.000 / 200.000 / 280.000 / 350.000 ₫. Mốc tiền trong test phải tạo được từ tổ hợp các giá này |
 | Cách seed data | Đã tích hợp sẵn dữ liệu mẫu (mock products & preset vouchers: GIAM50K, SALE20, HETHAN) |
 | Cổng xác thực (Auth Gate) | Bắt buộc đăng nhập để truy cập trang Thanh toán và Đặt hàng. Khách vãng lai bấm "Thanh toán" sẽ kích hoạt modal đăng nhập (`#modal-auth`). |
 | Tài khoản kiểm thử cố định | 1. Chuẩn: `khachhang@shopgo.vn` / `123456` (Nguyễn Văn An)<br>2. VIP: `vip@shopgo.vn` / `123456` (Trần Thị Mai) |

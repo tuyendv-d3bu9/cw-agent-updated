@@ -2,7 +2,7 @@
 - **Title**: Verify áp dụng thành công mã giảm tiền cố định GIAM50K cho đơn hàng đạt mức sàn 200.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập tài khoản "khachhang@shopgo.vn" / "123456" (Nguyễn Văn An).
-  - Giỏ hàng có 1 sản phẩm "Bình giữ nhiệt Thông Minh" trị giá 200.000 VNĐ (đạt mức sàn 200.000 VNĐ).
+  - Giỏ hàng có 1 sản phẩm "Bình nước giữ nhiệt Kim Loại" (`prod-003`) trị giá 200.000 VNĐ (đạt mức sàn 200.000 VNĐ).
   - Người dùng đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "GIAM50K" vào ô nhập mã khuyến mãi.
@@ -42,7 +42,7 @@
 - **Title**: Verify áp dụng mã SALE20 cho đơn hàng 600.000 VNĐ kích hoạt đúng mức trần chiết khấu maxCap 100.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập tài khoản "khachhang@shopgo.vn" / "123456".
-  - Giỏ hàng có 4 sản phẩm "Áo thun Polo Thể Thao Nam" (150.000 VNĐ x 4 = 600.000 VNĐ).
+  - Giỏ hàng có 4 sản phẩm "Áo thun Trendy Unisex" (`prod-001`) (150.000 VNĐ x 4 = 600.000 VNĐ).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "SALE20" vào ô mã khuyến mãi.
@@ -130,7 +130,7 @@
 - **Title**: Verify từ chối áp dụng mã khi đơn hàng dưới mức sàn tối thiểu 200.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập tài khoản "khachhang@shopgo.vn".
-  - Giỏ hàng chỉ có 1 sản phẩm "Áo thun Polo Thể Thao Nam" trị giá 150.000 VNĐ (subtotal < 200.000 VNĐ).
+  - Giỏ hàng chỉ có 1 sản phẩm "Áo thun Trendy Unisex" (`prod-001`) trị giá 150.000 VNĐ (subtotal < 200.000 VNĐ).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "GIAM50K" vào ô nhập mã khuyến mãi.
@@ -257,7 +257,7 @@
 - **Title**: Verify chấp nhận áp dụng mã GIAM50K cho đơn hàng ở đúng giá trị biên chuẩn 200.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập.
-  - Giỏ hàng có 1 sản phẩm đúng giá trị biên chuẩn 200.000 VNĐ ("Bình giữ nhiệt Thông Minh").
+  - Giỏ hàng có 1 sản phẩm đúng giá trị biên chuẩn 200.000 VNĐ ("Bình nước giữ nhiệt Kim Loại" (`prod-003`)).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "GIAM50K".
@@ -295,7 +295,7 @@
 - **Title**: Verify chấp nhận áp dụng mã SALE20 cho đơn hàng ở đúng giá trị biên chuẩn 300.000 VNĐ giảm 60.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập.
-  - Giỏ hàng có giá trị tạm tính đúng 300.000 VNĐ (2 Áo thun Polo x 150.000 VNĐ).
+  - Giỏ hàng có giá trị tạm tính đúng 300.000 VNĐ ("Áo thun Trendy Unisex" (`prod-001`) × 2).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "SALE20".
