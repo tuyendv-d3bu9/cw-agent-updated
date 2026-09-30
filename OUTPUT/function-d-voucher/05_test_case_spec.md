@@ -155,20 +155,20 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Tags**: Rule#BR-10, Viewpoint#VP-02, Module#VCHR, Automated
 
 ### TC_ID: VCHR-009
-- **Title**: Verify từ chối mã SALE20 cho đơn hàng 250.000 VNĐ do chưa đạt điều kiện tối thiểu 300.000 VNĐ của mã
+- **Title**: Verify từ chối mã SALE20 cho đơn hàng 200.000 VNĐ do chưa đạt điều kiện tối thiểu 300.000 VNĐ của mã
 - **Precondition**:
   - Khách hàng đã đăng nhập.
-  - Giỏ hàng có sản phẩm với tổng tiền 250.000 VNĐ (đạt mức sàn chung 200k nhưng chưa đạt mức riêng 300k của SALE20).
+  - Giỏ hàng có "Bình nước giữ nhiệt Kim Loại" (`prod-003`) × 1 = 200.000 VNĐ (đạt mức sàn chung 200k nhưng chưa đạt mức riêng 300k của SALE20).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "SALE20" vào ô nhập mã khuyến mãi.
   2. Bấm nút "Áp dụng".
 - **Test Data**:
   - Mã voucher: "SALE20" (minSubtotal = 300.000 VNĐ)
-  - Tạm tính đơn hàng (Subtotal): 250.000 VNĐ
+  - Tạm tính đơn hàng (Subtotal): 200.000 VNĐ *(thay 250.000 VNĐ — không tạo được trên catalog thật, `07b_ui_locator_map.md` §4)*
 - **Expected Result**:
   - Hệ thống từ chối áp dụng mã "SALE20".
-  - Thông báo hiển thị yêu cầu đơn hàng phải từ 300.000 VNĐ trở lên để sử dụng mã này.
+  - Hiển thị thông báo: "Đơn hàng chưa đạt mức tối thiểu 300.000 ₫ (Hiện có 200.000 ₫)."
   - Số tiền giảm là 0 VNĐ.
 - **Priority**: High
 - **Tags**: Rule#BR-02, Viewpoint#VP-02, Module#VCHR, Automated
@@ -190,23 +190,22 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Tags**: Rule#BR-06, Viewpoint#VP-02, Module#VCHR, Automated
 
 ### TC_ID: VCHR-011
-- **Title**: Verify hệ thống tự động gỡ voucher và disable kèm thông báo khi giảm giỏ hàng xuống dưới 200.000 VNĐ
+- **Title**: Verify giữ mã GIAM50K kèm cảnh báo chưa đủ điều kiện và không giảm tiền khi giảm giỏ hàng xuống dưới 200.000 VNĐ
 - **Precondition**:
-  - Khách hàng đã đăng nhập, giỏ hàng có 2 sản phẩm "Áo thun Polo" (150.000 VNĐ x 2 = 300.000 VNĐ).
+  - Khách hàng đã đăng nhập, giỏ hàng có "Áo thun Trendy Unisex" (`prod-001`) × 2 = 300.000 VNĐ.
   - Đã áp dụng thành công mã "GIAM50K", tổng thanh toán là 250.000 VNĐ.
 - **Test Steps**:
-  1. Tại chi tiết giỏ hàng, bấm nút giảm số lượng sản phẩm từ 2 xuống 1 (tổng tiền tụt xuống 150.000 VNĐ < 200.000 VNĐ).
-  2. Quan sát phản ứng của module voucher và tổng thanh toán.
+  1. Tại giỏ hàng, nhập số lượng "1" vào ô `#input-qty-prod-001` (tổng tiền tụt xuống 150.000 VNĐ < 200.000 VNĐ).
+  2. Quan sát khu vực voucher và tổng thanh toán.
 - **Test Data**:
-  - Số lượng ban đầu: 2 cái (300.000 VNĐ)
-  - Số lượng sau khi giảm: 1 cái (150.000 VNĐ)
+  - Số lượng ban đầu: 2 (300.000 VNĐ)
+  - Số lượng sau khi giảm: 1 (150.000 VNĐ)
 - **Expected Result**:
-  - Hệ thống tự động gỡ bỏ mã "GIAM50K".
-  - Hiển thị thông báo cảnh báo: "Đơn hàng không còn đủ điều kiện áp dụng mã giảm giá."
-  - Form voucher chuyển sang trạng thái disable cho đến khi đơn hàng đạt lại mức tối thiểu.
-  - Chiết khấu trả về 0 VNĐ, tổng thanh toán là 150.000 VNĐ + 30.000 VNĐ (phí ship do < 200k) = 180.000 VNĐ.
+  - Mã "GIAM50K" vẫn được giữ trong form voucher (không tự gỡ) — theo quyết định `knowledge` Mục 8 #12.
+  - Hiển thị cảnh báo vàng: "Mã \"GIAM50K\" chưa đủ điều kiện áp dụng".
+  - Giảm giá = 0 VNĐ; phí ship = 30.000 VNĐ (do < 200k); tổng thanh toán `#label-total-payable` = 180.000 ₫.
 - **Priority**: High
-- **Tags**: Rule#BR-10, Viewpoint#VP-02, Module#VCHR, Automated
+- **Tags**: Rule#BR-10, Rule#MR-02, Viewpoint#VP-02, Module#VCHR, Automated
 
 ### TC_ID: VCHR-012
 - **Title**: Verify bấm nút Gỡ bỏ voucher để hủy mã đang áp dụng và hoàn lại tổng tiền thanh toán gốc
@@ -245,20 +244,20 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Tags**: Rule#BR-04, Viewpoint#VP-02, Module#VCHR, Manual
 
 ### TC_ID: VCHR-014
-- **Title**: Verify từ chối áp dụng mã GIAM50K cho đơn hàng ở giá trị cận biên dưới 199.000 VNĐ
+- **Title**: Verify từ chối áp dụng mã GIAM50K cho đơn hàng ở giá trị cận biên dưới 190.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập.
-  - Giỏ hàng được thiết lập có giá trị tạm tính đúng 199.000 VNĐ (sát biên dưới 200k).
+  - Giỏ hàng được thiết lập có "Sạc dự phòng Siêu Nhanh 20W" (`prod-005`) × 1 = 190.000 VNĐ (mốc gần nhất dưới 200k tạo được trên catalog thật).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "GIAM50K" vào ô mã khuyến mãi.
   2. Bấm nút "Áp dụng".
 - **Test Data**:
   - Mã: "GIAM50K"
-  - Tạm tính đơn hàng (Subtotal): 199.000 VNĐ
+  - Tạm tính đơn hàng (Subtotal): 190.000 VNĐ *(thay 199.000 VNĐ — không tạo được, `07b` §4)*
 - **Expected Result**:
   - Hệ thống từ chối áp dụng mã.
-  - Hiển thị thông báo đơn hàng chưa đạt giá trị tối thiểu từ 200.000 VNĐ.
+  - Hiển thị thông báo: "Đơn hàng chưa đạt mức tối thiểu 200.000 ₫ (Hiện có 190.000 ₫)."
   - Không có chiết khấu nào được áp dụng.
 - **Priority**: High
 - **Tags**: Rule#BR-10, Viewpoint#VP-03, Module#VCHR, Automated
@@ -283,20 +282,20 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Tags**: Rule#BR-10, Viewpoint#VP-03, Module#VCHR, Automated
 
 ### TC_ID: VCHR-016
-- **Title**: Verify từ chối áp dụng mã SALE20 cho đơn hàng ở giá trị cận biên dưới 299.000 VNĐ
+- **Title**: Verify từ chối áp dụng mã SALE20 cho đơn hàng ở giá trị cận biên dưới 280.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập.
-  - Giỏ hàng có giá trị tạm tính đúng 299.000 VNĐ (sát biên dưới 300k của SALE20).
+  - Giỏ hàng có "Balo Chống Nước Oxford" (`prod-004`) × 1 = 280.000 VNĐ (mốc gần nhất dưới 300k tạo được trên catalog thật).
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "SALE20".
   2. Bấm nút "Áp dụng".
 - **Test Data**:
   - Mã: "SALE20"
-  - Tạm tính đơn hàng (Subtotal): 299.000 VNĐ
+  - Tạm tính đơn hàng (Subtotal): 280.000 VNĐ *(thay 299.000 VNĐ — không tạo được, `07b` §4)*
 - **Expected Result**:
   - Hệ thống từ chối áp dụng mã.
-  - Hiển thị thông báo yêu cầu đơn hàng đạt tối thiểu 300.000 VNĐ.
+  - Hiển thị thông báo: "Đơn hàng chưa đạt mức tối thiểu 300.000 ₫ (Hiện có 280.000 ₫)."
   - Tiền giảm là 0 VNĐ.
 - **Priority**: High
 - **Tags**: Rule#BR-02, Viewpoint#VP-03, Module#VCHR, Automated
@@ -321,23 +320,24 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Tags**: Rule#BR-02, Viewpoint#VP-03, Module#VCHR, Automated
 
 ### TC_ID: VCHR-018
-- **Title**: Verify chiết khấu mã SALE20 tại đơn hàng 499.000 VNĐ giảm 99.800 VNĐ và 500.000 VNĐ giảm đúng trần 100.000 VNĐ
+- **Title**: Verify chiết khấu mã SALE20 tại đơn hàng 490.000 VNĐ giảm 98.000 VNĐ và 500.000 VNĐ giảm đúng trần 100.000 VNĐ
 - **Precondition**:
   - Khách hàng đã đăng nhập, đang ở màn hình Thanh toán.
 - **Test Steps**:
-  1. Tạo đơn hàng với subtotal 499.000 VNĐ, nhập mã SALE20, bấm Áp dụng và ghi nhận số tiền giảm.
-  2. Điều chỉnh giỏ hàng lên subtotal 500.000 VNĐ, nhập mã SALE20, bấm Áp dụng và ghi nhận số tiền giảm.
+  1. Tạo giỏ hàng "Áo thun Trendy Unisex" (`prod-001`) × 2 + "Sạc dự phòng Siêu Nhanh 20W" (`prod-005`) × 1 = 490.000 VNĐ, nhập mã SALE20, bấm Áp dụng và ghi nhận số tiền giảm.
+  2. Đổi giỏ hàng thành `prod-001` × 1 + "Tai nghe Bluetooth Không Dây" (`prod-002`) × 1 = 500.000 VNĐ, áp lại mã SALE20 và ghi nhận số tiền giảm.
 - **Test Data**:
-  - Đơn 1: Subtotal 499.000 VNĐ
+  - Đơn 1: Subtotal 490.000 VNĐ *(thay 499.000 VNĐ — không tạo được, `07b` §4)*
   - Đơn 2: Subtotal 500.000 VNĐ
 - **Expected Result**:
-  - Tại đơn 499.000 VNĐ: Giảm 20% * 499.000 = 99.800 VNĐ (< maxCap 100k).
-  - Tại đơn 500.000 VNĐ: Giảm đúng 100.000 VNĐ (chạm ngưỡng maxCap 100k).
+  - Tại đơn 490.000 VNĐ: giảm 20% × 490.000 = 98.000 VNĐ (< maxCap 100k); tổng = 392.000 ₫.
+  - Tại đơn 500.000 VNĐ: giảm đúng 100.000 VNĐ (chạm ngưỡng maxCap 100k); tổng = 400.000 ₫.
 - **Priority**: High
-- **Tags**: Rule#BR-07, Viewpoint#VP-03, Module#VCHR, Manual
+- **Tags**: Rule#BR-07, Viewpoint#VP-03, Module#VCHR, Automated
 
 ### TC_ID: VCHR-019
 - **Title**: Verify làm tròn số tiền chiết khấu lẻ của voucher % bằng hàm Math.floor() với đơn hàng lẻ 333.333 VNĐ
+- **Trạng thái**: ⏸️ **TẠM ĐÓNG** — chưa kiểm chứng được trên dữ liệu hiện tại (mọi giá là bội số 10.000 ₫). Mở lại khi catalog có giá lẻ. Căn cứ: `knowledge` Mục 8 #15.
 - **Precondition**:
   - Khách hàng đã đăng nhập, giỏ hàng có giá trị tiền lẻ 333.333 VNĐ.
   - Đang ở màn hình Thanh toán.
@@ -353,7 +353,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Dòng "Giảm giá voucher" hiển thị "-66.666 ₫".
   - Tổng thanh toán cập nhật: 266.667 VNĐ.
 - **Priority**: Medium
-- **Tags**: Rule#BR-01, Viewpoint#VP-03, Module#VCHR, Automated
+- **Tags**: Rule#BR-01, Viewpoint#VP-03, Module#VCHR, Scope#Deferred
 
 ### TC_ID: VCHR-020
 - **Title**: Verify từ chối xử lý mã voucher có độ dài 2 ký tự dưới ngưỡng tối thiểu quy định
@@ -366,8 +366,8 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Test Data**:
   - Mã nhập: "AB" (độ dài = 2 < minLength 3)
 - **Expected Result**:
-  - Hệ thống chặn submit hoặc báo lỗi định dạng: độ dài mã không hợp lệ (phải từ 3 đến 20 ký tự).
-  - Không kích hoạt logic áp dụng mã.
+  - Hiển thị thông báo lỗi "Mã giảm giá không đúng định dạng." (vi phạm F-01: tối thiểu 3 ký tự — `INPUT/function-d-voucher/02_ba/spec_function_d_addendum_01_voucher_format.md`).
+  - Không tra cứu mã, không áp dụng giảm giá.
 - **Priority**: Medium
 - **Tags**: Rule#BR-06, Viewpoint#VP-03, Module#VCHR, Automated
 
@@ -383,7 +383,8 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Mã nhập: "VOUCHERCHINHHANG2026" (độ dài = 20 ký tự)
 - **Expected Result**:
   - Ô input cho phép nhập đủ 20 ký tự, không bị cắt cụt.
-  - Hệ thống tiếp nhận và xử lý kiểm tra mã hợp lệ trong hệ thống.
+  - Mã qua được kiểm tra định dạng (F-01, F-02) và được tra cứu: hiển thị "Mã giảm giá \"VOUCHERCHINHHANG2026\" không tồn tại trên hệ thống."
+  - Không hiển thị lỗi "không đúng định dạng".
 - **Priority**: Medium
 - **Tags**: Rule#BR-06, Viewpoint#VP-03, Module#VCHR, Automated
 
@@ -396,7 +397,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Test Data**:
   - Chuỗi gõ vào: 25 ký tự
 - **Expected Result**:
-  - Thuộc tính `maxlength="20"` ngăn chặn người dùng gõ ký tự thứ 21.
+  - Ô nhập không nhận ký tự thứ 21 (F-03 — `INPUT/function-d-voucher/02_ba/spec_function_d_addendum_01_voucher_format.md`).
   - Giá trị lưu trong input chỉ dừng lại ở đúng 20 ký tự đầu tiên: "ABCDE12345ABCDE12345".
 - **Priority**: Medium
 - **Tags**: Rule#BR-06, Viewpoint#VP-03, Module#VCHR, Automated
@@ -412,9 +413,8 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Test Data**:
   - Input: "@GIAM#50K!"
 - **Expected Result**:
-  - Client-side validation kiểm tra regex `^[A-Z0-9]{3,20}$` phát hiện ký tự lạ.
-  - Hệ thống chặn lại ngay lập tức và hiển thị cảnh báo: "Mã không đúng định dạng."
-  - Không gửi request không hợp lệ lên backend.
+  - Hiển thị thông báo lỗi "Mã giảm giá không đúng định dạng." (vi phạm F-02 — `INPUT/function-d-voucher/02_ba/spec_function_d_addendum_01_voucher_format.md`).
+  - Không tra cứu mã, không áp dụng giảm giá.
 - **Priority**: High
 - **Tags**: Rule#BR-06, Viewpoint#VP-04, Module#VCHR, Automated
 
@@ -430,7 +430,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Input: "GIAM 50K"
 - **Expected Result**:
   - Hệ thống không cho phép áp dụng mã có chứa khoảng trắng bên trong chuỗi.
-  - Hiển thị thông báo lỗi mã không đúng định dạng.
+  - Hiển thị thông báo lỗi "Mã giảm giá không đúng định dạng." (vi phạm F-05).
 - **Priority**: Medium
 - **Tags**: Rule#BR-06, Viewpoint#VP-04, Module#VCHR, Automated
 
@@ -446,8 +446,8 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Input payload: `<script>alert('XSS')</script>`
 - **Expected Result**:
   - Trình duyệt KHÔNG xuất hiện hộp thoại alert hay thực thi mã script JavaScript.
-  - Chuỗi được sanitize / escape an toàn hoặc bị chặn bởi bộ lọc regex.
-  - Hiển thị thông báo mã không hợp lệ bình thường.
+  - Chuỗi hiển thị lại (nếu có) được escape, không render thành thẻ HTML.
+  - Hiển thị thông báo lỗi "Mã giảm giá không đúng định dạng." (vi phạm F-02).
 - **Priority**: High
 - **Tags**: Rule#BR-05, Viewpoint#VP-04, Module#VCHR, Automated
 
@@ -462,14 +462,14 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Test Data**:
   - Input payload: `' OR '1'='1`
 - **Expected Result**:
-  - Hệ thống xử lý tham số an toàn (Parameterization / Sanitization).
-  - Không xảy ra lỗi 500 Internal Server Error, không rò rỉ thông tin cấu trúc Database.
-  - Hiển thị lỗi định dạng hoặc mã không tồn tại an toàn.
+  - Không áp dụng giảm giá, giao diện không lỗi, không lộ thông tin kỹ thuật (app không có backend — `knowledge` Mục 8 #10).
+  - Hiển thị thông báo lỗi "Mã giảm giá không đúng định dạng." (vi phạm F-02).
 - **Priority**: High
 - **Tags**: Rule#BR-05, Viewpoint#VP-04, Module#VCHR, Automated
 
 ### TC_ID: VCHR-027
 - **Title**: Verify cơ chế phòng thủ khi người dùng nhập sai mã liên tục 20 lần trong 10 giây
+- **Trạng thái**: ⛔ **NGOÀI PHẠM VI AUTOMATION ĐỢT NÀY** — FE không có tính năng tương ứng. Giữ trong Master Spec để dùng khi có tính năng. Căn cứ: `knowledge` Mục 8 #16.
 - **Precondition**:
   - Khách hàng đã đăng nhập, đang ở màn hình Thanh toán.
 - **Test Steps**:
@@ -480,25 +480,24 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Hệ thống kích hoạt cơ chế Rate Limiting hoặc hiển thị thông báo: "Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút."
   - Khóa tạm thời nút áp dụng voucher trong 60 giây để chống brute-force quét mã khuyến mãi.
 - **Priority**: Medium
-- **Tags**: Rule#BR-05, Viewpoint#VP-04, Module#VCHR, Manual
+- **Tags**: Rule#BR-05, Viewpoint#VP-04, Module#VCHR, Manual, Scope#OutOfAutomation
 
 ### TC_ID: VCHR-028
-- **Title**: Verify disable nút Áp dụng và hiển thị trạng thái loading khi bấm submit để chống spam double click
+- **Title**: Verify bấm nút Áp dụng liên tiếp nhiều lần chỉ giảm giá đúng một lần
 - **Precondition**:
-  - Khách hàng đã đăng nhập, giỏ hàng 350.000 VNĐ.
+  - Khách hàng đã đăng nhập, giỏ hàng "Tai nghe Bluetooth Không Dây" (`prod-002`) × 1 = 350.000 VNĐ.
   - Đang ở màn hình Thanh toán.
 - **Test Steps**:
   1. Nhập mã "GIAM50K".
-  2. Bấm liên tiếp 3 lần cực nhanh vào nút "Áp dụng".
+  2. Bấm liên tiếp 5 lần thật nhanh vào nút `#btn-apply-voucher`.
 - **Test Data**:
   - Mã: "GIAM50K"
-  - Thao tác: Click 3 lần < 200ms
+  - Thao tác: 5 click liên tiếp
 - **Expected Result**:
-  - Ngay từ cú click đầu tiên, nút `#btn-apply-voucher` lập tức chuyển sang trạng thái disabled (`disabled="true"`) và hiển thị biểu tượng loading.
-  - Chỉ có duy nhất 01 request được gửi đi xử lý.
-  - Không xảy ra race-condition hay double request lên hệ thống.
+  - Giảm giá chỉ được tính một lần: dòng giảm giá = -50.000 ₫; tổng `#label-total-payable` = 300.000 ₫.
+  - Không kiểm tra trạng thái disable/loading của nút — FE xử lý tức thời, theo quyết định `knowledge` Mục 8 #13.
 - **Priority**: High
-- **Tags**: Rule#BR-04, Viewpoint#VP-05, Module#VCHR, Automated
+- **Tags**: Rule#BR-04, Rule#MR-05, Viewpoint#VP-05, Module#VCHR, Automated
 
 ### TC_ID: VCHR-029
 - **Title**: Verify hiển thị tiền giảm với màu xanh lá, tiền tố dấu trừ và badge tên mã đang kích hoạt
@@ -531,26 +530,27 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Tags**: Rule#BR-04, Viewpoint#VP-05, Module#VCHR, Manual
 
 ### TC_ID: VCHR-031
-- **Title**: Verify voucher chỉ giảm trên tiền hàng và không khấu trừ vào phí vận chuyển
+- **Title**: Verify voucher chỉ giảm trên tiền hàng, không khấu trừ vào phí vận chuyển (kiểm chứng gián tiếp qua công thức tổng tiền)
 - **Precondition**:
-  - Khách hàng đã đăng nhập, giỏ hàng có 1 sản phẩm "Áo thun Polo" trị giá 150.000 VNĐ + "Phụ kiện móc khóa" 60.000 VNĐ = 210.000 VNĐ (đạt sàn 200k).
-  - Giả lập đơn hàng thuộc khu vực áp dụng phí ship tiêu chuẩn 30.000 VNĐ.
+  - Khách hàng đã đăng nhập, giỏ hàng "Tai nghe Bluetooth Không Dây" (`prod-002`) × 1 = 350.000 VNĐ.
+  - Đang ở màn hình Thanh toán.
 - **Test Steps**:
-  1. Nhập mã "GIAM50K".
-  2. Bấm nút "Áp dụng".
+  1. Nhập mã "GIAM50K", bấm "Áp dụng".
+  2. Ghi nhận Tạm tính, Phí vận chuyển, Giảm giá và Tổng thanh toán.
+  3. Bấm `#btn-submit-checkout`, đọc bản ghi đơn mới nhất trong `localStorage["shopgo_orders"]`.
 - **Test Data**:
-  - Tạm tính hàng (Subtotal): 210.000 VNĐ
-  - Phí vận chuyển (Shipping): 30.000 VNĐ
-  - Mã voucher: GIAM50K
+  - Subtotal: 350.000 VNĐ · Mã: GIAM50K
 - **Expected Result**:
-  - Giảm giá 50.000 VNĐ chỉ khấu trừ vào tiền hàng: 210.000 - 50.000 = 160.000 VNĐ.
-  - Phí vận chuyển 30.000 VNĐ giữ nguyên vẹn.
-  - Tổng thanh toán là: 160.000 + 30.000 = 190.000 VNĐ.
+  - Hiển thị: Tạm tính 350.000 ₫ · Phí vận chuyển 0 ₫ (freeship ≥ 200k) · Giảm giá -50.000 ₫ · Tổng 300.000 ₫.
+  - Bản ghi đơn: `subtotal = 350000`, `shippingFee = 0`, `discount = 50000`, `total = 300000`, thoả `total = subtotal + shippingFee − discount`.
+  - `discount` không vượt quá `subtotal` (giảm giá chỉ tính trên tiền hàng).
+  - Ghi chú: ngưỡng freeship trùng mức sàn voucher nên không có trạng thái "có phí ship và áp được mã" — theo quyết định `knowledge` Mục 8 #14.
 - **Priority**: High
 - **Tags**: Rule#BR-09, Viewpoint#VP-06, Module#VCHR, Automated
 
 ### TC_ID: VCHR-032
 - **Title**: Verify hạn mức lượt dùng voucher chỉ bị trừ chính thức tại thời điểm Đặt hàng thành công
+- **Trạng thái**: ⛔ **NGOÀI PHẠM VI AUTOMATION ĐỢT NÀY** — FE không có tính năng tương ứng. Giữ trong Master Spec để dùng khi có tính năng. Căn cứ: `knowledge` Mục 8 #16.
 - **Precondition**:
   - Voucher cấu hình có giới hạn lượt dùng còn lại = 1 lượt.
   - Khách hàng đã đăng nhập và thêm hàng vào giỏ.
@@ -565,10 +565,11 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Tại bước 1-2 (mới chỉ Áp dụng): Lượt dùng chưa bị trừ chính thức (vẫn còn 1 lượt).
   - Tại bước 3-4 (Đặt hàng thành công): Lượt dùng bị trừ chính thức về 0. Lần sau nhập mã này sẽ báo lỗi hết lượt sử dụng.
 - **Priority**: High
-- **Tags**: Rule#BR-04, Viewpoint#VP-06, Module#VCHR, Manual
+- **Tags**: Rule#BR-04, Viewpoint#VP-06, Module#VCHR, Manual, Scope#OutOfAutomation
 
 ### TC_ID: VCHR-033
 - **Title**: Verify tự động hoàn lại lượt dùng voucher cho khách hàng khi đơn hàng bị hủy
+- **Trạng thái**: ⛔ **NGOÀI PHẠM VI AUTOMATION ĐỢT NÀY** — FE không có tính năng tương ứng. Giữ trong Master Spec để dùng khi có tính năng. Căn cứ: `knowledge` Mục 8 #16.
 - **Precondition**:
   - Khách hàng đã đặt hàng thành công đơn hàng có áp mã voucher giới hạn 1 lượt dùng.
   - Mã voucher vẫn còn trong thời hạn sử dụng.
@@ -582,7 +583,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
   - Hệ thống tự động phục hồi lại quyền sử dụng voucher cho tài khoản khách hàng.
   - Khách hàng áp dụng lại mã trên đơn hàng mới thành công.
 - **Priority**: Medium
-- **Tags**: Rule#BR-03, Viewpoint#VP-06, Module#VCHR, Manual
+- **Tags**: Rule#BR-03, Viewpoint#VP-06, Module#VCHR, Manual, Scope#OutOfAutomation
 
 ### TC_ID: VCHR-034
 - **Title**: Verify bản ghi đơn hàng lưu đầy đủ các trường subtotal, discount, appliedCode, shippingFee và total
@@ -593,7 +594,7 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
 - **Test Steps**:
   1. Bấm nút "Tiến hành Đặt hàng (300.000 ₫)" (`#btn-submit-checkout`).
   2. Chờ modal "Đặt hàng thành công!" xuất hiện kèm mã đơn hàng `SG-XXXXXX`.
-  3. Kiểm tra thông tin đơn hàng được lưu trong hệ thống (LocalStorage / Database Order Record).
+  3. Kiểm tra thông tin đơn hàng được lưu trong hệ thống (`localStorage["shopgo_orders"]`).
 - **Test Data**:
   - Mã đơn sinh ra: `SG-XXXXXX`
 - **Expected Result**:
@@ -603,9 +604,41 @@ Owner: agents/qa-test-design/test-case-generation · Source: OUTPUT/function-d-v
     - `appliedCode`: "GIAM50K"
     - `shippingFee`: 0
     - `total`: 300000
-    - `status`: "Processing" hoặc "Confirmed"
+    - `orderId` dạng `SG-XXXXXX`; `userId`, `date`, `items`, `createdAt` có giá trị
 - **Priority**: High
 - **Tags**: Rule#BR-04, Viewpoint#VP-06, Module#VCHR, Automated
+
+### TC_ID: VCHR-035
+- **Title**: Verify tải lại trang sau khi áp voucher thì giỏ hàng và mã giảm giá được làm mới nhưng vẫn giữ trạng thái đăng nhập
+- **Precondition**:
+  - Khách hàng đã đăng nhập "khachhang@shopgo.vn", giỏ hàng `prod-002` × 1 = 350.000 VNĐ, đã áp mã "GIAM50K".
+- **Test Steps**:
+  1. Tải lại trang (F5).
+  2. Quan sát trạng thái đăng nhập, giỏ hàng và form voucher.
+- **Test Data**:
+  - Mã: "GIAM50K" · Subtotal: 350.000 VNĐ
+- **Expected Result**:
+  - Vẫn ở trạng thái đăng nhập (`localStorage["shopgo_user"]` còn tồn tại).
+  - Giỏ hàng trống, không còn mã "GIAM50K" được áp — giỏ hàng và voucher chỉ lưu trong bộ nhớ phiên, không ghi `localStorage` (đối chiếu mã nguồn FE Live 2026-09-30).
+- **Priority**: Medium
+- **Tags**: Rule#GAP-H2, Viewpoint#VP-06, Module#VCHR, Automated
+
+### TC_ID: VCHR-036
+- **Title**: Verify đặt hàng có voucher ở hai tab trình duyệt thì cả hai đơn đều được lưu, không ghi đè nhau
+- **Precondition**:
+  - Khách hàng đã đăng nhập "khachhang@shopgo.vn"; lịch sử đơn hàng đã xoá sạch.
+  - Mở 2 tab ShopGo (Tab A, Tab B) **trước khi** đặt đơn nào.
+- **Test Steps**:
+  1. Tab A: thêm `prod-002` × 1, áp mã "GIAM50K", bấm Đặt hàng.
+  2. Tab B (không tải lại): thêm `prod-004` × 1, áp mã "GIAM50K", bấm Đặt hàng.
+  3. Tải lại một tab, mở tab Đơn hàng và đọc `localStorage["shopgo_orders"]`.
+- **Test Data**:
+  - Tab A: 350.000 − 50.000 = 300.000 ₫ · Tab B: 280.000 − 50.000 = 230.000 ₫
+- **Expected Result**:
+  - [GIẢ ĐỊNH – rủi ro MED] Lịch sử có đủ **2 đơn** (300.000 ₫ và 230.000 ₫), mỗi đơn `appliedCode = "GIAM50K"`; không đơn nào bị mất.
+  - Ghi chú: mã nguồn FE chỉ đọc danh sách đơn một lần khi khởi động, khi lưu thì ghi đè cả mảng và không lắng nghe sự kiện `storage` ➔ dự báo đơn của Tab A bị mất (lost update). Kỳ vọng "không mất đơn" do QA Lead chốt theo uỷ quyền (`knowledge` Mục 8 #19); cần BA xác nhận nếu FAIL.
+- **Priority**: High
+- **Tags**: Rule#GAP-H2, Viewpoint#VP-06, Module#VCHR, Automated
 
 ---
 

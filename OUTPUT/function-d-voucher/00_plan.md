@@ -3,7 +3,7 @@ Ngày tạo: 2026-09-20 · Người lập: QA Leader · Trạng thái: IN-PROGRE
 
 ## 1. Phạm Vi & Tài Liệu Nguồn
 - **Tài liệu kinh doanh**: `INPUT/function-d-voucher/01_business/shopgo_overview.md`
-- **Tài liệu yêu cầu (BA)**: `INPUT/function-d-voucher/02_ba/spec_function_d.md`
+- **Tài liệu yêu cầu (BA)**: `INPUT/function-d-voucher/02_ba/spec_function_d.md` + Phụ lục 01 `spec_function_d_addendum_01_voucher_format.md` (quy tắc định dạng mã, ban hành 2026-09-30)
 - **Đặc tả kỹ thuật (Dev)**: `INPUT/function-d-voucher/03_dev/technical_spec.md` (`spec.txt`)
 - **Đặc tả môi trường & API/State**: `INPUT/function-d-voucher/03_dev/environment.md`
 - **Giao diện & UI Locators**: `INPUT/function-d-voucher/04_design/live_ui_locators.md` (`https://cwshopgo.github.io/`)
@@ -49,11 +49,19 @@ Ngày tạo: 2026-09-20 · Người lập: QA Leader · Trạng thái: IN-PROGRE
   - `DATA-01`: Cập nhật phí freeship 0 ₫ trong `10_dataset.md` cho đơn ≥ 200k.
   - `DATA-02` + `DATA-05`: Đồng bộ chuẩn xác 100% tiêu đề của 34 Test Cases trong `12_data_validation_traceability.md`.
   - `DATA-03`: Ánh xạ toàn bộ 36/36 record dữ liệu, triệt tiêu 100% bản ghi mồ côi.
-  - Nâng mức khuyến nghị lên **`RECOMMEND CONDITIONAL GO`** cho **25/34 Test Cases** khả thi trên Web Live.
+  - Nâng mức khuyến nghị lên **`RECOMMEND CONDITIONAL GO`** — bản v2 chốt phạm vi **20/34 Test Cases** *(con số 25/34 ở bản ghi trước đã lỗi thời, đính chính 2026-09-30)*.
+
+### Giai đoạn 5B: Chốt Câu Hỏi Mở Đợt 2 & Cập Nhật Thiết Kế — [ĐANG LÀM]
+- [x] **Chốt câu hỏi mở**: 10 câu (Readiness v2 + Human-Final) ghi vào `knowledge/features/function-d-voucher.md` Mục 7 (`GAP-F1a`→`GAP-H2`) và Mục 8 (#12→#20) (2026-09-30).
+- [x] **Bổ sung INPUT**: Phụ lục 01 quy tắc định dạng mã 3–20 ký tự (đóng `GAP-F1a`).
+- [x] **FIX-01/02/03/04 phần Test Case**: Sửa `testcases/batch_01.md` — đổi mốc biên `VCHR-009/014/016/018` theo catalog thật; viết lại `VCHR-011/028/031` theo web; chuẩn hoá thông báo định dạng `VCHR-020`→`026` theo Phụ lục 01; tạm đóng `VCHR-019`; đánh dấu `VCHR-027/032/033` ngoài phạm vi Automation; bỏ trường `status` không tồn tại ở `VCHR-034`; **thêm `VCHR-035` (reload) và `VCHR-036` (2 tab)**. Blueprint + merge ➔ `05_test_case_spec.md` **36 TCs**.
+- [ ] **Đồng bộ lớp dữ liệu (qa-test-data)**: `09`→`12` còn giá trị không tạo được trên catalog (199k/201k/299k/301k/333.333/499k/501k), phí ship 30k cho đơn ≥ 200k ở `11`, mã `VOUCHER10` không tồn tại ở `10`, ca API `null` trong khi app không có API; ma trận `12` chưa có `VCHR-035/036` và lệch tiêu đề 7 ca đã sửa.
+- [ ] **Cập nhật `06_coverage_review.md`**: ghi lý do loại `VCHR-027/032/033`, tạm đóng `VCHR-019`, bổ sung 2 ca mới.
+- [ ] **Readiness Gate v3**: chạy lại `qa-readiness-evaluator` ➔ xác nhận phạm vi Automation cuối.
 
 ### Giai đoạn 6: Thực Thi Kiểm Thử & Tự Động Hóa (Execution / Automation)
 - [ ] **Mode 3 / 4 (Automation Playwright)**: Thiết lập Page Object Model (POM) và kịch bản Playwright E2E cho 25 Test Cases khả thi trên `https://cwshopgo.github.io/`.
-- [ ] **Mode 1 (Tầng thực thi Manual `runs/`)**: Tạo phiên chạy `runs/RUN-01_<ticket-name>/` bắt evidence màn hình.
+- [ ] **Mode 1 (Tầng thực thi Manual `runs/`)**: Tạo phiên chạy `runs/RUN-01_voucher-regression/` bắt evidence màn hình. `run_plan.md` ghi `Jira Ticket: TBD` — điền sau buổi kết nối Jira, **không đổi tên thư mục**.
 
 ---
 
@@ -65,3 +73,4 @@ Ngày tạo: 2026-09-20 · Người lập: QA Leader · Trạng thái: IN-PROGRE
 - **2026-09-27 (Readiness Gate & Quality Guard Self-Healing)**: Ghi nhận báo cáo từ `qa-readiness-evaluator` (`readiness-report.md`). QA Lead đã chỉ đạo xử lý dứt điểm 3 lỗi chặn dữ liệu (`DATA-01`, `DATA-02`, `DATA-03`), nâng mức sẵn sàng lên **`CONDITIONAL GO`** cho 25 ca kiểm thử Live, sẵn sàng chuyển sang Automation hoặc Test Runs.
 - **2026-09-27 (Chốt chặn Sẵn sàng - Readiness Gate)**: Kích hoạt `qa-readiness-evaluator` đối soát chéo 06 nhóm artifact thiết kế. Kết quả: Trace 100% (34/34), Delta coverage = 0, 10/10 BR + 7/7 MR đã `Confirmed`, 0 mục `FIX`. Tuy nhiên phát hiện 06 Data Issue chưa giải quyết (nổi bật: 09/10 bản ghi `DS-VAL-*` cộng phí ship 30.000 ₫ cho đơn đã đạt ngưỡng freeship 200k; ma trận truy vết gán sai ngữ nghĩa cho 07 TC ID; 14 record mồ côi trái với khẳng định Zero Orphan) và 09/34 test case chưa thực thi trọn vẹn được trên Web Live. **Verdict: `RECOMMEND NO-GO`** — chưa mở cổng sang `qa-automation` cho tới khi khắc phục xong các điều kiện tiên quyết. Báo cáo đầy đủ: `OUTPUT/function-d-voucher/reports/readiness-report.md`.
 - **2026-09-27 (Readiness Gate v2 — Đóng GAP-L1 & Đối soát mã nguồn FE)**: Phát hành lại `reports/readiness-report.md` ở mức **`RECOMMEND CONDITIONAL GO`**. Đã kiểm chứng độc lập: `DATA-01`/`DATA-02`/`DATA-03` khắc phục triệt để (0 vi phạm freeship, 0 lệch ánh xạ, 0 record mồ côi). BA/PO chốt thêm `GAP-D1` (chỉ số nguyên phần trăm), `GAP-D2` (không giới hạn trần đơn hàng), `GAP-E1` (không có backend, chỉ đối chiếu FE), `GAP-E2` (không có sản phẩm móc khóa). Đóng `GAP-L1` bằng `07b_ui_locator_map.md` — bóc tách trực tiếp bundle ứng dụng Live, thu được đầy đủ locator (gồm `#input-qty-prod-00X`, `#btn-remove-prod-00X`, `#label-total-payable`, các vùng thông báo `bg-emerald-50`/`bg-rose-50`/`bg-amber-50`) và phát hiện catalog thật có **6 sản phẩm** (không phải 3), cho phép thay thế các mốc biên bất khả thi. Phát sinh nhóm vấn đề mới `GAP-F1`/`GAP-F2`: FE chưa hiện thực `MR-01`, `MR-02`, `MR-05`, và ngưỡng freeship trùng mức sàn voucher khiến `BR-09` không quan sát trực tiếp được. **Phạm vi mở cổng Automation: 20/34 test case** (16 sẵn sàng ngay + 4 sau khi đổi giá trị biên); 11 ca chờ BA/Dev phân định; 3 ca (`VCHR-027`, `032`, `033`) đóng khỏi phạm vi do FE không có tính năng.
+- **2026-09-30 (Chốt câu hỏi mở đợt 2 & cập nhật Test Case)**: User (thay BA/PO) chốt 10 câu hỏi: `MR-02`, `MR-05`, `BR-09` theo hành vi web; `VCHR-019` tạm đóng; `VCHR-027/032/033` loại khỏi Automation; Dev sẽ bổ sung `id` nút +/−; QA Lead tự quyết ca bổ sung (thêm reload + 2 tab, bỏ 3G/VAT). Phát hiện **lỗi FACT**: quy tắc 3–20 ký tự của `MR-01` là đề xuất của QA Agent nhưng bị ghi như BA chốt ➔ đã đính chính; User quyết giữ quy tắc và ban hành Phụ lục 01 trong `INPUT/.../02_ba/`, FE thiếu = bug. Cập nhật 36 TCs. Tên phiên chạy: `RUN-01_voucher-regression`.

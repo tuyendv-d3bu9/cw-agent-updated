@@ -76,7 +76,7 @@
     "module": "VCHR",
     "rule_id": "BR-02",
     "viewpoint_id": "VP-02",
-    "purpose": "Verify từ chối mã SALE20 cho đơn hàng 250.000 VNĐ do chưa đạt điều kiện tối thiểu 300.000 VNĐ của mã",
+    "purpose": "Verify từ chối mã SALE20 cho đơn hàng 200.000 VNĐ do chưa đạt điều kiện tối thiểu 300.000 VNĐ của mã",
     "priority": "High",
     "batch": 1
   },
@@ -94,7 +94,7 @@
     "module": "VCHR",
     "rule_id": "BR-10",
     "viewpoint_id": "VP-02",
-    "purpose": "Verify hệ thống tự động gỡ voucher và disable kèm thông báo khi giảm giỏ hàng xuống dưới 200.000 VNĐ",
+    "purpose": "Verify giữ mã GIAM50K kèm cảnh báo chưa đủ điều kiện và không giảm tiền khi giảm giỏ hàng xuống dưới 200.000 VNĐ",
     "priority": "High",
     "batch": 1
   },
@@ -121,7 +121,7 @@
     "module": "VCHR",
     "rule_id": "BR-10",
     "viewpoint_id": "VP-03",
-    "purpose": "Verify từ chối áp dụng mã GIAM50K cho đơn hàng ở giá trị cận biên dưới 199.000 VNĐ",
+    "purpose": "Verify từ chối áp dụng mã GIAM50K cho đơn hàng ở giá trị cận biên dưới 190.000 VNĐ",
     "priority": "High",
     "batch": 1
   },
@@ -139,7 +139,7 @@
     "module": "VCHR",
     "rule_id": "BR-02",
     "viewpoint_id": "VP-03",
-    "purpose": "Verify từ chối áp dụng mã SALE20 cho đơn hàng ở giá trị cận biên dưới 299.000 VNĐ",
+    "purpose": "Verify từ chối áp dụng mã SALE20 cho đơn hàng ở giá trị cận biên dưới 280.000 VNĐ",
     "priority": "High",
     "batch": 1
   },
@@ -157,7 +157,7 @@
     "module": "VCHR",
     "rule_id": "BR-07",
     "viewpoint_id": "VP-03",
-    "purpose": "Verify chiết khấu mã SALE20 tại đơn hàng 499.000 VNĐ giảm 99.800 VNĐ và 500.000 VNĐ giảm đúng trần 100.000 VNĐ",
+    "purpose": "Verify chiết khấu mã SALE20 tại đơn hàng 490.000 VNĐ giảm 98.000 VNĐ và 500.000 VNĐ giảm đúng trần 100.000 VNĐ",
     "priority": "High",
     "batch": 1
   },
@@ -247,7 +247,7 @@
     "module": "VCHR",
     "rule_id": "BR-04",
     "viewpoint_id": "VP-05",
-    "purpose": "Verify disable nút Áp dụng và hiển thị trạng thái loading khi bấm submit để chống spam double click",
+    "purpose": "Verify bấm nút Áp dụng liên tiếp nhiều lần chỉ giảm giá đúng một lần",
     "priority": "High",
     "batch": 1
   },
@@ -274,7 +274,7 @@
     "module": "VCHR",
     "rule_id": "BR-09",
     "viewpoint_id": "VP-06",
-    "purpose": "Verify voucher chỉ giảm trên tiền hàng và không khấu trừ vào phí vận chuyển",
+    "purpose": "Verify voucher chỉ giảm trên tiền hàng, không khấu trừ vào phí vận chuyển (kiểm chứng gián tiếp qua công thức tổng tiền)",
     "priority": "High",
     "batch": 1
   },
@@ -302,6 +302,24 @@
     "rule_id": "BR-04",
     "viewpoint_id": "VP-06",
     "purpose": "Verify bản ghi đơn hàng lưu đầy đủ các trường subtotal, discount, appliedCode, shippingFee và total",
+    "priority": "High",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-035",
+    "module": "VCHR",
+    "rule_id": "GAP-H2",
+    "viewpoint_id": "VP-06",
+    "purpose": "Verify tải lại trang sau khi áp voucher thì giỏ hàng và mã giảm giá được làm mới nhưng vẫn giữ trạng thái đăng nhập",
+    "priority": "Medium",
+    "batch": 1
+  },
+  {
+    "tc_id": "VCHR-036",
+    "module": "VCHR",
+    "rule_id": "GAP-H2",
+    "viewpoint_id": "VP-06",
+    "purpose": "Verify đặt hàng có voucher ở hai tab trình duyệt thì cả hai đơn đều được lưu, không ghi đè nhau",
     "priority": "High",
     "batch": 1
   }

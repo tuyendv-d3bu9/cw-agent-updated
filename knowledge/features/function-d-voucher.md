@@ -86,7 +86,7 @@ Chức năng **Function D: Áp dụng Mã Giảm Giá (Voucher)** nằm ở bư�
 
 | ID | Mô tả kẽ hở | Nhóm 06W | Mức rủi ro | Đề xuất mặc định | Câu hỏi cho BA/PO | Phản hồi chính thức | Trạng thái |
 |---|---|---|---|---|---|---|---|
-| GAP-F1a | **Đính chính MR-01**: BA chỉ trả lời "chặn ký tự lạ". Độ dài 3–20, regex `^[A-Z0-9]{3,20}$`, `maxlength=20` và thông báo "Mã không đúng định dạng" là **đề xuất mặc định của QA Agent** trong `02_missing_rule_report.md`, **không có căn cứ trong INPUT** nhưng đã bị ghi nhầm như BA chốt. FE Live không có cả 4 điểm này | W1 (Input) | MED | Theo FE: không giới hạn độ dài, mã sai định dạng báo "không tồn tại" | Chấp nhận hành vi FE, hay giữ quy tắc định dạng và coi là bug? Nếu giữ thì độ dài và bộ ký tự do BA quy định là gì? | — | `New` |
+| GAP-F1a | **Đính chính MR-01**: BA chỉ trả lời "chặn ký tự lạ". Độ dài 3–20, regex `^[A-Z0-9]{3,20}$`, `maxlength=20` và thông báo "Mã không đúng định dạng" là **đề xuất mặc định của QA Agent** trong `02_missing_rule_report.md`, **không có căn cứ trong INPUT** nhưng đã bị ghi nhầm như BA chốt. FE Live không có cả 4 điểm này | W1 (Input) | MED | Theo FE: không giới hạn độ dài, mã sai định dạng báo "không tồn tại" | Chấp nhận hành vi FE, hay giữ quy tắc định dạng và coi là bug? Nếu giữ thì độ dài và bộ ký tự do BA quy định là gì? | **Giữ quy tắc 3–20 ký tự** (chữ in hoa + số, `maxlength=20`, báo "Mã giảm giá không đúng định dạng."). BA ban hành `INPUT/function-d-voucher/02_ba/spec_function_d_addendum_01_voucher_format.md` ➔ FE thiếu = **bug** | `Confirmed` |
 | GAP-F1b | FE không tự gỡ voucher khi subtotal tụt dưới mức sàn (lệch MR-02) | W2 (State) | HIGH | — | Bug hay hạ kỳ vọng theo FE? | **Theo web** | `Confirmed` |
 | GAP-F1c | FE không disable nút Áp dụng, không có loading (lệch MR-05) | W4 (Timing) | MED | — | Bug hay hạ kỳ vọng theo FE? | **Theo web** | `Confirmed` |
 | GAP-F2 | Ngưỡng freeship 200k trùng mức sàn voucher 200k ➔ BR-09 không quan sát trực tiếp | W3 (Data) | MED | Kiểm chứng gián tiếp qua công thức tổng tiền | Đổi ngưỡng hay kiểm chứng gián tiếp? | **Theo web** (kiểm chứng gián tiếp) | `Confirmed` |
@@ -102,7 +102,7 @@ Chức năng **Function D: Áp dụng Mã Giảm Giá (Voucher)** nằm ở bư�
 
 | # | Mã liên quan | Vấn đề nghiệp vụ | Quyết định chính thức của BA/PO | Người phê duyệt | Ngày chốt |
 |---|---|---|---|---|---|
-| 1 | MR-01 | Định dạng input ký tự đặc biệt | Chặn ký tự lạ, regex `^[A-Z0-9]{3,20}$`, báo lỗi không đúng format · ⚠️ *Đính chính 2026-09-30: BA chỉ chốt "chặn ký tự lạ"; phần độ dài/regex/thông báo là đề xuất của QA Agent, đang mở lại tại `GAP-F1a`* | BA / User | 2026-09-20 |
+| 1 | MR-01 | Định dạng input ký tự đặc biệt | Chặn ký tự lạ, regex `^[A-Z0-9]{3,20}$`, báo lỗi không đúng format · ⚠️ *Đính chính 2026-09-30: BA chỉ chốt "chặn ký tự lạ"; phần độ dài/regex/thông báo là đề xuất của QA Agent, đã chốt lại tại `GAP-F1a` / Mục 8 #20, căn cứ INPUT: `02_ba/spec_function_d_addendum_01_voucher_format.md`* | BA / User | 2026-09-20 |
 | 2 | MR-02 | Thay đổi giỏ hàng sau khi áp mã | Tự động gỡ và disable voucher kèm thông báo cảnh báo | BA / User | 2026-09-20 |
 | 3 | MR-03 | Mức sàn áp mã toàn hệ thống | Mức hóa đơn tối thiểu để áp mã là **200.000 VNĐ** (khớp hoàn toàn với Web Live) | BA / User | 2026-09-20 |
 | 4 | MR-04 | Quy tắc làm tròn tiền voucher % | Làm tròn xuống hàng đơn vị đồng `Math.floor()` | BA / User | 2026-09-20 |
@@ -121,6 +121,7 @@ Chức năng **Function D: Áp dụng Mã Giảm Giá (Voucher)** nằm ở bư�
 | 17 | GAP-L2 | Nút +/− số lượng thiếu `id` | **Dev sẽ bổ sung `id`**. Trong lúc chờ, script nhập trực tiếp vào `#input-qty-prod-00X` | BA / User | 2026-09-30 |
 | 18 | GAP-H1 · `VCHR-011` | Mức nghiêm trọng | **Không áp dụng** — đã chọn theo web ở #12 nên không phải bug | QA Lead / User | 2026-09-30 |
 | 19 | GAP-H2 | Bổ sung ca Human-Final | **Ủy quyền QA Lead**: app FE-only, không DB ➔ bỏ ca 3G (không có network call) và VAT (không có phân hệ); xem xét ca đa tab/reload vì dữ liệu dùng chung `localStorage` | QA Lead / User | 2026-09-30 |
+| 20 | GAP-F1a · MR-01 · `VCHR-020`→`026` | Độ dài & bộ ký tự mã voucher | **Giữ quy tắc định dạng** theo Phụ lục 01: 3–20 ký tự, chỉ `A–Z` `0–9`, `maxlength=20`, khoảng trắng giữa chuỗi là sai, thông báo "Mã giảm giá không đúng định dạng.". FE Live chưa hiện thực ➔ 7 ca dự kiến FAIL, lập defect | BA / User | 2026-09-30 |
 
 ---
 
