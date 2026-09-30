@@ -1,12 +1,14 @@
 /**
  * jira-client.js
- * Bi-directional REST API client for Jira & Redmine:
- * 1. PUSH: Push bulk test cases to Jira/Redmine.
+ * Bi-directional REST API client and MCP adapter for Jira & Redmine:
+ * 1. PUSH: Push bulk test cases to Jira/Redmine via CSV or API.
  * 2. PULL: Pull bugs/defects from Jira and save to OUTPUT/<task-slug>/jira_defects_summary.md
+ * 3. MCP : Launch or inspect stdio Model Context Protocol (MCP) server for Jira
  * 
  * Usage:
  *   node agents/tools/jira-client.js pull [task-slug]
  *   node agents/tools/jira-client.js push [task-slug]
+ *   node agents/tools/jira-client.js mcp
  */
 
 const fs = require('fs');
@@ -214,8 +216,16 @@ function main() {
     pullDefects(taskSlug, env);
   } else if (action === 'push') {
     pushTestCases(taskSlug, env);
+  } else if (action === 'mcp') {
+    console.log(`\n🔌 [JIRA MCP] Launching Jira Model Context Protocol (MCP) Server...`);
+    console.log(`ℹ️ Stdio MCP server path: agents/tools/jira-mcp-server.js`);
+    console.log(`ℹ️ Configuration: .agents/mcp_config.json & .cursor/mcp.json\n`);
+    require('./jira-mcp-server');
   } else {
-    console.log(`Invalid command. Usage: node jira-client.js [pull|push] [task-slug]`);
+    console.log(`Invalid command. Usage:`);
+    console.log(`  node jira-client.js pull [task-slug]    (Pull defects via Jira REST API)`);
+    console.log(`  node jira-client.js push [task-slug]    (Export CSV / Push test cases)`);
+    console.log(`  node jira-client.js mcp                 (Start stdio MCP Server for AI IDEs)`);
   }
 }
 

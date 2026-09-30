@@ -8,6 +8,7 @@ OUTPUT/
 INPUT/raw 
 
 .agents/
+!.agents/mcp_config.json
 skills-lock.json
 
 TODO.md
