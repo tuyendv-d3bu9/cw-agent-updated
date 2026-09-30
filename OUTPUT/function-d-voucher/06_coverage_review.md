@@ -1,5 +1,5 @@
 # BÁO CÁO COVERAGE REVIEW & TEST SUITE GAP ANALYSIS · function-d-voucher
-**Owner**: `agents/qa-test-design/coverage-review` · **Nguồn**: `OUTPUT/function-d-voucher/05_test_case_spec.md` · **Verdict**: `PASS` (Đã nghiệm thu)
+**Owner**: `agents/qa-test-design/coverage-review` · **Nguồn**: `OUTPUT/function-d-voucher/05_test_case_spec.md` · **Verdict**: `PASS` (Đã nghiệm thu) · **Cập nhật**: 2026-09-30 — 36 TCs, xem §6
 
 ---
 
@@ -8,7 +8,7 @@
   - Toàn bộ 10/10 Business Rules (`BR-01` đến `BR-10`) và 7 Missing Rules đã chốt (`MR-01` đến `MR-07`) đều được ánh xạ đầy đủ với tối thiểu từ 2 đến 7 ca kiểm thử cho mỗi rule.
   - Không có rule nào bị bỏ sót hay mang nhãn `CHƯA COVER`.
 - **Góc nhìn 2 (Viewpoint Balance)**: 
-  - Phân bổ 34 Test Cases qua 06 Viewpoints:
+  - Phân bổ 34 Test Cases qua 06 Viewpoints *(bản 2026-09-27; bản 36 TCs xem §6)*:
     - *Happy Path (VP-01)*: 5 TCs (14.7%)
     - *Negative & Error Handling (VP-02)*: 8 TCs (23.5%)
     - *Boundary Values (VP-03)*: 9 TCs (26.5%)
@@ -17,7 +17,7 @@
     - *Integration & Cross-System (VP-06)*: 4 TCs (11.8%)
   - Tỷ lệ cân đối hài hòa giữa kiểm thử chức năng (Happy), kiểm thử phòng thủ (Negative/Boundary/Security ~ 64.7%) và tích hợp/UX (~ 20.6%).
 - **Góc nhìn 3 (Boundary Completeness)**:
-  - Kiểm tra triệt để các chuỗi giá trị biên 2 điểm / 3 điểm:
+  - Kiểm tra triệt để các chuỗi giá trị biên 2 điểm / 3 điểm *(các mốc 199.000 / 299.000 / 499.000 / 333.333 ₫ đã được thay ở §6)*:
     - Mức sàn hệ thống 200.000 VNĐ: Biên dưới (199.000 ₫ ➔ `VCHR-014`), Biên chuẩn (200.000 ₫ ➔ `VCHR-015`).
     - Điều kiện riêng mã SALE20 300.000 VNĐ: Biên dưới (299.000 ₫ ➔ `VCHR-016`), Biên chuẩn (300.000 ₫ ➔ `VCHR-017`).
     - Mức trần maxCap 100.000 VNĐ: Cận trần (499.000 ₫ giảm 99.800 ₫ ➔ `VCHR-018`), Chạm trần (500.000 ₫ giảm 100.000 ₫ ➔ `VCHR-018`), Vượt trần (600.000 ₫ giảm 100.000 ₫ ➔ `VCHR-003`).
@@ -67,3 +67,48 @@
   - Toàn bộ 10/10 Business Rules đã được ánh xạ 100%.
   - Toàn bộ 7/7 Missing Rules 06W đã có ca kiểm thử tương ứng.
   - Product Owner / QA Lead đã chính thức xác nhận nghiệm thu và phê duyệt chuyển sang Giai đoạn 4: Bộ Dữ Liệu Kiểm Thử.
+
+---
+
+## 6. Cập Nhật Sau Chốt Câu Hỏi Mở Đợt 2 (2026-09-30)
+
+> Căn cứ: `knowledge/features/function-d-voucher.md` Mục 8 #12→#23; Phụ lục 01 (định dạng mã) và Phụ lục 02 (môi trường, phí ship) trong `INPUT/function-d-voucher/02_ba/`.
+
+### 6.1. Phạm vi bộ test
+
+| Nhóm | Số TC | Test Case | Lý do |
+|---|:---:|---|---|
+| Thực thi được | 32 | Còn lại | — |
+| ⏸️ Tạm đóng | 1 | `VCHR-019` | Không tạo được tiền lẻ trên catalog (#15) |
+| ⛔ Ngoài phạm vi Automation | 3 | `VCHR-027`, `032`, `033` | Web không có giới hạn số lần thử, hạn mức lượt dùng, hủy từng đơn (#16). Vẫn giữ trong Master Spec |
+| **Tổng** | **36** | | +2 ca mới `VCHR-035`, `036` |
+
+### 6.2. Thay đổi test case
+- **Mốc biên theo catalog thật**: `VCHR-009` (200.000 ₫), `014` (190.000 ₫), `016` (280.000 ₫), `018` (490.000 / 500.000 ₫).
+- **Theo hành vi web**: `VCHR-011` (giữ mã + cảnh báo vàng), `028` (bấm nhiều lần chỉ giảm 1 lần), `031` (kiểm chứng BR-09 qua công thức tổng tiền).
+- **Theo Phụ lục 01**: `VCHR-020`→`026` giữ kỳ vọng kiểm tra định dạng — web chưa làm nên dự kiến FAIL và lập defect.
+- **Ca mới** (Human-Final #2, QA Lead quyết theo uỷ quyền, #19): `VCHR-035` tải lại trang; `VCHR-036` đặt hàng ở 2 tab. Bỏ ca mạng 3G (không có lời gọi mạng) và VAT (không có phân hệ).
+- Sửa tên sản phẩm không tồn tại ("Áo thun Polo…", "Bình giữ nhiệt Thông Minh") về đúng catalog.
+
+### 6.3. Viewpoint Balance (36 TCs)
+| Viewpoint | Số TC | Tỷ lệ |
+|---|:---:|:---:|
+| VP-01 Happy Path | 5 | 13,9% |
+| VP-02 Negative | 8 | 22,2% |
+| VP-03 Boundary | 9 | 25,0% |
+| VP-04 Security | 5 | 13,9% |
+| VP-05 UX | 3 | 8,3% |
+| VP-06 Integration | 6 | 16,7% |
+
+### 6.4. Boundary Completeness (mốc tạo được)
+| Ngưỡng | Dưới | Đúng | Trên | TC |
+|---|---|---|---|---|
+| Sàn voucher & freeship 200.000 ₫ | 190.000 ₫ | 200.000 ₫ | 240.000 ₫ | `VCHR-014`, `015` |
+| Tối thiểu SALE20 300.000 ₫ | 280.000 ₫ | 300.000 ₫ | 310.000 ₫ | `VCHR-016`, `017` |
+| Trần giảm 100.000 ₫ | 490.000 ₫ | 500.000 ₫ | 510.000 ₫ / 600.000 ₫ | `VCHR-018`, `003` |
+| Độ dài mã 3–20 | 2 | 3 / 20 | 21 | `VCHR-020`, `021`, `022` |
+
+### 6.5. Khoảng trống còn lại
+- `BR-01` phần làm tròn và `MR-04` chưa kiểm chứng được (`VCHR-019` tạm đóng).
+- `MR-06`, `MR-07` không có tính năng trên web.
+- **Verdict**: `PASS` — không phát sinh `ASK` mới.
