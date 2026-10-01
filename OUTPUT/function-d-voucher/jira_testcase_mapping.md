@@ -1,0 +1,43 @@
+# BẢNG ÁNH XẠ TEST CASE ↔ JIRA ISSUES · SG
+Đồng bộ lúc: 2026-09-30T13:26:48.466Z · Jira Host: https://shopgo.atlassian.net
+
+| TC ID | Tiêu đề Test Case | Jira Key | Liên kết Jira | Trạng thái |
+|---|---|---|---|---|
+| `VCHR-001` | Verify áp dụng thành công mã giảm tiền cố định GIAM50K cho đơn hàng đạt mức sàn 200.000 VNĐ | [SG-2](https://shopgo.atlassian.net/browse/SG-2) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-2) | ✅ PASS (Done)|
+| `VCHR-002` | Verify áp dụng thành công mã phần trăm SALE20 cho đơn hàng 350.000 VNĐ giảm đúng 20% | [SG-3](https://shopgo.atlassian.net/browse/SG-3) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-3) | ✅ PASS (Done)|
+| `VCHR-003` | Verify áp dụng mã SALE20 cho đơn hàng 600.000 VNĐ kích hoạt đúng mức trần chiết khấu maxCap 100.000 VNĐ | [SG-4](https://shopgo.atlassian.net/browse/SG-4) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-4) | ✅ PASS (Done)|
+| `VCHR-004` | Verify tự động chuẩn hóa trim khoảng trắng và uppercase khi nhập mã giam50k chữ thường | [SG-5](https://shopgo.atlassian.net/browse/SG-5) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-5) | ✅ PASS (Done)|
+| `VCHR-005` | Verify bấm trực tiếp vào badge gợi ý GIAM50K tự động điền mã và áp dụng thành công | [SG-6](https://shopgo.atlassian.net/browse/SG-6) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-6) | ✅ PASS (Done)|
+| `VCHR-006` | Verify từ chối áp dụng mã voucher đã hết hạn HETHAN kèm thông báo lỗi phù hợp | [SG-7](https://shopgo.atlassian.net/browse/SG-7) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-7) | Created |
+| `VCHR-007` | Verify từ chối áp dụng mã voucher không tồn tại trong hệ thống kèm thông báo lỗi | [SG-8](https://shopgo.atlassian.net/browse/SG-8) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-8) | Created |
+| `VCHR-008` | Verify từ chối áp dụng mã khi đơn hàng dưới mức sàn tối thiểu 200.000 VNĐ | [SG-9](https://shopgo.atlassian.net/browse/SG-9) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-9) | Created |
+| `VCHR-009` | Verify từ chối mã SALE20 cho đơn hàng 200.000 VNĐ do chưa đạt điều kiện tối thiểu 300.000 VNĐ của mã | [SG-10](https://shopgo.atlassian.net/browse/SG-10) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-10) | Created |
+| `VCHR-010` | Verify báo lỗi yêu cầu nhập mã khi bỏ trống hoặc chỉ nhập khoảng trắng rồi bấm Áp dụng | [SG-11](https://shopgo.atlassian.net/browse/SG-11) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-11) | Created |
+| `VCHR-011` | Verify giữ mã GIAM50K kèm cảnh báo chưa đủ điều kiện và không giảm tiền khi giảm giỏ hàng xuống dưới 200.000 VNĐ | [SG-12](https://shopgo.atlassian.net/browse/SG-12) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-12) | Created |
+| `VCHR-012` | Verify bấm nút Gỡ bỏ voucher để hủy mã đang áp dụng và hoàn lại tổng tiền thanh toán gốc | [SG-13](https://shopgo.atlassian.net/browse/SG-13) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-13) | Created |
+| `VCHR-013` | Verify chỉ ghi nhận mã mới nhất khi người dùng áp dụng liên tiếp 2 voucher khác nhau trên cùng đơn hàng | [SG-14](https://shopgo.atlassian.net/browse/SG-14) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-14) | Created |
+| `VCHR-014` | Verify từ chối áp dụng mã GIAM50K cho đơn hàng ở giá trị cận biên dưới 190.000 VNĐ | [SG-15](https://shopgo.atlassian.net/browse/SG-15) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-15) | Created |
+| `VCHR-015` | Verify chấp nhận áp dụng mã GIAM50K cho đơn hàng ở đúng giá trị biên chuẩn 200.000 VNĐ | [SG-16](https://shopgo.atlassian.net/browse/SG-16) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-16) | Created |
+| `VCHR-016` | Verify từ chối áp dụng mã SALE20 cho đơn hàng ở giá trị cận biên dưới 280.000 VNĐ | [SG-17](https://shopgo.atlassian.net/browse/SG-17) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-17) | ✅ PASS (Done)|
+| `VCHR-017` | Verify chấp nhận áp dụng mã SALE20 cho đơn hàng ở đúng giá trị biên chuẩn 300.000 VNĐ giảm 60.000 VNĐ | [SG-18](https://shopgo.atlassian.net/browse/SG-18) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-18) | Created |
+| `VCHR-018` | Verify chiết khấu mã SALE20 tại đơn hàng 490.000 VNĐ giảm 98.000 VNĐ và 500.000 VNĐ giảm đúng trần 100.000 VNĐ | [SG-19](https://shopgo.atlassian.net/browse/SG-19) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-19) | Created |
+| `VCHR-019` | Verify làm tròn số tiền chiết khấu lẻ của voucher % bằng hàm Math.floor() với đơn hàng lẻ 333.333 VNĐ | [SG-20](https://shopgo.atlassian.net/browse/SG-20) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-20) | Created |
+| `VCHR-020` | Verify từ chối xử lý mã voucher có độ dài 2 ký tự dưới ngưỡng tối thiểu quy định | [SG-21](https://shopgo.atlassian.net/browse/SG-21) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-21) | Created |
+| `VCHR-021` | Verify chấp nhận xử lý mã voucher có độ dài đúng 20 ký tự chạm ngưỡng tối đa | [SG-22](https://shopgo.atlassian.net/browse/SG-22) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-22) | Created |
+| `VCHR-022` | Verify ô input chặn không cho nhập ký tự thứ 21 khi người dùng gõ chuỗi vượt quá 20 ký tự | [SG-23](https://shopgo.atlassian.net/browse/SG-23) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-23) | Created |
+| `VCHR-023` | Verify chặn nhập ký tự đặc biệt hoặc emoji vào ô mã voucher với cảnh báo không đúng định dạng | [SG-24](https://shopgo.atlassian.net/browse/SG-24) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-24) | Created |
+| `VCHR-024` | Verify chặn không cho submit mã có khoảng trắng ở giữa chuỗi như GIAM 50K | [SG-25](https://shopgo.atlassian.net/browse/SG-25) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-25) | Created |
+| `VCHR-025` | Verify hệ thống phòng thủ an toàn trước payload XSS nhập vào ô voucher | [SG-26](https://shopgo.atlassian.net/browse/SG-26) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-26) | Created |
+| `VCHR-026` | Verify hệ thống phòng thủ an toàn trước payload SQL Injection nhập vào ô voucher | [SG-27](https://shopgo.atlassian.net/browse/SG-27) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-27) | Created |
+| `VCHR-027` | Verify cơ chế phòng thủ khi người dùng nhập sai mã liên tục 20 lần trong 10 giây | [SG-28](https://shopgo.atlassian.net/browse/SG-28) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-28) | Created |
+| `VCHR-028` | Verify bấm nút Áp dụng liên tiếp nhiều lần chỉ giảm giá đúng một lần | [SG-29](https://shopgo.atlassian.net/browse/SG-29) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-29) | Created |
+| `VCHR-029` | Verify hiển thị tiền giảm với màu xanh lá, tiền tố dấu trừ và badge tên mã đang kích hoạt | [SG-30](https://shopgo.atlassian.net/browse/SG-30) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-30) | Created |
+| `VCHR-030` | Verify giao diện form voucher và danh sách badge hiển thị chuẩn responsive trên cả Desktop và Mobile | [SG-31](https://shopgo.atlassian.net/browse/SG-31) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-31) | Created |
+| `VCHR-031` | Verify voucher chỉ giảm trên tiền hàng, không khấu trừ vào phí vận chuyển (kiểm chứng gián tiếp qua công thức tổng tiền) | [SG-32](https://shopgo.atlassian.net/browse/SG-32) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-32) | Created |
+| `VCHR-032` | Verify hạn mức lượt dùng voucher chỉ bị trừ chính thức tại thời điểm Đặt hàng thành công | [SG-33](https://shopgo.atlassian.net/browse/SG-33) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-33) | Created |
+| `VCHR-033` | Verify tự động hoàn lại lượt dùng voucher cho khách hàng khi đơn hàng bị hủy | [SG-34](https://shopgo.atlassian.net/browse/SG-34) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-34) | Created |
+| `VCHR-034` | Verify bản ghi đơn hàng lưu đầy đủ các trường subtotal, discount, appliedCode, shippingFee và total | [SG-35](https://shopgo.atlassian.net/browse/SG-35) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-35) | Created |
+| `VCHR-035` | Verify tải lại trang sau khi áp voucher thì giỏ hàng và mã giảm giá được làm mới nhưng vẫn giữ trạng thái đăng nhập | [SG-36](https://shopgo.atlassian.net/browse/SG-36) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-36) | Created |
+| `VCHR-036` | Verify đặt hàng có voucher ở hai tab trình duyệt thì cả hai đơn đều được lưu, không ghi đè nhau | [SG-37](https://shopgo.atlassian.net/browse/SG-37) | [Xem Ticket](https://shopgo.atlassian.net/browse/SG-37) | Created |
+
+*Tổng số test cases*: 36 | *Thành công*: 36

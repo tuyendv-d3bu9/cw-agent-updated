@@ -1,0 +1,67 @@
+{
+  "_source": [
+    "OUTPUT/function-d-voucher/00_plan.md",
+    "OUTPUT/function-d-voucher/runs/RUN-01_voucher-regression/run_plan.md",
+    "OUTPUT/function-d-voucher/runs/RUN-01_voucher-regression/run_result.md",
+    "OUTPUT/function-d-voucher/jira_defects_summary.md",
+    "test-results/.last-run.json"
+  ],
+  "project": "ShopGo",
+  "task": "function-d-voucher",
+  "report_date": "2026-09-30",
+  "run": "RUN-01_voucher-regression",
+  "environment": "https://cwshopgo.github.io/",
+  "scope": {
+    "total_test_cases": 36,
+    "automation_scope": 32,
+    "expected_pass": 25,
+    "expected_fail": 7,
+    "out_of_scope": ["VCHR-019", "VCHR-027", "VCHR-032", "VCHR-033"]
+  },
+  "execution": {
+    "executed": 6,
+    "passed": 6,
+    "failed": 0,
+    "blocked": 0,
+    "remaining": 26,
+    "duration_cluster_1": "42.1s",
+    "features": ["Voucher (Function D) - Cụm 1: Happy Path & Mã hợp lệ", "Voucher (Function D) - Cụm 3: Biên giá trị (chỉ VCHR-016)"],
+    "results": [
+      { "tc": "VCHR-001", "jira": "SG-2", "title": "Áp dụng thành công GIAM50K cho đơn đạt mức sàn 200.000 VNĐ", "status": "PASS" },
+      { "tc": "VCHR-002", "jira": "SG-3", "title": "Áp dụng thành công SALE20 cho đơn hàng 350.000 VNĐ giảm 20%", "status": "PASS" },
+      { "tc": "VCHR-003", "jira": "SG-4", "title": "Áp dụng SALE20 cho đơn 600.000 VNĐ kích hoạt trần maxCap 100.000 VNĐ", "status": "PASS" },
+      { "tc": "VCHR-004", "jira": "SG-5", "title": "Tự động trim khoảng trắng và uppercase khi nhập mã thường", "status": "PASS" },
+      { "tc": "VCHR-005", "jira": "SG-6", "title": "Bấm trực tiếp vào badge gợi ý GIAM50K tự động điền và áp dụng", "status": "PASS" },
+      { "tc": "VCHR-016", "jira": "SG-17", "title": "Từ chối áp dụng SALE20 cho đơn cận biên dưới 280.000 VNĐ", "status": "PASS" }
+    ]
+  },
+  "defects": [
+    {
+      "id": "SG-1",
+      "title": "[Voucher] Nút Áp Dụng bị treo khi click liên tiếp nhiều lần",
+      "severity": "High",
+      "status": "To Do",
+      "component": "General",
+      "related_test_case": null,
+      "note": "Chưa liên kết TC trong Jira. Cùng hành vi với VCHR-028 (SG-29, Cụm 4) - chưa chạy."
+    }
+  ],
+  "open_questions": [
+    {
+      "item": "VCHR-036 (SG-37)",
+      "question": "Kỳ vọng 'không mất đơn giữa 2 tab' đang là [GIẢ ĐỊNH]",
+      "owner": "BA",
+      "status": "Chờ BA"
+    }
+  ],
+  "blockers": [],
+  "next_actions": [
+    { "task": "Chạy Cụm 2: VCHR-006, 007, 010", "assignee": null },
+    { "task": "Chạy Cụm 3 còn lại: VCHR-008, 009, 011, 014, 015, 017, 018", "assignee": null },
+    { "task": "Chạy Cụm 4: VCHR-012, 013, 028, 029, 031", "assignee": null },
+    { "task": "Chạy Cụm 5: VCHR-020 → 026 (dự kiến 6 ca FAIL theo Phụ lục 01)", "assignee": null },
+    { "task": "Chạy Cụm 6: VCHR-030, 034, 035, 036", "assignee": null },
+    { "task": "Tổng hợp run_result.md và run_defects.md cho 32 ca", "assignee": null },
+    { "task": "Xác nhận kỳ vọng VCHR-036", "assignee": "BA" }
+  ]
+}

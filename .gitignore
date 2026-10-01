@@ -16,3 +16,9 @@ TODO.md
 .docs/
 
 .playwright-mcp/
+
+PLAN.md
+VIDEO_RECORDING_SCRIPT.md
+
+test-results/
+automation/test-results/
