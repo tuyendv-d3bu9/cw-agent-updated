@@ -37,9 +37,10 @@ Hệ thống hỗ trợ MCP Server tương tác trực tiếp 2 chiều với Ji
 
 ### 🟣 2. Cursor IDE / Windsurf
 - **Cấu hình MCP sẵn có**: File [`.cursor/mcp.json`](../../.cursor/mcp.json) đã được tích hợp sẵn.
+- **Rules sẵn có**: File [`.cursor/rules/agents.mdc`](../../.cursor/rules/agents.mdc) đã được tích hợp sẵn trong repo.
 - **Cách dùng**: 
   1. Mở dự án bằng Cursor.
-  2. Cursor tự động nạp tool `jira_*` và tuân thủ Hiến pháp `AGENTS.md`.
+  2. Cursor tự động nạp tool `jira_*`, tự đọc `AGENTS.md` và tự động cập nhật checkbox `- [x]` trong `OUTPUT/<task-slug>/00_plan.md`.
 
 ### 🟠 3. Claude Code CLI
 - **Cấu hình sẵn có**: File [`.claude/CLAUDE.md`](../../.claude/CLAUDE.md) đã được tích hợp sẵn trong repo.

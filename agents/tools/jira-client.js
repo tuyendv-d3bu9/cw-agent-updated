@@ -120,7 +120,7 @@ async function pullDefects(taskSlug, env) {
       protocol: url.protocol,
       hostname: url.hostname,
       port: url.port || (url.protocol === 'https:' ? 443 : 80),
-      path: `/rest/api/2/search?jql=${jql}&maxResults=50&fields=key,summary,status,priority,components`,
+      path: `/rest/api/3/search/jql?jql=${jql}&maxResults=50&fields=key,summary,status,priority,components`,
       method: 'GET',
       headers: {
         'Authorization': authHeader,

@@ -53,6 +53,15 @@ Dự án được phân định rạch ròi thành 4 khu vực chức năng. Age
 - **Chốt chặn sẵn sàng (Readiness Gate)**: Trước khi kích hoạt Automation, hệ thống yêu cầu đối soát chéo qua `qa-readiness-evaluator` (`gen-readiness-report.md` ➔ `outputs/reports/readiness-report.md`) để xác nhận độ chín của thiết kế và dữ liệu FACT.
 - Chỉ kích hoạt Tầng Thực Thi (`runs/`) hoặc Automation khi có yêu cầu rõ ràng từ người dùng kèm URL môi trường cụ thể và khuyến nghị GO.
 
+### 1.6. Quy Tắc Bức Tường Thép (Iron Gatekeeper — Tuyệt Đối Cấm Nhảy Cóc Khi Vướng ASK):
+- **BẢO VỆ CHẤT LƯỢNG LÀ TRÊN HẾT**: Khi tài liệu thiếu hụt (Cổng 0 thiếu `02_ba/`), hoặc Chặng 2 quét kẽ hở 06W ra Verdict `ASK` (còn Open Questions chưa được xác nhận):
+  + **CẤM TUYỆT ĐỐI**: Không được tự ý nhảy cóc sang Chặng 3 (Viewpoint), Chặng 4 (Test Idea), hay Chặng 5 (Sinh Test Case).
+  + **CẤM XUÊ XOA THEO Ý USER**: Kể cả khi User quên trả lời, giục làm tiếp (*"cứ làm tiếp đi"*, *"bỏ qua câu hỏi đó đi"*, *"viết test case đại đi"*), Agent **BẮT BUỘC PHẢI CỨNG RẮN BẢO VỆ QUAN ĐIỂM CHẶN (HARD STOP)**.
+  + **PHẢN BIỆN CHUẨN MỰC**: Agent phải giải thích rõ ràng với User: *"Nếu sinh test case trên nền tảng nghiệp vụ đang mơ hồ hoặc lủng logic, 100% test case sinh ra sẽ là ảo giác (hallucination), gây lãng phí nguồn lực kiểm thử và tiềm ẩn nguy cơ lọt lỗi nghiêm trọng lên Production."*
+  + **ĐIỀU KIỆN MỞ KHÓA DUY NHẤT (UNLOCK GATE)**: Chỉ được phép tiến sang bước sau khi:
+    (1) User/BA cung cấp câu trả lời giải quyết triệt để các câu hỏi `ASK`, HOẶC
+    (2) User đưa ra quyết định kinh doanh tường minh (Explicit Business Decision) để ghi nhận vào Mục 8 (`GIẢ ĐỊNH ĐÃ CHỐT`) trong `knowledge/features/<slug>.md`.
+
 ---
 
 ## 2. Quy Tắc Bắt Buộc: "Plan First" Chống Tràn Context (Mọi Agent Phải Tuân Thủ)
@@ -100,6 +109,13 @@ Mọi AI Agent **bắt buộc tự động đóng vai QA Leader**:
 3. Báo cáo bảng Dashboard tiến độ ngắn gọn và chủ động đề xuất:
    *"Task `<task-slug>` đã hoàn thành xong Chặng X. Tôi đề xuất làm tiếp Chặng Y [hoặc Batch Z]. Bạn có muốn tiếp tục không?"*
 4. Khi người dùng xác nhận (`OK` / `Tiếp tục`), Agent tự động đọc đúng đầu vào của chặng dang dở để làm tiếp mà không làm lại các bước cũ.
+
+### 2.5. Chỉ Dẫn Độc Lập Cho Mọi Coding Agent (Claude Code, Cursor, Codex, Windsurf):
+- **CẤM TỰ Ý TẠO FILE Ở ROOT**: Không tạo thêm `TODO.md`, `CLAUDE.md`, `.cursorrules`... ở thư mục gốc để tránh làm bẩn workspace.
+- **Nơi duy nhất theo dõi tiến trình (Universal Task Tracker)**:
+  + Mọi Agent khi cần kiểm tra hoặc cập nhật tiến độ công việc **bắt buộc đọc và tick `- [x]` trực tiếp vào `OUTPUT/<task-slug>/00_plan.md`**.
+  + Nếu muốn lấy danh sách công việc hiện tại dạng checklist: Chạy lệnh `npm run status`.
+  + File `00_plan.md` sử dụng 100% cú pháp GitHub Flavored Markdown (GFM) tiêu chuẩn, hoàn toàn tương thích và kế thừa mượt mà giữa Antigravity, Claude Code, Cursor và Codex.
 
 ---
 
@@ -176,10 +192,10 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
    - **Testable**: Kỳ vọng đầu ra phải kiểm chứng được nhị phân (Pass/Fail).
 2. **Bắt buộc gắn nhãn `[GIẢ ĐỊNH]`**:
    - Bất kỳ điểm nào tài liệu chưa nêu mà Agent tự suy đoán đều **BẮT BUỘC** gắn tiền tố `[GIẢ ĐỊNH]` kèm mức độ rủi ro.
-3. **Cổng Nghiệm Thu (Verdict Gates)**:
+3. **Cổng Nghiệm Thu Bất Biến & Chốt Chặn Bức Tường Thép (Verdict Gates)**:
    - `PASS`: Đạt chuẩn ➔ Chạy bước tiếp.
    - `FIX`: Sai format/trace ➔ Agent tự sửa.
-   - `ASK`: Hổng nghiệp vụ ➔ DỪNG LẠI, hỏi người dùng, không được tự suy đoán đi tiếp.
+   - `ASK`: Hổng nghiệp vụ / thiếu thông tin ➔ **HARD STOP TUYỆT ĐỐI**. Bắt buộc dừng lại, giữ nguyên hiện trạng, không tự suy đoán, không nhảy cóc sang chặng sau. Kể cả khi User quên trả lời hoặc yêu cầu bỏ qua, Agent bắt buộc từ chối và yêu cầu chốt rõ ràng mới mở cổng đi tiếp.
 4. **Không làm bẩn thư mục gốc (Keep Root Clean)**:
    - Không sinh file tùy tiện ngoài thư mục gốc. Mọi kết quả phân tích PHẢI nằm trong `OUTPUT/<task-slug>/`.
 

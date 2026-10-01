@@ -1,9 +1,9 @@
-# Project Knowledge — quy ước dùng cho MỌI feature
+# Project Knowledge — Quy ước dùng chung cho MỌI feature
 
-> Tri thức nền cấp **dự án**, không đổi theo từng tính năng. Mọi skill đọc file này.
-> Trống mục nào thì agent phải gắn `[GIẢ ĐỊNH]` khi cần tới — điền dần để giảm giả định.
+> Tri thức nền cấp **dự án**, không đổi theo từng tính năng. Mọi skill và agent đều đọc file này đầu tiên.
+> Trống mục nào thì agent phải gắn `[GIẢ ĐỊNH]` khi cần tới — người dùng/BA điền dần để giảm thiểu giả định.
 
-Dự án: `ShopGo` · Cập nhật lần cuối: `2026-09-30`
+Dự án: `ShopGo` · Cập nhật lần cuối: `2026-10-01`
 
 ---
 
@@ -34,7 +34,7 @@ Dự án: `ShopGo` · Cập nhật lần cuối: `2026-09-30`
 | Criticality Context | Các luồng mua hàng, giỏ hàng, áp mã giảm giá và thanh toán là luồng sống còn (Core Flows). |
 
 ## 4. Môi trường test
-| Thuộc tính | Nội dung |
+| Thuộc tính | Cấu hình / Hướng dẫn |
 |---|---|
 | Môi trường Staging / Test | `https://cwshopgo.github.io/` (Ứng dụng Web Live) |
 | Kiến trúc | **SPA thuần frontend, không có backend, không có API**. Đơn hàng lưu `localStorage["shopgo_orders"]`, phiên đăng nhập `localStorage["shopgo_user"]`; giỏ hàng & voucher chỉ nằm trong bộ nhớ phiên. **Không thiết kế ca kiểm thử API / HTTP status / DB** |
@@ -45,13 +45,12 @@ Dự án: `ShopGo` · Cập nhật lần cuối: `2026-09-30`
 | Tài khoản kiểm thử cố định | 1. Chuẩn: `khachhang@shopgo.vn` / `123456` (Nguyễn Văn An)<br>2. VIP: `vip@shopgo.vn` / `123456` (Trần Thị Mai) |
 | Có được dùng dữ liệu giống production? | Sử dụng dữ liệu sandbox / demo nội bộ |
 
-
 ## 5. Test Management Tool & ALM Integration
 ### 5.1. Jira Xray (Khuyến nghị)
 | Thuộc tính | Cấu hình chuẩn | Ý nghĩa / Ghi chú |
 |---|---|---|
-| Issue Type | `Test` | Loại issue đại diện cho Test Case trong Xray |
-| Summary Format | `[<TC_ID>] <Title>` | Ví dụ: `[AUTH-001] Verify đăng nhập thành công...` |
+| Issue Type | `Test` | Loại issue đại diện cho Test Case trong Jira Xray |
+| Summary Format | `[<TC_ID>] <Title>` | Ví dụ: `[AUTH-001] Verify đăng nhập thành công với email hợp lệ` |
 | Manual Steps | `Action`, `Data`, `Expected Result` | 3 cột chuẩn của bảng Manual Test Step trong Xray |
 | Preconditions | `Preconditions` (Text/Wiki) | Tiền điều kiện trước khi thực hiện test |
 | Priority | `Blocker`, `Critical`, `High`, `Medium`, `Low` | Mức độ ưu tiên thực thi |
@@ -72,4 +71,4 @@ Dự án: `ShopGo` · Cập nhật lần cuối: `2026-09-30`
 ## 6. Ràng buộc riêng của dự án
 > Ghi chú các quy tắc nghiệp vụ đặc thù áp dụng xuyên suốt toàn bộ hệ thống (nếu có).
 - _[Quy tắc 1: Ví dụ - Ô nhập text tự động trim() khoảng trắng đầu và cuối chuỗi]_
-- _[Quy tắc 2: Ví dụ - Cơ chế phòng thủ brute-force hoặc rate-limit cho các luồng nhạy cảm]_
+- _[Quy tắc 2: Ví dụ - Cơ chế phòng thủ brute-force hoặc rate-limit cho các luồng nhạy cảm: 5 lần sai / 5 phút tạm khóa]_
