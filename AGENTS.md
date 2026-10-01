@@ -227,6 +227,12 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
   ```bash
   npm run map:sync
   ```
+- Kết nối và tương tác Jira (MCP Server & REST API):
+  ```bash
+  npm run jira:mcp   # Chạy stdio MCP Server cho AI IDEs (Antigravity, Cursor, Claude)
+  npm run jira:pull  # Kéo danh sách bug/defect từ Jira về
+  npm run jira:push  # Chuẩn bị file CSV Xray / đẩy test case lên Jira
+  ```
 
 ---
 
@@ -244,4 +250,5 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
 - User nói: *"Gộp test case lại đi"* ➔ Agent **tự chạy** `merge-testcases.js` ngầm.
 - User nói: *"Tiến độ thế nào rồi?"* ➔ Agent **tự chạy** `status.js` ngầm và in bảng tiến độ ra chat.
 - User nói: *"Đã chốt xong"* ➔ Agent **tự chạy** `sync-system-map.js` ngầm để cập nhật bản đồ vệ tinh.
+- User nói: *"Kiểm tra ticket Jira SHOPGO-101"* hoặc *"Log bug này lên Jira"* ➔ Agent **tự kích hoạt** Jira MCP tool hoặc gọi API ngầm.
 
