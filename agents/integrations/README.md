@@ -18,17 +18,29 @@ Toàn bộ hệ thống được điều phối qua một Hiến pháp duy nhấ
 
 ---
 
-## 2. Cách Sử Dụng Trên Từng Công Cụ
+## 2. Hướng Dẫn Tích Hợp Jira MCP (Model Context Protocol)
+
+Hệ thống hỗ trợ MCP Server tương tác trực tiếp 2 chiều với Jira:
+👉 Chi tiết xem tại: **[`jira-mcp-guide.md`](./jira-mcp-guide.md)**
+
+- Khởi động server MCP: `npm run jira:mcp`
+- Kéo defects tự động: `npm run jira:pull`
+- Đẩy test cases chuẩn bị CSV: `npm run jira:push`
+
+---
+
+## 3. Cách Sử Dụng Trên Từng Công Cụ
 
 ### 🟢 1. Google Antigravity IDE (Khuyến nghị)
 - **Cách dùng**: Mở thư mục dự án trong Antigravity.
-- Antigravity tự động kích hoạt Planning Mode, đọc `AGENTS.md` và hiển thị giao diện phê duyệt (Proceed Button) trực quan.
+- Antigravity tự động kích hoạt Planning Mode, đọc `AGENTS.md` và nạp cấu hình MCP tại `.agents/mcp_config.json`.
 
 ### 🟣 2. Cursor IDE / Windsurf
-- **Cấu hình sẵn có**: File [`.cursor/rules/agents.mdc`](../../.cursor/rules/agents.mdc) đã được tích hợp sẵn trong repo.
+- **Cấu hình MCP sẵn có**: File [`.cursor/mcp.json`](../../.cursor/mcp.json) đã được tích hợp sẵn.
+- **Rules sẵn có**: File [`.cursor/rules/agents.mdc`](../../.cursor/rules/agents.mdc) đã được tích hợp sẵn trong repo.
 - **Cách dùng**: 
-  1. Học viên chỉ cần mở dự án bằng Cursor.
-  2. Cursor tự động kích hoạt Rule: Tự đọc `AGENTS.md` và tự động cập nhật checkbox `- [x]` trong `OUTPUT/<task-slug>/00_plan.md` mà học viên không cần cấu hình thêm gì!
+  1. Mở dự án bằng Cursor.
+  2. Cursor tự động nạp tool `jira_*`, tự đọc `AGENTS.md` và tự động cập nhật checkbox `- [x]` trong `OUTPUT/<task-slug>/00_plan.md`.
 
 ### 🟠 3. Claude Code CLI
 - **Cấu hình sẵn có**: File [`.claude/CLAUDE.md`](../../.claude/CLAUDE.md) đã được tích hợp sẵn trong repo.

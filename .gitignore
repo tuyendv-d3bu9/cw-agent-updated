@@ -2,12 +2,11 @@ node_modules
 .env
 
 .backup/
-OUTPUT/
-OUTPUT/
 
 INPUT/raw 
 
 .agents/
+!.agents/mcp_config.json
 skills-lock.json
 
 TODO.md
@@ -20,3 +19,6 @@ TODO.md
 
 PLAN.md
 VIDEO_RECORDING_SCRIPT.md
+
+test-results/
+automation/test-results/
