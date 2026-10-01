@@ -242,7 +242,7 @@ async function handleSearchIssues(args, env) {
   const jql = args.jql || defaultJql;
   const maxResults = Math.min(Math.max(args.maxResults || 20, 1), 100);
 
-  const reqPath = `/rest/api/2/search?jql=${encodeURIComponent(jql)}&maxResults=${maxResults}&fields=key,summary,status,priority,issuetype,components,created,assignee`;
+  const reqPath = `/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=${maxResults}&fields=key,summary,status,priority,issuetype,components,created,assignee`;
   const res = await makeRequest(host, email, token, reqPath);
 
   if (res.statusCode !== 200) {
