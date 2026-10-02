@@ -188,7 +188,13 @@ function lintTestCases(dir, R) {
 
       // Tags bắt buộc trích Rule# và Viewpoint# (QA_STANDARD: traceability)
       if (values.Tags) {
-        if (!/Rule#\w+-\d+/.test(values.Tags)) R.error(rel, id, 'Tags thiếu `Rule#BR-xx` — không trace được về quy tắc nghiệp vụ');
+        // Chấp nhận mọi mã có cấu trúc `PREFIX-xxx`, không riêng `BR-<số>`.
+        // QA_STANDARD §2.4 chỉ đòi trace được về "mã BR-xx / MR-xx / mục tài liệu";
+        // thực tế có lượt chạy dùng `Rule#GAP-H2` cho kẽ hở đã chốt ở Mục 7/8 của
+        // file tri thức — trace được đầy đủ. Ép đúng `BR-<số>` là báo oan.
+        if (!/Rule#[A-Za-z]+-[A-Za-z0-9]+/.test(values.Tags)) {
+          R.error(rel, id, 'Tags thiếu `Rule#<mã>` — không trace được về quy tắc hay kẽ hở nghiệp vụ nào');
+        }
         if (!/Viewpoint#\S+/.test(values.Tags)) R.error(rel, id, 'Tags thiếu `Viewpoint#VP-xx` — không trace được về viewpoint');
         if (!/Module#\S+/.test(values.Tags)) R.warn(rel, id, 'Tags thiếu `Module#` — khó lọc khi import vào Test Management Tool');
       }
