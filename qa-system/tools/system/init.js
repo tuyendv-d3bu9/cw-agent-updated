@@ -1,20 +1,24 @@
 #!/usr/bin/env node
 /**
- * init.js — Dựng toàn bộ khung làm việc bằng một lệnh.
+ * init.js — Scaffolds a whole project in one command.
  *
- * Vì sao cần: người dùng là QA/BA/PO. Đưa hệ thống agent này vào một dự án mới,
- * họ không biết phải tự tay tạo `INPUT/` với 5 ngăn, `OUTPUT/`, `knowledge/` từ
- * template, hay `automation/` với cấu hình Playwright. Thiếu một bước là hệ thống
- * chạy nửa vời rồi báo lỗi khó hiểu.
+ *   stepInput / stepOutput / stepKnowledge / stepAutomation  Create each area.
+ *   stepInstall()  Install dependencies and the Playwright browser.
  *
- * Lệnh này materialise mọi thứ từ `qa-system/templates/` ra dự án, cài thư viện,
- * rồi tự kiểm. Chạy lại bao nhiêu lần cũng được — **không bao giờ ghi đè** thứ
- * đã có, chỉ bổ sung thứ còn thiếu.
+ * Users are QA/BA/PO. Dropping this agent system into a new project, they do not
+ * know to hand-create INPUT/ with its five bins, OUTPUT/, knowledge/ from the
+ * templates, or automation/ with a Playwright config. Miss one and the system
+ * half-runs, then fails with an opaque error.
  *
- * Lệnh:
- *   npm run init                 Dựng khung + cài thư viện + tự kiểm
- *   npm run init -- --dry-run    Chỉ liệt kê sẽ làm gì, không đụng vào đĩa
- *   npm run init -- --no-install Bỏ qua bước cài thư viện (dùng khi mạng chậm)
+ * Materialises everything from `qa-system/templates/`, installs dependencies and
+ * self-checks. Idempotent: it only ever adds what is missing and NEVER overwrites.
+ *
+ * Printed output stays in Vietnamese on purpose — this command is read by the user.
+ *
+ * Usage:
+ *   init.js                Scaffold, install, self-check
+ *   init.js --dry-run      List what would happen, touch nothing
+ *   init.js --no-install   Skip dependency installation
  */
 
 const fs = require('fs');
@@ -32,7 +36,7 @@ const line = (c = '─') => c.repeat(W);
 const created = [];
 const skipped = [];
 
-// ───────────────────── Thao tác đĩa ─────────────────────
+// ───────────────────── Filesystem helpers ─────────────────────
 
 const rel = (p) => path.relative(PATHS.ROOT, p) || '.';
 
@@ -43,7 +47,7 @@ function ensureDir(p, note = '') {
   return true;
 }
 
-/** Chép file nếu đích chưa có. Không bao giờ ghi đè. */
+/** Copies only when the destination is absent. Never overwrites. */
 function ensureFile(src, dest, note = '') {
   if (fs.existsSync(dest)) { skipped.push(rel(dest)); return false; }
   if (!dryRun) {
@@ -64,7 +68,7 @@ function writeFile(dest, content, note = '') {
   return true;
 }
 
-// ───────────────────── Nội dung biển chỉ dẫn ─────────────────────
+// ───────────────────── Signpost content (user-facing) ─────────────────────
 
 const INPUT_README = `# INPUT/ — Tài liệu nguồn · **CỦA BẠN**
 
@@ -136,7 +140,7 @@ const BINS = [
   ['05_communication', 'Q&A với BA, biên bản họp, Change Request.'],
 ];
 
-// ───────────────────── Các bước dựng ─────────────────────
+// ───────────────────── Scaffold steps ─────────────────────
 
 function stepInput() {
   ensureDir(PATHS.INPUT, 'nơi bạn thả tài liệu của BA');
@@ -153,8 +157,8 @@ function stepOutput() {
   ensureDir(PATHS.OUTPUT, 'nơi agent ghi kết quả');
   writeFile(path.join(PATHS.OUTPUT, 'README.md'), OUTPUT_README, 'biển chỉ dẫn');
 
-  // `routing_table.template_run_dir` trỏ tới thư mục này, nên nó phải tồn tại —
-  // thiếu là `agent:check` báo đường dẫn routing hỏng ngay sau khi khởi tạo.
+  // `routing_table.template_run_dir` points here, so it must exist — otherwise
+  // `agent:check` reports a broken routing path right after initialisation.
   const tplRun = path.join(PATHS.OUTPUT, '_template_run');
   if (ensureDir(tplRun, 'khuôn một lượt chạy test')) {
     for (const [f, title] of [
@@ -187,12 +191,12 @@ function stepAutomation() {
   for (const f of fs.readdirSync(src)) {
     ensureFile(path.join(src, f), path.join(PATHS.AUTOMATION, f), 'từ template');
   }
-  // Hai thư mục agent qa-automation sẽ ghi code vào.
+  // The two directories the qa-automation agent writes code into.
   ensureDir(path.join(PATHS.AUTOMATION, 'pages'), 'Page Object Model — agent sinh ra');
   ensureDir(path.join(PATHS.AUTOMATION, 'tests'), 'kịch bản test — agent sinh ra');
 }
 
-// ───────────────────── Cài thư viện ─────────────────────
+// ───────────────────── Dependencies ─────────────────────
 
 function run(cmd, label) {
   process.stdout.write(`  ${label}… `);
@@ -234,7 +238,7 @@ function stepInstall() {
   return ok;
 }
 
-// ───────────────────── Chạy ─────────────────────
+// ───────────────────── Run ─────────────────────
 
 function main() {
   console.log(`\n${line('━')}`);

@@ -1,40 +1,43 @@
 #!/usr/bin/env node
 /**
- * lint-deliverables.js — Kiểm chuẩn FACT của deliverable bằng máy.
+ * lint-deliverables.js — Machine-checks deliverables against the FACT standard.
  *
- * Vì sao cần: `AGENTS.md` §5 và `QA_STANDARD.md` đặt ra chuẩn rất chặt (8 trường,
- * Title bắt đầu bằng Verify/Validate/Confirm, Tags phải trích Rule# và Viewpoint#,
- * cấm placeholder, cấm ô bảng trống, quét đủ W1→W6). Nhưng thứ duy nhất kiểm tra
- * những chuẩn đó lại là `coverage-review` — tức LLM tự chấm bài của LLM.
+ *   lint(slug)  Run every rule group over one task. Returns {errors, warns, totalCases}.
  *
- * Tool này biến chuẩn thành điều kiện kiểm được: đọc deliverable, đối chiếu từng
- * luật, trả về lỗi có vị trí cụ thể. Chuẩn FACT từ chỗ "lời hứa" thành "ràng buộc".
+ * Rule groups:
+ *   A. Test cases — ID format, duplicates, required fields, title verb,
+ *      numbered steps, priority, Rule#/Viewpoint# traceability, placeholders.
+ *   B. Meta line — `Owner:` and `Verdict:` near the top of each stage file.
+ *   C. 06W coverage — stage 2 must scan W1 through W6.
+ *   D. Table cells — no blank cells (QA_STANDARD §2.7).
  *
- * Lệnh:
- *   node agents/tools/system/lint-deliverables.js [slug]          Bảng lỗi
- *   node agents/tools/system/lint-deliverables.js [slug] --json   JSON cho CI
+ * AGENTS.md §5 and QA_STANDARD set these rules, but until now the only thing
+ * checking them was `coverage-review` — an LLM grading an LLM's output.
  *
- * Exit code: 0 = sạch (hoặc chỉ có cảnh báo) · 1 = có lỗi phải sửa
+ * Usage:
+ *   lint-deliverables.js [slug] [--json]
+ * Exit: 0 = clean or warnings only, 1 = errors to fix.
  */
 
 const fs = require('fs');
 const path = require('path');
 const { PATHS, taskDir, listTaskSlugs } = require('../lib/paths');
 
-// ───────────────────── Luật ─────────────────────
+// ───────────────────────────── Rules ─────────────────────────────
 
-/**
- * Các trường bắt buộc của một test case, KHÔNG kể `TC_ID` (nằm ở heading).
- *
- * Đọc trực tiếp từ bảng "Định dạng N trường bắt buộc" trong skill
- * `test-case-generation.md`, thay vì chép cứng ở đây. Lý do: khi ai đó nâng cấp
- * skill để thêm trường mới (ví dụ `Boundary Profile`), linter tự biết mà kiểm —
- * không im lặng bỏ qua trường vừa thêm. Skill là nguồn chân lý, linter chỉ thi hành.
- *
- * Không đọc được thì dùng danh sách dự phòng để linter vẫn chạy.
- */
 const FALLBACK_FIELDS = ['Title', 'Precondition', 'Test Steps', 'Test Data', 'Expected Result', 'Priority', 'Tags'];
 
+/**
+ * Required test-case fields, excluding `TC_ID` which lives in the heading.
+ *
+ * Read from the "Định dạng N trường bắt buộc" table in the
+ * `test-case-generation` skill rather than hard-coded, so that upgrading the
+ * skill to add a field (e.g. `Boundary Profile`) is picked up automatically.
+ * The skill is the source of truth; this tool only enforces it.
+ *
+ * Called per `lint()` run, not at module load: reading once at require time
+ * means edits to the skill are invisible within the same process.
+ */
 function loadFields() {
   const skill = path.join(PATHS.SYSTEM || PATHS.AGENTS, 'qa-test-design', 'skills', 'test-case-generation.md');
   if (!fs.existsSync(skill)) return FALLBACK_FIELDS;
@@ -53,24 +56,15 @@ function loadFields() {
   return fields.length ? fields : FALLBACK_FIELDS;
 }
 
-// Cố tình KHÔNG tính ở đây. Đọc lúc nạp module nghĩa là linter không bao giờ
-// thấy thay đổi của skill trong cùng tiến trình — vừa sai (nâng cấp skill xong
-// chạy lint ngay thì vẫn dùng danh sách cũ) vừa không test được.
-// `lint()` tự đọc lại mỗi lần chạy.
 const TITLE_VERBS = /^(Verify|Validate|Confirm)\b/i;
 const TC_ID_FORMAT = /^[A-Z][A-Z0-9]{1,5}-\d{3}$/;
 const PRIORITIES = new Set(['high', 'medium', 'low', 'critical', 'blocker']);
 const MAX_STEPS = 8;
 
 /**
- * Dấu hiệu nội dung chưa điền.
- *
- * Phải giữ RẤT hẹp. Bản đầu bắt cả `<script>alert('XSS')</script>` (payload XSS
- * hợp lệ) và `SG-XXXXXX` (mô tả định dạng mã đơn) — linter kêu oan thì người ta
- * bỏ qua nó, đúng thứ làm hỏng mục đích của linter.
- *
- * Chỉ bắt đúng các cụm nguyên văn trong template của skill, và chỉ bắt ngoài
- * code span (dữ liệu test gần như luôn nằm trong backtick).
+ * Unfilled-content markers. Deliberately narrow: an earlier version flagged
+ * `<script>alert('XSS')</script>` and `SG-XXXXXX` as placeholders. A linter that
+ * cries wolf gets switched off, which defeats its purpose.
  */
 const TEMPLATE_WORDS = 'hành động|giá trị|trạng thái|Tên trường|điều kiện|MODULE|Verify/Validate/Confirm';
 const PLACEHOLDERS = [
@@ -80,10 +74,9 @@ const PLACEHOLDERS = [
   new RegExp(`<(?:${TEMPLATE_WORDS})[^>]*>`, 'i'),
 ];
 
-/** Bỏ code span và code block trước khi soi placeholder. */
+/** Test data almost always sits in backticks, so scan outside code spans only. */
 const stripCode = (t) => t.replace(/```[\s\S]*?```/g, ' ').replace(/`[^`]*`/g, ' ');
 
-/** Các deliverable phải có dòng meta `Owner: … · Verdict: …` (QA_STANDARD §7). */
 const NEEDS_META = [
   '01_requirement_risk_summary.md',
   '02_missing_rule_report.md',
@@ -93,7 +86,7 @@ const NEEDS_META = [
   '06_coverage_review.md',
 ];
 
-// ───────────────────── Hạ tầng báo lỗi ─────────────────────
+// ───────────────────────────── Reporting ─────────────────────────────
 
 function makeReporter() {
   const items = [];
@@ -103,10 +96,9 @@ function makeReporter() {
 
 const read = (p) => (fs.existsSync(p) ? fs.readFileSync(p, 'utf-8') : null);
 
-// ───────────────────── A. Lint test case 8 trường ─────────────────────
+// ───────────────────────── A. Test cases ─────────────────────────
 
 function lintTestCases(dir, R, FIELDS) {
-  // Lint cả spec tổng lẫn từng batch — lỗi có thể nằm ở batch chưa merge.
   const targets = [];
   const spec = path.join(dir, '05_test_case_spec.md');
   if (fs.existsSync(spec)) targets.push(spec);
@@ -120,12 +112,12 @@ function lintTestCases(dir, R, FIELDS) {
   }
 
   if (targets.length === 0) {
-    R.warn('05_test_case_spec.md', '-', 'Chưa có test case nào (thiếu cả spec tổng lẫn testcases/batch_*.md)');
+    R.warn('05_test_case_spec.md', '-', 'No test cases found (neither the merged spec nor testcases/batch_*.md)');
     return 0;
   }
 
-  // Tách phạm vi: batch_*.md là NGUỒN được gộp VÀO 05_test_case_spec.md,
-  // nên trùng ID giữa hai bên là đúng. Chỉ soi trùng trong cùng một phạm vi.
+  // Separate scopes: batch files are the SOURCE merged INTO the spec, so sharing
+  // IDs is correct. Only flag duplicates within the same scope.
   const seenBy = { spec: new Map(), batch: new Map() };
   let specCount = 0;
   let batchCount = 0;
@@ -144,19 +136,17 @@ function lintTestCases(dir, R, FIELDS) {
       const id = idm[1].trim();
 
       if (!TC_ID_FORMAT.test(id)) {
-        R.error(rel, id, `TC_ID sai định dạng — phải là [MODULE]-[001], ví dụ VCHR-001`);
+        R.error(rel, id, 'Malformed TC_ID — expected [MODULE]-[001], e.g. VCHR-001');
       }
       if (seen.has(id)) {
-        R.error(rel, id, `TC_ID trùng với ${seen.get(id)} (cùng phạm vi ${scope})`);
+        R.error(rel, id, `Duplicate TC_ID, already in ${seen.get(id)} (same ${scope} scope)`);
       } else {
         seen.set(id, rel);
       }
 
-      // 7 trường còn lại (TC_ID là trường thứ 8, đã lấy ở heading)
+      // Stop at ANY other field, not just the next one: if the next field is
+      // absent, the current one would fail to match and be reported missing too.
       const values = {};
-      // Điểm dừng là BẤT KỲ trường nào khác, không phải riêng trường kế tiếp.
-      // Nếu chỉ chặn ở trường kế tiếp thì khi trường đó vắng mặt, trường đang xét
-      // cũng bị báo thiếu theo — một lỗi dây chuyền báo oan.
       const anyField = FIELDS.map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
       for (const f of FIELDS) {
         const esc = f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -165,92 +155,91 @@ function lintTestCases(dir, R, FIELDS) {
         const v = m ? m[1].trim() : null;
         values[f] = v;
 
-        if (v === null) R.error(rel, id, `Thiếu trường \`${f}\``);
-        else if (v === '') R.error(rel, id, `Trường \`${f}\` bỏ trống`);
+        if (v === null) R.error(rel, id, `Missing field \`${f}\``);
+        else if (v === '') R.error(rel, id, `Field \`${f}\` is empty`);
       }
 
-      // Title phải mở đầu bằng động từ quy chuẩn
       if (values.Title && !TITLE_VERBS.test(values.Title)) {
-        R.error(rel, id, `Title phải bắt đầu bằng Verify / Validate / Confirm — đang là "${values.Title.slice(0, 40)}…"`);
+        R.error(rel, id, `Title must start with Verify / Validate / Confirm — got "${values.Title.slice(0, 40)}…"`);
       }
 
-      // Test Steps: đánh số và không quá MAX_STEPS
       if (values['Test Steps']) {
         const steps = values['Test Steps'].split('\n').filter((l) => /^\s*\d+\./.test(l));
         if (steps.length === 0) {
-          R.error(rel, id, 'Test Steps chưa đánh số 1. 2. 3.…');
+          R.error(rel, id, 'Test Steps are not numbered 1. 2. 3. …');
         } else if (steps.length > MAX_STEPS) {
-          R.warn(rel, id, `Test Steps có ${steps.length} bước, vượt mức khuyến nghị ${MAX_STEPS} — cân nhắc tách test case`);
+          R.warn(rel, id, `Test Steps has ${steps.length} steps, above the ${MAX_STEPS} recommended — consider splitting`);
         }
       }
 
-      // Priority trong tập cho phép
       if (values.Priority && !PRIORITIES.has(values.Priority.toLowerCase().replace(/\*/g, '').trim())) {
-        R.error(rel, id, `Priority "${values.Priority}" không thuộc High / Medium / Low`);
+        R.error(rel, id, `Priority "${values.Priority}" is not one of High / Medium / Low`);
       }
 
-      // Tags bắt buộc trích Rule# và Viewpoint# (QA_STANDARD: traceability)
       if (values.Tags) {
-        // Chấp nhận mọi mã có cấu trúc `PREFIX-xxx`, không riêng `BR-<số>`.
-        // QA_STANDARD §2.4 chỉ đòi trace được về "mã BR-xx / MR-xx / mục tài liệu";
-        // thực tế có lượt chạy dùng `Rule#GAP-H2` cho kẽ hở đã chốt ở Mục 7/8 của
-        // file tri thức — trace được đầy đủ. Ép đúng `BR-<số>` là báo oan.
+        // Accept any structured `PREFIX-xxx` code, not just `BR-<digits>`.
+        // QA_STANDARD §2.4 only requires tracing to "BR-xx / MR-xx / a document
+        // section"; real runs use codes such as `Rule#GAP-H2` for settled gaps.
         if (!/Rule#[A-Za-z]+-[A-Za-z0-9]+/.test(values.Tags)) {
-          R.error(rel, id, 'Tags thiếu `Rule#<mã>` — không trace được về quy tắc hay kẽ hở nghiệp vụ nào');
+          R.error(rel, id, 'Tags is missing `Rule#<code>` — not traceable to any business rule or gap');
         }
-        if (!/Viewpoint#\S+/.test(values.Tags)) R.error(rel, id, 'Tags thiếu `Viewpoint#VP-xx` — không trace được về viewpoint');
-        if (!/Module#\S+/.test(values.Tags)) R.warn(rel, id, 'Tags thiếu `Module#` — khó lọc khi import vào Test Management Tool');
+        if (!/Viewpoint#\S+/.test(values.Tags)) {
+          R.error(rel, id, 'Tags is missing `Viewpoint#VP-xx` — not traceable to any viewpoint');
+        }
+        if (!/Module#\S+/.test(values.Tags)) {
+          R.warn(rel, id, 'Tags is missing `Module#` — hard to filter after importing into a test management tool');
+        }
       }
 
-      // Placeholder còn sót ở các trường phải tường minh
       for (const f of ['Title', 'Test Data', 'Expected Result']) {
         const v = values[f];
         if (!v) continue;
         const hit = PLACEHOLDERS.find((re) => re.test(stripCode(v)));
-        if (hit) R.error(rel, id, `Trường \`${f}\` còn nội dung chưa điền (khớp ${hit}) — chuẩn FACT cấm placeholder`);
+        if (hit) R.error(rel, id, `Field \`${f}\` still holds unfilled content (matched ${hit}) — FACT forbids placeholders`);
       }
     }
   }
 
-  // Spec tổng là nguồn chuẩn; chưa merge thì mới đếm theo batch.
+  // The merged spec is authoritative; fall back to batch count before merging.
   return specCount || batchCount;
 }
 
-// ───────────────────── B. Dòng meta Owner/Verdict ─────────────────────
+// ───────────────────────── B. Meta line ─────────────────────────
 
+/**
+ * Three distinct states: present at the top (ok), present but far down
+ * (non-standard), absent entirely (error). Reporting something as "missing"
+ * when it exists sends people hunting and costs the linter its credibility.
+ */
 function lintMeta(dir, R) {
-  // Khớp rộng có chủ đích:
-  //  - `**Verdict Chặng 1**:` và `**VERDICT CHẶNG 3**:` đều là Verdict hợp lệ
-  //  - thực tế repo dùng `Chuyên gia thực hiện` thay cho `Owner`
-  // Linter báo "thiếu" một thứ đang có sẽ khiến người ta đi tìm vô ích, rồi mất
-  // lòng tin vào linter — hỏng đúng mục đích của nó.
+  // Deliberately loose: `**Verdict Chặng 1**:` and `**VERDICT CHẶNG 3**:` are
+  // both valid, and the repo uses `Chuyên gia thực hiện` in place of `Owner`.
   const HAS_VERDICT = /\*{0,2}\s*Verdict[^:\n*]{0,30}\*{0,2}\s*:/i;
   const HAS_OWNER = /\*{0,2}\s*(Owner|Chuyên gia thực hiện)\*{0,2}\s*:/i;
   const TOP_LINES = 10;
 
   for (const name of NEEDS_META) {
     const content = read(path.join(dir, name));
-    if (content === null) continue; // chưa chạy chặng đó — không phải lỗi
+    if (content === null) continue; // stage not run yet
 
     const lines = content.split('\n');
     const head = lines.slice(0, TOP_LINES).join('\n');
 
-    // Ba trạng thái tách bạch: ở đầu file (đạt) · có nhưng ở xa (lệch chuẩn) · không có (lỗi)
     for (const [label, re] of [['Verdict', HAS_VERDICT], ['Owner', HAS_OWNER]]) {
       if (re.test(head)) continue;
 
       const at = lines.findIndex((l) => re.test(l));
       if (at === -1) {
         const level = label === 'Verdict' ? R.error : R.warn;
-        level(name, 'dòng meta', `Không có \`${label}:\` ở bất kỳ đâu trong file (QA_STANDARD §7)`);
+        level(name, 'meta line', `No \`${label}:\` anywhere in the file (QA_STANDARD §7)`);
       } else {
-        R.warn(name, `dòng ${at + 1}`, `\`${label}:\` nằm ở dòng ${at + 1} thay vì trong ${TOP_LINES} dòng đầu — agent phía sau đọc dòng meta ở đầu file sẽ không thấy`);
+        R.warn(name, `line ${at + 1}`, `\`${label}:\` sits on line ${at + 1}, not within the first ${TOP_LINES} lines — downstream agents read the meta line at the top and will miss it`);
       }
     }
   }
 }
 
-// ───────────────────── C. Quét đủ 06W ─────────────────────
+// ───────────────────────── C. 06W coverage ─────────────────────────
 
 function lint06W(dir, R) {
   const name = '02_missing_rule_report.md';
@@ -262,11 +251,11 @@ function lint06W(dir, R) {
     if (!new RegExp(`\\bW${i}\\b`).test(content)) missing.push(`W${i}`);
   }
   if (missing.length) {
-    R.error(name, '06W', `Chưa quét ${missing.join(', ')} — QA_STANDARD §4 bắt buộc đủ W1→W6, câu nào không ra vấn đề vẫn phải ghi "Không phát hiện vấn đề qua câu hỏi #Wx"`);
+    R.error(name, '06W', `Did not scan ${missing.join(', ')} — QA_STANDARD §4 requires W1 through W6; questions that surface nothing still need an explicit "no issue found" note`);
   }
 }
 
-// ───────────────────── D. Ô bảng để trống ─────────────────────
+// ───────────────────────── D. Table cells ─────────────────────────
 
 function lintEmptyCells(dir, R) {
   if (!fs.existsSync(dir)) return;
@@ -289,16 +278,16 @@ function lintEmptyCells(dir, R) {
     });
 
     if (empties) {
-      R.warn(name, `dòng ${firstLine}`, `${empties} dòng bảng có ô để trống — QA_STANDARD §2.7 yêu cầu điền nhãn tường minh (CHƯA COVER / CHƯA CÓ DATA / [CONTEXT_MISSING])`);
+      R.warn(name, `line ${firstLine}`, `${empties} table row(s) have blank cells — QA_STANDARD §2.7 requires an explicit label (CHƯA COVER / CHƯA CÓ DATA / [CONTEXT_MISSING])`);
     }
   }
 }
 
-// ───────────────────── Chạy ─────────────────────
+// ───────────────────────────── Run ─────────────────────────────
 
 function lint(slug) {
   const dir = taskDir(slug);
-  if (!fs.existsSync(dir)) throw new Error(`Không có OUTPUT/${slug}/`);
+  if (!fs.existsSync(dir)) throw new Error(`No OUTPUT/${slug}/ directory`);
 
   const R = makeReporter();
   const totalCases = lintTestCases(dir, R, loadFields());
@@ -314,40 +303,39 @@ function lint(slug) {
 function render(r) {
   const line = '─'.repeat(67);
   console.log(`\n${line}`);
-  console.log(`  LINT DELIVERABLE · task [ ${r.slug} ]   ·   ${r.totalCases} test case`);
+  console.log(`  DELIVERABLE LINT · task [ ${r.slug} ]   ·   ${r.totalCases} test case(s)`);
   console.log(line);
 
   if (r.clean && r.warns.length === 0) {
-    console.log('  ✅ Sạch — đạt chuẩn 8 trường, meta, 06W, không ô bảng trống.');
+    console.log('  Clean — fields, meta line, 06W coverage and table cells all pass.');
     console.log(`${line}\n`);
     return;
   }
 
-  const show = (items, icon, title) => {
+  const show = (items, title) => {
     if (!items.length) return;
-    console.log(`\n  ${icon} ${items.length} ${title}:`);
-    // Gom theo file cho dễ đọc khi số lượng lớn.
+    console.log(`\n  ${items.length} ${title}:`);
     const byFile = items.reduce((m, i) => ((m[i.file] = m[i.file] || []).push(i), m), {});
     for (const [file, list] of Object.entries(byFile)) {
       console.log(`\n     ${file}`);
-      list.slice(0, 15).forEach((i) => console.log(`       • [${i.where}] ${i.msg}`));
-      if (list.length > 15) console.log(`       … và ${list.length - 15} mục nữa`);
+      list.slice(0, 15).forEach((i) => console.log(`       - [${i.where}] ${i.msg}`));
+      if (list.length > 15) console.log(`       … and ${list.length - 15} more`);
     }
   };
 
-  show(r.errors, '❌', 'LỖI phải sửa');
-  show(r.warns, '⚠️ ', 'cảnh báo');
+  show(r.errors, 'ERROR(S) to fix');
+  show(r.warns, 'warning(s)');
   console.log(`\n${line}\n`);
 }
 
 function main() {
   const args = process.argv.slice(2);
   const asJson = args.includes('--json');
-  let slug = args.find((a) => !a.startsWith('--'));
+  const slug = args.find((a) => !a.startsWith('--'));
 
   const slugs = slug ? [slug] : listTaskSlugs();
   if (slugs.length === 0) {
-    console.log('ℹ️  OUTPUT/ chưa có task nào để kiểm.');
+    console.log('No tasks in OUTPUT/ to lint.');
     process.exit(0);
   }
 

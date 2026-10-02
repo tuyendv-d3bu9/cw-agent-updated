@@ -1,22 +1,19 @@
 /**
- * lib/env.js — Đọc `.env` ở gốc repo.
+ * env.js — Reads `.env` at repo root.
  *
- * Trước đây hàm này được chép nguyên văn ở 4 tool Jira khác nhau.
- * Sửa một chỗ mà quên 3 chỗ còn lại là nguồn lỗi âm thầm.
+ *   loadEnv(opts)   Parse `.env` into an object. Missing file yields `{}`.
+ *   jiraConfig(env) Extract Jira settings and report which keys are missing.
+ *
+ * Previously duplicated verbatim across four Jira tools.
  */
 
 const fs = require('fs');
 const { PATHS } = require('./paths');
 
 /**
- * Đọc `.env` thành object. Không có file thì trả về object rỗng,
- * không ném lỗi — tool tự quyết định thiếu biến nào thì báo gì.
- *
- * @param {object}  [opts]
  * @param {boolean} [opts.includeProcessEnv=false]
- *   `true` thì trộn thêm `process.env` và **ưu tiên** nó hơn file `.env`.
- *   Cần cho MCP server: IDE (Antigravity, Cursor, Claude) truyền cấu hình
- *   qua biến môi trường của tiến trình, phải thắng file trên đĩa.
+ *   Merge `process.env` on top of the file. Needed by the MCP server: IDEs pass
+ *   configuration through process environment, which must win over the file.
  */
 function loadEnv({ includeProcessEnv = false } = {}) {
   const fromFile = {};
@@ -31,23 +28,20 @@ function loadEnv({ includeProcessEnv = false } = {}) {
     }
   }
 
-  // process.env đặt sau để ghi đè — biến môi trường thắng file.
   return includeProcessEnv ? { ...fromFile, ...process.env } : fromFile;
 }
 
-/**
- * Lấy cấu hình Jira và nói rõ thiếu biến nào.
- * Trả về `{ ok, host, email, token, projectKey, missing[] }`.
- */
+/** @returns {{ok, host, email, token, projectKey, missing: string[]}} */
 function jiraConfig(env = loadEnv()) {
-  const cfg = {
+  const missing = ['JIRA_HOST', 'JIRA_EMAIL', 'JIRA_API_TOKEN'].filter((k) => !env[k]);
+  return {
     host: env.JIRA_HOST,
     email: env.JIRA_EMAIL,
     token: env.JIRA_API_TOKEN,
     projectKey: env.JIRA_PROJECT_KEY,
+    ok: missing.length === 0,
+    missing,
   };
-  const missing = ['JIRA_HOST', 'JIRA_EMAIL', 'JIRA_API_TOKEN'].filter((k) => !env[k]);
-  return { ...cfg, ok: missing.length === 0, missing };
 }
 
 module.exports = { loadEnv, jiraConfig };

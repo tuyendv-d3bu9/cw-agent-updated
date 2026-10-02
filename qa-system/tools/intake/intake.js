@@ -1,9 +1,15 @@
 #!/usr/bin/env node
 /**
- * intake.js — QA Leader Intake Gate (Gate 0):
- *   1. Converts raw document formats (.docx, .xlsx, .xls, .csv, .pdf, .json, .yaml, .txt) to clean Markdown (.md)
- *   2. Intelligently classifies content into 1 of 5 categories under INPUT/<slug>/
- *      (01_business, 02_ba, 03_dev, 04_design, 05_communication)
+ * intake.js — Gate 0: brings source documents into the project.
+ *
+ *   classifyDocument(content, filename)  Pick one of the five INPUT bins.
+ *   slugify(text)                        Readable task slug, diacritics stripped.
+ *   pickSlug(files)                      Name a task after its BA document.
+ *   looseFiles()                         Unfiled documents sitting in INPUT/.
+ *   scaffoldTask(slug)                   Create OUTPUT/, knowledge file and 00_plan.md.
+ *
+ * Converts .docx/.xlsx/.csv/.pdf/.json/.yaml/.txt to clean Markdown, files it under
+ * INPUT/<slug>/, then scaffolds everything the task needs to proceed.
  *
  * Usage:
  *   npm run intake -- <file-or-dir> [--slug <task-slug>]
@@ -25,19 +31,17 @@ const positional = args.filter((a, idx) => !a.startsWith('--') && idx !== slugIn
 const targetInput = positional[0];
 
 /**
- * Chuyển chuỗi thành slug.
+ * Diacritics must be decomposed BEFORE filtering characters. Filtering straight
+ * through `[^\w\s-]` turned "Giỏ Hàng Số Lượng" into "gi-hng-s-lng", wiping every
+ * accented vowel and leaving an unreadable slug.
  *
- * Phải bóc dấu tiếng Việt TRƯỚC khi lọc ký tự. Bản cũ lọc thẳng bằng `[^\w\s-]`
- * nên "Giỏ Hàng Số Lượng" ra "gi-hng-s-lng" — nguyên âm có dấu bị xoá sạch,
- * task-slug thành chuỗi vô nghĩa mà người dùng không đọc được.
- *
- * `normalize('NFD')` tách chữ cái khỏi dấu, rồi xoá riêng phần dấu (U+0300–U+036F).
- * Chữ `đ/Đ` không có dạng tách nên phải xử lý riêng.
+ * `normalize('NFD')` splits letters from their marks; `đ/Đ` has no decomposed
+ * form and needs its own rule.
  */
 function slugify(text) {
   return String(text)
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')   // bỏ dấu thanh và dấu mũ
+    .replace(/[\u0300-\u036f]/g, '')   // drop tone and shape marks
     .replace(/[đĐ]/g, 'd')
     .toLowerCase()
     .trim()
@@ -51,11 +55,11 @@ function classifyDocument(content, filename) {
   const haystackEarly = `${String(content).toLowerCase()} ${String(filename).toLowerCase()}`;
   const lowerContent = (content + ' ' + filename).toLowerCase();
 
-  // 03_dev — API, schema, tài liệu kỹ thuật.
+  // 03_dev — APIs, schemas, technical specs.
   //
-  // Luật cũ đòi đúng chữ `database schema` nên trượt `DB schema`, và không nhận
-  // ra đường dẫn API dạng `POST /api/login`. Tài liệu kỹ thuật khi đó rơi về
-  // ngăn mặc định `02_ba`, làm bẩn đúng ngăn bắt buộc của Cổng 0.
+  // The old rule required the exact string `database schema`, so it missed
+  // `DB schema` and API paths like `POST /api/login`. Those documents then fell
+  // into the default 02_ba bin, polluting the one bin gate 0 depends on.
   const fn = filename.toLowerCase();
   if (
     lowerContent.includes('swagger') ||
@@ -89,11 +93,9 @@ function classifyDocument(content, filename) {
     return '04_design';
   }
 
-  // 02_ba — xét TRƯỚC mọi ngăn khác.
-  //
-  // Đây là ngăn BẮT BUỘC của Cổng 0: thiếu nó thì pipeline dừng. Xếp nhầm một PRD
-  // sang ngăn khác sẽ làm cổng báo thiếu tài liệu trong khi tài liệu đang nằm ngay đó.
-  // Nên khi có dấu hiệu BA rõ ràng thì chốt luôn, không để luật khác cướp mất.
+  // 02_ba is checked FIRST because gate 0 requires it: without this bin the
+  // pipeline halts. Misfiling a PRD makes the gate report a missing document
+  // while that document sits right there, so a clear BA signal wins outright.
   const baHints = [
     'prd', 'srs', 'user story', 'use case', 'acceptance criteria', 'tiêu chí chấp nhận',
     'đặc tả', 'dac ta', 'yêu cầu chức năng', 'yeu cau chuc nang', 'business requirement',
@@ -103,11 +105,11 @@ function classifyDocument(content, filename) {
     return '02_ba';
   }
 
-  // 05_communication — trao đổi, biên bản, thay đổi yêu cầu.
+  // 05_communication — correspondence, minutes, change requests.
   //
-  // KHÔNG dùng từ `email` làm dấu hiệu: nó xuất hiện trong gần như mọi PRD đăng ký
-  // / đăng nhập dưới dạng TÊN TRƯỜNG dữ liệu, nên luật cũ đẩy nhầm PRD sang đây rồi
-  // làm cổng "bắt buộc có 02_ba" báo thiếu.
+  // `email` is deliberately NOT a signal: it appears in nearly every signup or
+  // login PRD as a data FIELD NAME, so the old rule pushed PRDs in here and made
+  // the "02_ba is required" gate report a missing document.
   if (
     lowerContent.includes('biên bản họp') ||
     lowerContent.includes('meeting minutes') ||
@@ -122,9 +124,9 @@ function classifyDocument(content, filename) {
     return '05_communication';
   }
 
-  // 01_business — định hướng, chính sách, bài toán kinh doanh.
-  // Xét cả TÊN FILE: tài liệu định hướng thường ngắn, nội dung ít từ khoá,
-  // nhưng tên file nói rất rõ ("Chính sách…", "Chiến lược…", "Chương trình…").
+  // 01_business — strategy, policy, commercial goals.
+  // The FILENAME counts too: strategy documents are short on keywords but their
+  // names say it plainly ("Chính sách…", "Chiến lược…", "Chương trình…").
   const businessHints = [
     'chính sách', 'chiến lược', 'mục tiêu kinh doanh', 'doanh thu', 'chương trình khuyến mãi',
     'định hướng', 'bài toán kinh doanh', 'tầm nhìn',
@@ -183,11 +185,9 @@ async function processFile(filePath, userSlug) {
 }
 
 /**
- * Dựng đủ khung cho một task sau khi nhận tài liệu.
- *
- * Học viên là QA/BA, không phải dev — họ không biết phải tự tay tạo
- * OUTPUT/<slug>/, knowledge/features/<slug>.md hay 00_plan.md.
- * Thả tài liệu vào là phải có đủ chỗ để làm việc tiếp.
+ * Users are QA/BA/PO, not developers: they do not know to hand-create
+ * OUTPUT/<slug>/, the feature knowledge file or 00_plan.md. Dropping a document
+ * in must be enough to leave a workable task behind.
  */
 function scaffoldTask(slug) {
   const created = [];
@@ -195,7 +195,7 @@ function scaffoldTask(slug) {
 
   ensureDir(path.join(PATHS.OUTPUT, slug));
 
-  // File tri thức tính năng — nơi câu trả lời của BA sống lâu hơn OUTPUT/
+  // Feature knowledge file — where BA answers outlive the disposable OUTPUT/
   const kPath = path.join(PATHS.FEATURES, `${slug}.md`);
   if (!fs.existsSync(kPath)) {
     const tpl = path.join(PATHS.KNOWLEDGE, '_template.md');
@@ -206,7 +206,7 @@ function scaffoldTask(slug) {
     }
   }
 
-  // 00_plan.md — bản đồ tiến độ, cũng là thứ agent khác đọc để biết đang ở đâu
+  // 00_plan.md — progress map, and how another agent picks up where this left off
   const planPath = path.join(PATHS.OUTPUT, slug, '00_plan.md');
   if (!fs.existsSync(planPath)) {
     const today = new Date().toISOString().slice(0, 10);
@@ -239,9 +239,8 @@ cho khuyến nghị GO **và** người dùng yêu cầu rõ kèm URL môi trư�
 }
 
 /**
- * Đặt tên task từ bộ tài liệu.
- * Ưu tiên tài liệu kiểu PRD/SRS vì nó mô tả đúng tính năng; tài liệu định hướng
- * kinh doanh thường nói về cả quý nên đặt tên theo nó sẽ sai phạm vi.
+ * Prefers a PRD/SRS-style document because it describes the feature itself;
+ * a business document usually spans a whole quarter and would overstate scope.
  */
 function pickSlug(files) {
   const isBA = (f) => /prd|srs|spec|user.?stor|requirement|use.?case|yeu.?cau|dac.?ta/i.test(path.basename(f));
@@ -250,13 +249,13 @@ function pickSlug(files) {
 }
 
 /**
- * File hướng dẫn của chính thư mục — KHÔNG phải tài liệu nghiệp vụ.
- * Thiếu danh sách này thì intake nuốt luôn `INPUT/README.md` và xoá nó đi,
- * khiến người dùng mất biển chỉ dẫn ngay lần chạy đầu tiên.
+ * Guidance files belonging to the folder itself, not business documents.
+ * Without this list intake swallowed `INPUT/README.md` and deleted it, removing
+ * the user's signpost on their very first run.
  */
 const META_FILES = new Set(['readme.md', 'readme.txt', '.gitkeep', '.keep', 'index.md']);
 
-/** Tài liệu rời nằm thẳng trong INPUT/, chưa thuộc task nào. */
+/** Documents sitting directly in INPUT/, not yet assigned to a task. */
 function looseFiles() {
   if (!fs.existsSync(PATHS.INPUT)) return [];
   return fs.readdirSync(PATHS.INPUT)
@@ -269,43 +268,43 @@ function looseFiles() {
 }
 
 async function main() {
-  // Không truyền gì ⇒ tự quét INPUT/. Đây là thứ học viên làm theo bản năng:
-  // kéo thả tài liệu vào INPUT/ rồi bảo agent "xử lý giúp".
+  // No argument means scan INPUT/. This is what users do instinctively: drop
+  // documents in the folder and ask the agent to handle them.
   if (!targetInput) {
     const loose = looseFiles();
     if (loose.length === 0) {
-      console.log(`\n📂 Không có tài liệu rời nào trong INPUT/.`);
-      console.log(`   Cách dùng: thả file (.docx .pdf .xlsx .md…) vào INPUT/ rồi chạy lại lệnh này.`);
-      console.log(`   Hoặc chỉ định cụ thể: npm run intake -- <file> --slug <task-slug>\n`);
+      console.log('\nNo loose documents in INPUT/.');
+      console.log('   Drop a file (.docx .pdf .xlsx .md …) into INPUT/ and run this again.');
+      console.log('   Or name one explicitly: npm run intake -- <file> --slug <task-slug>\n');
       return;
     }
 
-    // Gom TẤT CẢ tài liệu rời vào MỘT task.
+    // Group ALL loose documents into ONE task.
     //
-    // Trường hợp thường gặp nhất: người dùng thả cả bộ tài liệu của một tính năng
-    // (PRD + chính sách + API spec + Figma). Tách mỗi file thành một task riêng
-    // sẽ cho ra 4 task vụn, mỗi task thiếu 4/5 ngăn — rối hơn là giúp.
-    // Chọn sai thì sửa dễ: chạy lại với --slug. Chọn tách thì phải gom tay 4 chỗ.
+    // The common case is a full document set for a single feature (PRD + policy
+    // + API spec + Figma). Splitting them yields four fragments, each missing
+    // four of five bins. Getting this wrong is cheap to undo with --slug;
+    // splitting wrongly means merging four places by hand.
     const slug = targetSlug || pickSlug(loose);
-    console.log(`\n📂 Phát hiện ${loose.length} tài liệu rời trong INPUT/`);
-    console.log(`   → Gom cả ${loose.length} vào một task: [ ${slug} ]`);
+    console.log(`\nFound ${loose.length} loose document(s) in INPUT/`);
+    console.log(`   Grouping all ${loose.length} into one task: [ ${slug} ]`);
     if (!targetSlug && loose.length > 1) {
-      console.log(`   ℹ️  Nếu đây là nhiều tính năng khác nhau, chạy lại từng nhóm với --slug <tên-task>.`);
+      console.log('   If these belong to different features, re-run each group with --slug <task>.');
     }
 
     const slugs = new Set([slug]);
     for (const f of loose) {
       await processFile(f, slug);
-      fs.unlinkSync(f); // đã chuyển vào đúng ngăn, không để lại bản rời gây nhầm
+      fs.unlinkSync(f); // filed into its bin; leaving a loose copy would confuse
     }
 
     for (const slug of slugs) {
       const created = scaffoldTask(slug);
       if (created.length) {
-        console.log(`\n🏗️  Đã dựng khung cho task [ ${slug} ]:`);
+        console.log(`\nScaffolded task [ ${slug} ]:`);
         created.forEach((c) => console.log(`      ${c}`));
       }
-      console.log(`\n✅ Task [ ${slug} ] sẵn sàng. Bước tiếp theo: nói với QA Leader "phân tích tính năng ${slug}".\n`);
+      console.log(`\nTask [ ${slug} ] is ready. Next: ask the QA Leader to analyse feature ${slug}.\n`);
     }
     return;
   }
@@ -326,13 +325,13 @@ async function main() {
   if (targetSlug) {
     const created = scaffoldTask(targetSlug);
     if (created.length) {
-      console.log(`\n🏗️  Đã dựng khung cho task [ ${targetSlug} ]:`);
+      console.log(`\nScaffolded task [ ${targetSlug} ]:`);
       created.forEach((c) => console.log(`      ${c}`));
     }
   }
 }
 
-// Chỉ chạy khi được gọi trực tiếp — để test import được các hàm thuần bên dưới.
+// Run only when invoked directly, so tests can import the pure functions below.
 if (require.main === module) {
   main().catch((err) => {
     console.error('❌ Error:', err.message);

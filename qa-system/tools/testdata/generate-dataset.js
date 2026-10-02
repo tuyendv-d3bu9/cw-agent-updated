@@ -115,8 +115,8 @@ function generateField(spec, index) {
 
 function generateDataset(schema, count = 10) {
   const rows = [];
-  // Khoá bắt đầu bằng `_` là chú thích của chính schema, không phải field dữ liệu.
-  // Thiếu luật này thì `_comment` biến thành một cột rác trong bảng dataset.
+  // Keys starting with `_` are schema annotations, not data fields. Without this
+  // rule `_comment` turns into a junk column in the generated dataset.
   const fields = Object.keys(schema).filter((k) => !k.startsWith('_'));
 
   for (let i = 0; i < count; i++) {

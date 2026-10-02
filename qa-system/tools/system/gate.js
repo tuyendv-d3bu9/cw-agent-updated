@@ -1,28 +1,26 @@
 #!/usr/bin/env node
 /**
- * gate.js — Cổng Bức Tường Thép: chặn cứng chặng 03→06 khi Verdict còn `ASK`.
+ * gate.js — The ASK gate: blocks stages 03-06 while the feature spec still has
+ * unanswered questions.
  *
- * Vì sao cần tool này: AGENTS.md §1.6 và QA_STANDARD §1 đã viết luật rất gắt,
- * nhưng luật viết bằng văn bản chỉ là *xác suất* — model vẫn có thể bị thuyết phục
- * bởi câu "cứ làm tiếp đi". Tool này biến luật đó thành *điều kiện kiểm được bằng máy*.
+ *   evaluate(slug)  Gate state: blocked, reasons, pending questions, advisories.
+ *   audit(slug)     Deliverables written after the lock timestamp (bypass detection).
+ *   LOCKED_DELIVERABLES  Files the gate protects.
  *
- * Ba lớp bảo vệ:
- *   Lớp 1 — tool này: trả exit code, ai gọi cũng biết cổng đang mở hay đóng.
- *   Lớp 2 — hook PreToolUse trong .claude/settings.json: chặn thẳng thao tác ghi file.
- *   Lớp 3 — `--audit`: phát hiện deliverable 03→06 đã bị sinh ra trong lúc cổng còn khoá.
+ * AGENTS.md §1.6 states this rule in prose, but prose is only a probability — a
+ * model can still be talked past it. This turns the rule into a machine-checkable
+ * condition. Layer 2 (the PreToolUse hook) and layer 3 (`audit`) build on it.
  *
- * Lệnh:
- *   node agents/tools/system/gate.js check [slug]     Kiểm tra cổng (exit 0 mở / 1 đóng)
- *   node agents/tools/system/gate.js check --json     Trả JSON cho hook / CI
- *   node agents/tools/system/gate.js audit [slug]     Soát dấu vết nhảy cóc (exit 2 nếu có)
- *   node agents/tools/system/gate.js explain [slug]   In danh sách câu hỏi đang treo
+ * Usage:
+ *   gate.js check [slug] [--json]   Exit 0 = open, 1 = closed
+ *   gate.js audit [slug]            Exit 2 when a bypass is detected
+ *   gate.js explain [slug]          List the pending questions
  */
 
 const fs = require('fs');
 const path = require('path');
 const { PATHS, taskDir, featureKnowledge, listTaskSlugs } = require('../lib/paths');
 
-/** Deliverable bị khoá khi cổng đóng — chặng 3 trở đi. */
 const LOCKED_DELIVERABLES = [
   '03_viewpoint_report.md',
   '04_test_idea_report.md',
@@ -31,31 +29,31 @@ const LOCKED_DELIVERABLES = [
   '06_coverage_review.md',
 ];
 
-/** Trạng thái coi là đã giải quyết trong Mục 7. Mọi giá trị khác đều chặn. */
+/** Any other status — including blank and `TREO` — keeps the gate closed. */
 const RESOLVED_STATES = new Set(['confirmed', 'rejected']);
 
 const LOCK_FILE = '_gate.lock';
 
-// ───────────────────── Bóc tách dữ liệu ─────────────────────
+// ───────────────────────────── Parsing ─────────────────────────────
 
-/** Tách các dòng bảng markdown thành mảng ô, bỏ dòng tiêu đề và dòng kẻ. */
+/** Markdown table rows as cell arrays, minus the header separator. */
 function tableRows(section) {
   const rows = [];
   for (const line of section.split('\n')) {
     const t = line.trim();
     if (!t.startsWith('|')) continue;
-    if (/^\|[\s:|-]+\|$/.test(t)) continue; // dòng kẻ ---
+    if (/^\|[\s:|-]+\|$/.test(t)) continue;
     rows.push(t.split('|').slice(1, -1).map((c) => c.trim()));
   }
   return rows;
 }
 
 /**
- * Lấy nội dung một mục `## N. ...` trong file tri thức.
+ * Body of a `## N. ...` section.
  *
- * Tách theo heading thay vì dùng một regex có lookahead: mục cuối file không có
- * heading nào đứng sau, nên cách lookahead sẽ âm thầm trả về rỗng — mà Mục 8
- * (giả định đã chốt) lại thường nằm cuối, chính là đường mở khoá.
+ * Split on headings rather than one lookahead regex: the last section has no
+ * heading after it, so a lookahead silently returns empty — and section 8
+ * (confirmed assumptions), one of the two unlock paths, usually sits last.
  */
 function section(content, num) {
   const lines = content.split('\n');
@@ -70,10 +68,7 @@ function section(content, num) {
   return (end === -1 ? rest : rest.slice(0, end)).join('\n');
 }
 
-/**
- * Đọc Mục 7 (câu hỏi mở) và Mục 8 (giả định đã chốt) của `knowledge/features/<slug>.md`.
- * Trả về danh sách câu hỏi còn treo.
- */
+/** Reads sections 7 (open questions) and 8 (confirmed assumptions). */
 function readOpenQuestions(slug) {
   const kPath = featureKnowledge(slug);
   if (!fs.existsSync(kPath)) {
@@ -82,7 +77,7 @@ function readOpenQuestions(slug) {
 
   const content = fs.readFileSync(kPath, 'utf-8');
 
-  // Mục 8: mọi mã đã có quyết định chính thức đều coi là đã mở khoá.
+  // Section 8: any code with a recorded decision counts as unlocked.
   const decided = new Set();
   for (const cells of tableRows(section(content, 8))) {
     const code = (cells[1] || '').replace(/`/g, '').trim();
@@ -98,7 +93,7 @@ function readOpenQuestions(slug) {
     const id = (cells[0] || '').replace(/`/g, '').trim();
     if (!/^MR-\w+/i.test(id)) continue;
 
-    const question = cells[5] || '(không ghi câu hỏi)';
+    const question = cells[5] || '(no question recorded)';
     const answer = (cells[6] || '').trim();
     const state = (cells[7] || '').trim().toLowerCase();
 
@@ -111,14 +106,13 @@ function readOpenQuestions(slug) {
       id: id.toUpperCase(),
       question,
       risk: cells[3] || '',
-      state: cells[7] || '(trống)',
+      state: cells[7] || '(blank)',
     });
   }
 
   return { exists: true, path: kPath, pending, resolved };
 }
 
-/** Chặng 2 có ra Verdict ASK không. */
 function verdictAsk(slug) {
   const p = path.join(taskDir(slug), '02_missing_rule_report.md');
   if (!fs.existsSync(p)) return { exists: false, ask: false, path: p };
@@ -126,7 +120,7 @@ function verdictAsk(slug) {
   return { exists: true, ask: /Verdict:\s*ASK/i.test(c) || /\|\s*ASK\s*\|/.test(c), path: p };
 }
 
-// ───────────────────── Đánh giá cổng ─────────────────────
+// ───────────────────────────── Evaluation ─────────────────────────────
 
 function evaluate(slug) {
   const questions = readOpenQuestions(slug);
@@ -134,24 +128,21 @@ function evaluate(slug) {
 
   const reasons = [];
   if (verdict.ask) {
-    reasons.push(`Chặng 2 ra \`Verdict: ASK\` tại ${path.relative(PATHS.ROOT, verdict.path)}`);
+    reasons.push(`Stage 2 returned \`Verdict: ASK\` in ${path.relative(PATHS.ROOT, verdict.path)}`);
   }
   if (questions.pending.length > 0) {
     reasons.push(
-      `${questions.pending.length} câu hỏi Mục 7 chưa có phản hồi chính thức ` +
+      `${questions.pending.length} question(s) in section 7 have no official answer ` +
         `(${questions.pending.map((q) => q.id).join(', ')})`
     );
   }
   if (verdict.ask && !questions.exists) {
-    reasons.push(`Chưa có file tri thức ${path.relative(PATHS.ROOT, questions.path)} để ghi nhận câu trả lời`);
+    reasons.push(`No knowledge file at ${path.relative(PATHS.ROOT, questions.path)} to record answers in`);
   }
 
-  // ─── Cảnh báo (KHÔNG chặn): câu trả lời của BA bị kẹt trong OUTPUT/ ───
-  //
-  // `QA_STANDARD` §8: `OUTPUT/` là kết quả một lần chạy, có thể bỏ đi;
-  // `knowledge/` mới là thứ tích luỹ được. Nếu Chặng 2 đã PASS nhờ BA trả lời
-  // nhưng câu trả lời chỉ nằm trong `02_missing_rule_report.md`, thì lần chạy sau
-  // sẽ hỏi lại BA đúng những câu đó — mất đúng thứ `knowledge/` sinh ra để giữ.
+  // Advisory, never blocking. QA_STANDARD §8: OUTPUT/ is disposable, knowledge/
+  // is what accumulates. Answers left only in the stage-2 report are lost on the
+  // next run, so the BA gets asked the same questions again.
   const advisories = [];
   if (verdict.exists && !verdict.ask) {
     const text = fs.readFileSync(verdict.path, 'utf-8');
@@ -161,9 +152,9 @@ function evaluate(slug) {
 
     if (unrecorded.length) {
       advisories.push(
-        `${unrecorded.length} kẽ hở (${unrecorded.join(', ')}) đã được chốt ở Chặng 2 nhưng ` +
-          `CHƯA ghi vào ${path.relative(PATHS.ROOT, questions.path)}. ` +
-          `OUTPUT/ là đồ bỏ đi — lần chạy sau sẽ phải hỏi lại BA đúng những câu này.`
+        `${unrecorded.length} gap(s) (${unrecorded.join(', ')}) were settled in stage 2 but are ` +
+          `NOT recorded in ${path.relative(PATHS.ROOT, questions.path)}. ` +
+          `OUTPUT/ is disposable — the next run will ask the BA these same questions again.`
       );
     }
   }
@@ -179,7 +170,7 @@ function evaluate(slug) {
   };
 }
 
-/** Ghi hoặc gỡ `_gate.lock` cho khớp trạng thái thực tế. */
+/** Writes or removes `_gate.lock` to match the current state. */
 function writeLock(state) {
   const dir = taskDir(state.slug);
   if (!fs.existsSync(dir)) return null;
@@ -190,13 +181,13 @@ function writeLock(state) {
     return null;
   }
 
-  // Giữ nguyên thời điểm khoá lần đầu để `audit` so sánh mốc thời gian được.
+  // Preserve the original lock time so `audit` keeps a stable reference point.
   let lockedAt = new Date().toISOString();
   if (fs.existsSync(lockPath)) {
     try {
       lockedAt = JSON.parse(fs.readFileSync(lockPath, 'utf-8')).lockedAt || lockedAt;
     } catch {
-      /* file hỏng thì ghi đè bằng mốc mới */
+      /* corrupt lock file: start a fresh timestamp */
     }
   }
 
@@ -211,8 +202,8 @@ function writeLock(state) {
         pending: state.pending,
         lockedDeliverables: LOCKED_DELIVERABLES,
         unlock:
-          'Trả lời câu hỏi vào Mục 7 (cột "Phản hồi chính thức" + Trạng thái=Confirmed) ' +
-          'HOẶC ghi quyết định nghiệp vụ vào Mục 8 của ' + state.knowledgePath,
+          'Answer in section 7 (fill "Phản hồi chính thức", set status to Confirmed) ' +
+          'OR record an explicit business decision in section 8 of ' + state.knowledgePath,
       },
       null,
       2
@@ -222,7 +213,7 @@ function writeLock(state) {
   return lockPath;
 }
 
-/** Lớp 3 — soát xem có deliverable nào bị sinh ra sau thời điểm khoá không. */
+/** Layer 3: deliverables whose mtime is at or after the lock timestamp. */
 function audit(slug) {
   const dir = taskDir(slug);
   const lockPath = path.join(dir, LOCK_FILE);
@@ -247,53 +238,53 @@ function audit(slug) {
   return { violations, hadLock: true, lockedAt: lockedAt.toISOString() };
 }
 
-// ───────────────────── In ra màn hình ─────────────────────
+// ───────────────────────────── Output ─────────────────────────────
 
 function printState(state, lockPath) {
   const line = '─'.repeat(63);
   console.log(`\n${line}`);
-  console.log(`  CỔNG ASK · task [ ${state.slug} ]`);
+  console.log(`  ASK GATE · task [ ${state.slug} ]`);
   console.log(line);
 
   if (!state.blocked) {
-    console.log(`  ✅ CỔNG MỞ — được phép chạy chặng 3 → 6.`);
-    if (state.resolvedCount) console.log(`  ${state.resolvedCount} câu hỏi đã được chốt.`);
-    state.advisories.forEach((a) => console.log(`\n  ⚠️  TRI THỨC CÓ NGUY CƠ MẤT: ${a}`));
+    console.log('  OPEN — stages 3 to 6 may run.');
+    if (state.resolvedCount) console.log(`  ${state.resolvedCount} question(s) settled.`);
+    state.advisories.forEach((a) => console.log(`\n  WARNING, knowledge at risk: ${a}`));
     console.log(`${line}\n`);
     return;
   }
 
-  console.log(`  ⛔ CỔNG ĐÓNG — CẤM sinh chặng 3 → 6.\n`);
-  console.log(`  Lý do:`);
+  console.log('  CLOSED — stages 3 to 6 must not be generated.\n');
+  console.log('  Reasons:');
   state.reasons.forEach((r, i) => console.log(`    ${i + 1}. ${r}`));
 
   if (state.pending.length) {
-    console.log(`\n  Câu hỏi đang treo:`);
+    console.log('\n  Pending questions:');
     for (const q of state.pending) {
-      console.log(`    • [${q.id}] (rủi ro ${q.risk || 'n/a'}) ${q.question}`);
+      console.log(`    - [${q.id}] (risk ${q.risk || 'n/a'}) ${q.question}`);
     }
   }
 
-  state.advisories.forEach((a) => console.log(`\n  ⚠️  TRI THỨC CÓ NGUY CƠ MẤT: ${a}`));
+  state.advisories.forEach((a) => console.log(`\n  WARNING, knowledge at risk: ${a}`));
 
-  console.log(`\n  Cách mở khoá — chọn MỘT:`);
-  console.log(`    (1) BA/PO trả lời → ghi vào Mục 7 cột "Phản hồi chính thức",`);
-  console.log(`        đổi Trạng thái sang Confirmed.`);
-  console.log(`    (2) Chốt quyết định nghiệp vụ tường minh → ghi vào Mục 8.`);
+  console.log('\n  To unlock, do ONE of:');
+  console.log('    (1) BA/PO answers -> record it in section 7 under "Phản hồi chính thức",');
+  console.log('        set status to Confirmed.');
+  console.log('    (2) Record an explicit business decision in section 8.');
   console.log(`    File: ${state.knowledgePath}`);
-  console.log(`\n  ⚠️  Câu "cứ làm tiếp đi" KHÔNG mở được cổng này.`);
-  console.log(`      Test case sinh trên nền nghiệp vụ hổng là ảo giác 100%.`);
-  if (lockPath) console.log(`\n  Khoá: ${path.relative(PATHS.ROOT, lockPath)}`);
+  console.log('\n  Telling the agent to "just continue" does NOT open this gate.');
+  console.log('  Test cases built on unsettled rules are hallucinations.');
+  if (lockPath) console.log(`\n  Lock: ${path.relative(PATHS.ROOT, lockPath)}`);
   console.log(`${line}\n`);
 }
 
-// ───────────────────── CLI ─────────────────────
+// ───────────────────────────── CLI ─────────────────────────────
 
 function resolveSlugs(arg) {
   if (arg && !arg.startsWith('--')) return [arg];
   const all = listTaskSlugs();
   if (all.length === 0) {
-    console.log('ℹ️  OUTPUT/ chưa có task nào — không có cổng để kiểm tra.');
+    console.log('No tasks in OUTPUT/ — nothing to check.');
     process.exit(0);
   }
   return all;
@@ -315,17 +306,16 @@ function main() {
 
     if (cmd === 'audit') {
       const a = audit(slug);
-      const entry = { ...state, audit: a };
-      payload.push(entry);
+      payload.push({ ...state, audit: a });
       if (!asJson) {
         if (a.violations.length) {
-          console.log(`\n🚨 [${slug}] PHÁT HIỆN NHẢY CÓC — ${a.violations.length} file sinh ra khi cổng còn khoá:`);
-          a.violations.forEach((v) => console.log(`   • ${v.file}  (ghi lúc ${v.createdAt}, khoá từ ${a.lockedAt})`));
-          console.log(`   → Các file này dựa trên nghiệp vụ chưa chốt. Phải rà lại hoặc sinh lại sau khi mở cổng.`);
+          console.log(`\nBYPASS DETECTED [${slug}] — ${a.violations.length} file(s) written while locked:`);
+          a.violations.forEach((v) => console.log(`   - ${v.file}  (written ${v.createdAt}, locked since ${a.lockedAt})`));
+          console.log('   These rest on unsettled rules. Review or regenerate them once the gate opens.');
         } else if (a.hadLock) {
-          console.log(`✅ [${slug}] Cổng đang khoá và chưa có deliverable nào bị sinh vượt rào.`);
+          console.log(`[${slug}] Locked, and no deliverable was written past the lock.`);
         } else {
-          console.log(`✅ [${slug}] Không có khoá nào đang hiệu lực.`);
+          console.log(`[${slug}] No active lock.`);
         }
       }
       if (a.violations.length) worstExit = Math.max(worstExit, 2);

@@ -1,19 +1,17 @@
 #!/usr/bin/env node
 /**
- * readiness.js — Đo độ chín của test design trước khi sang Automation (cổng Go/No-Go).
+ * readiness.js — Go/No-Go gate: measures test-design maturity before automation.
  *
- * Vì sao cần tool này: trước đây skill `gen-readiness-report` tự đếm bằng mắt, mà lại
- * đọc 5 file của một dự án khác (`coverage-plan.json`, `voucher-spec.json`, `testcases/*.csv`...)
- * — không file nào do pipeline này sinh ra. Cổng Go/No-Go vì thế luôn báo "không tìm thấy"
- * rồi vẫn kết luận. Tool này đọc **đúng deliverable thật** và tính số liệu bằng máy;
- * skill chỉ còn việc diễn giải, không còn việc đếm.
+ *   collect(slug)  Metrics from the real deliverables (coverage, trace, gate state).
+ *   decide(m)      Verdict plus the blockers and conditions behind it.
  *
- * Lệnh:
- *   node agents/tools/system/readiness.js <slug>            Bảng số liệu + khuyến nghị
- *   node agents/tools/system/readiness.js <slug> --json     JSON cho skill/CI
- *   node agents/tools/system/readiness.js <slug> --write    Ghi 15_readiness_metrics.json
+ * The `gen-readiness-report` skill used to count by eye, and read five files from
+ * a different project that this pipeline never produces. Measuring here keeps the
+ * numbers machine-derived; the skill only interprets them.
  *
- * Exit code:  0 = GO   ·   1 = CONDITIONAL GO   ·   2 = NO-GO
+ * Usage:
+ *   readiness.js <slug> [--json] [--write]
+ * Exit: 0 = GO, 1 = CONDITIONAL GO, 2 = NO-GO.
  */
 
 const fs = require('fs');
@@ -21,23 +19,21 @@ const path = require('path');
 const { PATHS, taskDir, featureKnowledge, listTaskSlugs } = require('../lib/paths');
 const { evaluate: evaluateGate } = require('./gate');
 
-const TRACE_FLOOR = 80; // dưới mốc này là NO-GO (theo bảng logic của skill)
+const TRACE_FLOOR = 80; // below this is an automatic NO-GO
 
-// ───────────────────── Bóc tách deliverable thật ─────────────────────
+// ───────────────────── Parsing ─────────────────────
 
 const read = (p) => (fs.existsSync(p) ? fs.readFileSync(p, 'utf-8') : null);
 const uniq = (a) => [...new Set(a)];
 
-/** Mã định danh xuất hiện trong một văn bản, ví dụ BR-01, VP-03, MR-07. */
+/** Identifiers present in a document, e.g. BR-01, VP-03, MR-07. */
 function ids(text, prefix) {
   return text ? uniq(text.match(new RegExp(`\\b${prefix}-\\d+\\b`, 'g')) || []).sort() : [];
 }
 
 /**
- * Bóc test case từ `05_test_case_spec.md`, hoặc gộp từ `testcases/batch_*.md`
- * khi spec tổng chưa được merge.
- *
- * Trường Tags có dạng: `Rule#BR-01, Rule#BR-02, Viewpoint#VP-01, Module#VCHR, Automated`
+ * Reads test cases from the merged spec, falling back to `testcases/batch_*.md`.
+ * Tags look like: `Rule#BR-01, Viewpoint#VP-01, Module#VCHR, Automated`
  */
 function readTestCases(dir) {
   const specPath = path.join(dir, '05_test_case_spec.md');
@@ -68,14 +64,14 @@ function readTestCases(dir) {
   return { cases, source };
 }
 
-/** Verdict ghi ở dòng meta đầu file deliverable. */
+/** Verdict from the meta line at the top of a deliverable. */
 function verdictOf(text) {
   if (!text) return null;
   const m = text.match(/\*{0,2}Verdict\*{0,2}:\s*`?\*{0,2}(PASS|FIX|ASK)\*{0,2}`?/i);
   return m ? m[1].toUpperCase() : null;
 }
 
-/** Vấn đề dữ liệu còn tồn đọng trong 12_data_validation_traceability.md. */
+/** Unresolved data issues listed in 12_data_validation_traceability.md. */
 function dataIssues(text) {
   if (!text) return [];
   return text
@@ -85,11 +81,11 @@ function dataIssues(text) {
     .slice(0, 20);
 }
 
-// ───────────────────── Tính toán ─────────────────────
+// ───────────────────── Metrics ─────────────────────
 
 function collect(slug) {
   const dir = taskDir(slug);
-  if (!fs.existsSync(dir)) throw new Error(`Không có OUTPUT/${slug}/`);
+  if (!fs.existsSync(dir)) throw new Error(`No OUTPUT/${slug}/ directory`);
 
   const f = (n) => read(path.join(dir, n));
   const present = (n) => fs.existsSync(path.join(dir, n));
@@ -105,7 +101,7 @@ function collect(slug) {
   const allRules = ids(s01, 'BR');
   const allVPs = ids(s03, 'VP');
 
-  // Trace: test case phải gắn được về ít nhất một BR-xx hoặc VP-xx.
+  // A case is traced when it carries at least one BR-xx or VP-xx reference.
   const traced = cases.filter((c) => c.rules.length > 0 || c.viewpoints.length > 0);
   const tracePct = cases.length ? Math.round((traced.length / cases.length) * 1000) / 10 : 0;
 
@@ -114,7 +110,7 @@ function collect(slug) {
 
   const gate = evaluateGate(slug);
 
-  // Test case gắn vào rule chưa xác nhận → rủi ro ảo giác.
+  // Cases resting on unsettled rules carry the highest hallucination risk.
   const knowledge = read(featureKnowledge(slug)) || '';
   const pendingIds = new Set(gate.pending.map((q) => q.id));
   const riskyCases = cases
@@ -152,50 +148,50 @@ function collect(slug) {
   };
 }
 
-/** Bảng logic Go/No-Go — giữ nguyên tinh thần của skill, nhưng nối vào artifact thật. */
+/** Go/No-Go table from the skill, wired to the artifacts this pipeline produces. */
 function decide(m) {
   const blockers = [];
   const conditions = [];
 
   if (m.askGate.blocked) {
-    blockers.push(`Cổng ASK đang ĐÓNG: ${m.askGate.reasons.join(' · ')}`);
+    blockers.push(`ASK gate is CLOSED: ${m.askGate.reasons.join(' · ')}`);
   }
   if (m.testCases.total === 0) {
-    blockers.push('Chưa có test case nào (thiếu 05_test_case_spec.md và testcases/batch_*.md)');
+    blockers.push('No test cases at all (neither 05_test_case_spec.md nor testcases/batch_*.md)');
   } else if (m.testCases.tracePct < TRACE_FLOOR) {
-    blockers.push(`Tỷ lệ Trace ${m.testCases.tracePct}% < ${TRACE_FLOOR}% — ${m.testCases.untraced.length} test case không trace được`);
+    blockers.push(`Trace rate ${m.testCases.tracePct}% is below ${TRACE_FLOOR}% — ${m.testCases.untraced.length} case(s) untraceable`);
   }
   if (m.riskyCases.length) {
-    blockers.push(`${m.riskyCases.length} test case gắn vào rule/gap chưa chốt: ${m.riskyCases.slice(0, 8).join(', ')}`);
+    blockers.push(`${m.riskyCases.length} case(s) rest on unsettled rules or gaps: ${m.riskyCases.slice(0, 8).join(', ')}`);
   }
   if (m.data.issues.length) {
-    blockers.push(`${m.data.issues.length} vấn đề dữ liệu chưa giải quyết trong 12_data_validation_traceability.md`);
+    blockers.push(`${m.data.issues.length} unresolved data issue(s) in 12_data_validation_traceability.md`);
   }
 
   if (m.testCases.tracePct >= TRACE_FLOOR && m.testCases.tracePct < 100) {
-    conditions.push(`Trace ${m.testCases.tracePct}% chưa đạt 100%`);
+    conditions.push(`Trace rate is ${m.testCases.tracePct}%, not yet 100%`);
   }
   if (m.coverage.viewpointsUncovered.length) {
-    conditions.push(`Viewpoint chưa có test case: ${m.coverage.viewpointsUncovered.join(', ')}`);
+    conditions.push(`Viewpoints with no test case: ${m.coverage.viewpointsUncovered.join(', ')}`);
   }
   if (m.coverage.rulesUncovered.length) {
-    conditions.push(`Business rule chưa được phủ: ${m.coverage.rulesUncovered.join(', ')}`);
+    conditions.push(`Business rules not covered: ${m.coverage.rulesUncovered.join(', ')}`);
   }
   if (m.coverage.rulesReferencedButUndefined.length) {
-    conditions.push(`Test case trích rule không có trong Chặng 1: ${m.coverage.rulesReferencedButUndefined.join(', ')}`);
+    conditions.push(`Cases cite rules absent from stage 1: ${m.coverage.rulesReferencedButUndefined.join(', ')}`);
   }
   if (m.reviewVerdict && m.reviewVerdict !== 'PASS') {
-    conditions.push(`Chặng 6 ra Verdict \`${m.reviewVerdict}\` (chưa PASS)`);
+    conditions.push(`Stage 6 verdict is \`${m.reviewVerdict}\`, not PASS`);
   }
-  if (!m.reviewVerdict) conditions.push('Chưa có 06_coverage_review.md');
-  if (!m.data.hasValidation) conditions.push('Chưa có 12_data_validation_traceability.md — không đánh giá được độ sẵn sàng dữ liệu');
+  if (!m.reviewVerdict) conditions.push('06_coverage_review.md is missing');
+  if (!m.data.hasValidation) conditions.push('12_data_validation_traceability.md is missing — data readiness cannot be assessed');
   (m.askGate.advisories || []).forEach((a) => conditions.push(a));
 
   const verdict = blockers.length ? 'NO-GO' : conditions.length ? 'CONDITIONAL GO' : 'GO';
   return { verdict, blockers, conditions, exitCode: { 'GO': 0, 'CONDITIONAL GO': 1, 'NO-GO': 2 }[verdict] };
 }
 
-// ───────────────────── In ra ─────────────────────
+// ───────────────────── Output ─────────────────────
 
 function render(m, d) {
   const line = '─'.repeat(67);

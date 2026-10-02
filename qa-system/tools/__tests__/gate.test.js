@@ -1,9 +1,9 @@
 /**
- * Test cổng ASK — Bức Tường Thép.
+ * Tests for the ASK gate.
  *
- * Cổng này là thứ duy nhất ngăn agent sinh test case trên nền nghiệp vụ chưa
- * chốt. Nó hỏng âm thầm thì cả hệ thống mất tác dụng mà không ai biết, nên
- * mỗi đường mở khoá phải có ca test riêng.
+ * This gate is the only thing stopping the agent from generating test cases on
+ * unsettled rules. If it fails silently the whole system loses its guarantee
+ * without anyone noticing, so each unlock path gets its own case.
  */
 
 const test = require('node:test');
@@ -11,7 +11,7 @@ const assert = require('node:assert');
 const { useTempProject, write } = require('./helpers');
 const { evaluate, audit, LOCKED_DELIVERABLES } = require('../system/gate');
 
-/** Mục 7 + Mục 8 của file tri thức, với Mục 8 nằm CUỐI file (đúng như template). */
+/** Sections 7 and 8 of a knowledge file, with section 8 LAST as in the template. */
 function knowledge({ pending = [], resolved = [], section8 = [] }) {
   const rows = [
     ...pending.map((q) => `| ${q} | Kẽ hở | W1 | HIGH | Mặc định | Câu hỏi? |  | New |`),
@@ -33,17 +33,17 @@ ${section8.map((q, i) => `| ${i + 1} | ${q} | Giả định | Quyết định ch
 `;
 }
 
-test('ĐÓNG khi Chặng 2 ra Verdict ASK', () => {
+test('CLOSED when stage 2 returns Verdict ASK', () => {
   const t = useTempProject();
   try {
     write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nVerdict: ASK\n');
     const s = evaluate('t');
-    assert.ok(s.blocked, 'cổng phải đóng');
+    assert.ok(s.blocked, 'gate must be closed');
     assert.match(s.reasons.join(' '), /Verdict: ASK/);
   } finally { t.cleanup(); }
 });
 
-test('ĐÓNG khi Mục 7 còn câu hỏi trạng thái New', () => {
+test('CLOSED while section 7 still has New questions', () => {
   const t = useTempProject();
   try {
     write('knowledge/features/t.md', knowledge({ pending: ['MR-01', 'MR-02'] }));
@@ -53,31 +53,31 @@ test('ĐÓNG khi Mục 7 còn câu hỏi trạng thái New', () => {
   } finally { t.cleanup(); }
 });
 
-test('MỞ khoá đường 1 — trả lời vào Mục 7, Trạng thái Confirmed', () => {
+test('unlock path 1 — answer in section 7, status Confirmed', () => {
   const t = useTempProject();
   try {
     write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nVerdict: PASS\n');
     write('knowledge/features/t.md', knowledge({ resolved: ['MR-01', 'MR-02'] }));
     const s = evaluate('t');
-    assert.ok(!s.blocked, `cổng phải mở, nhưng: ${s.reasons.join(' · ')}`);
+    assert.ok(!s.blocked, `gate should be open, got: ${s.reasons.join(' · ')}`);
     assert.strictEqual(s.resolvedCount, 2);
   } finally { t.cleanup(); }
 });
 
-test('MỞ khoá đường 2 — chốt quyết định vào Mục 8 (mục CUỐI file)', () => {
-  // Lỗi thật đã suýt lọt: hàm đọc mục dùng `\Z` — cú pháp KHÔNG tồn tại trong
-  // regex JavaScript (JS hiểu thành chữ cái Z). Mục 8 thường nằm cuối file nên
-  // không bao giờ khớp, khiến đường mở khoá này im lặng không hoạt động.
+test('unlock path 2 — decision recorded in section 8 (the LAST section)', () => {
+  // Bug that nearly shipped: the section reader used `\Z`, which does NOT exist
+  // in JavaScript regex (JS reads it as a literal Z). Section 8 usually sits last,
+  // so it never matched and this unlock path silently did nothing.
   const t = useTempProject();
   try {
     write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nVerdict: PASS\n');
     write('knowledge/features/t.md', knowledge({ pending: ['MR-01'], section8: ['MR-01'] }));
     const s = evaluate('t');
-    assert.ok(!s.blocked, `Mục 8 phải mở được khoá, nhưng: ${s.reasons.join(' · ')}`);
+    assert.ok(!s.blocked, `section 8 should unlock the gate, got: ${s.reasons.join(' · ')}`);
   } finally { t.cleanup(); }
 });
 
-test('MỞ khi chưa chạy Chặng 2 và chưa có tri thức — không chặn việc chưa bắt đầu', () => {
+test('OPEN before stage 2 runs — work that has not started is not blocked', () => {
   const t = useTempProject();
   try {
     write('OUTPUT/t/00_plan.md', '# Plan\n');
@@ -85,21 +85,21 @@ test('MỞ khi chưa chạy Chặng 2 và chưa có tri thức — không chặn
   } finally { t.cleanup(); }
 });
 
-test('CẢNH BÁO (không chặn) khi câu trả lời BA kẹt lại trong OUTPUT/', () => {
-  // QA_STANDARD §8: OUTPUT/ là đồ bỏ đi, knowledge/ mới là thứ tích luỹ.
-  // Chặng 2 PASS nhờ BA trả lời nhưng câu trả lời không vào knowledge thì
-  // lần chạy sau phải đi hỏi lại BA đúng những câu đó.
+test('ADVISES (without blocking) when BA answers stay stranded in OUTPUT/', () => {
+  // QA_STANDARD §8: OUTPUT/ is disposable, knowledge/ is what accumulates. If
+  // stage 2 passed on BA answers that never reached knowledge/, the next run
+  // asks the BA those same questions again.
   const t = useTempProject();
   try {
     write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nVerdict: PASS\n| MR-01 | ... |\n| MR-02 | ... |\n');
     const s = evaluate('t');
-    assert.ok(!s.blocked, 'cảnh báo không được chặn cổng');
+    assert.ok(!s.blocked, 'an advisory must not close the gate');
     assert.strictEqual(s.advisories.length, 1);
     assert.match(s.advisories[0], /MR-01, MR-02/);
   } finally { t.cleanup(); }
 });
 
-test('KHÔNG cảnh báo khi mọi mã đã có trong knowledge', () => {
+test('no advisory once every code is recorded in knowledge/', () => {
   const t = useTempProject();
   try {
     write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nVerdict: PASS\n| MR-01 | ... |\n');
@@ -108,29 +108,29 @@ test('KHÔNG cảnh báo khi mọi mã đã có trong knowledge', () => {
   } finally { t.cleanup(); }
 });
 
-test('audit — phát hiện deliverable 03→06 sinh ra sau mốc khoá', async () => {
+test('audit — detects stage 03-06 files written after the lock timestamp', async () => {
   const t = useTempProject();
   try {
     write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nVerdict: ASK\n');
     write('OUTPUT/t/_gate.lock', JSON.stringify({ slug: 't', lockedAt: new Date(Date.now() - 60000).toISOString() }));
-    write('OUTPUT/t/03_viewpoint_report.md', '# Sinh chui\n');
+    write('OUTPUT/t/03_viewpoint_report.md', '# written past the gate\n');
     const a = audit('t');
     assert.strictEqual(a.violations.length, 1);
     assert.strictEqual(a.violations[0].file, '03_viewpoint_report.md');
   } finally { t.cleanup(); }
 });
 
-test('audit — không báo vi phạm khi không có khoá', () => {
+test('audit — reports nothing when no lock is active', () => {
   const t = useTempProject();
   try {
-    write('OUTPUT/t/03_viewpoint_report.md', '# Hợp lệ\n');
+    write('OUTPUT/t/03_viewpoint_report.md', '# legitimate\n');
     assert.strictEqual(audit('t').violations.length, 0);
   } finally { t.cleanup(); }
 });
 
-test('danh sách deliverable bị khoá đúng phạm vi Chặng 3→6', () => {
+test('the locked-deliverable list covers exactly stages 3 to 6', () => {
   assert.ok(LOCKED_DELIVERABLES.includes('03_viewpoint_report.md'));
   assert.ok(LOCKED_DELIVERABLES.includes('06_coverage_review.md'));
-  // Chặng 1 và 2 phải chạy được, nếu không thì không ai trả lời được câu hỏi.
+  // Stages 1 and 2 must stay runnable, otherwise nobody can answer the questions.
   assert.ok(!LOCKED_DELIVERABLES.some((f) => f.startsWith('01_') || f.startsWith('02_')));
 });

@@ -1,16 +1,23 @@
 #!/usr/bin/env node
 /**
- * jira-client.js — Cổng giao tiếp DUY NHẤT với Jira.
+ * jira-client.js — The single entry point for everything Jira.
  *
- * Gộp từ 3 file cũ (jira-client + push-testcases-to-jira + sync-results-to-jira),
- * vì trước đây bản được nối vào `npm run jira:push` lại là bản rỗng, còn bản
- * cài đặt thật thì không ai gọi tới.
+ *   pullDefects(slug, cfg)        Fetch bugs/defects into a summary file.
+ *   pushTestCases(slug, cfg)      Create test-case issues, or export CSV without credentials.
+ *   syncRunResults(slug, run, cfg) Push run results, comments and evidence screenshots.
+ *   parseTestCases / parseRunResult / parseMapping  Markdown readers for the above.
  *
- * Lệnh:
- *   node agents/tools/jira/jira-client.js pull [slug]            Kéo bug/defect về
- *   node agents/tools/jira/jira-client.js push [slug]            Đẩy test case lên (CSV hoặc API)
- *   node agents/tools/jira/jira-client.js sync [slug] [run-id]   Đẩy kết quả chạy + ảnh bằng chứng
- *   node agents/tools/jira/jira-client.js mcp                    Khởi động MCP server cho AI IDE
+ * Merged from three earlier files. The one wired to `npm run jira:push` was a
+ * stub that logged and returned, while the working implementation sat unused.
+ *
+ * Usage:
+ *   jira-client.js pull [slug]
+ *   jira-client.js push [slug]
+ *   jira-client.js sync [slug] [run-id]
+ *   jira-client.js mcp
+ *
+ * Note: generated reports and Jira issue bodies stay in Vietnamese — they are
+ * deliverables read by the project team, not diagnostics.
  */
 
 const fs = require('fs');
@@ -26,14 +33,14 @@ async function pullDefects(slug, cfg) {
   const outPath = path.join(taskDir(slug), 'jira_defects_summary.md');
   const projectKey = cfg.projectKey || 'PROJECT';
 
-  console.log(`\n🔍 [JIRA PULL] Đang lấy Bug/Defect của project [${projectKey}]...`);
+  console.log(`\n[JIRA PULL] Fetching bugs/defects for project [${projectKey}]...`);
 
   if (!cfg.ok) {
-    console.warn(`⚠️  Chưa cấu hình: ${cfg.missing.join(', ')} trong .env`);
-    console.log(`ℹ️  Sinh bảng mẫu để vẫn chạy được pipeline phân tích rủi ro.`);
+    console.warn(`Not configured in .env: ${cfg.missing.join(', ')}`);
+    console.log('Emitting a sample table so the risk-analysis pipeline can still run.');
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(outPath, mockDefectReport(projectKey), 'utf-8');
-    console.log(`✅ Đã lưu: ${path.relative(PATHS.ROOT, outPath)}`);
+    console.log(`Saved: ${path.relative(PATHS.ROOT, outPath)}`);
     return;
   }
 
@@ -47,11 +54,11 @@ async function pullDefects(slug, cfg) {
   );
 
   if (res.statusCode !== 200) {
-    throw new Error(`Jira trả về HTTP ${res.statusCode}: ${res.raw}`);
+    throw new Error(`Jira returned HTTP ${res.statusCode}: ${res.raw}`);
   }
 
   const issues = res.data.issues || [];
-  console.log(`✅ Đã kéo về ${issues.length} defect.`);
+  console.log(`Pulled ${issues.length} defect(s).`);
 
   const rows = issues.map((iss) => {
     const sum = iss.fields.summary.replace(/\|/g, '-');
@@ -73,7 +80,7 @@ async function pullDefects(slug, cfg) {
 
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, report, 'utf-8');
-  console.log(`✅ Đã lưu: ${path.relative(PATHS.ROOT, outPath)}`);
+  console.log(`Saved: ${path.relative(PATHS.ROOT, outPath)}`);
 }
 
 function mockDefectReport(projectKey) {
@@ -105,7 +112,7 @@ function mockDefectReport(projectKey) {
 
 // ───────────────────────────── PUSH ─────────────────────────────
 
-/** Bóc 8 trường test case từ `05_test_case_spec.md`. */
+/** Reads the eight test-case fields out of `05_test_case_spec.md`. */
 function parseTestCases(content) {
   const cases = [];
 
@@ -150,31 +157,31 @@ async function pushTestCases(slug, cfg) {
   const jiraCsv = path.join(dir, 'export_jira_xray.csv');
   const redmineCsv = path.join(dir, 'export_redmine.csv');
 
-  console.log(`\n🚀 [JIRA PUSH] Chuẩn bị test case cho task [${slug}]...`);
+  console.log(`\n[JIRA PUSH] Preparing test cases for task [${slug}]...`);
 
-  // Không có credential → chế độ import file, vẫn dùng được.
+  // Without credentials, fall back to CSV import mode, which still works.
   if (!cfg.ok) {
     if (!fs.existsSync(jiraCsv)) {
-      console.log(`ℹ️  Chưa có CSV, gọi export-testcases...`);
+      console.log('No CSV yet, invoking export-testcases...');
       require('../testcase/export-testcases');
     }
-    console.log(`\n📌 CHẾ ĐỘ IMPORT FILE (thiếu: ${cfg.missing.join(', ')})`);
+    console.log(`\nFILE IMPORT MODE (missing: ${cfg.missing.join(', ')})`);
     console.log(`   - Jira Xray : ${path.relative(PATHS.ROOT, jiraCsv)}`);
     console.log(`   - Redmine   : ${path.relative(PATHS.ROOT, redmineCsv)}`);
-    console.log(`\n👉 Jira: Project > Xray Settings > Test Case Importer > chọn export_jira_xray.csv`);
-    console.log(`👉 Redmine: Issues > Import > chọn export_redmine.csv`);
-    console.log(`\n👉 Muốn đẩy thẳng qua API: điền ${cfg.missing.join(', ')} vào .env`);
+    console.log('\nJira: Project > Xray Settings > Test Case Importer > pick export_jira_xray.csv');
+    console.log('Redmine: Issues > Import > pick export_redmine.csv');
+    console.log(`\nTo push through the API instead, set ${cfg.missing.join(', ')} in .env`);
     return;
   }
 
   if (!fs.existsSync(specPath)) {
-    throw new Error(`Không tìm thấy ${path.relative(PATHS.ROOT, specPath)} — chạy chặng 5 trước.`);
+    throw new Error(`No ${path.relative(PATHS.ROOT, specPath)} — run stage 5 first.`);
   }
 
   const projectKey = cfg.projectKey || 'SG';
-  console.log(`📡 Kết nối ${cfg.host} · project [${projectKey}]`);
+  console.log(`Connecting to ${cfg.host} · project [${projectKey}]`);
 
-  // 1. Lấy issue đã có để không tạo trùng.
+  // Fetch existing issues so we do not create duplicates.
   const jql = encodeURIComponent(`project = "${projectKey}" ORDER BY created ASC`);
   const existingRes = await jiraRequest(
     cfg,
@@ -189,16 +196,16 @@ async function pushTestCases(slug, cfg) {
       if (m) existing.set(m[1], iss.key);
     }
   }
-  console.log(`ℹ️  Jira đang có ${existing.size} test case đã ánh xạ.`);
+  console.log(`Jira already holds ${existing.size} mapped test case(s).`);
 
   const cases = parseTestCases(fs.readFileSync(specPath, 'utf-8'));
-  console.log(`📋 Spec có ${cases.length} test case.`);
+  console.log(`Spec contains ${cases.length} test case(s).`);
 
   const results = [];
   for (const tc of cases) {
     if (existing.has(tc.id)) {
       const key = existing.get(tc.id);
-      console.log(`⏭️  [${tc.id}] đã tồn tại → ${key}`);
+      console.log(`[${tc.id}] already exists as ${key}`);
       results.push({ ...tc, key, url: `${cfg.host}/browse/${key}`, status: 'Đã có' });
       continue;
     }
@@ -215,7 +222,7 @@ async function pushTestCases(slug, cfg) {
     const labels = ['test-case', 'qa-agent'];
     if (tc.module) labels.push(tc.module.toLowerCase());
 
-    console.log(`🚀 Tạo [${tc.id}] trên Jira...`);
+    console.log(`Creating [${tc.id}] in Jira...`);
     const res = await jiraRequest(cfg, 'POST', '/rest/api/2/issue', {
       fields: {
         project: { key: projectKey },
@@ -235,7 +242,7 @@ async function pushTestCases(slug, cfg) {
       results.push({ ...tc, key: 'ERROR', url: '', status: `Lỗi ${res.statusCode}` });
     }
 
-    await sleep(200); // tránh bị rate-limit
+    await sleep(200); // stay under Jira rate limits
   }
 
   writeMapping(slug, projectKey, cfg.host, results);
@@ -258,14 +265,14 @@ function writeMapping(slug, projectKey, host, results) {
 
   const p = path.join(taskDir(slug), 'jira_testcase_mapping.md');
   fs.writeFileSync(p, lines.join('\n'), 'utf-8');
-  console.log(`\n🎉 Đã lưu bảng ánh xạ: ${path.relative(PATHS.ROOT, p)}`);
+  console.log(`\nMapping table saved: ${path.relative(PATHS.ROOT, p)}`);
 }
 
 // ───────────────────────────── SYNC ─────────────────────────────
 
 /**
- * Bóc kết quả thực thi từ bảng trong `run_result.md`.
- * Cột chuẩn: # | TC ID | Tiêu đề | Trạng thái | Actual Result | Bằng chứng | Defect ID
+ * Reads execution results from the `run_result.md` table.
+ * Columns: # | TC ID | Title | Status | Actual Result | Evidence | Defect ID
  */
 function parseRunResult(content) {
   const rows = [];
@@ -275,7 +282,7 @@ function parseRunResult(content) {
     if (cells.length < 6) continue;
 
     const tcId = cells[1].replace(/`/g, '').trim();
-    if (!/^[A-Z][A-Z0-9_]*-\d+$/i.test(tcId)) continue; // bỏ dòng tiêu đề và dòng kẻ
+    if (!/^[A-Z][A-Z0-9_]*-\d+$/i.test(tcId)) continue; // skip header and separator rows
 
     const status = cells[3].replace(/\*/g, '').trim().toUpperCase();
     const evidence = (cells[5].match(/\(([^)]+)\)/) || [])[1] || '';
@@ -285,7 +292,7 @@ function parseRunResult(content) {
   return rows;
 }
 
-/** Đọc bảng ánh xạ TC ID → Jira Key do lệnh `push` sinh ra. */
+/** Reads the TC ID to Jira key mapping produced by `push`. */
 function parseMapping(content) {
   const map = new Map();
   for (const line of content.split('\n')) {
@@ -299,7 +306,7 @@ function parseMapping(content) {
   return map;
 }
 
-/** Tìm transition hợp lệ theo tên, thay vì đoán ID cứng. */
+/** Looks up a transition by name instead of guessing a numeric id. */
 async function findTransition(cfg, issueKey, wanted) {
   const res = await jiraRequest(cfg, 'GET', `/rest/api/3/issue/${issueKey}/transitions`);
   if (res.statusCode !== 200) return null;
@@ -310,7 +317,7 @@ async function findTransition(cfg, issueKey, wanted) {
 
 async function syncRunResults(slug, runId, cfg) {
   if (!cfg.ok) {
-    throw new Error(`Lệnh sync bắt buộc có kết nối Jira. Thiếu: ${cfg.missing.join(', ')} trong .env`);
+    throw new Error(`sync requires Jira credentials. Missing in .env: ${cfg.missing.join(', ')}`);
   }
 
   const dir = taskDir(slug);
@@ -319,11 +326,11 @@ async function syncRunResults(slug, runId, cfg) {
   const mappingPath = path.join(dir, 'jira_testcase_mapping.md');
 
   for (const [p, hint] of [
-    [resultPath, 'chạy test và ghi kết quả trước'],
-    [mappingPath, 'chạy `jira:push` trước để tạo bảng ánh xạ'],
+    [resultPath, 'run the tests and record results first'],
+    [mappingPath, 'run `jira:push` first to create the mapping table'],
   ]) {
     if (!fs.existsSync(p)) {
-      throw new Error(`Không tìm thấy ${path.relative(PATHS.ROOT, p)} — ${hint}.`);
+      throw new Error(`No ${path.relative(PATHS.ROOT, p)} — ${hint}.`);
     }
   }
 
@@ -334,34 +341,34 @@ async function syncRunResults(slug, runId, cfg) {
   const targets = onlyTc ? rows.filter((r) => r.tcId === onlyTc) : rows;
 
   if (targets.length === 0) {
-    console.log(`⚠️  Không có dòng kết quả nào để đồng bộ trong ${path.relative(PATHS.ROOT, resultPath)}`);
+    console.log(`No result rows to sync in ${path.relative(PATHS.ROOT, resultPath)}`);
     return;
   }
 
-  console.log(`\n🚀 [JIRA SYNC] Đẩy ${targets.length} kết quả lên ${cfg.host}...`);
+  console.log(`\n[JIRA SYNC] Pushing ${targets.length} result(s) to ${cfg.host}...`);
   const synced = [];
 
   for (const row of targets) {
     const key = mapping.get(row.tcId);
     if (!key) {
-      console.warn(`   ⚠️  [${row.tcId}] chưa có Jira key trong bảng ánh xạ — bỏ qua.`);
+      console.warn(`   [${row.tcId}] has no Jira key in the mapping table — skipped.`);
       continue;
     }
 
     console.log(`\n📌 [${row.tcId}] → ${key} · ${row.status}`);
 
-    // 1. Ảnh bằng chứng
+    // Evidence screenshot
     if (row.evidence) {
       const evPath = path.resolve(runDir, row.evidence);
       if (fs.existsSync(evPath)) {
         const r = await jiraAttach(cfg, key, path.basename(evPath), fs.readFileSync(evPath));
-        console.log(`   📸 Đính kèm ${path.basename(evPath)} (HTTP ${r.statusCode})`);
+        console.log(`   attached ${path.basename(evPath)} (HTTP ${r.statusCode})`);
       } else {
-        console.warn(`   ⚠️  Không thấy file bằng chứng: ${row.evidence}`);
+        console.warn(`   evidence file not found: ${row.evidence}`);
       }
     }
 
-    // 2. Bình luận kết quả
+    // Result comment
     const comment = [
       `h3. Kết quả chạy tự động: ${row.status}`,
       `* *Run session*: ${runId}`,
@@ -373,18 +380,18 @@ async function syncRunResults(slug, runId, cfg) {
     ].filter(Boolean).join('\n');
 
     const cr = await jiraRequest(cfg, 'POST', `/rest/api/2/issue/${key}/comment`, { body: comment });
-    console.log(`   💬 Bình luận (HTTP ${cr.statusCode})`);
+    console.log(`   comment posted (HTTP ${cr.statusCode})`);
 
-    // 3. Chuyển trạng thái — chỉ khi PASS, và tra đúng ID thay vì đoán.
+    // Transition only on PASS, and look the id up rather than guessing.
     if (row.status === 'PASS') {
       const tid = await findTransition(cfg, key, ['Done', 'Closed', 'Hoàn thành']);
       if (tid) {
         const tr = await jiraRequest(cfg, 'POST', `/rest/api/3/issue/${key}/transitions`, {
           transition: { id: tid },
         });
-        console.log(`   🔄 Chuyển sang Done (HTTP ${tr.statusCode})`);
+        console.log(`   transitioned to Done (HTTP ${tr.statusCode})`);
       } else {
-        console.warn(`   ⚠️  Không tìm thấy transition Done/Closed cho ${key}`);
+        console.warn(`   no Done/Closed transition available for ${key}`);
       }
     }
 
@@ -392,7 +399,7 @@ async function syncRunResults(slug, runId, cfg) {
     await sleep(200);
   }
 
-  // 4. Cập nhật cột "Kết quả chạy" trong bảng ánh xạ.
+  // Update the run-result column in the mapping table.
   let mappingContent = fs.readFileSync(mappingPath, 'utf-8');
   for (const s of synced) {
     const icon = s.status === 'PASS' ? '✅ PASS' : s.status === 'FAIL' ? '❌ FAIL' : `⏸ ${s.status}`;
@@ -400,7 +407,7 @@ async function syncRunResults(slug, runId, cfg) {
     mappingContent = mappingContent.replace(re, `$1${icon}$2`);
   }
   fs.writeFileSync(mappingPath, mappingContent, 'utf-8');
-  console.log(`\n🎉 Đã cập nhật ${path.relative(PATHS.ROOT, mappingPath)} (${synced.length} dòng).`);
+  console.log(`\nUpdated ${path.relative(PATHS.ROOT, mappingPath)} (${synced.length} row(s)).`);
 }
 
 // ───────────────────────────── CLI ─────────────────────────────
@@ -412,18 +419,18 @@ function resolveSlug(arg) {
   const slugs = listTaskSlugs();
   if (slugs.length === 1) return slugs[0];
   if (slugs.length > 1) {
-    throw new Error(`OUTPUT/ có ${slugs.length} task (${slugs.join(', ')}) — nêu rõ task-slug.`);
+    throw new Error(`OUTPUT/ holds ${slugs.length} tasks (${slugs.join(', ')}) — name one explicitly.`);
   }
-  throw new Error('OUTPUT/ chưa có task nào.');
+  throw new Error('OUTPUT/ has no tasks yet.');
 }
 
 function usage() {
   console.log(`
-Cách dùng:
-  jira-client.js pull [slug]             Kéo bug/defect từ Jira về
-  jira-client.js push [slug]             Đẩy test case lên (API nếu có .env, không thì xuất CSV)
-  jira-client.js sync [slug] [run-id]    Đẩy kết quả chạy + ảnh bằng chứng lên Jira
-  jira-client.js mcp                     Khởi động MCP server (stdio) cho AI IDE
+Usage:
+  jira-client.js pull [slug]             Pull bugs/defects from Jira
+  jira-client.js push [slug]             Push test cases (API when .env is set, CSV otherwise)
+  jira-client.js sync [slug] [run-id]    Push run results and evidence screenshots
+  jira-client.js mcp                     Start the stdio MCP server for AI IDEs
 `);
 }
 
@@ -433,8 +440,8 @@ async function main() {
   if (!action || action === 'help' || action === '--help') return usage();
 
   if (action === 'mcp') {
-    console.log(`\n🔌 Khởi động Jira MCP Server (stdio)...`);
-    console.log(`ℹ️  Cấu hình: .agents/mcp_config.json · .cursor/mcp.json`);
+    console.log('\nStarting the Jira MCP server (stdio)...');
+    console.log('Config: .agents/mcp_config.json · .cursor/mcp.json');
     require('./mcp-server');
     return;
   }
@@ -446,16 +453,16 @@ async function main() {
   if (action === 'sync') {
     const slug = resolveSlug(process.argv[3]);
     const runId = process.argv[4];
-    if (!runId) throw new Error('Lệnh sync cần run-id, ví dụ: sync <slug> RUN-01_smoke');
+    if (!runId) throw new Error('sync needs a run-id, e.g. sync <slug> RUN-01_smoke');
     return syncRunResults(slug, runId, cfg);
   }
 
-  console.error(`❌ Lệnh không hợp lệ: ${action}`);
+  console.error(`Unknown command: ${action}`);
   usage();
   process.exitCode = 1;
 }
 
 main().catch((err) => {
-  console.error(`❌ ${err.message}`);
+  console.error(err.message);
   process.exitCode = 1;
 });

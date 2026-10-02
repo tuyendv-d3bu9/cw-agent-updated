@@ -9,17 +9,17 @@
  *   - OpenAPI / Swagger / Postman / Config (.json, .yaml, .yml)
  *   - Plain text (.txt, .log)
  *
- * Lệnh:
- *   npm run convert -- <file>                 Một tài liệu -> INPUT/
- *   npm run convert -- <src_dir> <out_dir>    Cả thư mục -> thư mục đích
+ * Usage:
+ *   convert.js <file>                One document -> INPUT/
+ *   convert.js <src_dir> <out_dir>   A whole directory -> a target directory
  *
- * KHÔNG có chế độ "không tham số thì tự quét một thư mục mặc định".
- * Bản cũ mặc định quét `./docs` (hoặc `./docx`) — mà `docs/` là tên thư mục tài liệu
- * tự nhiên nhất của mọi repo. Hệ quả thật: khi dự án có thư mục `docs/`, lệnh này
- * đổ cả cẩm nang 32 trang vào `INPUT/` như thể đó là tài liệu nghiệp vụ cần kiểm thử.
+ * There is deliberately NO "scan a default directory when called bare" mode.
+ * The old default scanned `./docs` (or `./docx`), and `docs/` is the most natural
+ * documentation folder name in any repo — so adding one made this command dump a
+ * 32-page handbook into INPUT/ as if it were a spec under test.
  *
- * Muốn tiếp nhận tài liệu thì dùng `npm run intake` — nó quét `INPUT/`, phân loại
- * vào 5 ngăn và dựng khung task. `convert` chỉ là bộ chuyển đổi thuần.
+ * To ingest documents use `npm run intake`, which scans INPUT/, files everything
+ * into the five bins and scaffolds the task. This tool is a pure converter.
  */
 
 const fs = require("fs");
@@ -34,13 +34,13 @@ const positional = args.filter((a) => !a.startsWith("--"));
 
 if (positional.length === 0) {
   console.log(`
-Cách dùng:
-  npm run convert -- <file>                 Chuyển một tài liệu sang Markdown
-  npm run convert -- <thư-mục> [đích]       Chuyển cả thư mục
+Usage:
+  npm run convert -- <file>              Convert one document to Markdown
+  npm run convert -- <dir> [target]      Convert a whole directory
 
-👉 Nếu bạn muốn ĐƯA TÀI LIỆU VÀO DỰ ÁN, dùng lệnh khác:
+To INGEST documents into the project, use a different command:
      npm run intake
-   Lệnh đó quét INPUT/, phân loại vào 5 ngăn, và dựng sẵn khung task.
+   It scans INPUT/, files documents into the five bins and scaffolds the task.
 `);
   process.exit(0);
 }

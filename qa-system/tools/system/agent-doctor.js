@@ -66,7 +66,7 @@ const PIPELINE_DEPENDENCIES = {
     consumed_by: [
       { step: '06', name: 'qa-test-design/coverage-review', reason: 'Reviews test case execution coverage' },
       { step: '12', name: 'qa-test-data/data-validation-traceability', reason: 'Maps test datasets to specific TC_IDs' },
-      { step: 'readiness', name: 'qa-readiness-evaluator/gen-readiness-report', reason: 'Đo độ phủ/trace từ 05_ để tính khuyến nghị Go/No-Go trước automation' },
+      { step: 'readiness', name: 'qa-readiness-evaluator/gen-readiness-report', reason: 'Measures coverage and trace from 05_ to derive the Go/No-Go recommendation' },
       { step: 'automation', name: 'qa-automation/flow-clustering & pom-generator', reason: 'Clusters flows, generates POM, and executes Playwright E2E' }
     ]
   },
@@ -138,9 +138,10 @@ if (targetImpact) {
 // ═══════════════════════════════════════════════════════════════
 // 2. System Health Check Mode
 //
-// Nguyên tắc: KHÔNG hardcode danh sách agent, KHÔNG miễn trừ ai, KHÔNG khớp lỏng.
-// Bản cũ hardcode 9 agent + khớp bằng `includes()` + miễn trừ qa-lead, nên nó báo
-// "100% SYSTEM INTEGRITY VERIFIED" ngay cả khi WORKFLOW.md đã lệch khỏi thực tế.
+// Principles: no hard-coded agent list, no exemptions, no loose matching.
+// The previous version hard-coded nine agents, matched with `includes()` and
+// exempted qa-lead, so it reported full integrity even while WORKFLOW.md had
+// drifted away from what was actually on disk.
 // ═══════════════════════════════════════════════════════════════
 
 const problems = [];
@@ -151,7 +152,7 @@ console.log('===============================================================');
 console.log('        KIỂM TOÀN VẸN HỆ THỐNG AGENT (AGENT DOCTOR)            ');
 console.log('===============================================================\n');
 
-// ─── A. Tự phát hiện agent, không dùng danh sách cứng ───
+// ─── A. Discover agents from disk ───
 const discovered = fs
   .readdirSync(agentsDir, { withFileTypes: true })
   .filter((d) => d.isDirectory() && d.name.startsWith('qa-'))
@@ -159,18 +160,18 @@ const discovered = fs
   .sort();
 
 if (discovered.length === 0) {
-  console.error('❌ Không tìm thấy agent nào trong agents/. Sai thư mục gốc?');
+  console.error('No agents found under qa-system/. Wrong root directory?');
   process.exit(1);
 }
 
-console.log(`🔍 Phát hiện ${discovered.length} agent trong qa-system/\n`);
+console.log(`Discovered ${discovered.length} agent(s) under qa-system/\n`);
 
 /**
- * Bóc danh sách skill khai báo ở mục tiêu đề chứa chữ "Skill" của AGENT.md.
+ * Skills declared under any AGENT.md heading containing the word "Skill".
  *
- * Quy ước tiêu đề trong repo không đồng nhất — có cả `## Skill sở hữu`,
- * `## 2. Skill & Công cụ sở hữu`, `## 2.1. Skill Sở Hữu Của Chính QA Leader`.
- * Khớp theo *nội dung* tiêu đề thay vì ép một dạng duy nhất.
+ * Heading conventions vary across the repo (`## Skill sở hữu`,
+ * `## 2. Skill & Công cụ sở hữu`, `## 2.1. Skill Sở Hữu Của Chính QA Leader`),
+ * so match on heading *text* rather than forcing a single shape.
  */
 function declaredSkills(content) {
   const out = [];
@@ -192,8 +193,8 @@ for (const agent of discovered) {
   const skillsDir = path.join(agentsDir, agent, 'skills');
 
   if (!fs.existsSync(agentFile)) {
-    fail(agent, 'Thiếu file danh tính AGENT.md');
-    console.log(`🤖 ${agent.padEnd(26)} ❌ thiếu AGENT.md`);
+    fail(agent, 'Missing identity file AGENT.md');
+    console.log(`  ${agent.padEnd(26)} FAIL  no AGENT.md`);
     continue;
   }
 
@@ -202,16 +203,16 @@ for (const agent of discovered) {
     ? fs.readdirSync(skillsDir).filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, ''))
     : [];
 
-  // Khớp CHẶT: tên khai báo phải bằng đúng tên file (bỏ .md). Không dùng includes().
+  // Strict match: a declared name must equal the filename without .md.
   const missingFile = declared.filter((s) => !actual.includes(s));
   const undeclared = actual.filter((s) => !declared.includes(s));
 
   missingFile.forEach((s) =>
-    fail(agent, `AGENT.md khai skill \`${s}\` nhưng không có file skills/${s}.md`)
+    fail(agent, `AGENT.md declares skill \`${s}\` but skills/${s}.md does not exist`)
   );
-  // Không miễn trừ agent nào — kể cả qa-lead.
+  // No agent is exempt, qa-lead included.
   undeclared.forEach((s) =>
-    warn(agent, `Có file skills/${s}.md nhưng AGENT.md không khai báo`)
+    warn(agent, `skills/${s}.md exists but AGENT.md does not declare it`)
   );
 
   actual.forEach((s) => allSkills.push({ agent, skill: s }));
@@ -220,51 +221,51 @@ for (const agent of discovered) {
   console.log(`🤖 ${agent.padEnd(26)} ${status} ${actual.length} skill`);
 }
 
-// ─── B. Bản đồ hệ thống có biết đủ mọi agent không ───
-console.log('\n--- Đối soát knowledge/_system_map.json ---');
+// ─── B. Does the system map know every agent ───
+console.log('\n--- Cross-checking knowledge/_system_map.json ---');
 let map = null;
 try {
   map = JSON.parse(fs.readFileSync(mapPath, 'utf8'));
 } catch (e) {
-  fail('_system_map.json', `Không đọc được: ${e.message}`);
+  fail('_system_map.json', `Unreadable: ${e.message}`);
 }
 
 if (map) {
   const mapped = new Set(Object.keys(map.specialized_agents || {}).map((k) => k.replace(/_/g, '-')));
   discovered.forEach((a) => {
-    if (!mapped.has(a)) fail('_system_map.json', `Agent \`${a}\` chưa được khai trong specialized_agents`);
+    if (!mapped.has(a)) fail('_system_map.json', `Agent \`${a}\` is not declared in specialized_agents`);
   });
   [...mapped].forEach((a) => {
-    if (!discovered.includes(a)) fail('_system_map.json', `specialized_agents khai \`${a}\` nhưng thư mục không tồn tại`);
+    if (!discovered.includes(a)) fail('_system_map.json', `specialized_agents declares \`${a}\` but no such directory exists`);
   });
 
-  // Mọi đường dẫn trong routing_table phải trỏ tới file có thật.
+  // Every routing_table path must point at a file that exists.
   for (const [key, val] of Object.entries(map.routing_table || {})) {
     if (typeof val !== 'string') continue;
     if (!val.includes('/') || val.startsWith('npm ') || val.startsWith('http') || val.includes('<')) continue;
     if (!fs.existsSync(path.join(PATHS.ROOT, val))) {
-      fail('_system_map.json', `routing_table.${key} trỏ tới file không tồn tại: ${val}`);
+      fail('_system_map.json', `routing_table.${key} points at a missing file: ${val}`);
     }
   }
-  console.log(`   ${discovered.length} agent · ${Object.keys(map.routing_table || {}).length} mục routing`);
+  console.log(`   ${discovered.length} agent(s) · ${Object.keys(map.routing_table || {}).length} routing entries`);
 }
 
-// ─── C. WORKFLOW.md có biết đủ mọi skill không ───
-console.log('\n--- Đối soát qa-system/workflows/WORKFLOW.md ---');
+// ─── C. Does WORKFLOW.md know every skill ───
+console.log('\n--- Cross-checking qa-system/workflows/WORKFLOW.md ---');
 const wfPath = path.join(agentsDir, 'workflows', 'WORKFLOW.md');
 if (!fs.existsSync(wfPath)) {
-  fail('WORKFLOW.md', 'Không tồn tại');
+  fail('WORKFLOW.md', 'File does not exist');
 } else {
   const wf = fs.readFileSync(wfPath, 'utf8');
   const absent = allSkills.filter(({ skill }) => !wf.includes(skill));
   absent.forEach(({ agent, skill }) =>
-    fail('WORKFLOW.md', `Skill \`${agent}/${skill}\` không có mặt trong bảng điều phối`)
+    fail('WORKFLOW.md', `Skill \`${agent}/${skill}\` is absent from the dispatch table`)
   );
-  console.log(`   ${allSkills.length - absent.length}/${allSkills.length} skill có mặt trong bảng điều phối`);
+  console.log(`   ${allSkills.length - absent.length}/${allSkills.length} skill(s) present in the dispatch table`);
 }
 
-// ─── D. package.json có trỏ đúng file tool không ───
-console.log('\n--- Đối soát package.json ---');
+// ─── D. Do package.json scripts point at real files ───
+console.log('\n--- Cross-checking package.json ---');
 try {
   const scripts = JSON.parse(fs.readFileSync(path.join(PATHS.ROOT, 'package.json'), 'utf8')).scripts || {};
   let checked = 0;
@@ -273,65 +274,65 @@ try {
     if (!m) continue;
     checked++;
     if (!fs.existsSync(path.join(PATHS.ROOT, m[1]))) {
-      fail('package.json', `Script \`${name}\` trỏ tới file không tồn tại: ${m[1]}`);
+      fail('package.json', `Script \`${name}\` points at a missing file: ${m[1]}`);
     }
   }
-  console.log(`   ${checked} script trỏ tới agents/tools/ đã kiểm`);
+  console.log(`   ${checked} script(s) targeting qa-system/tools/ checked`);
 } catch (e) {
   fail('package.json', `Không đọc được: ${e.message}`);
 }
 
-// ─── E. Cổng ASK có đang khoá task nào không ───
-console.log('\n--- Đối soát cổng ASK ---');
+// ─── E. ASK gate state per task ───
+console.log('\n--- Cross-checking the ASK gate ---');
 try {
   const { evaluate, audit } = require('./gate');
   const { listTaskSlugs } = require('../lib/paths');
   const slugs = listTaskSlugs();
   if (slugs.length === 0) {
-    console.log('   Chưa có task nào trong OUTPUT/');
+    console.log('   No tasks in OUTPUT/ yet');
   } else {
     for (const slug of slugs) {
       const st = evaluate(slug);
       const au = audit(slug);
       if (au.violations?.length) {
-        fail(`gate/${slug}`, `${au.violations.length} deliverable sinh ra khi cổng còn khoá: ${au.violations.map((v) => v.file).join(', ')}`);
+        fail(`gate/${slug}`, `${au.violations.length} deliverable(s) written while the gate was locked: ${au.violations.map((v) => v.file).join(', ')}`);
       }
       (st.advisories || []).forEach((a) => warn(`gate/${slug}`, a));
-      console.log(`   ${slug.padEnd(26)} ${st.blocked ? '⛔ ĐÓNG' : '✅ mở'}`);
+      console.log(`   ${slug.padEnd(26)} ${st.blocked ? 'CLOSED' : 'open'}`);
     }
   }
 } catch (e) {
-  warn('gate', `Không kiểm được cổng ASK: ${e.message}`);
+  warn('gate', `Could not evaluate the ASK gate: ${e.message}`);
 }
 
 // ─── F. Lint deliverable ───
-console.log('\n--- Đối soát chuẩn FACT của deliverable ---');
+console.log('\n--- Cross-checking deliverables against FACT ---');
 try {
   const { lint } = require('./lint-deliverables');
   const { listTaskSlugs } = require('../lib/paths');
   const slugs = listTaskSlugs();
   if (slugs.length === 0) {
-    console.log('   Chưa có task nào trong OUTPUT/');
+    console.log('   No tasks in OUTPUT/ yet');
   } else {
     for (const slug of slugs) {
       const r = lint(slug);
       r.errors.forEach((e) => fail(`lint/${slug}`, `${e.file} [${e.where}] ${e.msg}`));
       const icon = r.clean ? (r.warns.length ? '⚠️ ' : '✅') : '❌';
-      console.log(`   ${slug.padEnd(26)} ${icon} ${r.totalCases} test case · ${r.errors.length} lỗi · ${r.warns.length} cảnh báo`);
+      console.log(`   ${slug.padEnd(26)} ${icon} ${r.totalCases} case(s) · ${r.errors.length} error(s) · ${r.warns.length} warning(s)`);
     }
   }
 } catch (e) {
-  warn('lint', `Không lint được deliverable: ${e.message}`);
+  warn('lint', `Could not lint deliverables: ${e.message}`);
 }
 
-// ─── G. Độ sẵn sàng Automation ───
-console.log('\n--- Đối soát cổng Go/No-Go (Automation) ---');
+// ─── G. Automation readiness ───
+console.log('\n--- Cross-checking the Go/No-Go gate ---');
 try {
   const { collect, decide } = require('./readiness');
   const { listTaskSlugs } = require('../lib/paths');
   const slugs = listTaskSlugs();
   if (slugs.length === 0) {
-    console.log('   Chưa có task nào trong OUTPUT/');
+    console.log('   No tasks in OUTPUT/ yet');
   } else {
     for (const slug of slugs) {
       const d = decide(collect(slug));
@@ -340,28 +341,28 @@ try {
     }
   }
 } catch (e) {
-  warn('readiness', `Không đo được độ sẵn sàng: ${e.message}`);
+  warn('readiness', `Could not measure readiness: ${e.message}`);
 }
 
-// ─── Kết luận ───
+// ─── Summary ───
 const fails = problems.filter((p) => p.level === 'FAIL');
 const warns = problems.filter((p) => p.level === 'WARN');
 
 console.log('\n---------------------------------------------------------------');
 if (problems.length === 0) {
-  console.log('🎉 TOÀN VẸN: agent · skill · bản đồ · workflow · package · cổng ASK đều khớp.');
+  console.log('INTACT: agents, skills, system map, workflow, package scripts and gates all agree.');
 } else {
   if (fails.length) {
-    console.log(`❌ ${fails.length} LỖI phải sửa:`);
+    console.log(`${fails.length} ERROR(S) to fix:`);
     fails.forEach((p, i) => console.log(`   ${i + 1}. [${p.where}] ${p.msg}`));
   }
   if (warns.length) {
-    console.log(`${fails.length ? '\n' : ''}⚠️  ${warns.length} cảnh báo:`);
+    console.log(`${fails.length ? '\n' : ''}${warns.length} warning(s):`);
     warns.forEach((p, i) => console.log(`   ${i + 1}. [${p.where}] ${p.msg}`));
   }
 }
-console.log('\n💡 Xem bán kính ảnh hưởng trước khi sửa:');
-console.log('   npm run agent:check -- --impact <tên-agent>');
+console.log('\nBlast radius before editing an agent:');
+console.log('   npm run agent:check -- --impact <agent-name>');
 console.log('===============================================================\n');
 
 process.exit(fails.length > 0 ? 1 : 0);

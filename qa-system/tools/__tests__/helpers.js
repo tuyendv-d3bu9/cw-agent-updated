@@ -1,9 +1,13 @@
 /**
- * helpers.js — Tiện ích dựng dự án giả cho test.
+ * helpers.js — Scaffolding for tests.
  *
- * Phần lớn tool đọc/ghi theo `lib/paths.js`, vốn neo vào thư mục gốc repo.
- * Để test không đụng vào dữ liệu thật, mỗi ca dựng một thư mục tạm có đúng
- * hình dáng dự án (`OUTPUT/`, `knowledge/features/`) rồi trỏ `PATHS` vào đó.
+ *   useTempProject()  Create a throwaway project tree and point PATHS at it.
+ *   write(rel, text)  Write a file inside that tree.
+ *   testCase(id, over) Build a well-formed test case, with per-field overrides.
+ *   spec(cases, meta)  Wrap test cases in a spec file.
+ *
+ * Tools resolve paths through `lib/paths.js`, which is anchored to the repo root.
+ * Redirecting PATHS keeps tests away from real OUTPUT/ and knowledge/ data.
  */
 
 const fs = require('fs');
@@ -11,13 +15,10 @@ const os = require('os');
 const path = require('path');
 const { PATHS } = require('../lib/paths');
 
-/** Giữ giá trị gốc để khôi phục sau mỗi ca. */
+/** Original values, restored after each case. */
 const ORIGINAL = { ...PATHS };
 
-/**
- * Dựng dự án giả trong thư mục tạm và trỏ PATHS vào đó.
- * Trả về hàm dọn dẹp — ca test nào cũng phải gọi, kể cả khi fail.
- */
+/** Returns a cleanup function every case must call, including on failure. */
 function useTempProject() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qa-agent-test-'));
 
@@ -49,7 +50,7 @@ function useTempProject() {
   };
 }
 
-/** Ghi một file trong dự án giả, tự tạo thư mục cha. */
+/** Writes a file in the temp project, creating parent directories. */
 function write(relPath, content) {
   const full = path.join(PATHS.ROOT, relPath);
   fs.mkdirSync(path.dirname(full), { recursive: true });
@@ -57,14 +58,14 @@ function write(relPath, content) {
   return full;
 }
 
-/** Dựng một test case 8 trường đúng chuẩn, cho phép ghi đè từng trường. */
+/** Builds a standards-compliant test case; any field can be overridden. */
 function testCase(id, over = {}) {
   const f = {
-    Title: `Verify ${id} chạy đúng`,
-    Precondition: '\n  - Đã đăng nhập',
-    'Test Steps': '\n  1. Bấm nút',
-    'Test Data': '\n  - Mã: `ABC`',
-    'Expected Result': '\n  - Hiển thị thành công',
+    Title: `Verify ${id} behaves correctly`,
+    Precondition: '\n  - User is logged in',
+    'Test Steps': '\n  1. Click the button',
+    'Test Data': '\n  - Code: `ABC`',
+    'Expected Result': '\n  - Success message is shown',
     Priority: 'High',
     Tags: 'Rule#BR-01, Viewpoint#VP-01, Module#TST, Manual',
     ...over,
@@ -76,7 +77,7 @@ function testCase(id, over = {}) {
   return `### TC_ID: ${id}\n${body}\n`;
 }
 
-/** File spec hoàn chỉnh gồm dòng meta và các test case. */
+/** A complete spec file: meta line plus test cases. */
 function spec(cases, meta = 'Owner: qa-test-design · Verdict: PASS') {
   return `# Test Case Spec\n${meta}\n\n${cases.join('\n')}`;
 }
