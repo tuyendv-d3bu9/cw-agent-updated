@@ -1,15 +1,19 @@
 /**
- * lib/paths.js — Nguồn chân lý duy nhất về đường dẫn thư mục của dự án.
+ * paths.js — Single source of truth for project directory locations.
  *
- * Trước đây mỗi tool tự tính `ROOT_DIR` bằng `path.resolve(__dirname, '../..')`.
- * Sau khi tool được gom vào thư mục con, độ sâu đã khác nhau — tự tính sẽ sai.
- * Mọi tool bắt buộc lấy đường dẫn từ đây, không tự dựng lại.
+ *   PATHS              Frozen map of project directories, all anchored to repo root.
+ *   taskDir(slug)      Output directory of one task.
+ *   featureKnowledge() Knowledge file of one feature.
+ *   listTaskSlugs()    Task slugs currently present in OUTPUT/.
+ *
+ * Every tool must read paths from here. Computing `__dirname/../..` locally
+ * breaks as soon as a tool moves to a different nesting depth.
  */
 
 const path = require('path');
 const fs = require('fs');
 
-// lib/ nằm ở qa-system/tools/lib → lùi 3 cấp là gốc repo.
+// lib/ lives at qa-system/tools/lib — three levels below repo root.
 const ROOT_DIR = path.resolve(__dirname, '..', '..', '..');
 
 const PATHS = {
@@ -19,7 +23,7 @@ const PATHS = {
   KNOWLEDGE: path.join(ROOT_DIR, 'knowledge'),
   FEATURES: path.join(ROOT_DIR, 'knowledge', 'features'),
   SYSTEM: path.join(ROOT_DIR, 'qa-system'),
-  AGENTS: path.join(ROOT_DIR, 'qa-system'), // bí danh cũ, giữ cho tương thích
+  AGENTS: path.join(ROOT_DIR, 'qa-system'), // legacy alias
   TOOLS: path.join(ROOT_DIR, 'qa-system', 'tools'),
   TEMPLATES: path.join(ROOT_DIR, 'qa-system', 'templates'),
   AUTOMATION: path.join(ROOT_DIR, 'automation'),
@@ -27,20 +31,15 @@ const PATHS = {
   ENV_FILE: path.join(ROOT_DIR, '.env'),
 };
 
-/** Thư mục kết quả của một task. */
 function taskDir(slug) {
   return path.join(PATHS.OUTPUT, slug);
 }
 
-/** File tri thức của một tính năng — luôn nằm dưới `knowledge/features/`. */
 function featureKnowledge(slug) {
   return path.join(PATHS.FEATURES, `${slug}.md`);
 }
 
-/**
- * Liệt kê các task-slug đang có trong OUTPUT/.
- * Bỏ qua thư mục hệ thống (`_` đứng đầu) và bản sao lưu (`.bak`).
- */
+/** Skips system folders (leading `_`) and backups (`.bak`). */
 function listTaskSlugs() {
   if (!fs.existsSync(PATHS.OUTPUT)) return [];
   return fs.readdirSync(PATHS.OUTPUT).filter((name) => {

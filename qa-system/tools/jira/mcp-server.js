@@ -20,7 +20,7 @@ const readline = require('readline');
 const ROOT_DIR = PATHS.ROOT;
 const OUTPUT_DIR = PATHS.OUTPUT;
 
-/** process.env thắng .env — IDE truyền cấu hình qua biến môi trường. */
+/** process.env wins over .env: IDEs pass configuration through the environment. */
 const loadEnv = () => loadEnvFile({ includeProcessEnv: true });
 
 function logErr(msg) {

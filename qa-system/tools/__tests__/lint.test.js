@@ -1,10 +1,10 @@
 /**
- * Test linter deliverable.
+ * Tests for the deliverable linter.
  *
- * Linter này đã kêu oan BỐN lần trên dữ liệu thật trong một phiên làm việc.
- * Mỗi lần kêu oan là một lần người dùng mất lòng tin và tắt nó đi — hỏng đúng
- * mục đích. Nên nửa số ca dưới đây kiểm điều ngược lại: linter phải IM LẶNG
- * trước những thứ trông giống lỗi nhưng không phải.
+ * This linter raised four false alarms on real data in a single session. Every
+ * false alarm costs it credibility and gets it switched off, which defeats its
+ * purpose — so half the cases below assert the opposite: the linter must stay
+ * SILENT on things that merely look like defects.
  */
 
 const test = require('node:test');
@@ -14,7 +14,7 @@ const path = require('path');
 const { useTempProject, write, testCase, spec, PATHS } = require('./helpers');
 const { lint } = require('../system/lint-deliverables');
 
-/** Dựng skill test-case-generation giả với danh sách trường tuỳ ý. */
+/** Builds a stand-in test-case-generation skill with an arbitrary field list. */
 function skillWithFields(fields) {
   const rows = ['| `TC_ID` | `[MODULE]-[001]` |', ...fields.map((f) => `| \`${f}\` | mô tả |`)];
   write(
@@ -27,27 +27,27 @@ const DEFAULT_FIELDS = ['Title', 'Precondition', 'Test Steps', 'Test Data', 'Exp
 
 const errorsOf = (slug) => lint(slug).errors.map((e) => e.msg);
 
-// ───────────── Phải BẮT được ─────────────
+// ───────────── Must catch ─────────────
 
-test('bắt TC_ID sai định dạng', () => {
+test('catches a malformed TC_ID', () => {
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
     write('OUTPUT/t/05_test_case_spec.md', spec([testCase('vchr-1')]));
-    assert.match(errorsOf('t').join(' '), /TC_ID sai định dạng/);
+    assert.match(errorsOf('t').join(' '), /Malformed TC_ID/);
   } finally { t.cleanup(); }
 });
 
-test('bắt TC_ID trùng trong cùng một file', () => {
+test('catches a duplicate TC_ID within one file', () => {
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
     write('OUTPUT/t/05_test_case_spec.md', spec([testCase('TST-001'), testCase('TST-001')]));
-    assert.match(errorsOf('t').join(' '), /TC_ID trùng/);
+    assert.match(errorsOf('t').join(' '), /Duplicate TC_ID/);
   } finally { t.cleanup(); }
 });
 
-test('bắt Title không mở đầu bằng Verify / Validate / Confirm', () => {
+test('catches a Title not starting with Verify / Validate / Confirm', () => {
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
@@ -56,29 +56,29 @@ test('bắt Title không mở đầu bằng Verify / Validate / Confirm', () => 
   } finally { t.cleanup(); }
 });
 
-test('bắt Tags thiếu Rule#', () => {
+test('catches Tags missing Rule#', () => {
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
     write('OUTPUT/t/05_test_case_spec.md', spec([testCase('TST-001', { Tags: 'Viewpoint#VP-01, Module#T' })]));
-    assert.match(errorsOf('t').join(' '), /thiếu `Rule#/);
+    assert.match(errorsOf('t').join(' '), /missing `Rule#/);
   } finally { t.cleanup(); }
 });
 
-test('bắt Chặng 2 chưa quét đủ W1→W6', () => {
+test('catches stage 2 not covering W1 through W6', () => {
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
     write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nOwner: x · Verdict: PASS\n\nW1 W2 W3 đã quét.\n');
-    assert.match(errorsOf('t').join(' '), /Chưa quét W4, W5, W6/);
+    assert.match(errorsOf('t').join(' '), /Did not scan W4, W5, W6/);
   } finally { t.cleanup(); }
 });
 
-// ───────────── KHÔNG được kêu oan ─────────────
+// ───────────── Must not cry wolf ─────────────
 
-test('KHÔNG coi payload XSS là placeholder', () => {
-  // Kêu oan thật: `<script>alert('XSS')</script>` là dữ liệu test hợp lệ,
-  // bị luật placeholder `<...>` bắt nhầm.
+test('does NOT treat an XSS payload as a placeholder', () => {
+  // Real false alarm: `<script>alert('XSS')</script>` is valid test data that
+  // the `<...>` placeholder rule caught by mistake.
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
@@ -89,7 +89,7 @@ test('KHÔNG coi payload XSS là placeholder', () => {
   } finally { t.cleanup(); }
 });
 
-test('KHÔNG coi mô tả định dạng `SG-XXXXXX` là placeholder', () => {
+test('does NOT treat the format hint `SG-XXXXXX` as a placeholder', () => {
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
@@ -100,18 +100,18 @@ test('KHÔNG coi mô tả định dạng `SG-XXXXXX` là placeholder', () => {
   } finally { t.cleanup(); }
 });
 
-test('VẪN bắt placeholder thật còn sót từ khuôn mẫu', () => {
+test('still catches a real placeholder left over from the template', () => {
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
     write('OUTPUT/t/05_test_case_spec.md', spec([
       testCase('TST-001', { 'Test Data': '\n  - Mã voucher: [giá trị cụ thể]' }),
     ]));
-    assert.match(errorsOf('t').join(' '), /chưa điền/);
+    assert.match(errorsOf('t').join(' '), /unfilled content/);
   } finally { t.cleanup(); }
 });
 
-test('KHÔNG báo trùng giữa batch và spec tổng — batch là NGUỒN được gộp VÀO spec', () => {
+test('does NOT flag duplicates between a batch and the merged spec — batches are the SOURCE', () => {
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
@@ -122,10 +122,10 @@ test('KHÔNG báo trùng giữa batch và spec tổng — batch là NGUỒN đư
   } finally { t.cleanup(); }
 });
 
-test('chấp nhận mã kẽ hở ngoài BR-xx, ví dụ `Rule#GAP-H2`', () => {
-  // Kêu oan thật trên bài mẫu: GAP-H2 có định nghĩa ở Mục 7 và Mục 8 của file
-  // tri thức nên trace được đầy đủ. QA_STANDARD §2.4 chỉ đòi trace về
-  // "mã BR-xx / MR-xx / mục tài liệu", không ép riêng BR.
+test('accepts gap codes outside BR-xx, e.g. `Rule#GAP-H2`', () => {
+  // Real false alarm on the sample run: GAP-H2 is defined in sections 7 and 8 of
+  // the knowledge file, so it traces fine. QA_STANDARD §2.4 only requires tracing
+  // to "BR-xx / MR-xx / a document section", not to BR specifically.
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
@@ -136,7 +136,7 @@ test('chấp nhận mã kẽ hở ngoài BR-xx, ví dụ `Rule#GAP-H2`', () => {
   } finally { t.cleanup(); }
 });
 
-test('KHÔNG báo thiếu Verdict khi file ghi `**Verdict Chặng 1**:`', () => {
+test('does NOT report a missing Verdict when the file says `**Verdict Chặng 1**:`', () => {
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
@@ -146,7 +146,7 @@ test('KHÔNG báo thiếu Verdict khi file ghi `**Verdict Chặng 1**:`', () => 
   } finally { t.cleanup(); }
 });
 
-test('cảnh báo (không phải lỗi) khi Verdict nằm xa đầu file', () => {
+test('warns (does not error) when Verdict sits far from the top', () => {
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
@@ -154,37 +154,37 @@ test('cảnh báo (không phải lỗi) khi Verdict nằm xa đầu file', () =>
       '# Báo cáo\nOwner: x\n' + '\nNội dung.'.repeat(20) + '\n**VERDICT CHẶNG 3**: `PASS`\n');
     const r = lint('t');
     assert.deepStrictEqual(r.errors, []);
-    assert.match(r.warns.map((w) => w.msg).join(' '), /thay vì trong 10 dòng đầu/);
+    assert.match(r.warns.map((w) => w.msg).join(' '), /not within the first 10 lines/);
   } finally { t.cleanup(); }
 });
 
-// ───────────── Thích nghi khi skill đổi ─────────────
+// ───────────── Adapts when the skill changes ─────────────
 
-test('đọc danh sách trường TỪ SKILL — thêm trường thứ 9 là bắt được ngay', () => {
-  // Đề 01 bắt học viên nâng skill từ 8 lên 9 trường. Linter chép cứng danh sách
-  // thì sẽ im lặng bỏ qua đúng trường học viên vừa thêm.
+test('reads the field list FROM THE SKILL — a ninth field is caught immediately', () => {
+  // Exam 01 has students raise the skill from 8 to 9 fields. A hard-coded list
+  // would silently skip the very field they just added.
   const t = useTempProject();
   try {
     skillWithFields([...DEFAULT_FIELDS, 'Boundary Profile']);
     write('OUTPUT/t/05_test_case_spec.md', spec([testCase('TST-001')]));
-    assert.match(errorsOf('t').join(' '), /Thiếu trường `Boundary Profile`/);
+    assert.match(errorsOf('t').join(' '), /Missing field `Boundary Profile`/);
   } finally { t.cleanup(); }
 });
 
-test('thiếu MỘT trường chỉ báo MỘT lỗi — không báo dây chuyền sang trường trước đó', () => {
-  // Lỗi thật: điểm dừng của mỗi trường là "trường kế tiếp", nên khi trường kế
-  // tiếp vắng mặt thì trường đang xét cũng không khớp được và bị báo thiếu theo.
+test('ONE missing field yields ONE error — no cascade onto the preceding field', () => {
+  // Real bug: each field stopped at "the next field", so when the next field was
+  // absent the current one failed to match and was reported missing as well.
   const t = useTempProject();
   try {
     skillWithFields([...DEFAULT_FIELDS, 'Boundary Profile']);
     write('OUTPUT/t/05_test_case_spec.md', spec([testCase('TST-001')]));
     const errs = errorsOf('t');
-    assert.strictEqual(errs.length, 1, `phải đúng 1 lỗi, thực tế: ${errs.join(' | ')}`);
-    assert.ok(!errs.join(' ').includes('`Tags`'), 'không được báo oan trường Tags');
+    assert.strictEqual(errs.length, 1, `expected exactly 1 error, got: ${errs.join(' | ')}`);
+    assert.ok(!errs.join(' ').includes('`Tags`'), 'must not falsely flag the Tags field');
   } finally { t.cleanup(); }
 });
 
-test('spec hợp lệ hoàn toàn thì sạch', () => {
+test('a fully valid spec lints clean', () => {
   const t = useTempProject();
   try {
     skillWithFields(DEFAULT_FIELDS);
