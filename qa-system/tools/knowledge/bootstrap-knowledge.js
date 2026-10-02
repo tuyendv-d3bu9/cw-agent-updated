@@ -18,7 +18,7 @@ const { PATHS } = require('../lib/paths');
 const rootDir = PATHS.ROOT;
 const knowledgeDir = path.join(rootDir, 'knowledge');
 const featuresDir = path.join(knowledgeDir, 'features');
-const seedDir = path.join(rootDir, 'agents', 'templates', 'knowledge');
+const seedDir = path.join(PATHS.TEMPLATES, 'knowledge');
 
 function bootstrapKnowledge() {
   console.log('🌱 Checking knowledge base status (knowledge/)...');

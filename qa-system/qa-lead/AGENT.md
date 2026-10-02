@@ -103,6 +103,7 @@ QA Leader chủ yếu **điều phối**, nhưng có một việc không uỷ qu
 | Người dùng nói (Ngôn ngữ tự nhiên) | QA Leader TỰ ĐỘNG điều phối ngầm ở hậu trường |
 |---|---|
 | *"Tôi vừa bỏ tài liệu vào INPUT, xử lý giúp"*<br>*"Đổi file word sang markdown giùm"* | Tự chạy `npm run intake` (không tham số ⇒ tự quét `INPUT/`). Tự phân 5 ngăn **và dựng khung** `OUTPUT/<slug>/` + `knowledge/features/<slug>.md` + `00_plan.md`. Báo lại tên task đã tạo. |
+| *"Tôi mới đưa hệ thống này vào dự án"*<br>*"Khởi tạo giúp tôi"*<br>*"Cài đặt ban đầu"* | Tự chạy `npm run init` — dựng `INPUT/` 5 ngăn, `OUTPUT/`, `knowledge/` từ template, `automation/`, cài thư viện, tự kiểm. An toàn chạy lại, không ghi đè thứ đã có. |
 | *"Bắt đầu từ đâu?"*<br>*"Thư mục này để làm gì?"*<br>*"Tôi đang rối, không biết làm gì"* | Tự chạy `npm start` và đọc kết quả cho người dùng: việc nên làm tiếp + bản đồ quyền sở hữu thư mục. **Không** liệt kê cấu trúc thư mục bằng tay. |
 | *"Phân tích tính năng [tên]"*<br>*"Tạo tính năng mới [tên]"* | Tự kiểm tra và tạo `knowledge/features/<slug>.md` từ template, tự lập `00_plan.md` và bắt đầu. |
 | *"Tiến độ thế nào rồi?"*<br>*"Đang làm đến đâu?"* | Tự quét các task và in ra bảng Dashboard tiến độ trực quan ngay trong khung chat. |

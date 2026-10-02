@@ -22,6 +22,8 @@ system/       ← tự kiểm, tiến độ, bản đồ, cổng ASK
 
 | Cần làm gì | Lệnh | File |
 |---|---|---|
+| **Khởi tạo dự án mới (chạy đầu tiên)** | `npm run init` | `system/init.js` |
+| **Xem đang ở đâu, làm gì tiếp** | `npm start` | `system/start.js` |
 | Nhận tài liệu mới, phân loại vào 5 ngăn | `npm run intake -- <file\|thư-mục> [--slug <slug>]` | `intake/intake.js` |
 | Chỉ đổi docx/pdf/xlsx sang .md (không phân loại) | `npm run convert -- <file>` | `intake/convert.js` |
 | Tạo file tri thức cho tính năng mới | `npm run knowledge:new <slug>` | `knowledge/new-knowledge.js` |

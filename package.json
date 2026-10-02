@@ -4,6 +4,7 @@
   "private": true,
   "description": "Bo QA Agent (analyst / test-design / test-data / exploratory / ui-review) + tien ich doi tai lieu .docx sang .md cho INPUT/",
   "scripts": {
+    "init": "node qa-system/tools/system/init.js",
     "start": "node qa-system/tools/system/start.js",
     "intake": "node qa-system/tools/intake/intake.js",
     "convert": "node qa-system/tools/intake/convert.js",
