@@ -20,5 +20,7 @@ TODO.md
 PLAN.md
 VIDEO_RECORDING_SCRIPT.md
 
-test-results/
-automation/test-results/
+OUTPUT/_scratch/
+
+**/index.html
+.DS_Store

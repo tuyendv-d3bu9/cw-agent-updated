@@ -1,0 +1,76 @@
+{
+  "system_name": "CW QA Agent Ecosystem",
+  "version": "2.0.0",
+  "last_updated": "2026-09-18",
+  "ssot_policy": "Tri thức trong knowledge/ là tối cao. CẤM đọc dò từng file, tra cứu bảng routing_table để mở đúng file đích.",
+  "project_conventions": {
+    "project_name": "<Tên Dự Án>",
+    "currency": "VNĐ",
+    "timezone": "Asia/Ho_Chi_Minh (GMT+7)",
+    "rule_file": "knowledge/_project.md",
+    "glossary_file": "knowledge/_glossary.md",
+    "template_file": "knowledge/_template.md"
+  },
+  "routing_table": {
+    "view_project_rules": "knowledge/_project.md",
+    "view_glossary_terms": "knowledge/_glossary.md",
+    "qa_standards_fact": "qa-system/core/QA_STANDARD.md",
+    "master_constitution": "AGENTS.md",
+    "orchestrator_agent": "qa-system/qa-lead/AGENT.md",
+    "tasks_progress_command": "npm run status",
+    "convert_docx_command": "npm run convert",
+    "create_feature_knowledge_command": "npm run knowledge:new <slug>",
+    "merge_testcases_command": "npm run testcases:merge <slug>",
+    "sync_system_map_command": "npm run map:sync",
+    "generate_bug_report": "qa-system/qa-reporter/skills/gen-bug-report.md",
+    "generate_daily_summary": "qa-system/qa-reporter/skills/gen-daily-summary.md",
+    "web_journey_discovery": "qa-system/qa-exploratory/skills/web-journey-discovery.md",
+    "flow_clustering": "qa-system/qa-automation/skills/flow-clustering.md",
+    "pom_generator": "qa-system/qa-automation/skills/pom-generator.md",
+    "test_runner_evidence": "qa-system/qa-automation/skills/test-runner-evidence.md",
+    "template_input_dir": "INPUT/_template/",
+    "template_run_dir": "OUTPUT/_template_run/"
+  },
+  "specialized_agents": {
+    "qa_lead": {
+      "path": "qa-system/qa-lead/AGENT.md",
+      "role": "Tổng chỉ huy điều phối, giao việc và nghiệm thu"
+    },
+    "qa_analyst": {
+      "path": "qa-system/qa-analyst/AGENT.md",
+      "skills_path": "qa-system/qa-analyst/skills/",
+      "role": "01->04: Phân tích yêu cầu, kẽ hở 06W, viewpoint, test idea"
+    },
+    "qa_test_design": {
+      "path": "qa-system/qa-test-design/AGENT.md",
+      "skills_path": "qa-system/qa-test-design/skills/",
+      "role": "05->06: Sinh test case 8 trường, chia lô, rà soát độ phủ"
+    },
+    "qa_test_data": {
+      "path": "qa-system/qa-test-data/AGENT.md",
+      "skills_path": "qa-system/qa-test-data/skills/",
+      "role": "09->12: Sinh data class, dataset thực tế, boundary dataset, traceability"
+    },
+    "qa_ui_review": {
+      "path": "qa-system/qa-ui-review/AGENT.md",
+      "skills_path": "qa-system/qa-ui-review/skills/",
+      "role": "08: Phân tích bố cục giao diện, màu sắc, font chữ, accessibility (Vision)"
+    },
+    "qa_exploratory": {
+      "path": "qa-system/qa-exploratory/AGENT.md",
+      "skills_path": "qa-system/qa-exploratory/skills/",
+      "role": "07: Thăm dò không kịch bản và mò web quét DOM"
+    },
+    "qa_reporter": {
+      "path": "qa-system/qa-reporter/AGENT.md",
+      "skills_path": "qa-system/qa-reporter/skills/",
+      "role": "13: Chuẩn hóa bug report 7 trường, daily summary 4 section"
+    },
+    "qa_automation": {
+      "path": "qa-system/qa-automation/AGENT.md",
+      "skills_path": "qa-system/qa-automation/skills/",
+      "role": "Gom cụm luồng hành trình, sinh POM và thực thi Playwright E2E bắt evidence"
+    }
+  },
+  "features_inventory": {}
+}

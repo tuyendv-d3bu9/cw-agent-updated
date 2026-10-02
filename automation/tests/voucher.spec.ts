@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
-import { LoginPage } from '../pages/LoginPage';
+import { LoginModal } from '../pages/LoginModal';
 import { ShopPage } from '../pages/ShopPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
 
@@ -18,16 +18,16 @@ async function captureEvidence(page: any, tcId: string, isPass: boolean) {
 }
 
 test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
-  let loginPage: LoginPage;
+  let loginPage: LoginModal;
   let shopPage: ShopPage;
   let checkoutPage: CheckoutPage;
 
   test.beforeEach(async ({ page }) => {
-    loginPage = new LoginPage(page);
+    loginPage = new LoginModal(page);
     shopPage = new ShopPage(page);
     checkoutPage = new CheckoutPage(page);
 
-    await loginPage.goto();
+    await loginPage.open();
     await loginPage.login('khachhang@shopgo.vn', '123456');
     await checkoutPage.goto();
     await checkoutPage.clearCart();
@@ -517,11 +517,11 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const page1 = await context.newPage();
       const page2 = await context.newPage();
 
-      const l1 = new LoginPage(page1);
+      const l1 = new LoginModal(page1);
       const s1 = new ShopPage(page1);
       const c1 = new CheckoutPage(page1);
 
-      const l2 = new LoginPage(page2);
+      const l2 = new LoginModal(page2);
       const s2 = new ShopPage(page2);
       const c2 = new CheckoutPage(page2);
 

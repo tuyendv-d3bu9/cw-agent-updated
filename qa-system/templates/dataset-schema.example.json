@@ -1,0 +1,31 @@
+{
+  "_comment": [
+    "Đầu vào BẮT BUỘC của npm run data:gen (qa-test-data/dataset-generation).",
+    "Schema siêu nhẹ (~30 token) để engine sinh hàng trăm dòng với 0 token LLM.",
+    "Chép ra OUTPUT/<slug>/dataset_schema.json rồi sửa theo field thật của tính năng.",
+    "Chạy: npm run data:gen -- --slug <slug> --schema OUTPUT/<slug>/dataset_schema.json --count 50"
+  ],
+
+  "ho_ten": { "type": "vietnamese_name" },
+  "so_dien_thoai": { "type": "phone_vn" },
+  "email": { "type": "email" },
+  "ngay_tao": { "type": "date_vn" },
+
+  "ma_giam_gia": { "type": "voucher_code" },
+  "tong_tien": { "type": "currency_vnd", "min": 50000, "max": 2000000 },
+
+  "loai_giam": { "type": "enum", "values": ["FIXED_AMOUNT", "PERCENTAGE"] },
+
+  "so_luong": {
+    "type": "boundary",
+    "min": 1,
+    "max": 99,
+    "_comment": "Sinh đủ chuỗi biên chuẩn QA_STANDARD §6: min-1 · min · min+1 · giữa · max-1 · max · max+1"
+  },
+
+  "ma_sai_dinh_dang": {
+    "type": "negative",
+    "base": "voucher_code",
+    "_comment": "Sinh dữ liệu xấu: rỗng, quá dài, ký tự đặc biệt, sai định dạng, khoảng trắng thừa"
+  }
+}
