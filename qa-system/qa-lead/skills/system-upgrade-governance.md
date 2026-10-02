@@ -154,6 +154,7 @@ Chạy đủ 4 kiểm tra, ghi lại kết quả thật (không được ghi "OK
 | G1 | Toàn vẹn cấu trúc | `npm run agent:check` | Không có lỗi cấu trúc; mọi skill khai trong `AGENT.md` đều tồn tại file thật |
 | G2 | Bán kính ảnh hưởng | `npm run agent:check -- --impact <agent>` | Liệt kê được đúng danh sách bước bị ảnh hưởng; mỗi bước đó đã được rà lại |
 | G3 | Đồng bộ bản đồ | `npm run map:sync` | `_system_map.json` cập nhật, mở lại thấy có mục mới |
+| G3b | Test tool nội bộ | `npm test` | Toàn bộ ca xanh. Nếu nâng cấp đụng vào `qa-system/tools/`, phải **thêm ca test tái hiện được** thay đổi đó |
 | G4 | Smoke luồng cũ | Chạy lại **một chặng cũ bất kỳ không liên quan** tới thay đổi | Ra đúng deliverable như trước, verdict không đổi |
 
 **Kiểm tra thủ công bắt buộc** (công cụ không bắt được):

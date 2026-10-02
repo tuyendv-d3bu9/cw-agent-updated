@@ -53,7 +53,10 @@ function loadFields() {
   return fields.length ? fields : FALLBACK_FIELDS;
 }
 
-const FIELDS = loadFields();
+// Cố tình KHÔNG tính ở đây. Đọc lúc nạp module nghĩa là linter không bao giờ
+// thấy thay đổi của skill trong cùng tiến trình — vừa sai (nâng cấp skill xong
+// chạy lint ngay thì vẫn dùng danh sách cũ) vừa không test được.
+// `lint()` tự đọc lại mỗi lần chạy.
 const TITLE_VERBS = /^(Verify|Validate|Confirm)\b/i;
 const TC_ID_FORMAT = /^[A-Z][A-Z0-9]{1,5}-\d{3}$/;
 const PRIORITIES = new Set(['high', 'medium', 'low', 'critical', 'blocker']);
@@ -102,7 +105,7 @@ const read = (p) => (fs.existsSync(p) ? fs.readFileSync(p, 'utf-8') : null);
 
 // ───────────────────── A. Lint test case 8 trường ─────────────────────
 
-function lintTestCases(dir, R) {
+function lintTestCases(dir, R, FIELDS) {
   // Lint cả spec tổng lẫn từng batch — lỗi có thể nằm ở batch chưa merge.
   const targets = [];
   const spec = path.join(dir, '05_test_case_spec.md');
@@ -298,7 +301,7 @@ function lint(slug) {
   if (!fs.existsSync(dir)) throw new Error(`Không có OUTPUT/${slug}/`);
 
   const R = makeReporter();
-  const totalCases = lintTestCases(dir, R);
+  const totalCases = lintTestCases(dir, R, loadFields());
   lintMeta(dir, R);
   lint06W(dir, R);
   lintEmptyCells(dir, R);

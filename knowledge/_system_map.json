@@ -63,6 +63,8 @@
     "init_command": "npm run init",
     "init_tool": "qa-system/tools/system/init.js",
     "automation_template": "qa-system/templates/automation/",
+    "tool_tests": "qa-system/tools/__tests__/",
+    "test_command": "npm test",
     "shopgo_ui_map": "knowledge/features/shopgo-ui-map.md"
   },
   "specialized_agents": {
