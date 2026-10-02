@@ -62,7 +62,9 @@
     "dataset_schema_template": "qa-system/templates/dataset-schema.example.json",
     "init_command": "npm run init",
     "init_tool": "qa-system/tools/system/init.js",
-    "automation_template": "qa-system/templates/automation/"
+    "automation_template": "qa-system/templates/automation/",
+    "tool_tests": "qa-system/tools/__tests__/",
+    "test_command": "npm test"
   },
   "specialized_agents": {
     "qa_lead": {
