@@ -15,7 +15,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { convertDocumentToMarkdown } = require('./doc-converter');
+const { PATHS } = require('../lib/paths');
+const { convertDocumentToMarkdown } = require('../lib/doc-converter');
 
 const args = process.argv.slice(2);
 const slugIndex = args.indexOf('--slug');
@@ -130,20 +131,20 @@ async function processFile(filePath, userSlug) {
   console.log(`   -> Categorized into: [ ${category} ]`);
 
   // Create destination directory
-  const targetDir = path.join(process.cwd(), 'INPUT', slug, category);
+  const targetDir = path.join(PATHS.INPUT, slug, category);
   fs.mkdirSync(targetDir, { recursive: true });
 
   // Ensure all 5 categories exist for structure consistency
   const allCategories = ['01_business', '02_ba', '03_dev', '04_design', '05_communication'];
   allCategories.forEach(cat => {
-    fs.mkdirSync(path.join(process.cwd(), 'INPUT', slug, cat), { recursive: true });
+    fs.mkdirSync(path.join(PATHS.INPUT, slug, cat), { recursive: true });
   });
 
   const destPath = path.join(targetDir, `${slugify(baseName)}.md`);
   fs.writeFileSync(destPath, markdownContent, 'utf8');
 
   console.log(`   ✅ Exported clean Markdown to:`);
-  console.log(`      ${path.relative(process.cwd(), destPath)}`);
+  console.log(`      ${path.relative(PATHS.ROOT, destPath)}`);
   console.log(`   💡 QA Leader is ready to generate 00_plan.md for "${slug}".\n`);
 }
 

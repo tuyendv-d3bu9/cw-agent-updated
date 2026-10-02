@@ -11,35 +11,17 @@
 
 const fs = require('fs');
 const path = require('path');
+const { PATHS } = require('../lib/paths');
+const { loadEnv: loadEnvFile } = require('../lib/env');
 const https = require('https');
 const http = require('http');
 const readline = require('readline');
 
-const ROOT_DIR = path.resolve(__dirname, '../..');
-const ENV_PATH = path.join(ROOT_DIR, '.env');
-const OUTPUT_DIR = path.join(ROOT_DIR, 'OUTPUT');
+const ROOT_DIR = PATHS.ROOT;
+const OUTPUT_DIR = PATHS.OUTPUT;
 
-function loadEnv() {
-  const env = { ...process.env };
-  if (fs.existsSync(ENV_PATH)) {
-    try {
-      const lines = fs.readFileSync(ENV_PATH, 'utf-8').split('\n');
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('#')) continue;
-        const idx = trimmed.indexOf('=');
-        if (idx > 0) {
-          const k = trimmed.substring(0, idx).trim();
-          const v = trimmed.substring(idx + 1).trim();
-          if (!env[k]) env[k] = v;
-        }
-      }
-    } catch (e) {
-      logErr(`Failed to read .env: ${e.message}`);
-    }
-  }
-  return env;
-}
+/** process.env thắng .env — IDE truyền cấu hình qua biến môi trường. */
+const loadEnv = () => loadEnvFile({ includeProcessEnv: true });
 
 function logErr(msg) {
   process.stderr.write(`[JIRA-MCP] ${msg}\n`);

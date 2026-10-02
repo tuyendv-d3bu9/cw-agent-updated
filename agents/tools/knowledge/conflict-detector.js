@@ -11,8 +11,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { PATHS } = require('../lib/paths');
 
-const ROOT_DIR = path.resolve(__dirname, '../..');
+const ROOT_DIR = PATHS.ROOT;
 const FEATURES_DIR = path.join(ROOT_DIR, 'knowledge', 'features');
 const OUTPUT_DIR = path.join(ROOT_DIR, 'OUTPUT');
 

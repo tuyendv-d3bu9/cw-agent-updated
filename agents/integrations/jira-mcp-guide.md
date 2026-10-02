@@ -8,8 +8,8 @@
 
 | Phương thức | Khi nào nên dùng? | Cơ chế hoạt động | Chi phí |
 |---|---|---|---|
-| **1. Jira MCP Server** | AI tự động tra cứu ticket, đọc chi tiết issue, tạo bug trực tiếp lúc pair-programming | JSON-RPC 2.0 stdio (`agents/tools/jira-mcp-server.js`) | **Miễn phí 100%** (Dùng Jira Free Plan) |
-| **2. REST API Script** | Tự động hóa ngầm, kéo bug hàng loạt (`jira:pull`), phân tích rủi ro kiểm thử | Node HTTPS script (`agents/tools/jira-client.js`) | **Miễn phí 100%** |
+| **1. Jira MCP Server** | AI tự động tra cứu ticket, đọc chi tiết issue, tạo bug trực tiếp lúc pair-programming | JSON-RPC 2.0 stdio (`agents/tools/jira/mcp-server.js`) | **Miễn phí 100%** (Dùng Jira Free Plan) |
+| **2. REST API Script** | Tự động hóa ngầm, kéo bug hàng loạt (`jira:pull`), phân tích rủi ro kiểm thử | Node HTTPS script (`agents/tools/jira/jira-client.js`) | **Miễn phí 100%** |
 | **3. CSV Import** | Đẩy hàng trăm test case vào Jira / Xray mà không sợ nghẽn rate-limit | Xuất file UTF-8 BOM (`export_jira_xray.csv`) | **Miễn phí 100%** |
 
 ---
@@ -72,7 +72,7 @@ Hệ thống đã tự động cấu hình sẵn file:
   "mcpServers": {
     "jira": {
       "command": "node",
-      "args": ["agents/tools/jira-mcp-server.js"]
+      "args": ["agents/tools/jira/mcp-server.js"]
     }
   }
 }
@@ -87,7 +87,7 @@ File cấu hình đã được tạo sẵn tại:
   "mcpServers": {
     "jira": {
       "command": "node",
-      "args": ["agents/tools/jira-mcp-server.js"]
+      "args": ["agents/tools/jira/mcp-server.js"]
     }
   }
 }
@@ -100,7 +100,7 @@ Thêm vào file cấu hình `claude_desktop_config.json`:
   "mcpServers": {
     "cw-jira": {
       "command": "node",
-      "args": ["<DUONG_DAN_TUYET_DOI_DEN_DU_AN>/agents/tools/jira-mcp-server.js"]
+      "args": ["<DUONG_DAN_TUYET_DOI_DEN_DU_AN>/agents/tools/jira/mcp-server.js"]
     }
   }
 }

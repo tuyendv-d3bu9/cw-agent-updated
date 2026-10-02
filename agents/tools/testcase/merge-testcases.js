@@ -10,6 +10,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { PATHS } = require('../lib/paths');
 
 const slug = process.argv[2];
 
@@ -20,8 +21,8 @@ if (!slug) {
   process.exit(1);
 }
 
-const batchDir = path.join(process.cwd(), 'OUTPUT', slug, 'testcases');
-const outputFile = path.join(process.cwd(), 'OUTPUT', slug, '05_test_case_spec.md');
+const batchDir = path.join(PATHS.OUTPUT, slug, 'testcases');
+const outputFile = path.join(PATHS.OUTPUT, slug, '05_test_case_spec.md');
 
 if (!fs.existsSync(batchDir)) {
   console.error(`Batch directory not found: ${batchDir}`);

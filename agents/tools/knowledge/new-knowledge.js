@@ -10,6 +10,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { PATHS } = require('../lib/paths');
 
 const slug = process.argv[2];
 
@@ -20,8 +21,8 @@ if (!slug) {
   process.exit(1);
 }
 
-const templatePath = path.join(__dirname, '..', '..', 'knowledge', '_template.md');
-const targetDir = path.join(__dirname, '..', '..', 'knowledge', 'features');
+const templatePath = path.join(PATHS.KNOWLEDGE, '_template.md');
+const targetDir = PATHS.FEATURES;
 const targetPath = path.join(targetDir, `${slug}.md`);
 
 if (!fs.existsSync(templatePath)) {

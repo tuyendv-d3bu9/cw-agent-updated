@@ -22,3 +22,6 @@ VIDEO_RECORDING_SCRIPT.md
 
 test-results/
 automation/test-results/
+
+**/index.html
+.DS_Store

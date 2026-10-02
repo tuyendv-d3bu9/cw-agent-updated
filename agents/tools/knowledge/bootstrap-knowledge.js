@@ -13,8 +13,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { PATHS } = require('../lib/paths');
 
-const rootDir = process.cwd();
+const rootDir = PATHS.ROOT;
 const knowledgeDir = path.join(rootDir, 'knowledge');
 const featuresDir = path.join(knowledgeDir, 'features');
 const seedDir = path.join(rootDir, 'agents', 'templates', 'knowledge');

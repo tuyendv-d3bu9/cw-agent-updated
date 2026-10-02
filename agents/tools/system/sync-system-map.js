@@ -8,11 +8,12 @@
 
 const fs = require('fs');
 const path = require('path');
+const { PATHS } = require('../lib/paths');
 
-const mapPath = path.join(process.cwd(), 'knowledge', '_system_map.json');
-const outputDir = path.join(process.cwd(), 'OUTPUT');
-const inputDir = path.join(process.cwd(), 'INPUT');
-const featuresDir = path.join(process.cwd(), 'knowledge', 'features');
+const mapPath = PATHS.SYSTEM_MAP;
+const outputDir = PATHS.OUTPUT;
+const inputDir = PATHS.INPUT;
+const featuresDir = PATHS.FEATURES;
 
 if (!fs.existsSync(mapPath)) {
   console.error(`Error: File not found: ${mapPath}`);

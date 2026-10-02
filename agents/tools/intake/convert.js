@@ -17,7 +17,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { convertDocumentToMarkdown } = require("./doc-converter");
+const { convertDocumentToMarkdown } = require("../lib/doc-converter");
 
 const SUPPORTED_EXTENSIONS = ['.docx', '.xlsx', '.xls', '.csv', '.pdf', '.json', '.yaml', '.yml', '.txt'];
 const DEFAULT_SRC = fs.existsSync("docs") ? "docs" : "docx";
