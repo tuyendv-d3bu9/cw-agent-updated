@@ -22,7 +22,7 @@ description: >
 
 ## Đầu vào
 - `OUTPUT/<task-slug>/<NN>_*.md` — <lấy phần nào từ file này>
-- `knowledge/_project.md` · `knowledge/<feature-slug>.md` (nếu có)
+- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (nếu có)
 
 > Thiếu artifact bắt buộc → DỪNG và yêu cầu cung cấp, không tự tưởng tượng nội dung.
 
@@ -63,7 +63,7 @@ Owner: agents/<agent>/skills/<ten-skill>.md · Nguồn: <file đã đọc> · Ve
 > tường minh (`CHƯA COVER`, `[GIẢ ĐỊNH]`…), không để trống — `agents/core/QA_STANDARD.md` §2 luật 7.
 
 ## Ghi knowledge
-<Chỉ có nếu skill được quyền ghi. Ghi rõ mục nào của `knowledge/<feature-slug>.md`. Không thì xoá mục này.>
+<Chỉ có nếu skill được quyền ghi. Ghi rõ mục nào của `knowledge/features/<feature-slug>.md`. Không thì xoá mục này.>
 
 ## Chốt chặn nghiệm thu (Quality Gates)
 - [ ] <Điều kiện nghiệm thu deliverable này, diễn đạt kiểm chứng được (FACT — F/A/C/T)>

@@ -11,7 +11,7 @@ _agent_template/
 ```
 
 **Không có template cho knowledge.** Knowledge per-feature dùng `knowledge/_template.md`
-(copy thành `knowledge/<feature-slug>.md`). Quy ước dự án dùng `knowledge/_project.md`.
+(copy thành `knowledge/features/<feature-slug>.md`). Quy ước dự án dùng `knowledge/_project.md`.
 Xem `agents/core/QA_STANDARD.md` §8 để biết loại tri thức nào ở đâu.
 
 ---
@@ -29,7 +29,7 @@ Sai tầng là lỗi hay gặp nhất. Ba câu tự kiểm:
 
 - Ràng buộc này **mọi** skill đều phải tuân? → `agents/core/QA_STANDARD.md`, không viết vào skill.
 - Bảng chuẩn này có **≥2 skill** dùng? → `agents/core/QA_STANDARD.md`. Chỉ 1 skill? → để trong skill đó.
-- Đây là **dữ kiện của một tính năng cụ thể**? → `knowledge/<feature-slug>.md`, không nhét vào skill.
+- Đây là **dữ kiện của một tính năng cụ thể**? → `knowledge/features/<feature-slug>.md`, không nhét vào skill.
 
 ---
 

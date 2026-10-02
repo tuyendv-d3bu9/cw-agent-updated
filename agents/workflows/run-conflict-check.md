@@ -18,7 +18,7 @@
 ### Kịch bản: Kiểm Tra Xung Đột Tính Năng Mới
 1. **User yêu cầu**: *"Kiểm tra xem tính năng mới có đá logic với các tính năng cũ không?"*
 2. **QA Leader thực hiện**:
-   - Chạy ngầm: `node agents/tools/conflict-detector.js <task-slug>`
+   - Chạy ngầm: `node agents/tools/knowledge/conflict-detector.js <task-slug>`
    - Quét qua 4 khía cạnh:
      1. Điều kiện tài khoản: Khách vãng lai (Guest) vs Bắt buộc đăng nhập.
      2. Cộng dồn khuyến mãi: Được phép hay không được phép dùng chung voucher với flash sale/giảm giá khác.

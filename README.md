@@ -29,8 +29,9 @@ knowledge/                      BỘ NÃO TRI THỨC VĨNH VIỄN (SSOT)
   _template.md                  Mẫu chuẩn tạo tri thức tính năng mới
   features/<feature-slug>.md    Quy tắc đã chốt · câu trả lời BA · giả định đã chốt · domain constant
 
-agents/                         HỆ THỐNG 8 CHUYÊN GIA QA NỘI BỘ
+agents/                         HỆ THỐNG 9 CHUYÊN GIA QA NỘI BỘ
   qa-lead/AGENT.md              TỔNG CHỈ HUY — Cổng số 0 tiếp nhận & điều phối toàn bộ
+  qa-lead/skills/               system-upgrade-governance: nâng cấp chính hệ thống agent
   core/QA_STANDARD.md           Luật chung: verdict · guard · FACT · 06W · risk matrix
   qa-analyst/                   01->04: Tóm tắt yêu cầu, 06W kẽ hở, viewpoint, test idea
   qa-test-design/               05->06: Test case 8 trường, rà soát độ phủ 3 góc nhìn
@@ -39,7 +40,14 @@ agents/                         HỆ THỐNG 8 CHUYÊN GIA QA NỘI BỘ
   qa-ui-review/                 08: Phân tích ảnh màn hình (Vision)
   qa-reporter/                  13: Chuẩn hóa bug report 7 trường & Daily QA summary
   qa-automation/                Playwright E2E: Gom cụm luồng, sinh POM, chạy test & chụp evidence
-  tools/                        Công cụ convert docx, sync map, merge testcases, doctor, export, jira
+  qa-readiness-evaluator/       Cổng Go/No-Go: đánh giá độ chín test design trước khi sang automation
+  templates/                    Khuôn mẫu + 7 bước dựng agent mới
+  workflows/                    Bản đồ pipeline & các runbook chạy sẵn
+  tools/                        Công cụ nội bộ (xem agents/tools/README.md)
+
+automation/                     TẦNG KIỂM THỬ TỰ ĐỘNG PLAYWRIGHT
+  pages/                        Page Object Model: BasePage, ShopPage, CheckoutPage, LoginModal
+  tests/                        Kịch bản test (smoke.spec.ts là bộ mồi đã chạy xanh)
 ```
 
 **Thứ tự quy trình**:

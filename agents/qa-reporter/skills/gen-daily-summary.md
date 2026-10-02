@@ -124,10 +124,10 @@ Thực hiện checklist đối chiếu 100% với JSON:
   - Có nhận định cảm tính nào ("chất lượng tốt", "chất lượng xấu") bị lọt vào văn bản không? Nếu có, loại bỏ ngay.
 
 ### Bước 4: Xuất bản file Markdown
-1. Tạo thư mục `outputs/reports/` (nếu chưa tồn tại). Đồng thời đảm bảo thư mục `OUTPUT/reports/` được hỗ trợ.
+1. Tạo thư mục `OUTPUT/reports/` (nếu chưa tồn tại).
 2. Ghi file báo cáo ra đường dẫn:
    ```
-   outputs/reports/daily-summary-<audience>.md
+   OUTPUT/reports/daily-summary-<audience>.md
    ```
    *(với `<audience>` là `dev` hoặc `pm`)*.
 3. Thông báo kết quả kèm bản tóm tắt ngắn gọn và nhắc nhở Human-Final review đặc biệt lưu ý section `Blocker`.
@@ -136,7 +136,7 @@ Thực hiện checklist đối chiếu 100% với JSON:
 
 ## Format Output Chuẩn
 
-Ghi ra file `outputs/reports/daily-summary-<audience>.md`:
+Ghi ra file `OUTPUT/reports/daily-summary-<audience>.md`:
 
 ````markdown
 # DAILY QA SUMMARY · <Tên Sprint / Ngày>
@@ -212,7 +212,7 @@ Không ghi knowledge (chỉ đọc dữ liệu sprint thô để tổng hợp b�
 ---
 
 ## Chốt Chặn Nghiệm Thu (Quality Gates)
-- [ ] File output bắt buộc ghi tại `outputs/reports/daily-summary-<audience>.md`.
+- [ ] File output bắt buộc ghi tại `OUTPUT/reports/daily-summary-<audience>.md`.
 - [ ] Nếu không có tham số `audience`, skill bắt buộc dừng lại hỏi người dùng (Verdict: `ASK`), không tự chọn.
 - [ ] Đủ đúng 4 section cố định: `Tiến độ hôm nay`, `Outstanding Issues`, `Blocker`, `⏭ Next Action`.
 - [ ] Pass Rate ghi rõ công thức `passed / executed` và kết quả tính toán chính xác, có guard cho trường hợp mẫu số bằng 0.

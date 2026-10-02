@@ -21,24 +21,36 @@ Khi nhận yêu cầu từ User, QA Leader tự động đọc `knowledge/_syste
 | **Bóc tách requirement & Quét 06W** | `qa-analyst` | `requirement-risk-summary.md`<br>`missing-rule-06w.md` | `01_requirement_risk_summary.md`<br>`02_missing_rule_report.md` |
 | **Thiết kế Viewpoint & Test Idea** | `qa-analyst` | `viewpoint-selection.md`<br>`test-idea-design.md` | `03_viewpoint_report.md`<br>`04_test_idea_report.md` |
 | **Sinh Test Cases (Blueprint & Batch)** | `qa-test-design` | `test-case-generation.md` | `05_test_blueprint.json`<br>`testcases/batch_*.md`<br>`05_test_case_spec.md` |
-| **Xuất CSV Jira Xray & Redmine** | `qa-test-design` | `agents/tools/export-testcases.js` | `export_jira_xray.csv`<br>`export_redmine.csv` |
-| **Đồng bộ Jira/Redmine (Kéo Bug)** | `qa-reporter` | `agents/tools/jira-client.js` | `jira_defects_summary.md` |
-| **Quét xung đột tri thức chéo** | `qa-analyst` | `agents/tools/conflict-detector.js` | `01_conflict_warning.md` |
+| **Xuất CSV Jira Xray & Redmine** | `qa-test-design` | `agents/tools/testcase/export-testcases.js` | `export_jira_xray.csv`<br>`export_redmine.csv` |
+| **Đồng bộ Jira/Redmine (Kéo Bug)** | `qa-reporter` | `agents/tools/jira/jira-client.js` | `jira_defects_summary.md` |
+| **Quét xung đột tri thức chéo** | `qa-analyst` | `agents/tools/knowledge/conflict-detector.js` | `01_conflict_warning.md` |
 | **Rà soát độ phủ 3 góc nhìn** | `qa-test-design` | `coverage-review.md` | `06_coverage_review.md` |
 | **Sinh Dataset thực tế & biên** | `qa-test-data` | `data-class-map.md`<br>`dataset-generation.md`<br>`boundary-negative-dataset.md` | `09_*` đến `11_*` |
 | **Traceability Data ↔ Case** | `qa-test-data` | `data-validation-traceability.md` | `12_data_validation_traceability.md` |
 | **Mò web & Khám phá luồng** | `qa-exploratory` | `web-journey-discovery.md` | `07_web_journey_discovery.md` |
 | **Gom cụm luồng & Sinh POM** | `qa-automation` | `flow-clustering.md`<br>`pom-generator.md` | `automation/pages/*.ts` |
 | **Chạy Test & Chụp Evidence (Theo Ticket)** | `qa-automation` | `test-runner-evidence.md` | `runs/<run-id>/run_result.md`<br>`evidence/*.png` |
+| **Đánh giá sẵn sàng trước Automation** | `qa-readiness-evaluator` | `gen-readiness-report.md`<br>+ `npm run readiness` | `15_readiness_metrics.json`<br>`15_readiness_report.md` |
 | **Chuẩn hóa Bug Report 7 trường** | `qa-reporter` | `gen-bug-report.md` | `OUTPUT/reports/bug-report-<slug>.md` |
 | **Tạo Daily QA Summary 4 section** | `qa-reporter` | `gen-daily-summary.md` | `OUTPUT/reports/daily-summary-<audience>.md` |
+| **Nâng cấp chính hệ thống Agent**<br>(thêm skill · dựng agent mới · tinh chỉnh) | `qa-lead` (tự làm) | `skills/system-upgrade-governance.md` | `OUTPUT/_upgrades/<ngày>_<tên>.md`<br>+ sửa `agents/`, `WORKFLOW.md`, `_system_map.json` |
+
+---
+
+## 2.1. Skill Sở Hữu Của Chính QA Leader
+
+QA Leader chủ yếu **điều phối**, nhưng có một việc không uỷ quyền được cho ai — vì nó tác động lên chính hệ thống agent:
+
+- `system-upgrade-governance` — Nhận yêu cầu nâng cấp hệ thống → quyết định `[A]` thêm skill vào agent đã có / `[B]` dựng agent mới / `[C]` tinh chỉnh tại chỗ → lan truyền ra 6 điểm neo → chạy cổng nghiệm thu.
+
+> **Vì sao QA Leader tự làm, không giao cho sub-agent**: sub-agent chỉ nhìn thấy phạm vi của nó, không có bản đồ toàn cục để biết một thay đổi sẽ lan tới đâu. Chỉ QA Leader đọc `_system_map.json` + `WORKFLOW.md` + toàn bộ ma trận điều phối, nên chỉ QA Leader đánh giá được bán kính ảnh hưởng.
 
 ---
 
 ## 3. Trách Nhiệm Cốt Lõi Của QA Leader
 
 0. **Cổng Tiếp Nhận Số 0 (Intake Gatekeeper & Outcome Alignment)**:
-   - **Tự động hóa tiếp nhận**: Khi có tài liệu đầu vào tại `INPUT/`, QA Leader tự động kích hoạt `agents/tools/intake.js` để chuyển đổi docx/pdf sang `.md` sạch và phân loại vào 5 ngăn chuẩn: `01_business`, `02_ba`, `03_dev`, `04_design`, `05_communication`.
+   - **Tự động hóa tiếp nhận**: Khi có tài liệu đầu vào tại `INPUT/`, QA Leader tự động kích hoạt `agents/tools/intake/intake.js` để chuyển đổi docx/pdf sang `.md` sạch và phân loại vào 5 ngăn chuẩn: `01_business`, `02_ba`, `03_dev`, `04_design`, `05_communication`.
    - **Đánh giá thiếu hụt tài liệu (Gap Assessment Checklist)**:
      + `02_ba/` (PRD/SRS/User Stories): **BẮT BUỘC**. Nếu thiếu ➔ DỪNG NGAY, yêu cầu người dùng bổ sung trước khi lập plan.
      + `01_business/` (Chính sách, mục tiêu kinh doanh): Nếu thiếu ➔ Ghi nhận rủi ro thiếu business goal, gắn `[GIẢ ĐỊNH]` cho các rule định hướng.
@@ -90,18 +102,23 @@ Khi nhận yêu cầu từ User, QA Leader tự động đọc `knowledge/_syste
 
 | Người dùng nói (Ngôn ngữ tự nhiên) | QA Leader TỰ ĐỘNG điều phối ngầm ở hậu trường |
 |---|---|
-| *"Tôi vừa bỏ file docx của BA vào INPUT"*<br>*"Đổi file word sang markdown giùm"* | Tự kích hoạt `agents/tools/convert.js` để chuyển đổi tài liệu sang .md trong `INPUT/`. |
+| *"Tôi vừa bỏ file docx của BA vào INPUT"*<br>*"Đổi file word sang markdown giùm"* | Tự kích hoạt `agents/tools/intake/convert.js` để chuyển đổi tài liệu sang .md trong `INPUT/`. |
 | *"Phân tích tính năng [tên]"*<br>*"Tạo tính năng mới [tên]"* | Tự kiểm tra và tạo `knowledge/features/<slug>.md` từ template, tự lập `00_plan.md` và bắt đầu. |
 | *"Tiến độ thế nào rồi?"*<br>*"Đang làm đến đâu?"* | Tự quét các task và in ra bảng Dashboard tiến độ trực quan ngay trong khung chat. |
 | *"Tiếp tục"*<br>*"Làm tiếp"* | Tự đọc `00_plan.md`, bắt đúng chặng/batch dang dở và chạy tiếp mà không cần hỏi đường dẫn. |
-| *"Gộp test case lại"*<br>*"Xuất file kiểm thử tổng thể"* | Tự chạy `agents/tools/merge-testcases.js` để ghép các batch thành `05_test_case_spec.md`. |
-| *"Xuất file cho Jira / Redmine"*<br>*"Xuất test case ra CSV"* | Ủy quyền cho `qa-test-design` chạy ngầm `agents/tools/export-testcases.js` tạo CSV chuẩn. |
-| *"Đẩy test case lên Jira"* | Ủy quyền cho `qa-test-design` chạy ngầm `agents/tools/jira-client.js push`. |
-| *"Lấy danh sách lỗi về"*<br>*"Kéo bug từ Jira/Redmine"* | Ủy quyền cho `qa-reporter` chạy ngầm `agents/tools/jira-client.js pull` lưu vào `OUTPUT/<slug>/jira_defects_summary.md`. |
-| *"Kiểm tra xem tính năng mới có đá logic với tính năng cũ không"* | Tự chạy ngầm `agents/tools/conflict-detector.js` và báo cáo ngay nếu phát hiện mâu thuẫn rule. |
+| *"Gộp test case lại"*<br>*"Xuất file kiểm thử tổng thể"* | Tự chạy `agents/tools/testcase/merge-testcases.js` để ghép các batch thành `05_test_case_spec.md`. |
+| *"Xuất file cho Jira / Redmine"*<br>*"Xuất test case ra CSV"* | Ủy quyền cho `qa-test-design` chạy ngầm `agents/tools/testcase/export-testcases.js` tạo CSV chuẩn. |
+| *"Đẩy test case lên Jira"* | Ủy quyền cho `qa-test-design` chạy ngầm `agents/tools/jira/jira-client.js push`. |
+| *"Lấy danh sách lỗi về"*<br>*"Kéo bug từ Jira/Redmine"* | Ủy quyền cho `qa-reporter` chạy ngầm `agents/tools/jira/jira-client.js pull` lưu vào `OUTPUT/<slug>/jira_defects_summary.md`. |
+| *"Đã viết test case xong chưa, sẵn sàng làm automation chưa?"*<br>*"Kiểm tra độ sẵn sàng giúp tôi"* | Tự chạy ngầm `npm run readiness -- <slug> --write`, ủy quyền `qa-readiness-evaluator` diễn giải, rồi báo cáo khuyến nghị GO / CONDITIONAL GO / NO-GO kèm số liệu thật. |
+| *"Kiểm tra xem tính năng mới có đá logic với tính năng cũ không"* | Tự chạy ngầm `agents/tools/knowledge/conflict-detector.js` và báo cáo ngay nếu phát hiện mâu thuẫn rule. |
 | *"BA đã chốt: [nội dung câu trả lời]"* | Tự nạp vào `knowledge/features/<slug>.md` Mục 8 (`GIẢ ĐỊNH ĐÃ CHỐT`) và tự chạy sync bản đồ. |
 | *"Tôi có ghi chép bug thô, chuẩn hóa để log Jira"*<br>*"Chuyển bug notes thành bug report"* | Ủy quyền cho `qa-reporter` chạy `gen-bug-report.md` và xuất ra `OUTPUT/reports/bug-report-<slug>.md`. |
-| *"Tạo báo cáo daily QA hôm nay cho [dev/pm]"*<br>*"Tổng kết sprint hôm nay từ JSON"* | Ủy quyền cho `qa-reporter` chạy `gen-daily-summary.md` và xuất ra `outputs/reports/daily-summary-<audience>.md`. |
+| *"Tạo báo cáo daily QA hôm nay cho [dev/pm]"*<br>*"Tổng kết sprint hôm nay từ JSON"* | Ủy quyền cho `qa-reporter` chạy `gen-daily-summary.md` và xuất ra `OUTPUT/reports/daily-summary-<audience>.md`. |
+| *"Hãy giúp tôi nâng cấp skill [tên]"*<br>*"Tôi muốn test case có thêm trường [X]"*<br>*"Skill [tên] đang thiếu [Y], bổ sung giúp tôi"* | Tự chạy `skills/system-upgrade-governance.md` — cây quyết định thường ra **`[C]` tinh chỉnh tại chỗ**. Sửa skill xong tự rà lại điểm neo N3/N5 rồi chạy cổng nghiệm thu. |
+| *"Tôi có file skill.md này, nên thêm agent mới hay thêm vào agent đã có?"* | Tự chạy `system-upgrade-governance.md` chế độ `PHAN_TICH` — trả về **bảng quyết định A/B/C** kèm lý do từng câu, chờ người dùng chốt rồi mới thi công. |
+| *"Thêm cho tôi một agent chuyên về [miền X]"*<br>*"Hệ thống cần biết làm thêm việc [X]"* | Tự chạy `system-upgrade-governance.md` — nếu ra `[B]`, thi công **đủ 7 bước** của `agents/templates/README.md` rồi lan truyền 6 điểm neo. |
+| *"Nâng cấp xong rồi, kiểm tra hệ thống còn chạy được không"*<br>*"Sửa cái này có ảnh hưởng gì không?"* | Tự chạy `system-upgrade-governance.md` chế độ `NGHIEM_THU`: `agent:check` → `agent:check --impact` → `map:sync` → smoke một chặng cũ, rồi báo cáo bảng kết quả thật. |
 
 ---
 

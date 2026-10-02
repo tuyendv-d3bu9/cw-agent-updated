@@ -18,7 +18,7 @@ Analysis 3 phần**. Là cửa ngõ đầu tiên của pipeline — mọi bướ
 
 ## Đầu vào
 - Tài liệu yêu cầu thô: BRD / SRS / User Story / Wireframe + mô tả UI / email-chat từ BA.
-- `knowledge/_project.md` · `knowledge/<feature-slug>.md` nếu đã có (xem `agents/core/QA_STANDARD.md` §8).
+- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` nếu đã có (xem `agents/core/QA_STANDARD.md` §8).
 
 > **Knowledge thắng giả định**: Bước 8/9 dưới đây chỉ gắn `[CONTEXT_MISSING]` cho khía cạnh mà
 > **cả** tài liệu đầu vào **và** `knowledge/_project.md` §3 đều không có. Đã có trong knowledge
@@ -143,7 +143,7 @@ Ghi ra `OUTPUT/<task-slug>/01_requirement_risk_summary.md`, giữ nguyên thứ 
 ```
 
 ## Ghi knowledge
-Sau khi xuất báo cáo, cập nhật `knowledge/<feature-slug>.md` (tạo từ `knowledge/_template.md`
+Sau khi xuất báo cáo, cập nhật `knowledge/features/<feature-slug>.md` (tạo từ `knowledge/_template.md`
 nếu chưa có):
 
 | Mục knowledge | Lấy từ |

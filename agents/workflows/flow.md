@@ -25,13 +25,13 @@
 * **Tài liệu nạp trước**:
   * `agents/core/QA_STANDARD.md`
   * `knowledge/_project.md`
-  * `knowledge/<task-slug>.md` (nếu đã có)
+  * `knowledge/features/<task-slug>.md` (nếu đã có)
 * **Đầu vào (Input)**:
   * Toàn bộ tài liệu trong `INPUT/*.md` (hoặc các file được chỉ định trong tham số `input-files`)
 * **Đầu ra (Output)**:
   * File báo cáo: `OUTPUT/<task-slug>/01_requirement_risk_summary.md`
   * Cập nhật index: `OUTPUT/<task-slug>/_index.md`
-  * Cập nhật tri thức: `knowledge/<task-slug>.md` (mục 1, 2, 3, 4, 5, 6, 7, 9, 10)
+  * Cập nhật tri thức: `knowledge/features/<task-slug>.md` (mục 1, 2, 3, 4, 5, 6, 7, 9, 10)
 * **Cấu trúc 10 phần bắt buộc**:
   1. `1. FEATURE OVERVIEW` — Mục đích & giá trị cốt lõi (1–2 câu).
   2. `2. ACTOR & USER ROLE` — Toàn bộ actor, phân quyền, external system.
@@ -52,7 +52,7 @@
 
 ### ⚪ Bước 2: Truy vết quy tắc còn thiếu (`missing-rule-06w`) — [Dự kiến]
 * **Agent**: `qa-analyst` | **Skill**: `missing-rule-06w.md`
-* **Vào**: `OUTPUT/<task-slug>/01_requirement_risk_summary.md` + `knowledge/<task-slug>.md`
+* **Vào**: `OUTPUT/<task-slug>/01_requirement_risk_summary.md` + `knowledge/features/<task-slug>.md`
 * **Ra**: `OUTPUT/<task-slug>/02_missing_rule_report.md`
 
 ### ⚪ Bước 3: Lựa chọn góc nhìn kiểm thử (`viewpoint-selection`) — [Dự kiến]
@@ -78,7 +78,7 @@
 ### ⚪ Chốt chặn: Đánh giá độ sẵn sàng kiểm thử (`gen-readiness-report`) — [Chốt chặn Automation]
 * **Agent**: `qa-readiness-evaluator` | **Skill**: `gen-readiness-report.md`
 * **Vào**: `coverage-plan.json` + `testcases/*.csv` + `validation-report.md` + `specs` + `reviews/`
-* **Ra**: `outputs/reports/readiness-report.md` (Khuyến nghị GO / NO-GO)
+* **Ra**: `OUTPUT/reports/readiness-report.md` (Khuyến nghị GO / NO-GO)
 
 ---
 
@@ -90,7 +90,7 @@
 1. Đọc tài liệu chuẩn hóa và tri thức:
    - agents/core/QA_STANDARD.md
    - knowledge/_project.md
-   - knowledge/<task-slug>.md (nếu có)
+   - knowledge/features/<task-slug>.md (nếu có)
    - agents/qa-analyst/AGENT.md
    - agents/qa-analyst/skills/requirement-risk-summary.md
 
@@ -101,7 +101,7 @@
 4. Xuất file kết quả:
    - OUTPUT/<task-slug>/01_requirement_risk_summary.md
    - OUTPUT/<task-slug>/_index.md (ghi nhận trạng thái Bước 1 và Verdict)
-   - Cập nhật knowledge/<task-slug>.md (đồng bộ thông tin nghiệp vụ đã bóc tách)
+   - Cập nhật knowledge/features/<task-slug>.md (đồng bộ thông tin nghiệp vụ đã bóc tách)
 
 5. In kết quả tóm tắt và Verdict ra màn hình:
    - Nếu Verdict là PASS: Sẵn sàng kích hoạt bước tiếp theo.

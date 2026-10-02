@@ -21,16 +21,16 @@ trên output của agent này.
 Chuỗi chạy: `01 → 02 → 03 → 04`. Mỗi skill chỉ chạy khi output của skill trước đã có.
 
 ## Knowledge
-- **Đọc**: `knowledge/_project.md` · `knowledge/<feature-slug>.md` (nếu có)
-- **Ghi**: `knowledge/<feature-slug>.md` — đây là agent **duy nhất** được ghi knowledge
+- **Đọc**: `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (nếu có)
+- **Ghi**: `knowledge/features/<feature-slug>.md` — đây là agent **duy nhất** được ghi knowledge
   (qua skill `01` và `02`). Xem `agents/core/QA_STANDARD.md` §8.
 
 ## Được làm
 - Đọc tài liệu yêu cầu thô: BRD, SRS, User Story, Wireframe + mô tả UI, email/chat từ BA.
 - Đọc báo cáo lỗi đồng bộ từ Jira (`jira_defects_summary.md`) để bổ sung các điểm rủi ro lịch sử (Defect-prone areas).
-- Kích hoạt `agents/tools/conflict-detector.js` để rà soát xung đột logic với các tính năng đã có trong `knowledge/features/*.md`.
+- Kích hoạt `agents/tools/knowledge/conflict-detector.js` để rà soát xung đột logic với các tính năng đã có trong `knowledge/features/*.md`.
 - Đọc output của các skill trước trong cùng agent.
-- Cập nhật `knowledge/<feature-slug>.md`: rule đã xác nhận, missing rule, giả định đã chốt.
+- Cập nhật `knowledge/features/<feature-slug>.md`: rule đã xác nhận, missing rule, giả định đã chốt.
 - Tạo báo cáo phân tích, danh sách missing rule, đặc tả viewpoint, bảng test idea.
 - Đặt câu hỏi clarification cho BA/PO.
 

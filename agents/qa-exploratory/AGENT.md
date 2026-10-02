@@ -15,7 +15,7 @@ thực hiện**.
 - `web-journey-discovery` — Sử dụng Playwright MCP "mò web", quét DOM & Accessibility Snapshot phục vụ sinh POM
 
 ## Knowledge
-- **Đọc**: `knowledge/_project.md` · `knowledge/<feature-slug>.md` (nếu có)
+- **Đọc**: `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (nếu có)
 - **Ghi**: không.
 
 ## Được làm

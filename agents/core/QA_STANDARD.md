@@ -18,6 +18,10 @@
 > 1. Khi một bước ra kết luận `ASK`, Agent **TUYỆT ĐỐI KHÔNG ĐƯỢC** tự động làm tiếp các chặng sau (Viewpoint, Test Idea, Test Case...).
 > 2. Nếu User quên trả lời, nói chung chung, hoặc giục làm tiếp (*"cứ làm tiếp đi"*, *"bỏ qua đi"*), Agent **BẮT BUỘC PHẢI TỪ CHỐI** và giải thích rõ: test case sinh ra từ logic hổng sẽ là ảo giác 100%.
 > 3. Cổng chỉ được mở khóa khi User trả lời cụ thể hoặc chốt quyết định rõ ràng vào Mục 8 của file feature knowledge.
+> 4. **Cổng này được thi hành bằng máy, không chỉ bằng lời.** Trước khi sinh deliverable từ
+>    Chặng 3 trở đi, Agent **bắt buộc** chạy `npm run gate <slug>` (exit `1` ⇒ DỪNG). Trong
+>    Claude Code còn có hook `PreToolUse` chặn thẳng thao tác ghi file. Chi tiết: `AGENTS.md` §1.6.1.
+>    Khi User giục làm tiếp, **đừng tranh luận suông** — chạy lệnh và dán kết quả thật.
 
 **Ngoại lệ** — skill `coverage-review`: rà đủ 3 góc nhìn mà KHÔNG thấy gap nào thì kết luận
 `ASK` (bắt buộc nghi ngờ bỏ sót, không tự quyết `PASS`). `PASS` chỉ xuất hiện khi có xác nhận
@@ -157,16 +161,16 @@ Knowledge có **3 loại**, mỗi loại một chỗ ở. Đừng trộn lẫn.
 |---|---|---|---|
 | **Registry / technique ổn định** | Không đổi theo dự án: 06W · risk matrix 3x3 · chuỗi biên · 8 viewpoint · 5 data class · checklist Giữ/Bỏ · 8 trường test case | Dùng bởi **≥2 skill** → file này. Dùng bởi **1 skill** → nội hoá trong skill đó | Người bảo trì agent |
 | **Project knowledge** | Quy ước cả dự án, dùng cho mọi feature: format định danh, định dạng ngày/tiền, NULL vs rỗng, môi trường test, tool quản lý test | `knowledge/_project.md` | Con người, một lần rồi bổ sung dần |
-| **Feature knowledge** | Dữ kiện của **một** tính năng: rule đã xác nhận, câu trả lời của BA, `[GIẢ ĐỊNH]` đã chốt, domain constant | `knowledge/<feature-slug>.md` (copy từ `knowledge/_template.md`) | Skill `01` và `02` ghi · người duyệt xác nhận |
+| **Feature knowledge** | Dữ kiện của **một** tính năng: rule đã xác nhận, câu trả lời của BA, `[GIẢ ĐỊNH]` đã chốt, domain constant | `knowledge/features/<feature-slug>.md` (copy từ `knowledge/_template.md`) | Skill `01` và `02` ghi · người duyệt xác nhận |
 
 ### Luật đọc
-Trước khi chạy, **mọi skill** đọc `knowledge/_project.md` và `knowledge/<feature-slug>.md` nếu có.
+Trước khi chạy, **mọi skill** đọc `knowledge/_project.md` và `knowledge/features/<feature-slug>.md` nếu có.
 Thông tin trong đó **thắng** giả định của agent: đã có trong knowledge thì KHÔNG được gắn
 `[GIẢ ĐỊNH]` hay `[CONTEXT_MISSING]` nữa. Không có file knowledge → chạy bình thường, chỉ là phải
 giả định nhiều hơn.
 
 ### Luật ghi
-- Chỉ skill `01` và `02` được ghi vào `knowledge/<feature-slug>.md`.
+- Chỉ skill `01` và `02` được ghi vào `knowledge/features/<feature-slug>.md`.
 - Chỉ ghi vào mục 3 (Business Rules) những rule **đã xác nhận**. Rule còn treo để ở mục 7.
 - Khi BA/PO trả lời một `[GIẢ ĐỊNH]` → chuyển xuống mục 8 (Giả định đã chốt) kèm ai chốt, ngày nào.
   Lần chạy sau agent dùng luôn kết luận đó, không giả định lại.

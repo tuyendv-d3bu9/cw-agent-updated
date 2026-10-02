@@ -23,7 +23,7 @@ Chuỗi chạy: `09 → 10 → 11 → 12`.
 
 ## Knowledge
 - **Đọc**: `knowledge/_project.md` (format định danh, định dạng ngày/tiền, NULL vs rỗng, cách seed,
-  có được dùng dữ liệu giống production) · `knowledge/<feature-slug>.md` (mục 9 — domain constant)
+  có được dùng dữ liệu giống production) · `knowledge/features/<feature-slug>.md` (mục 9 — domain constant)
 - **Ghi**: không. Chỉ `agents/qa-analyst` được ghi knowledge.
 
 > Agent này phụ thuộc `knowledge/` nặng nhất: thiếu `_project.md` là phải `[GIẢ ĐỊNH]` gần như

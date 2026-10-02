@@ -18,8 +18,8 @@
 Chuỗi chạy: `<skill-1> → <skill-2>`. Mỗi skill chỉ chạy khi output của skill trước đã có.
 
 ## Knowledge
-- **Đọc**: `knowledge/_project.md` · `knowledge/<feature-slug>.md` (nếu có)
-- **Ghi**: <`knowledge/<feature-slug>.md` mục nào — HOẶC "không">
+- **Đọc**: `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (nếu có)
+- **Ghi**: <`knowledge/features/<feature-slug>.md` mục nào — HOẶC "không">
 
 > Hiện chỉ `qa-analyst` được ghi knowledge. Agent mới mặc định là **không ghi**, trừ khi có lý do
 > rõ ràng. Xem `agents/core/QA_STANDARD.md` §8.

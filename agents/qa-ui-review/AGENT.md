@@ -15,7 +15,7 @@ chuyển màn, phản hồi sau khi bấm) vì ảnh tĩnh không thể hiện �
 - `ui-screenshot-review` — quét ảnh → 3 nhóm vấn đề (UI Inconsistency / Accessibility / UX Problem)
 
 ## Knowledge
-- **Đọc**: `knowledge/<feature-slug>.md` (nếu có) — để biết màn hình đang review thuộc luồng nào.
+- **Đọc**: `knowledge/features/<feature-slug>.md` (nếu có) — để biết màn hình đang review thuộc luồng nào.
 - **Ghi**: không.
 
 ## Được làm

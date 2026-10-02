@@ -41,9 +41,12 @@ workflows/
 | **B · Nhánh dữ liệu** | `09 => 10 => 11 => 12` | Chạy **sau** `05`, khi cần dataset để execute. |
 | **C · Độc lập** | `07` (exploratory) · `08` (UI screenshot) | Gọi bất cứ lúc nào, không chặn nhánh A/B. |
 | **D · Báo cáo lỗi** | `13` (gen-bug-report) · `14` (gen-daily-summary) | Chạy khi Tester có bug notes thô cần chuẩn hóa hoặc tổng kết sprint. |
-| **E · Chốt chặn Automation** | `15` (gen-readiness-report) | Chạy sau thiết kế/data, trước khi viết Playwright Automation để đánh giá Go/No-Go. |
+| **E · Chốt chặn Automation** | `15` (gen-readiness-report) | Chạy sau thiết kế/data, **trước Nhánh G**. Số liệu đo bằng `npm run readiness`. Kết quả `GO` vẫn chưa đủ để chạy G — xem cổng biên giới §1.5. |
+| **G · Automation E2E** | `web-journey-discovery` (mò web) · `flow-clustering` · `pom-generator` · `test-runner-evidence` | **Chỉ chạy khi người dùng yêu cầu rõ kèm URL môi trường VÀ readiness-report khuyến nghị GO** (§1.5 AGENTS.md). |
+| **F · Quản trị hệ thống** | `system-upgrade-governance` | **Không thuộc pipeline kiểm thử.** Chạy khi cần nâng cấp chính bộ agent: thêm skill, dựng agent mới, tinh chỉnh skill cũ. |
 
-`07` cần risk area từ `03`. `08` cần ảnh đính kèm, không cần bước nào trước. `13` cần file bug notes thô và file rules. `15` cần các design-time artifacts (specs, coverage plan, test cases CSV, data validation report, reviews).
+`07` cần risk area từ `03`. `08` cần ảnh đính kèm, không cần bước nào trước. `13` cần file bug notes thô và file rules. `15` cần các deliverable thiết kế của chính task đó (`01_` `02_` `03_` `05_` `06_` `12_`) và `knowledge/features/<slug>.md`.
+Nhánh `F` chạy độc lập hoàn toàn, không cần deliverable nào của A/B/C/D/E — nhưng **sau khi chạy xong phải smoke lại một chặng của nhánh A** để chứng minh luồng cũ không vỡ.
 
 ---
 
@@ -54,7 +57,7 @@ workflows/
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
 | 1 | `qa-analyst` | `requirement-risk-summary` | `INPUT/*.md` | `01_requirement_risk_summary.md` |
-| 2 | `qa-analyst` | `missing-rule-06w` | `01` + `knowledge/<slug>.md` | `02_missing_rule_report.md` |
+| 2 | `qa-analyst` | `missing-rule-06w` | `01` + `knowledge/features/<slug>.md` | `02_missing_rule_report.md` |
 | 3 | `qa-analyst` | `viewpoint-selection` | `01` + `02` | `03_viewpoint_report.md` |
 | 4 | `qa-analyst` | `test-idea-design` | `01` + `03` | `04_test_idea_report.md` |
 | 5 | `qa-test-design` | `test-case-generation` | `01` + `03` + `04` | `05_test_case_spec.md` |
@@ -81,15 +84,43 @@ workflows/
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
 | 13 | `qa-reporter` | `gen-bug-report` | File bug notes + `knowledge/` | `OUTPUT/reports/bug-report-<slug>.md` |
-| 14 | `qa-reporter` | `gen-daily-summary` | Sprint data JSON + audience | `outputs/reports/daily-summary-<audience>.md` |
+| 14 | `qa-reporter` | `gen-daily-summary` | Sprint data JSON + audience | `OUTPUT/reports/daily-summary-<audience>.md` |
 
 ### Nhánh E — Đánh giá độ sẵn sàng kiểm thử (Design-time QA Readiness Gate)
 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
-| 15 | `qa-readiness-evaluator` | `gen-readiness-report` | `coverage-plan.json` + `testcases/*.csv` + `validation-report.md` + `specs` + `reviews/` | `outputs/reports/readiness-report.md` |
+| 15 | `qa-readiness-evaluator` | `gen-readiness-report` | `15_readiness_metrics.json` (do `npm run readiness` đo) + `01_` `02_` `03_` `05_` `06_` `12_` + `knowledge/features/<slug>.md` | `OUTPUT/<slug>/15_readiness_report.md` |
 
-Mọi output nhánh A-C nằm trong `OUTPUT/<task-slug>/`, kèm `_index.md`. Nhánh D & E ghi tại `OUTPUT/reports/` hoặc `outputs/reports/`.
+> Số liệu do `agents/tools/system/readiness.js` đo bằng máy; skill chỉ diễn giải, không tự đếm.
+> Exit code: `0` = GO · `1` = CONDITIONAL GO · `2` = NO-GO.
+
+### Nhánh G — Automation E2E Playwright (Execution Layer)
+
+> ⛔ **Cổng biên giới**: nhánh này KHÔNG tự động chạy tiếp sau Chặng 6.
+> Điều kiện kích hoạt: người dùng yêu cầu rõ ràng **kèm URL môi trường**, và
+> `qa-readiness-evaluator` đã ra khuyến nghị **GO** (`AGENTS.md` §1.5).
+
+| # | Agent | Skill | Vào | Ra |
+|---|---|---|---|---|
+| G1 | `qa-exploratory` | `web-journey-discovery` | URL môi trường + `05_test_case_spec.md` | `07_web_journey_discovery.md` (Gherkin BDD + bảng ánh xạ Step ➔ Locator) |
+| G2 | `qa-automation` | `flow-clustering` | `07_web_journey_discovery.md` + `05_test_case_spec.md` | `08_flow_clusters.md` (gom test case thành cụm luồng dùng chung tiền điều kiện) |
+| G3 | `qa-automation` | `pom-generator` | `08_flow_clusters.md` + `knowledge/features/shopgo-ui-map.md` | `automation/pages/*.ts` (Page Object Model) |
+| G4 | `qa-automation` | `test-runner-evidence` | `automation/tests/*.spec.ts` + phạm vi ticket | `runs/RUN-XX_<ticket>/run_result.md` · `evidence/*.png` · `run_defects.md` |
+
+Nhánh G ghi code vào `automation/` và kết quả chạy vào `OUTPUT/<task-slug>/runs/`.
+Kết quả chạy đẩy lên Jira bằng `npm run jira:sync <slug> <run-id>`.
+
+### Nhánh F — Quản trị & Nâng cấp Hệ thống (System Governance)
+
+| # | Agent | Skill | Vào | Ra |
+|---|---|---|---|---|
+| — | `qa-lead` | `system-upgrade-governance` | Yêu cầu nâng cấp của người dùng (hoặc file `.md` họ đưa) + `knowledge/_system_map.json` + `agents/templates/` | `OUTPUT/_upgrades/<ngày>_<tên>.md`<br>**và** thay đổi thật trong `agents/`, `WORKFLOW.md`, `_system_map.json` |
+
+> Nhánh F **không mang số `NN`** vì nó không sinh deliverable trong pipeline kiểm thử của một `task-slug`.
+> Đây là skill duy nhất được phép ghi vào `agents/` và `knowledge/_system_map.json`.
+
+Mọi output nhánh A-C nằm trong `OUTPUT/<task-slug>/`, kèm `_index.md`. Nhánh D & E ghi tại `OUTPUT/reports/`. Nhánh G ghi code vào `automation/` và kết quả chạy vào `OUTPUT/<task-slug>/runs/`. Nhánh F ghi tại `OUTPUT/_upgrades/`.
 
 ---
 
@@ -116,11 +147,11 @@ Các nhãn khác cũng là điểm dừng cần người: `[GIẢ ĐỊNH]` · `
 
 ```
 Chạy lần 1  =>  02 sinh MR-01…MR-nn (trạng thái New)  =>  hỏi BA
-            =>  ghi câu trả lời vào knowledge/<slug>.md (mục 7 => Confirmed, mục 8)
+            =>  ghi câu trả lời vào knowledge/features/<slug>.md (mục 7 => Confirmed, mục 8)
 Chạy lần 2  =>  01/02 đọc knowledge trước  =>  ít [GIẢ ĐỊNH] hơn, ít ASK hơn
 ```
 
-- Chỉ skill `01` và `02` được ghi `knowledge/<slug>.md`.
+- Chỉ skill `01` và `02` được ghi `knowledge/features/<slug>.md`.
 - Không xoá dòng cũ — chỉ đổi `Trạng thái`.
 - `OUTPUT/` vứt được và chạy lại. `knowledge/` mất là mất công hỏi BA lần nữa.
 
@@ -131,7 +162,7 @@ Chạy lần 2  =>  01/02 đọc knowledge trước  =>  ít [GIẢ ĐỊNH] hơ
 | Mục | Quy ước |
 |---|---|
 | `task-slug` | Trùng `feature-slug` (ví dụ: `auth-login`, `order-checkout`). Một feature một thư mục output. |
-| Nạp trước mọi bước | `agents/core/QA_STANDARD.md` · `knowledge/_project.md` · `knowledge/<slug>.md` (nếu có) |
+| Nạp trước mọi bước | `agents/core/QA_STANDARD.md` · `knowledge/_project.md` · `knowledge/features/<slug>.md` (nếu có) |
 | Một skill | Ghi **đúng một** file output. Không dồn nhiều bước vào một file. |
 | Sau mỗi bước | Cập nhật `OUTPUT/<task-slug>/_index.md`: tên file + verdict |
 | Không được | Ghi đè `INPUT/` · sửa deliverable của agent khác · chạy bước sau khi bước trước chưa có output |
@@ -147,6 +178,7 @@ Chạy lần 2  =>  01/02 đọc knowledge trước  =>  ít [GIẢ ĐỊNH] hơ
 | `workflows/re-run-testcase.md` | Chạy lại từ bước bị ảnh hưởng | Đã chạy 1 lần, dừng ở `ASK`/`FIX`, nay đã có câu trả lời BA. Vòng 2 của vòng knowledge (§4). |
 | `workflows/verify-testcase.md` | Chỉ `06` + kiểm tay 4 mũi | Đã có `05`, cần nghiệm thu trước khi bàn giao. Không sinh mới. |
 | `workflows/flow.md` | Kịch bản luồng tự động | Trỏ file để agent tự xác định bước đang kích hoạt. |
+| `workflows/run-graduation.md` | Nhánh A `01 → 06` **rồi tiếp** nhánh Automation `B7 → B10` | Chạy một mạch từ requirement thô tới test đã chạy có ảnh bằng chứng. Có 2 điểm dừng bắt buộc: sau `02` (ASK) và trước Automation (cổng biên giới). Dùng cho project tốt nghiệp trên SUT ShopGo. |
 
 Thêm runbook mới: tạo `workflows/run-<mục-tiêu>.md`, khai vào bảng này. Không sửa bản đồ.
 

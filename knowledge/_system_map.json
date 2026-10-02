@@ -1,7 +1,7 @@
 {
   "system_name": "CW QA Agent Ecosystem",
   "version": "2.0.0",
-  "last_updated": "2026-10-01",
+  "last_updated": "2026-10-02",
   "ssot_policy": "Tri thức trong knowledge/ là tối cao. CẤM đọc dò từng file, tra cứu bảng routing_table để mở đúng file đích.",
   "project_conventions": {
     "project_name": "<Tên Dự Án>",
@@ -29,15 +29,32 @@
     "flow_clustering": "agents/qa-automation/skills/flow-clustering.md",
     "pom_generator": "agents/qa-automation/skills/pom-generator.md",
     "test_runner_evidence": "agents/qa-automation/skills/test-runner-evidence.md",
-    "jira_mcp_server": "agents/tools/jira-mcp-server.js",
+    "jira_mcp_server": "agents/tools/jira/mcp-server.js",
     "jira_mcp_guide": "agents/integrations/jira-mcp-guide.md",
     "template_input_dir": "INPUT/_template/",
-    "template_run_dir": "OUTPUT/_template_run/"
+    "template_run_dir": "OUTPUT/_template_run/",
+    "system_upgrade_governance": "agents/qa-lead/skills/system-upgrade-governance.md",
+    "agent_extension_guide": "agents/templates/README.md",
+    "agent_template": "agents/templates/AGENT.md",
+    "skill_template": "agents/templates/skills/ten-skill.md",
+    "shopgo_ui_map": "knowledge/features/shopgo-ui-map.md",
+    "graduation_runbook": "agents/workflows/run-graduation.md",
+    "integrity_check_command": "npm run agent:check",
+    "impact_analysis_command": "npm run agent:check -- --impact <agent>",
+    "tools_index": "agents/tools/README.md",
+    "ask_gate_tool": "agents/tools/system/gate.js",
+    "ask_gate_hook": "agents/tools/system/gate-hook.js",
+    "ask_gate_command": "npm run gate",
+    "ask_gate_audit_command": "npm run gate:audit",
+    "jira_sync_results_command": "npm run jira:sync <slug> <run-id>",
+    "readiness_tool": "agents/tools/system/readiness.js",
+    "readiness_command": "npm run readiness -- <slug> --write"
   },
   "specialized_agents": {
     "qa_lead": {
       "path": "agents/qa-lead/AGENT.md",
-      "role": "Tổng chỉ huy điều phối, giao việc và nghiệm thu"
+      "role": "Tổng chỉ huy điều phối, giao việc, nghiệm thu; sở hữu skill system-upgrade-governance để nâng cấp chính hệ thống agent",
+      "skills_path": "agents/qa-lead/skills/"
     },
     "qa_analyst": {
       "path": "agents/qa-analyst/AGENT.md",
@@ -77,8 +94,34 @@
     "qa_readiness_evaluator": {
       "path": "agents/qa-readiness-evaluator/AGENT.md",
       "skills_path": "agents/qa-readiness-evaluator/skills/",
-      "role": "Đánh giá mức độ sẵn sàng kiểm thử (Design-time QA Readiness) trước khi chuyển sang Test Automation"
+      "role": "Cổng Go/No-Go trước Automation: số liệu do npm run readiness đo bằng máy, agent diễn giải thành 15_readiness_report.md"
     }
   },
-  "features_inventory": {}
+  "features_inventory": {},
+  "sut": {
+    "name": "ShopGo",
+    "url": "https://cwshopgo.github.io",
+    "type": "React SPA tĩnh (Vite build), host GitHub Pages, không có backend/API",
+    "routing": "KHÔNG có router - đổi màn bằng state activeTab. CẤM page.goto(path) trong automation.",
+    "ui_map": "knowledge/features/shopgo-ui-map.md",
+    "storage_keys": [
+      "shopgo_user",
+      "shopgo_orders",
+      "shopgo_sqlite_orders_v1",
+      "shopgo_sqlite_queries_log"
+    ]
+  },
+  "tools_layout": {
+    "policy": "Tool gom theo nhóm chức năng. Mở đúng thư mục, không quét cả agents/tools/.",
+    "index": "agents/tools/README.md",
+    "groups": {
+      "lib": "Code dùng chung (paths, env, jira-api, doc-converter) — không gọi trực tiếp",
+      "intake": "Đưa tài liệu ngoài vào INPUT/",
+      "knowledge": "Khởi tạo & soát tri thức",
+      "testcase": "Gộp và xuất test case",
+      "testdata": "Sinh dữ liệu kiểm thử",
+      "jira": "Mọi giao tiếp Jira (pull/push/sync/mcp)",
+      "system": "Tự kiểm, tiến độ, bản đồ, cổng ASK"
+    }
+  }
 }

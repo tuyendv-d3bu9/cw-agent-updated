@@ -16,7 +16,7 @@ thiếu), **implicit rule** (quy tắc ngầm chưa văn bản hoá) và kẽ h�
 
 ## Đầu vào
 - `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — Business Rules + Open Questions từ requirement-risk-summary.
-- `knowledge/features/<feature-slug>.md` (hoặc `knowledge/<feature-slug>.md`) — mục 7 (gap đã hỏi trước đó) và mục 8 (giả định đã chốt).
+- `knowledge/features/<feature-slug>.md` (hoặc `knowledge/features/<feature-slug>.md`) — mục 7 (gap đã hỏi trước đó) và mục 8 (giả định đã chốt).
 
 > **Không hỏi lại điều đã có câu trả lời**: gap nào ở mục 7 knowledge đã có `Trả lời của BA`
 > và trạng thái `Confirmed`/`Rejected` thì KHÔNG đưa vào báo cáo như missing rule mới — nó đã

@@ -65,7 +65,7 @@ SQL dùng `NULL`, JSON dùng `null` · tên cột/khoá đúng Field Map ở ski
 ## Các bước
 1. Đọc Field Map (`09_data_class_map.md`), xác định field nào cần sinh và khoảng giá trị hợp lệ.
 2. Thiết kế file `dataset_schema.json` chứa định nghĩa kiểu dữ liệu.
-3. Kích hoạt engine sinh dữ liệu: `node agents/tools/generate-dataset.js ...` để tự động điền bảng.
+3. Kích hoạt engine sinh dữ liệu: `node agents/tools/testdata/generate-dataset.js ...` để tự động điền bảng.
 4. Tự soi lại theo bảng 5 bẫy.
 5. Xuất ra `OUTPUT/<task-slug>/10_dataset.md` (kèm file `.csv` hoặc `.json` nếu cần).
 

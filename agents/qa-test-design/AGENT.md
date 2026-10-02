@@ -20,7 +20,7 @@ Chuỗi chạy: `05 → 06`. `06` là chốt chặn cuối trước khi bàn gia
 
 ## Knowledge
 - **Đọc**: `knowledge/_project.md` (format `TC_ID`, tool quản lý test, định dạng ngày/tiền) ·
-  `knowledge/<feature-slug>.md` (rule đã xác nhận, giả định đã chốt)
+  `knowledge/features/<feature-slug>.md` (rule đã xác nhận, giả định đã chốt)
 - **Ghi**: không. Chỉ `agents/qa-analyst` được ghi knowledge.
 
 ## Được làm
@@ -54,7 +54,7 @@ Theo `agents/core/QA_STANDARD.md` §1, kèm ngoại lệ của skill `06`.
 
 ## Bàn giao
 - `05` (Test Suite) → `06`, và → `agents/qa-test-data` để sinh dataset cho các test case cần data.
-- Kích hoạt `agents/tools/export-testcases.js` xuất CSV chuẩn Jira Xray & Redmine.
+- Kích hoạt `agents/tools/testcase/export-testcases.js` xuất CSV chuẩn Jira Xray & Redmine.
 - `06` (verdict + gap) → QA Lead / PO quyết định Go/No-Go.
 
 ## Cách gọi
