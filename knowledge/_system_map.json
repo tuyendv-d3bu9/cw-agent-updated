@@ -59,7 +59,10 @@
     "knowledge_guide": "knowledge/README.md",
     "system_guide": "qa-system/README.md",
     "sprint_data_template": "qa-system/templates/sprint-data.example.json",
-    "dataset_schema_template": "qa-system/templates/dataset-schema.example.json"
+    "dataset_schema_template": "qa-system/templates/dataset-schema.example.json",
+    "init_command": "npm run init",
+    "init_tool": "qa-system/tools/system/init.js",
+    "automation_template": "qa-system/templates/automation/"
   },
   "specialized_agents": {
     "qa_lead": {
