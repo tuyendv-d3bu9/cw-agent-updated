@@ -57,7 +57,7 @@ Owner: qa-system/qa-lead/skills/system-upgrade-governance.md · Ngày: 2026-09-2
 
 | # | Kiểm tra | Kết quả thật |
 |---|---|---|
-| **G1** | `npm run agent:check` | `🎉 TOÀN VẸN: agent · skill · bản đồ · workflow · package · cổng ASK đều khớp.` — cả 9 agent đều `✅`, kể cả `qa-lead` sau khi có thêm thư mục `skills/`. Exit code `0` |
+| **G1** | `npm run agent:check` | `INTACT: agents, skills, system map, workflow, package scripts and gates all agree.` — cả 9 agent đều `✅`, kể cả `qa-lead` sau khi có thêm thư mục `skills/`. Exit code `0` |
 | **G2** | Bán kính ảnh hưởng | Skill mới không nằm trong chuỗi phụ thuộc của pipeline `01`–`14`, nên không bước nào bị ảnh hưởng. Rủi ro thật nằm ở chỗ khác: `qa-lead/AGENT.md` bị sửa, mà file này chi phối **toàn bộ** định tuyến → đã xử lý ở G4 |
 | **G3** | `npm run map:sync` | `✅ Successfully synchronized system map`. Kiểm lại JSON: `routing_table` có 26 khoá, `specialized_agents.qa_lead.skills_path` đã có |
 | **G4** | Smoke luồng cũ | Chạy `npm run test:e2e` — **5/5 ca xanh** trong 15,2 giây. Ma trận điều phối cũ đọc lại vẫn đủ 14 dòng, không dòng nào bị đè |

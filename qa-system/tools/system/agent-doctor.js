@@ -149,7 +149,7 @@ const warn = (where, msg) => problems.push({ level: 'WARN', where, msg });
 const fail = (where, msg) => problems.push({ level: 'FAIL', where, msg });
 
 console.log('===============================================================');
-console.log('        KIỂM TOÀN VẸN HỆ THỐNG AGENT (AGENT DOCTOR)            ');
+console.log('           AGENT SYSTEM INTEGRITY CHECK (AGENT DOCTOR)          ');
 console.log('===============================================================\n');
 
 // ─── A. Discover agents from disk ───

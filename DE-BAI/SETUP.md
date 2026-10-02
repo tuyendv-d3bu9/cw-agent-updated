@@ -55,12 +55,13 @@ npm start
 
 ## 3. Kết quả đúng trông như thế nào
 
-**Lệnh 3** — kiểm tra hệ thống Agent. Dòng cuối phải là `🎉 TOÀN VẸN`:
+**Lệnh 3** — kiểm tra hệ thống Agent. Dòng cuối phải bắt đầu bằng `INTACT`:
 
 ```
-
-🔍 Phát hiện 9 agent trong qa-system/
-
+===============================================================
+           AGENT SYSTEM INTEGRITY CHECK (AGENT DOCTOR)          
+===============================================================
+Discovered 9 agent(s) under qa-system/
 🤖 qa-analyst                 ✅ 4 skill
 🤖 qa-automation              ✅ 3 skill
 🤖 qa-exploratory             ✅ 2 skill
@@ -71,17 +72,19 @@ npm start
 🤖 qa-test-design             ✅ 2 skill
 🤖 qa-ui-review               ✅ 1 skill
 
+--- Cross-checking knowledge/_system_map.json ---
+   9 agent(s) · 50 routing entries
 
---- Đối soát knowledge/_system_map.json ---
-   9 agent · 50 mục routing
-
---- Đối soát qa-system/workflows/WORKFLOW.md ---
-   20/20 skill có mặt trong bảng điều phối
+--- Cross-checking qa-system/workflows/WORKFLOW.md ---
+   20/20 skill(s) present in the dispatch table
 
 ...
 
-🎉 TOÀN VẸN: agent · skill · bản đồ · workflow · package · cổng ASK đều khớp.
+INTACT: agents, skills, system map, workflow, package scripts and gates all agree.
 ```
+
+> Kết quả tool hiển thị bằng tiếng Anh. Bạn không cần đọc hiểu từng dòng —
+> chỉ cần dòng cuối bắt đầu bằng `INTACT` và lệnh không báo lỗi.
 
 **Lệnh 4** — bộ test mồi, phải **xanh cả 5 ca**:
 
