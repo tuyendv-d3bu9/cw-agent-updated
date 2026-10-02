@@ -195,31 +195,31 @@ function decide(m) {
 
 function render(m, d) {
   const line = '─'.repeat(67);
-  const icon = { 'GO': '✅', 'CONDITIONAL GO': '⚠️ ', 'NO-GO': '⛔' }[d.verdict];
+  const icon = { 'GO': '[GO]', 'CONDITIONAL GO': '[COND]', 'NO-GO': '[NO-GO]' }[d.verdict];
 
   console.log(`\n${line}`);
-  console.log(`  ĐỘ SẴN SÀNG AUTOMATION · task [ ${m.slug} ]`);
+  console.log(`  AUTOMATION READINESS · task [ ${m.slug} ]`);
   console.log(line);
-  console.log(`  Test case        ${m.testCases.total} · trace ${m.testCases.tracePct}% (${m.testCases.traced}/${m.testCases.total})`);
-  console.log(`  Viewpoint        ${m.coverage.viewpointsCovered.length}/${m.coverage.viewpointsPlanned.length} đã có test case`);
-  console.log(`  Business rule    ${m.coverage.rulesCovered.length}/${m.coverage.rulesTotal.length} đã được phủ`);
-  console.log(`  Cổng ASK         ${m.askGate.blocked ? '⛔ ĐÓNG' : '✅ mở'}`);
-  console.log(`  Chặng 6          ${m.reviewVerdict || 'chưa chạy'}`);
-  console.log(`  Dữ liệu kiểm thử ${m.data.hasValidation ? `${m.data.issues.length} vấn đề tồn đọng` : 'chưa có 12_'}`);
-  console.log(`  Tri thức tích luỹ ${(m.askGate.advisories || []).length ? '⚠️  có nguy cơ mất' : '✅ đã ghi vào knowledge/'}`);
-  console.log(`\n  ${icon} KHUYẾN NGHỊ: ${d.verdict}`);
+  console.log(`  Test cases       ${m.testCases.total} · trace ${m.testCases.tracePct}% (${m.testCases.traced}/${m.testCases.total})`);
+  console.log(`  Viewpoints       ${m.coverage.viewpointsCovered.length}/${m.coverage.viewpointsPlanned.length} covered by a test case`);
+  console.log(`  Business rules   ${m.coverage.rulesCovered.length}/${m.coverage.rulesTotal.length} covered`);
+  console.log(`  ASK gate         ${m.askGate.blocked ? 'CLOSED' : 'open'}`);
+  console.log(`  Stage 6          ${m.reviewVerdict || 'not run'}`);
+  console.log(`  Test data        ${m.data.hasValidation ? `${m.data.issues.length} unresolved issue(s)` : '12_ not present'}`);
+  console.log(`  Knowledge        ${(m.askGate.advisories || []).length ? 'at risk of being lost' : 'recorded in knowledge/'}`);
+  console.log(`\n  ${icon} RECOMMENDATION: ${d.verdict}`);
 
   if (d.blockers.length) {
-    console.log(`\n  Điểm chặn (phải xử lý xong mới được sang Automation):`);
+    console.log('\n  Blockers (must be cleared before automation):');
     d.blockers.forEach((b, i) => console.log(`    ${i + 1}. ${b}`));
   }
   if (d.conditions.length) {
-    console.log(`\n  Điều kiện kèm theo:`);
+    console.log('\n  Conditions:');
     d.conditions.forEach((c, i) => console.log(`    ${i + 1}. ${c}`));
   }
 
-  console.log(`\n  ℹ️  Đây là khuyến nghị kỹ thuật dựa trên số liệu đo được.`);
-  console.log(`      Quyết định Go/No-Go cuối cùng vẫn thuộc về QA Lead / người phụ trách.`);
+  console.log('\n  A technical recommendation derived from measured data.');
+  console.log('  The final Go/No-Go call remains with the QA Lead or owner.');
   console.log(`${line}\n`);
 }
 
@@ -234,8 +234,8 @@ function main() {
   if (!slug) {
     const all = listTaskSlugs();
     if (all.length === 1) slug = all[0];
-    else if (all.length === 0) { console.log('ℹ️  OUTPUT/ chưa có task nào.'); process.exit(0); }
-    else { console.error(`❌ OUTPUT/ có ${all.length} task (${all.join(', ')}) — nêu rõ task-slug.`); process.exit(1); }
+    else if (all.length === 0) { console.log('OUTPUT/ has no tasks yet.'); process.exit(0); }
+    else { console.error(`OUTPUT/ holds ${all.length} tasks (${all.join(', ')}) — name one explicitly.`); process.exit(1); }
   }
 
   const metrics = collect(slug);
@@ -245,7 +245,7 @@ function main() {
   if (doWrite) {
     const out = path.join(taskDir(slug), '15_readiness_metrics.json');
     fs.writeFileSync(out, JSON.stringify(payload, null, 2) + '\n', 'utf-8');
-    if (!asJson) console.log(`\n📄 Đã ghi ${path.relative(PATHS.ROOT, out)}`);
+    if (!asJson) console.log(`\nWrote ${path.relative(PATHS.ROOT, out)}`);
   }
 
   if (asJson) console.log(JSON.stringify(payload, null, 2));
