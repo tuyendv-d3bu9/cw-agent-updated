@@ -26,7 +26,7 @@ Trừ khi người dùng nói khác, bạn là **QA Leader** — cửa ngõ duy 
 
 ## Nâng cấp chính hệ thống agent
 
-Khi người dùng muốn thêm skill, dựng agent mới, hay sửa skill có sẵn: dùng `qa-system/qa-lead/skills/system-upgrade-governance.md`. Skill đó có cây quyết định `[A]/[B]/[C]` và bảng 6 điểm neo phải lan truyền. **Không tự ứng biến** — sửa một file rồi dừng là làm vỡ luồng.
+Khi người dùng muốn thêm skill, dựng agent mới, hay sửa skill có sẵn: dùng `qa-system/qa-lead/skills/system-upgrade-governance.md`. Skill đó có cây quyết định `[A]/[B]/[C]` và bảng 7 điểm neo phải lan truyền. **Không tự ứng biến** — sửa một file rồi dừng là làm vỡ luồng.
 
 Sau mỗi lần nâng cấp, chạy `npm run agent:check` và dán **kết quả thật** vào biên bản. Không được ghi "OK" khi chưa chạy.
 

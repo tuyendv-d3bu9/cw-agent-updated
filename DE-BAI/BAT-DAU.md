@@ -61,7 +61,7 @@ Chạy lần lượt tại thư mục gốc của repo. Lệnh 2 tải khoảng 
 |---|---|---|
 | 1 | `npm install` | Kết thúc không có dòng `ERR!` |
 | 2 | `npx playwright install chromium` | Tải xong trình duyệt Chromium |
-| 3 | `npm run agent:check` | Có dòng `🎉 100% SYSTEM INTEGRITY VERIFIED`, cả **9 agent** đều `✅ OK` |
+| 3 | `npm run agent:check` | Dòng cuối là `🎉 TOÀN VẸN: agent · skill · bản đồ · workflow · package · cổng ASK đều khớp.`, cả **9 agent** đều `✅ OK` |
 | 4 | `npm run test:e2e` | Có dòng `5 passed`, đủ 5 ca `SMOKE-01` → `SMOKE-05` |
 
 Lệnh nào không đạt: tra bảng **Xử lý sự cố** ở `DE-BAI/SETUP.md` §4, làm theo cách xử lý ghi trong đó, rồi chạy lại **đúng lệnh đó**. Vẫn không đạt thì **DỪNG**, trích nguyên văn lỗi và bảo học viên chụp màn hình gửi giảng viên.

@@ -83,7 +83,7 @@ Pipeline sẽ **dừng lại** ở Chặng 2 và hỏi bạn một loạt câu h
 Khi gặp `ASK`, bạn **đóng vai BA** và trả lời dứt khoát. Câu trả lời được ghi vào `knowledge/features/<task-slug>.md` mục 7 và 8. Chạy lại thì agent **không được hỏi lại** những gì đã chốt — nếu nó hỏi lại, đó mới là lỗi.
 
 ### Luật 3 — Nâng cấp phải lan truyền đủ
-Sửa một file rồi dừng là **chưa xong**. Mỗi thay đổi phải được khai báo ra tới 6 điểm neo của hệ thống. Chi tiết ở `qa-system/qa-lead/skills/system-upgrade-governance.md` §4. Đề của bạn sẽ ghi rõ phải chạm những điểm nào.
+Sửa một file rồi dừng là **chưa xong**. Mỗi thay đổi phải được khai báo ra tới 7 điểm neo của hệ thống. Chi tiết ở `qa-system/qa-lead/skills/system-upgrade-governance.md` §4. Đề của bạn sẽ ghi rõ phải chạm những điểm nào.
 
 ---
 
@@ -148,7 +148,7 @@ Học viên: <họ tên> · Email: <email> · Đề: <số> · Ngày: <YYYY-MM-D
 ## 1. Phần A — Nâng cấp hệ thống
 - Đã nâng cấp gì: <mô tả 2-3 câu>
 - Cây quyết định ra kết luận: <[A] / [B] / [C]> vì <lý do>
-- Các điểm neo đã chạm: <N1, N2, N3, N4, N5, N6 — cái nào không áp dụng thì nêu lý do>
+- Các điểm neo đã chạm: <N1, N2, N3, N4, N5, N6, N7 — cái nào không áp dụng thì nêu lý do>
 - Kết quả `npm run agent:check`: <PASS / có lỗi gì>
 
 ## 2. Phần B — Kết quả kiểm thử

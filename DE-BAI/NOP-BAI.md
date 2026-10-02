@@ -48,7 +48,7 @@ Bảng tra theo đề:
 
 | # | Lệnh | Đạt khi |
 |---|---|---|
-| 1 | `npm run agent:check` | Có dòng `🎉 100% SYSTEM INTEGRITY VERIFIED` |
+| 1 | `npm run agent:check` | Dòng cuối là `🎉 TOÀN VẸN: agent · skill · bản đồ · workflow · package · cổng ASK đều khớp.`, exit code `0` |
 | 2 | `npm run map:sync` | Có dòng `✅ Successfully synchronized system map` |
 
 `agent:check` báo lỗi thì thường là tên skill khai trong `AGENT.md` không khớp file thật (trừ 4 điểm, P5). Báo học viên và hỏi có muốn sửa trước khi nộp không.

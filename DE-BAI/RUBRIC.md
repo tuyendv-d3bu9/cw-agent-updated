@@ -54,13 +54,14 @@ Chấm theo điểm neo bắt buộc của từng đề:
 
 | Đề | Điểm neo bắt buộc |
 |---|---|
-| DE-01 `[C]` | **N1** bắt buộc. N3 và N5 chỉ bắt buộc nếu việc sửa làm đổi Vào/Ra của skill. N2, N4, N6 thường không áp dụng, nhưng **vẫn phải ghi lý do** |
-| DE-02 `[A]` | **N1–N5** bắt buộc. N6 làm, hoặc ghi `KHÔNG ÁP DỤNG` kèm lý do |
+| DE-01 `[C]` | **N1 và N7** bắt buộc — N7 vì đề đổi số trường test case từ 8 lên 9, linter phải biết trường mới. N3 và N5 chỉ bắt buộc nếu việc sửa làm đổi Vào/Ra của skill. N2, N4, N6 thường không áp dụng, nhưng **vẫn phải ghi lý do** |
+| DE-02 `[A]` | **N1–N5 và N7** bắt buộc — N7 vì skill mới sinh deliverable đánh số mới, phải khai vào `NEEDS_META` để linter kiểm dòng meta. N6 làm, hoặc ghi `KHÔNG ÁP DỤNG` kèm lý do |
 
 | Điểm | Mô tả |
 |---|---|
 | 11–12 | Đủ mọi điểm neo bắt buộc. Điểm không áp dụng đều có **lý do** cụ thể, không bỏ trống |
 | 8–10 | Thiếu 1 điểm neo phụ (ví dụ `agent-doctor.js`), hoặc một dòng `KHÔNG ÁP DỤNG` không có lý do |
+| — | **Bỏ sót `N7` khi đề yêu cầu**: hệ thống vẫn báo xanh nhưng linter mù trước thay đổi vừa làm — trừ như thiếu điểm neo chính |
 | 4–7 | Thiếu điểm neo chính: `AGENT.md` hoặc `WORKFLOW.md` hoặc `_system_map.json` |
 | 0–3 | Chỉ sửa nội dung, không khai báo ở đâu cả |
 

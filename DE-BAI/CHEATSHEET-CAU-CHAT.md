@@ -45,7 +45,7 @@ Chưa sửa gì vội, cho tôi xem bảng quyết định trước.
 ### 1.2. Chốt phương án và thi công
 
 ```
-Chốt phương án đó. Thi công đi, nhớ lan truyền đủ 6 điểm neo.
+Chốt phương án đó. Thi công đi, nhớ lan truyền đủ 7 điểm neo.
 Điểm nào không áp dụng thì ghi rõ lý do, đừng bỏ trống.
 ```
 
@@ -64,7 +64,7 @@ Sửa cái này có ảnh hưởng tới bước nào khác không? Phân tích 
 
 ```
 Bạn đã khai skill mới vào AGENT.md chưa? Vào WORKFLOW.md chưa?
-Vào _system_map.json chưa? Liệt kê bảng 6 điểm neo cho tôi xem.
+Vào _system_map.json chưa? Liệt kê bảng 7 điểm neo cho tôi xem.
 ```
 
 ```
@@ -217,7 +217,7 @@ Học viên hay quên: agent rất dễ "chạy tắt". Đây là các câu kéo
 | Bịa quy tắc không có trong tài liệu | `Quy tắc này lấy từ đâu? Dẫn nguồn trong INPUT hoặc knowledge. Không có nguồn thì phải gắn nhãn [GIẢ ĐỊNH].` |
 | Test data còn placeholder | `Test Data đang là placeholder. Thay bằng giá trị thật, đúng định dạng tiền của knowledge/_project.md.` |
 | Báo xong nhưng chưa chạy kiểm tra | `Bạn đã chạy thật chưa hay chỉ đoán? Dán kết quả thật vào đây.` |
-| Sửa file rồi dừng, quên khai báo | `Sửa xong chưa phải là xong. Liệt kê bảng 6 điểm neo cho tôi.` |
+| Sửa file rồi dừng, quên khai báo | `Sửa xong chưa phải là xong. Liệt kê bảng 7 điểm neo cho tôi.` |
 | Đọc dò lung tung tốn thời gian | `Đọc knowledge/_system_map.json trước, đừng quét mò cả thư mục.` |
 | Tự ý làm automation khi chưa cho phép | `Tôi chưa yêu cầu automation. Dừng ở Chặng 6.` |
 | Quên cập nhật bảng tiến độ | `Cập nhật _index.md và 00_plan.md cho tôi.` |
