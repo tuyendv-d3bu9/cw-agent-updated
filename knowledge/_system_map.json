@@ -65,6 +65,7 @@
     "automation_template": "qa-system/templates/automation/",
     "tool_tests": "qa-system/tools/__tests__/",
     "test_command": "npm test",
+    "sut_file": "knowledge/_sut.json",
     "shopgo_ui_map": "knowledge/features/shopgo-ui-map.md"
   },
   "specialized_agents": {
@@ -127,18 +128,5 @@
       "jira": "Mọi giao tiếp Jira (pull/push/sync/mcp)",
       "system": "Tự kiểm, tiến độ, bản đồ, cổng ASK"
     }
-  },
-  "sut": {
-    "name": "ShopGo",
-    "url": "https://cwshopgo.github.io",
-    "type": "React SPA tĩnh (Vite build), host GitHub Pages, không có backend/API",
-    "routing": "KHÔNG có router - đổi màn bằng state activeTab. CẤM page.goto(path) trong automation.",
-    "ui_map": "knowledge/features/shopgo-ui-map.md",
-    "storage_keys": [
-      "shopgo_user",
-      "shopgo_orders",
-      "shopgo_sqlite_orders_v1",
-      "shopgo_sqlite_queries_log"
-    ]
   }
 }

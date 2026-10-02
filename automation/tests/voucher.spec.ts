@@ -48,7 +48,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       expect(msg).toContain('50.000');
 
       const total = await checkoutPage.getTotalPayable();
-      expect(total).toBe('150.000 ₫');
+      expect(total).toBe(150_000);
 
       await captureEvidence(page, 'VCHR-001', true);
     });
@@ -64,7 +64,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
 
       // 350.000 - 20% (70.000) = 280.000 ₫
       const total = await checkoutPage.getTotalPayable();
-      expect(total).toBe('280.000 ₫');
+      expect(total).toBe(280_000);
 
       await captureEvidence(page, 'VCHR-002', true);
     });
@@ -80,7 +80,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
 
       // 600.000 - 100.000 maxCap = 500.000 ₫
       const total = await checkoutPage.getTotalPayable();
-      expect(total).toBe('500.000 ₫');
+      expect(total).toBe(500_000);
 
       await captureEvidence(page, 'VCHR-003', true);
     });
@@ -94,7 +94,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       expect(msg).toContain('GIAM50K');
 
       const total = await checkoutPage.getTotalPayable();
-      expect(total).toBe('300.000 ₫');
+      expect(total).toBe(300_000);
 
       await captureEvidence(page, 'VCHR-004', true);
     });
@@ -222,7 +222,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       await checkoutPage.applyVoucher('GIAM50K');
       const msg = await checkoutPage.getSuccessMessage();
       expect(msg).toContain('GIAM50K');
-      expect(await checkoutPage.getTotalPayable()).toBe('150.000 ₫');
+      expect(await checkoutPage.getTotalPayable()).toBe(150_000);
 
       await captureEvidence(page, 'VCHR-015', true);
     });
@@ -238,7 +238,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
 
       // Verify no discount applied (total remains 280.000 ₫ with freeship)
       const total = await checkoutPage.getTotalPayable();
-      expect(total).toBe('280.000 ₫');
+      expect(total).toBe(280_000);
 
       await captureEvidence(page, 'VCHR-016', true);
     });
@@ -252,7 +252,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const msg = await checkoutPage.getSuccessMessage();
       expect(msg).toContain('SALE20');
       // 300.000 - 60.000 = 240.000 ₫
-      expect(await checkoutPage.getTotalPayable()).toBe('240.000 ₫');
+      expect(await checkoutPage.getTotalPayable()).toBe(240_000);
 
       await captureEvidence(page, 'VCHR-017', true);
     });
@@ -266,7 +266,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const msg = await checkoutPage.getSuccessMessage();
       expect(msg).toContain('SALE20');
       // 500.000 - 100.000 = 400.000 ₫
-      expect(await checkoutPage.getTotalPayable()).toBe('400.000 ₫');
+      expect(await checkoutPage.getTotalPayable()).toBe(400_000);
 
       await captureEvidence(page, 'VCHR-018', true);
     });
@@ -281,10 +281,10 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       await checkoutPage.goto();
 
       await checkoutPage.applyVoucher('GIAM50K');
-      expect(await checkoutPage.getTotalPayable()).toBe('300.000 ₫');
+      expect(await checkoutPage.getTotalPayable()).toBe(300_000);
 
       await checkoutPage.removeVoucher();
-      expect(await checkoutPage.getTotalPayable()).toBe('350.000 ₫');
+      expect(await checkoutPage.getTotalPayable()).toBe(350_000);
 
       await captureEvidence(page, 'VCHR-012', true);
     });
@@ -294,12 +294,12 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       await checkoutPage.goto();
 
       await checkoutPage.applyVoucher('GIAM50K');
-      expect(await checkoutPage.getTotalPayable()).toBe('300.000 ₫');
+      expect(await checkoutPage.getTotalPayable()).toBe(300_000);
 
       // Áp dụng tiếp SALE20
       await checkoutPage.applyVoucher('SALE20');
       // SALE20 20% của 350k = 70k -> còn 280k
-      expect(await checkoutPage.getTotalPayable()).toBe('280.000 ₫');
+      expect(await checkoutPage.getTotalPayable()).toBe(280_000);
 
       await captureEvidence(page, 'VCHR-013', true);
     });
@@ -313,7 +313,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       await checkoutPage.applyVoucherBtn.click();
       await checkoutPage.applyVoucherBtn.click();
 
-      expect(await checkoutPage.getTotalPayable()).toBe('300.000 ₫');
+      expect(await checkoutPage.getTotalPayable()).toBe(300_000);
 
       await captureEvidence(page, 'VCHR-028', true);
     });
@@ -336,7 +336,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       await checkoutPage.goto();
 
       await checkoutPage.applyVoucher('GIAM50K');
-      expect(await checkoutPage.getTotalPayable()).toBe('150.000 ₫');
+      expect(await checkoutPage.getTotalPayable()).toBe(150_000);
 
       await captureEvidence(page, 'VCHR-031', true);
     });
@@ -525,13 +525,13 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const s2 = new ShopPage(page2);
       const c2 = new CheckoutPage(page2);
 
-      await l1.goto();
+      await l1.open();
       await l1.login('khachhang@shopgo.vn', '123456');
       await s1.setupCartForSubtotal(200000);
       await c1.goto();
       await c1.applyVoucher('GIAM50K');
 
-      await l2.goto();
+      await l2.open();
       await s2.setupCartForSubtotal(350000);
       await c2.goto();
       await c2.applyVoucher('SALE20');
