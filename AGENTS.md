@@ -219,7 +219,12 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
    - `PASS`: Đạt chuẩn ➔ Chạy bước tiếp.
    - `FIX`: Sai format/trace ➔ Agent tự sửa.
    - `ASK`: Hổng nghiệp vụ / thiếu thông tin ➔ **HARD STOP TUYỆT ĐỐI**. Bắt buộc dừng lại, giữ nguyên hiện trạng, không tự suy đoán, không nhảy cóc sang chặng sau. Kể cả khi User quên trả lời hoặc yêu cầu bỏ qua, Agent bắt buộc từ chối và yêu cầu chốt rõ ràng mới mở cổng đi tiếp.
-4. **Không làm bẩn thư mục gốc (Keep Root Clean)**:
+4. **Chuẩn FACT được KIỂM BẰNG MÁY, không chỉ bằng mắt**:
+   - Bốn tiêu chí F-A-C-T ở trên trước đây chỉ được kiểm bởi `coverage-review` — tức LLM tự chấm bài của LLM.
+   - Nay có `npm run lint -- <task-slug>` kiểm phần **cơ học**: đủ 8 trường, `TC_ID` đúng định dạng và không trùng, Title đúng động từ quy chuẩn, Tags trace được về `Rule#`/`Viewpoint#`, không còn placeholder, quét đủ W1→W6, không ô bảng trống.
+   - **Nghĩa vụ**: Agent chạy lệnh này **trước khi báo hoàn thành Chặng 5 hoặc Chặng 6**. Exit `1` ⇒ chưa xong.
+   - Linter chỉ lo phần cơ học. Phần còn lại của FACT (độ phủ nghiệp vụ, tính hợp lý của kỳ vọng) vẫn là việc của Agent và con người.
+5. **Không làm bẩn thư mục gốc (Keep Root Clean)**:
    - Không sinh file tùy tiện ngoài thư mục gốc. Mọi kết quả phân tích PHẢI nằm trong `OUTPUT/<task-slug>/`.
 
 ---
@@ -233,6 +238,10 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
   ```bash
   npm run gate <task-slug>          # exit 0 = mở, exit 1 = đóng
   npm run gate:audit <task-slug>    # soát dấu vết nhảy cóc, exit 2 = có vi phạm
+  ```
+- **Kiểm chuẩn FACT của deliverable bằng máy** (bắt buộc trước khi báo xong Chặng 5/6):
+  ```bash
+  npm run lint -- <task-slug>          # exit 0 = sạch, exit 1 = có lỗi phải sửa
   ```
 - Cổng tiếp nhận và phân loại thông minh tài liệu đầu vào:
   ```bash

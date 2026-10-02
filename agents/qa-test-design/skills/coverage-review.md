@@ -13,6 +13,18 @@ description: >
 Chốt chặn kiểm soát chất lượng nội bộ: tự review độc lập test suite trước khi bàn giao — đối
 soát độ phủ, phát hiện test gap, đánh giá rủi ro business từ góc nhìn QA Lead.
 
+## Bước 0 bắt buộc: lint bằng máy trước khi rà bằng mắt
+
+Chạy `npm run lint -- <task-slug>` và dán **kết quả thật** vào báo cáo trước khi
+rà soát 3 góc nhìn.
+
+Lý do: rà soát độ phủ là LLM đánh giá sản phẩm của LLM — dễ bỏ sót đúng những lỗi
+cấu trúc mà máy bắt được trong 0,1 giây (thiếu trường, sai định dạng `TC_ID`, trùng ID,
+Tags không trace được, placeholder còn sót). Để máy loại hết lỗi cơ học trước, skill này
+mới tập trung vào thứ máy không làm được: **độ phủ nghiệp vụ**.
+
+Exit code `1` ⇒ trả về `FIX`, nêu rõ danh sách lỗi, không rà tiếp.
+
 ## Đầu vào
 - `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — danh sách Business Rules.
 - `OUTPUT/<task-slug>/05_test_case_spec.md` — test suite.

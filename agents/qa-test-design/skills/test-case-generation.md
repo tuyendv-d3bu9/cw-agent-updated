@@ -93,6 +93,12 @@ Ghi danh mục toàn bộ Test Ideas đã duyệt vào `OUTPUT/<task-slug>/05_te
 ```
 
 ## Chốt chặn nghiệm thu (Quality Gates)
+
+> **Bước bắt buộc trước khi báo hoàn thành**: chạy `npm run lint -- <task-slug>`.
+> Exit code `1` ⇒ CHƯA xong, phải sửa hết lỗi rồi chạy lại. Checklist dưới đây được
+> linter kiểm bằng máy — không tự đánh dấu `[x]` khi chưa chạy lệnh.
+
+- [ ] `npm run lint -- <slug>` trả exit `0`, và **kết quả thật** được dán vào báo cáo.
 - [ ] 100% Test Case có đủ 8 trường chuẩn, không trường nào bị bỏ trống.
 - [ ] Tiêu đề (Title) bắt đầu đúng quy chuẩn bằng `Verify` / `Validate` / `Confirm`.
 - [ ] Test Data mang giá trị cụ thể, sát nghiệp vụ, cấm dùng placeholder chung chung.

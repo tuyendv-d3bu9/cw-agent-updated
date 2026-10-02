@@ -61,7 +61,11 @@ Nhánh `F` chạy độc lập hoàn toàn, không cần deliverable nào của 
 | 3 | `qa-analyst` | `viewpoint-selection` | `01` + `02` | `03_viewpoint_report.md` |
 | 4 | `qa-analyst` | `test-idea-design` | `01` + `03` | `04_test_idea_report.md` |
 | 5 | `qa-test-design` | `test-case-generation` | `01` + `03` + `04` | `05_test_case_spec.md` |
-| 6 | `qa-test-design` | `coverage-review` | `01` + `03` + `05` | `06_coverage_review.md` |
+| 6 | `qa-test-design` | `coverage-review` | `01` + `03` + `05` + kết quả `npm run lint` | `06_coverage_review.md` |
+
+> Chặng 5 và 6 **bắt buộc** chạy `npm run lint -- <slug>` trước khi báo hoàn thành.
+> Linter lo phần cơ học (8 trường, định dạng, trace, placeholder, 06W); skill lo phần
+> nghiệp vụ. Exit `1` ⇒ chưa xong.
 
 ### Nhánh B — Dữ liệu
 

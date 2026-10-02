@@ -304,7 +304,27 @@ try {
   warn('gate', `Không kiểm được cổng ASK: ${e.message}`);
 }
 
-// ─── F. Độ sẵn sàng Automation ───
+// ─── F. Lint deliverable ───
+console.log('\n--- Đối soát chuẩn FACT của deliverable ---');
+try {
+  const { lint } = require('./lint-deliverables');
+  const { listTaskSlugs } = require('../lib/paths');
+  const slugs = listTaskSlugs();
+  if (slugs.length === 0) {
+    console.log('   Chưa có task nào trong OUTPUT/');
+  } else {
+    for (const slug of slugs) {
+      const r = lint(slug);
+      r.errors.forEach((e) => fail(`lint/${slug}`, `${e.file} [${e.where}] ${e.msg}`));
+      const icon = r.clean ? (r.warns.length ? '⚠️ ' : '✅') : '❌';
+      console.log(`   ${slug.padEnd(26)} ${icon} ${r.totalCases} test case · ${r.errors.length} lỗi · ${r.warns.length} cảnh báo`);
+    }
+  }
+} catch (e) {
+  warn('lint', `Không lint được deliverable: ${e.message}`);
+}
+
+// ─── G. Độ sẵn sàng Automation ───
 console.log('\n--- Đối soát cổng Go/No-Go (Automation) ---');
 try {
   const { collect, decide } = require('./readiness');
