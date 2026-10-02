@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 /**
- * start.js — Một cửa duy nhất: "tôi đang ở đâu, chỗ nào là của tôi, làm gì tiếp".
+ * start.js — One door: where am I, what is mine, what do I do next.
  *
- * Vì sao cần: repo có hơn 100 file và 50 thư mục. Người dùng là QA/BA/PO, không
- * phải dev. Nhìn vào họ không biết thư mục nào được đụng, thư mục nào là máy móc,
- * và nên bắt đầu từ đâu. Thiếu hụt đó không sửa được bằng cách giấu bớt thư mục —
- * phải nói thẳng ra ai sở hữu cái gì.
+ *   environment()    Dependency and browser checks, reported only when failing.
+ *   tasks()          Per-task progress and gate state.
+ *   nextStep(list)   The next action, phrased as something to say to the agent.
  *
- * Lệnh: npm run start
+ * The repo holds 100+ files across 50 folders and the users are QA/BA/PO, not
+ * developers. Hiding folders does not fix that; stating who owns what does.
+ *
+ * Printed output stays in Vietnamese on purpose — this command exists to be read
+ * by the user, not by the agent.
+ *
+ * Usage: npm start
  */
 
 const fs = require('fs');
@@ -18,7 +23,7 @@ const W = 68;
 const line = (c = '─') => c.repeat(W);
 const has = (p) => fs.existsSync(path.join(PATHS.ROOT, p));
 
-// ───────────────────── Bản đồ quyền sở hữu ─────────────────────
+// ───────────────────── Ownership map ─────────────────────
 
 const ZONES = [
   {
@@ -55,7 +60,7 @@ const ZONES = [
   },
 ];
 
-// ───────────────────── Kiểm tra môi trường ─────────────────────
+// ───────────────────── Environment checks ─────────────────────
 
 function environment() {
   const checks = [];
@@ -65,7 +70,7 @@ function environment() {
     fix: 'Agent sẽ tự chạy `npm install`',
   });
 
-  // Playwright tải trình duyệt vào cache ngoài repo — đây là bước lâu nhất khi setup.
+  // Playwright caches browsers outside the repo; this is the slowest setup step.
   const cache =
     process.platform === 'darwin'
       ? path.join(process.env.HOME || '', 'Library', 'Caches', 'ms-playwright')
@@ -84,7 +89,7 @@ function environment() {
   return checks;
 }
 
-// ───────────────────── Tình hình công việc ─────────────────────
+// ───────────────────── Work in progress ─────────────────────
 
 function tasks() {
   return listTaskSlugs().map((slug) => {
@@ -98,14 +103,14 @@ function tasks() {
     try {
       gateBlocked = require('./gate').evaluate(slug).blocked;
     } catch {
-      /* cổng lỗi thì coi như mở, không chặn người dùng xem tiến độ */
+      /* treat a gate error as open; never block viewing progress */
     }
 
     return { slug, done, total: done + todo, gateBlocked };
   });
 }
 
-/** Việc nên làm tiếp, diễn đạt bằng câu người dùng nói được với agent. */
+/** The next action, phrased as a sentence the user can say to the agent. */
 function nextStep(list) {
   const loose = fs.existsSync(PATHS.INPUT)
     ? fs.readdirSync(PATHS.INPUT).filter((f) => !f.startsWith('.') && fs.statSync(path.join(PATHS.INPUT, f)).isFile())
@@ -140,7 +145,7 @@ function nextStep(list) {
   ];
 }
 
-// ───────────────────── In ─────────────────────
+// ───────────────────── Render ─────────────────────
 
 function main() {
   const list = tasks();
@@ -152,13 +157,13 @@ function main() {
   console.log('\n  Bạn KHÔNG cần gõ lệnh terminal. Chỉ cần nói chuyện với agent');
   console.log('  bằng tiếng Việt bình thường. Agent tự chạy mọi thứ ở hậu trường.\n');
 
-  // 1. Việc nên làm tiếp — đặt lên đầu vì đây là câu hỏi cấp bách nhất
+  // Next action first: it is the most urgent question.
   console.log(line());
   console.log('  👉 LÀM GÌ TIẾP');
   console.log(line());
   nextStep(list).forEach((l) => console.log(`  ${l}`));
 
-  // 2. Tình hình công việc
+  // Current tasks.
   if (list.length) {
     console.log(`\n${line()}`);
     console.log('  📋 CÔNG VIỆC HIỆN CÓ');
@@ -170,7 +175,7 @@ function main() {
     }
   }
 
-  // 3. Bản đồ quyền sở hữu — thứ chữa đúng bệnh "không biết đụng cái gì"
+  // Ownership map: the part that actually answers "what am I allowed to touch".
   console.log(`\n${line()}`);
   console.log('  🗺️  THƯ MỤC NÀO LÀ CỦA AI');
   console.log(line());
@@ -181,7 +186,7 @@ function main() {
     }
   }
 
-  // 4. Môi trường — chỉ nói khi có vấn đề, không làm nhiễu lúc đã ổn
+  // Environment: mentioned only when something is missing, to avoid noise.
   const env = environment();
   const missing = env.filter((c) => !c.ok);
   if (missing.length) {

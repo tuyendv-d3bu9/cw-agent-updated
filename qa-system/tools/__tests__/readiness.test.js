@@ -1,8 +1,8 @@
 /**
- * Test cổng Go/No-Go và các tool còn lại.
+ * Tests for the Go/No-Go gate plus the remaining tools.
  *
- * Cổng này quyết định có cho phép bắt tay viết automation hay không. Sai ngưỡng
- * là cho phép chạy trên nền thiết kế chưa chín, hoặc chặn oan một bài đã đủ chín.
+ * This gate decides whether automation work may start. A wrong threshold either
+ * green-lights an immature design or blocks a mature one for no reason.
  */
 
 const test = require('node:test');
@@ -13,7 +13,7 @@ const { collect, decide } = require('../system/readiness');
 const { extractAnswers } = require('../knowledge/sync-answers');
 const { generateDataset } = require('../testdata/generate-dataset');
 
-/** Dựng một task đủ chín: 2 test case trace đầy đủ, phủ hết rule và viewpoint. */
+/** Builds a mature task: two fully traced cases covering every rule and viewpoint. */
 function healthyTask(slug = 't') {
   write(`OUTPUT/${slug}/01_requirement_risk_summary.md`, '# Rule\nOwner: x · Verdict: PASS\n| BR-01 | ... |\n| BR-02 | ... |\n');
   write(`OUTPUT/${slug}/02_missing_rule_report.md`, '# Gap\nOwner: x · Verdict: PASS\n');
@@ -26,7 +26,7 @@ function healthyTask(slug = 't') {
   write(`OUTPUT/${slug}/12_data_validation_traceability.md`, '# Data\nOwner: x · Verdict: PASS\nMọi dataset đã map.\n');
 }
 
-test('GO khi mọi chỉ số đều đạt', () => {
+test('GO when every metric passes', () => {
   const t = useTempProject();
   try {
     healthyTask();
@@ -36,12 +36,12 @@ test('GO khi mọi chỉ số đều đạt', () => {
     assert.deepStrictEqual(m.coverage.rulesUncovered, []);
 
     const d = decide(m);
-    assert.strictEqual(d.verdict, 'GO', `điểm chặn: ${d.blockers.join(' | ')} · điều kiện: ${d.conditions.join(' | ')}`);
+    assert.strictEqual(d.verdict, 'GO', `blockers: ${d.blockers.join(' | ')} · conditions: ${d.conditions.join(' | ')}`);
     assert.strictEqual(d.exitCode, 0);
   } finally { t.cleanup(); }
 });
 
-test('NO-GO khi cổng ASK đang đóng', () => {
+test('NO-GO when the ASK gate is closed', () => {
   const t = useTempProject();
   try {
     healthyTask();
@@ -49,25 +49,25 @@ test('NO-GO khi cổng ASK đang đóng', () => {
     const d = decide(collect('t'));
     assert.strictEqual(d.verdict, 'NO-GO');
     assert.strictEqual(d.exitCode, 2);
-    assert.match(d.blockers.join(' '), /Cổng ASK/);
+    assert.match(d.blockers.join(' '), /ASK gate is CLOSED/);
   } finally { t.cleanup(); }
 });
 
-test('NO-GO khi chưa có test case nào', () => {
+test('NO-GO when there are no test cases', () => {
   const t = useTempProject();
   try {
     write('OUTPUT/t/00_plan.md', '# Plan\n');
     const d = decide(collect('t'));
     assert.strictEqual(d.verdict, 'NO-GO');
-    assert.match(d.blockers.join(' '), /Chưa có test case/);
+    assert.match(d.blockers.join(' '), /No test cases at all/);
   } finally { t.cleanup(); }
 });
 
-test('NO-GO khi tỷ lệ trace dưới 80%', () => {
+test('NO-GO when the trace rate falls below 80%', () => {
   const t = useTempProject();
   try {
     healthyTask();
-    // 1 trace / 3 tổng = 33%
+    // 1 traced out of 3 = 33%
     write('OUTPUT/t/05_test_case_spec.md', spec([
       testCase('TST-001', { Tags: 'Rule#BR-01, Viewpoint#VP-01, Module#T' }),
       testCase('TST-002', { Tags: 'Module#T' }),
@@ -79,7 +79,7 @@ test('NO-GO khi tỷ lệ trace dưới 80%', () => {
   } finally { t.cleanup(); }
 });
 
-test('CONDITIONAL GO khi còn viewpoint chưa được phủ', () => {
+test('CONDITIONAL GO when a viewpoint is still uncovered', () => {
   const t = useTempProject();
   try {
     healthyTask();
@@ -91,18 +91,18 @@ test('CONDITIONAL GO khi còn viewpoint chưa được phủ', () => {
   } finally { t.cleanup(); }
 });
 
-test('CONDITIONAL GO khi Chặng 6 chưa PASS', () => {
+test('CONDITIONAL GO when stage 6 has not passed', () => {
   const t = useTempProject();
   try {
     healthyTask();
     write('OUTPUT/t/06_coverage_review.md', '# Review\nOwner: x · Verdict: ASK\n');
     const d = decide(collect('t'));
     assert.strictEqual(d.verdict, 'CONDITIONAL GO');
-    assert.match(d.conditions.join(' '), /Chặng 6/);
+    assert.match(d.conditions.join(' '), /Stage 6 verdict/);
   } finally { t.cleanup(); }
 });
 
-test('phát hiện test case trích rule không tồn tại ở Chặng 1', () => {
+test('detects cases citing a rule that stage 1 never defined', () => {
   const t = useTempProject();
   try {
     healthyTask();
@@ -116,7 +116,7 @@ test('phát hiện test case trích rule không tồn tại ở Chặng 1', () =
 
 // ───────────── sync-answers ─────────────
 
-test('sync-answers — bóc đúng các dòng đã Confirmed, bỏ dòng còn treo', () => {
+test('sync-answers — extracts Confirmed rows and skips pending ones', () => {
   const report = `# Chặng 2
 | STT | Mã Rule | Phân loại | Câu hỏi xác nhận cho BA | Phản hồi chính thức của BA | Quyết định đã chốt | Trạng thái |
 |---|---|---|---|---|---|---|
@@ -130,17 +130,17 @@ test('sync-answers — bóc đúng các dòng đã Confirmed, bỏ dòng còn tr
   assert.strictEqual(got[0].question, 'Mức sàn bao nhiêu?');
 });
 
-test('sync-answers — bảng không có cột trạng thái thì bỏ qua, không đoán bừa', () => {
+test('sync-answers — skips tables without a status column instead of guessing', () => {
   const report = '| Mã Rule | Ghi chú |\n|---|---|\n| MR-01 | gì đó |\n';
   assert.deepStrictEqual(extractAnswers(report), []);
 });
 
 // ───────────── generate-dataset ─────────────
 
-test('generate-dataset — bỏ qua khoá `_` thay vì biến nó thành cột dữ liệu', () => {
-  // Lỗi thật: `_comment` bị coi là một field và sinh ra cột rác "Value_N".
+test('generate-dataset — skips `_` keys instead of turning them into a data column', () => {
+  // Real bug: `_comment` was treated as a field and produced a junk "Value_N" column.
   const rows = generateDataset({
-    _comment: ['đây là chú thích', 'không phải dữ liệu'],
+    _comment: ['this is a note', 'not data'],
     ho_ten: { type: 'vietnamese_name' },
     so_luong: { type: 'boundary', min: 1, max: 99 },
   }, 3);
@@ -149,20 +149,20 @@ test('generate-dataset — bỏ qua khoá `_` thay vì biến nó thành cột d
   assert.deepStrictEqual(Object.keys(rows[0]), ['ho_ten', 'so_luong']);
 });
 
-test('generate-dataset — boundary sinh đúng chuỗi biên theo QA_STANDARD §6', () => {
+test('generate-dataset — boundary produces the full edge series from QA_STANDARD §6', () => {
   const rows = generateDataset({ n: { type: 'boundary', min: 1, max: 99 } }, 7);
   const values = rows.map((r) => Number(r.n));
-  // Phải có cả biên ngoài: min-1 và max+1
-  assert.ok(values.includes(0), `thiếu min-1, có: ${values}`);
-  assert.ok(values.includes(100), `thiếu max+1, có: ${values}`);
+  // Outer bounds must be present: min-1 and max+1
+  assert.ok(values.includes(0), `missing min-1, got: ${values}`);
+  assert.ok(values.includes(100), `missing max+1, got: ${values}`);
 });
 
 // ───────────── lib/paths ─────────────
 
-test('paths — mọi đường dẫn đều nằm dưới ROOT', () => {
+test('paths — every entry resolves under ROOT', () => {
   const { PATHS: P } = require('../lib/paths');
   for (const key of ['INPUT', 'OUTPUT', 'KNOWLEDGE', 'FEATURES', 'SYSTEM', 'TOOLS', 'TEMPLATES']) {
-    assert.ok(P[key].startsWith(P.ROOT), `${key} phải nằm dưới ROOT`);
+    assert.ok(P[key].startsWith(P.ROOT), `${key} must resolve under ROOT`);
   }
   assert.strictEqual(path.basename(P.SYSTEM), 'qa-system');
   assert.strictEqual(P.FEATURES, path.join(P.KNOWLEDGE, 'features'));

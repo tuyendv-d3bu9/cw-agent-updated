@@ -1,8 +1,12 @@
 /**
- * lib/jira-api.js — Lớp gọi HTTP dùng chung cho mọi tool Jira.
+ * jira-api.js — Shared HTTP layer for every Jira tool.
  *
- * Trước đây có 4 bản `makeRequest` khác nhau rải ở 4 file, mỗi bản một chữ ký,
- * một cách xử lý lỗi, và chỉ 2 bản có timeout. Gom về đây để hành vi đồng nhất.
+ *   request(opts, body, timeout)        Raw HTTP. Resolves on any status code.
+ *   jiraRequest(cfg, method, path, obj) Jira REST call with Basic Auth.
+ *   jiraAttach(cfg, key, name, buffer)  Upload an attachment to an issue.
+ *   adf(text)                           Wrap text as Atlassian Document Format.
+ *
+ * Replaces four divergent `makeRequest` copies, only two of which had a timeout.
  */
 
 const https = require('https');
@@ -11,10 +15,8 @@ const http = require('http');
 const DEFAULT_TIMEOUT_MS = 15000;
 
 /**
- * Gọi HTTP thô. Luôn resolve (kể cả status 4xx/5xx) để nơi gọi tự quyết định,
- * chỉ reject khi lỗi mạng hoặc quá hạn.
- *
- * @returns {Promise<{statusCode:number, headers:object, data:any, raw:string}>}
+ * Resolves even on 4xx/5xx so callers decide what counts as failure.
+ * Rejects only on network error or timeout.
  */
 function request(options, body = null, timeoutMs = DEFAULT_TIMEOUT_MS) {
   return new Promise((resolve, reject) => {
@@ -27,7 +29,7 @@ function request(options, body = null, timeoutMs = DEFAULT_TIMEOUT_MS) {
         try {
           data = raw ? JSON.parse(raw) : {};
         } catch {
-          data = null; // phản hồi không phải JSON — nơi gọi dùng `raw`
+          data = null; // non-JSON response; caller falls back to `raw`
         }
         resolve({ statusCode: res.statusCode, headers: res.headers, data, raw });
       });
@@ -36,7 +38,7 @@ function request(options, body = null, timeoutMs = DEFAULT_TIMEOUT_MS) {
     req.on('error', reject);
     req.setTimeout(timeoutMs, () => {
       req.destroy();
-      reject(new Error(`Jira không phản hồi sau ${timeoutMs / 1000}s`));
+      reject(new Error(`Jira did not respond within ${timeoutMs / 1000}s`));
     });
 
     if (body) req.write(body);
@@ -44,14 +46,6 @@ function request(options, body = null, timeoutMs = DEFAULT_TIMEOUT_MS) {
   });
 }
 
-/**
- * Gọi Jira REST API với Basic Auth.
- *
- * @param {{host:string,email:string,token:string}} cfg  từ `lib/env.js` → jiraConfig()
- * @param {string} method   GET / POST / PUT ...
- * @param {string} apiPath  ví dụ `/rest/api/3/search/jql?jql=...`
- * @param {object|null} payload  object sẽ được JSON.stringify
- */
 function jiraRequest(cfg, method, apiPath, payload = null) {
   const url = new URL(cfg.host);
   const headers = {
@@ -79,10 +73,7 @@ function jiraRequest(cfg, method, apiPath, payload = null) {
   );
 }
 
-/**
- * Upload file đính kèm vào một issue (multipart/form-data dựng tay —
- * Jira bắt buộc header `X-Atlassian-Token: no-check`).
- */
+/** Hand-rolled multipart; Jira requires the `X-Atlassian-Token: no-check` header. */
 function jiraAttach(cfg, issueKey, fileName, fileBuffer) {
   const url = new URL(cfg.host);
   const boundary = '----CWAgentBoundary' + Date.now().toString(16);
@@ -110,11 +101,10 @@ function jiraAttach(cfg, issueKey, fileName, fileBuffer) {
       },
     },
     body,
-    60000 // file đính kèm cần hạn dài hơn gọi API thường
+    60000 // uploads need a longer deadline than plain API calls
   );
 }
 
-/** Bọc đoạn text thành Atlassian Document Format — định dạng Jira Cloud bắt buộc. */
 function adf(text) {
   return {
     type: 'doc',
