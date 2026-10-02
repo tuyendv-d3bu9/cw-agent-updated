@@ -182,7 +182,6 @@ Chạy lần 2  =>  01/02 đọc knowledge trước  =>  ít [GIẢ ĐỊNH] hơ
 | `workflows/re-run-testcase.md` | Chạy lại từ bước bị ảnh hưởng | Đã chạy 1 lần, dừng ở `ASK`/`FIX`, nay đã có câu trả lời BA. Vòng 2 của vòng knowledge (§4). |
 | `workflows/verify-testcase.md` | Chỉ `06` + kiểm tay 4 mũi | Đã có `05`, cần nghiệm thu trước khi bàn giao. Không sinh mới. |
 | `workflows/flow.md` | Kịch bản luồng tự động | Trỏ file để agent tự xác định bước đang kích hoạt. |
-| `workflows/run-graduation.md` | Nhánh A `01 → 06` **rồi tiếp** nhánh Automation `B7 → B10` | Chạy một mạch từ requirement thô tới test đã chạy có ảnh bằng chứng. Có 2 điểm dừng bắt buộc: sau `02` (ASK) và trước Automation (cổng biên giới). Dùng cho project tốt nghiệp trên SUT ShopGo. |
 
 Thêm runbook mới: tạo `workflows/run-<mục-tiêu>.md`, khai vào bảng này. Không sửa bản đồ.
 

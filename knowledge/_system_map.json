@@ -37,8 +37,6 @@
     "agent_extension_guide": "qa-system/templates/README.md",
     "agent_template": "qa-system/templates/AGENT.md",
     "skill_template": "qa-system/templates/skills/ten-skill.md",
-    "shopgo_ui_map": "knowledge/features/shopgo-ui-map.md",
-    "graduation_runbook": "qa-system/workflows/run-graduation.md",
     "integrity_check_command": "npm run agent:check",
     "impact_analysis_command": "npm run agent:check -- --impact <agent>",
     "tools_index": "qa-system/tools/README.md",
@@ -59,7 +57,9 @@
     "input_guide": "INPUT/README.md",
     "output_guide": "OUTPUT/README.md",
     "knowledge_guide": "knowledge/README.md",
-    "system_guide": "qa-system/README.md"
+    "system_guide": "qa-system/README.md",
+    "sprint_data_template": "qa-system/templates/sprint-data.example.json",
+    "dataset_schema_template": "qa-system/templates/dataset-schema.example.json"
   },
   "specialized_agents": {
     "qa_lead": {
@@ -109,19 +109,6 @@
     }
   },
   "features_inventory": {},
-  "sut": {
-    "name": "ShopGo",
-    "url": "https://cwshopgo.github.io",
-    "type": "React SPA tĩnh (Vite build), host GitHub Pages, không có backend/API",
-    "routing": "KHÔNG có router - đổi màn bằng state activeTab. CẤM page.goto(path) trong automation.",
-    "ui_map": "knowledge/features/shopgo-ui-map.md",
-    "storage_keys": [
-      "shopgo_user",
-      "shopgo_orders",
-      "shopgo_sqlite_orders_v1",
-      "shopgo_sqlite_queries_log"
-    ]
-  },
   "tools_layout": {
     "policy": "Tool gom theo nhóm chức năng. Mở đúng thư mục, không quét cả qa-system/tools/.",
     "index": "qa-system/tools/README.md",

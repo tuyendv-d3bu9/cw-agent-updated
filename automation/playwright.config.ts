@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
 
 /**
- * Cấu hình Playwright cho ShopGo.
+ * Cấu hình Playwright — dùng chung cho mọi SUT.
  *
  * Kết quả chạy đi về đâu
  * ----------------------
@@ -12,7 +12,8 @@ import path from 'path';
  * chạy test xong thì ảnh bằng chứng rơi vào chỗ không ai thấy và không nộp được.
  *
  * Hai biến môi trường quyết định đích đến (agent tự truyền, người dùng không cần gõ):
- *   QA_TASK_SLUG  — task đang chạy, ví dụ `shopgo-voucher`
+ *   QA_BASE_URL   — URL hệ thống đang kiểm thử (SUT). develop không gắn SUT nào.
+ *   QA_TASK_SLUG  — task đang chạy, ví dụ `cart-quantity`
  *   QA_RUN_ID     — mã lượt chạy, ví dụ `RUN-01_smoke`
  *
  * Không truyền gì thì rơi về `OUTPUT/_scratch/` — vẫn nằm trong OUTPUT/, vẫn
@@ -41,7 +42,8 @@ export default defineConfig({
     ['json', { outputFile: path.join(runDir, 'results.json') }],
   ],
   use: {
-    baseURL: 'https://cwshopgo.github.io',
+    // SUT do nhánh sử dụng cung cấp. develop là nhánh khung, không gắn hệ thống nào.
+    baseURL: process.env.QA_BASE_URL,
     locale: 'vi-VN',
     timezoneId: 'Asia/Ho_Chi_Minh',
     actionTimeout: 10000,

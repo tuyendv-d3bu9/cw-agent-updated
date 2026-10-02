@@ -16,7 +16,10 @@ description: >
 Chuyển đổi dữ liệu sprint thô ở dạng JSON thành một Daily QA Summary chuẩn hóa gồm đúng 4 section cố định, được trình bày phù hợp với đối tượng độc giả mục tiêu (`dev` hoặc `pm`), đảm bảo 100% số liệu đối soát trực tiếp từ nguồn và tuân thủ tuyệt đối chuẩn FACT (không bịa số liệu, không nhận định cảm tính, không tự suy diễn blocker hay nhiệm vụ).
 
 ## Tham số
-- `sprint_data_path`: Đường dẫn đến file dữ liệu sprint thô ở dạng JSON (ví dụ: `INPUT/sprint_data.json` hoặc đường dẫn bất kỳ do người dùng chỉ định). Bắt buộc.
+- `sprint_data_path`: Đường dẫn file dữ liệu sprint dạng JSON. Bắt buộc.
+  **Hình dáng bắt buộc của file này**: [`qa-system/templates/sprint-data.example.json`](../../templates/sprint-data.example.json).
+  Chưa có file ⇒ chép template ra `OUTPUT/<slug>/reports/sprint_data_<YYYY-MM-DD>.json` và điền
+  từ `runs/<RUN-ID>/run_result.md` + `jira_defects_summary.md`. **Không tự bịa cấu trúc.**
 - `audience`: Đối tượng đọc báo cáo, nhận một trong hai giá trị hợp lệ:
   - `dev`: Trình bày thiên về kỹ thuật, giữ nguyên Bug ID, Test Case ID, chi tiết lỗi và các thông số cụ thể.
   - `pm`: Tập trung vào tiến độ, rủi ro tổng quát và vấn đề cần quyết định; gộp chi tiết kỹ thuật ở mức feature, hạn chế tối đa jargon kỹ thuật nhưng bảo toàn bản chất dữ liệu.

@@ -17,6 +17,18 @@ xuất ra định dạng dùng được ngay: CSV / SQL INSERT / JSON.
 - `format` ∈ `csv` · `sql` · `json` — chọn theo mục đích tiêu thụ (bảng dưới).
 - `volume` — số record mong muốn, do người gọi chỉ định.
 
+## Mẫu schema
+
+Khuôn sẵn dùng được ngay: [`qa-system/templates/dataset-schema.example.json`](../../templates/dataset-schema.example.json)
+— có đủ 9 generator engine hỗ trợ (`vietnamese_name` `phone_vn` `email` `date_vn`
+`voucher_code` `currency_vnd` `enum` `boundary` `negative`).
+
+Chép ra `OUTPUT/<slug>/dataset_schema.json`, sửa theo field thật, rồi chạy:
+```bash
+npm run data:gen -- --slug <slug> --schema OUTPUT/<slug>/dataset_schema.json --count 50
+```
+Khoá bắt đầu bằng `_` là chú thích, engine bỏ qua — dùng để tự mô tả schema.
+
 ## Đầu vào
 - `OUTPUT/<task-slug>/09_data_class_map.md` — Field Map.
 - `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — Business Rules để không vi phạm.

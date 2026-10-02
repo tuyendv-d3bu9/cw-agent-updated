@@ -1,31 +1,33 @@
 # automation/ — Bộ nối với hệ thống đang kiểm thử (SUT Adapter)
 
-> **Thư mục này gắn với MỘT hệ thống cụ thể — không phải code dùng chung.**
-> Hiện tại nó là bộ nối cho **ShopGo** (`https://cwshopgo.github.io`).
-> Dự án khác dùng hệ thống agent này sẽ **thay toàn bộ `pages/` và `tests/`** bằng
-> bộ nối của SUT họ. Khung `qa-system/` thì giữ nguyên, không sửa gì.
+> **Trên nhánh `develop` thư mục này CỐ TÌNH trống.**
+> `develop` là nhánh khung dùng chung, không gắn với hệ thống nào.
+> Nhánh sử dụng (`exam`, `sample/*`, hoặc dự án thật của bạn) mới điền vào đây.
 
-## Vì sao không bỏ được
+## Vì sao trống mà không xoá hẳn
 
-Mọi dự án muốn chạy automation đều cần một bộ nối như vậy — locator, luồng đăng nhập,
-cách dọn trạng thái của *hệ thống đó*. Agent `qa-automation` sinh ra chính loại file này
-(nhánh G trong `WORKFLOW.md`). ShopGo chỉ tình cờ là SUT của repo này.
+Mọi dự án muốn chạy automation đều cần một bộ nối: locator, luồng đăng nhập,
+cách dọn trạng thái của *hệ thống đó*. Agent `qa-automation` sinh ra chính loại file
+này (nhánh G trong `WORKFLOW.md`). Giữ lại `playwright.config.ts` và khung thư mục
+để nhánh sử dụng chỉ việc thả POM vào là chạy, không phải dựng lại cấu hình.
 
-## Có gì ở đây
+## Nhánh sử dụng cần điền gì
 
-| File | Vai trò | Dự án mới |
-|---|---|---|
-| `playwright.config.ts` | Cấu hình, định tuyến bằng chứng về `OUTPUT/<slug>/runs/` | **Giữ**, chỉ đổi `baseURL` |
-| `pages/BasePage.ts` | Điều hướng chung, `resetState()`, `parseMoney()` | **Viết lại** — locator và storage key là của ShopGo |
-| `pages/ShopPage.ts` `CheckoutPage.ts` `LoginModal.ts` | POM từng màn hình ShopGo | **Thay** bằng POM của SUT mới |
-| `tests/smoke.spec.ts` | 5 ca mồi, xác nhận môi trường chạy được | **Thay** bằng smoke của SUT mới |
+| Việc | Cách làm |
+|---|---|
+| Khai báo SUT | Đặt `QA_BASE_URL` trong `.env` hoặc biến môi trường |
+| Ghi bản đồ giao diện | `knowledge/features/<sut>-ui-map.md` — locator trích từ app thật, không suy đoán |
+| Sinh POM | Nói với agent: *"gom cụm luồng và sinh POM"* → `pages/*.ts` |
+| Viết kịch bản | → `tests/*.spec.ts` |
+
+`playwright.config.ts` giữ nguyên, không cần sửa.
 
 ## Kết quả chạy KHÔNG nằm ở đây
 
 `AGENTS.md` §1.2: bằng chứng của một lượt chạy thuộc về `OUTPUT/`.
 
 ```
-automation/                      CODE — sống qua nhiều lượt chạy, dùng lại cho mọi task
+automation/                      CODE — sống qua nhiều lượt chạy
 OUTPUT/<task>/runs/RUN-XX/       KẾT QUẢ — xoá và chạy lại được
   ├─ evidence/*.png              ảnh bằng chứng để nộp bài / log Jira
   ├─ report/                     báo cáo HTML
@@ -33,15 +35,7 @@ OUTPUT/<task>/runs/RUN-XX/       KẾT QUẢ — xoá và chạy lại được
 ```
 
 Agent truyền `QA_TASK_SLUG` và `QA_RUN_ID` để config biết ghi vào đâu.
-Không truyền thì rơi về `OUTPUT/_scratch/` — vẫn thấy được, tên nói rõ là chạy nháp.
-
-## Chạy
-
-```bash
-npm run test:e2e          # agent tự chạy, người dùng không cần gõ
-npm run test:e2e:headed   # xem trình duyệt thao tác
-npm run test:report       # mở báo cáo HTML
-```
+Không truyền thì rơi về `OUTPUT/_scratch/`.
 
 > Cổng biên giới (`AGENTS.md` §1.5): **không** tự chạy tầng này sau Chặng 6.
 > Cần `npm run readiness` cho khuyến nghị GO **và** người dùng yêu cầu rõ kèm URL môi trường.
