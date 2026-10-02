@@ -3,7 +3,7 @@
   "permissions": {
     "allow": [
       "Bash(npm run :*)",
-      "Bash(node agents/tools/:*)",
+      "Bash(node qa-system/tools/:*)",
       "Bash(npx playwright :*)"
     ]
   },
@@ -14,7 +14,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/agents/tools/system/gate-hook.js\"",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/qa-system/tools/system/gate-hook.js\"",
             "timeout": 15,
             "statusMessage": "Kiểm tra cổng ASK..."
           }

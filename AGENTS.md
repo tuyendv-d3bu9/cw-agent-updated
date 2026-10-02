@@ -14,7 +14,7 @@ Dự án được phân định rạch ròi thành 4 khu vực chức năng. Age
 | `INPUT/<task-slug>/` | Chứa tài liệu nguồn 5 đối tác: `01_business`, `02_ba`, `03_dev`, `04_design`, `05_communication` | **Chỉ ĐỌC** (trừ tiện ích chuyển đổi file tự động). |
 | `OUTPUT/<task-slug>/` | Lưu Master Spec (`00`->`06`) và Tầng thực thi các đợt chạy (`runs/`) | **Nơi DUY NHẤT được phép xuất kết quả**. Tuyệt đối không sinh file rác ở root. |
 | `knowledge/` | Bộ não tri thức vĩnh viễn của dự án (SSOT) | Bắt buộc đọc `_system_map.json` đầu tiên để định tuyến vị trí tính năng và conventions. |
-| `agents/` | Hệ thống chuyên gia QA & công cụ thực thi nội bộ | Giao tiếp qua QA Leader (`agents/qa-lead/`), không gọi rời rạc. |
+| `agents/` | Hệ thống chuyên gia QA & công cụ thực thi nội bộ | Giao tiếp qua QA Leader (`qa-system/qa-lead/`), không gọi rời rạc. |
 
 ### 1.1. Cổng Tiếp Nhận Số 0 (QA Leader Intake Gate & Outcome Alignment):
 - Mọi tài liệu đầu vào được tổ chức theo 5 đối tác:
@@ -24,7 +24,7 @@ Dự án được phân định rạch ròi thành 4 khu vực chức năng. Age
   4. `04_design/`: Figma links, wireframes, screenshots giao diện.
   5. `05_communication/`: Q&A log, biên bản họp, Change Requests (CR).
 - **QA Leader gác cổng số 0**:
-  + Tự động kích hoạt `agents/tools/intake/intake.js` phân loại và convert docx/pdf sang `.md` sạch.
+  + Tự động kích hoạt `qa-system/tools/intake/intake.js` phân loại và convert docx/pdf sang `.md` sạch.
   + Đánh giá sự thiếu hụt tài liệu (**Gap Assessment**): Kiểm tra bắt buộc phải có `02_ba/`. Nếu thiếu tài liệu các ngăn khác, ghi nhận rủi ro và các giả định tương ứng.
   + Căn chỉnh mục tiêu đầu ra (**Outcome Alignment**): Xác nhận Mode làm việc (Mode 1: Manual Test Cases Only; Mode 2: Manual + Test Data; Mode 3: Web Journey & Gherkin; Mode 4: Full Automation E2E).
 
@@ -43,7 +43,7 @@ Dự án được phân định rạch ròi thành 4 khu vực chức năng. Age
 - File này chứa đầy đủ: Bảng định tuyến (`routing_table`), vị trí chính xác của từng feature, và trạng thái hiện tại. Đọc xong là mở **ĐÚNG FILE ĐÍCH**, tiết kiệm 80% token tìm kiếm.
 - Lệnh đồng bộ bản đồ: `npm run map:sync`.
 
-### 1.4. Vai Trò Tổng Chỉ Huy Của QA Leader (`agents/qa-lead/`):
+### 1.4. Vai Trò Tổng Chỉ Huy Của QA Leader (`qa-system/qa-lead/`):
 - User **CHỈ CẦN GIAO TIẾP VỚI QA LEADER**. Không cần nhớ hay gọi trực tiếp từng sub-agent con.
 - QA Leader tự động nắm bắt ý định của User, tra cứu `_system_map.json`, lập `00_plan.md` và giao việc cho đúng chuyên gia (`qa-analyst`, `qa-test-design`, `qa-automation`...).
 
@@ -73,7 +73,7 @@ Dự án được phân định rạch ròi thành 4 khu vực chức năng. Age
 | Lớp | Cơ chế | Ai thi hành | Hiệu lực |
 |---|---|---|---|
 | **1** | `npm run gate [slug]` → exit `0` mở / `1` đóng. Tự ghi/gỡ `OUTPUT/<slug>/_gate.lock` | Agent tự gọi | Mọi IDE |
-| **2** | Hook `PreToolUse` (`.claude/settings.json` → `agents/tools/system/gate-hook.js`) **chặn thẳng** thao tác ghi file `03_`→`06_` | **Harness chặn — model không cãi được** | Claude Code |
+| **2** | Hook `PreToolUse` (`.claude/settings.json` → `qa-system/tools/system/gate-hook.js`) **chặn thẳng** thao tác ghi file `03_`→`06_` | **Harness chặn — model không cãi được** | Claude Code |
 | **3** | `npm run gate:audit [slug]` → exit `2` nếu phát hiện file `03_`→`06_` sinh ra sau mốc khoá | Agent / CI | Mọi IDE |
 
 **Nghĩa vụ bắt buộc của mọi Agent**:
@@ -174,7 +174,7 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
 - **CẤM** AI gõ tay từng dòng dữ liệu test khi số lượng lớn (> 10 records) vì gây lãng phí token và hallucinate.
 - **Quy trình chuẩn**:
   1. AI chỉ định nghĩa `dataset_schema.json` siêu nhẹ (~30 token) chứa các loại generator: `vietnamese_name`, `phone_vn`, `email`, `voucher_code`, `currency_vnd`, `date_vn`, `boundary`, `enum`, `negative`.
-  2. Kích hoạt engine nội bộ `agents/tools/testdata/generate-dataset.js` (`npm run data:gen`) sinh hàng trăm/nghìn dòng trong 0.05s với 0 token LLM.
+  2. Kích hoạt engine nội bộ `qa-system/tools/testdata/generate-dataset.js` (`npm run data:gen`) sinh hàng trăm/nghìn dòng trong 0.05s với 0 token LLM.
   3. Xuất bảng dữ liệu chuẩn markdown hoặc CSV/JSON vào `OUTPUT/<task-slug>/10_dataset.md`.
 
 ### 3.2. Chuẩn Hóa Gherkin BDD (`Given - When - Then`) Cho Luồng Mò Web:
@@ -231,7 +231,7 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
 
 ## 6. Lệnh Tiện Ích
 
-> Mục lục đầy đủ kèm bảng tra "cần gì → chạy gì": [`agents/tools/README.md`](agents/tools/README.md).
+> Mục lục đầy đủ kèm bảng tra "cần gì → chạy gì": [`qa-system/tools/README.md`](qa-system/tools/README.md).
 > Tool được gom theo nhóm chức năng (`intake/ knowledge/ testcase/ testdata/ jira/ system/ lib/`).
 
 - **Kiểm cổng ASK trước khi sinh Chặng 3→6** (bắt buộc, xem §1.6.1):
@@ -284,8 +284,18 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
 > - Toàn bộ các script trong dự án là **CÔNG CỤ NỘI BỘ DÀNH RIÊNG CHO AI AGENT**.
 > - Khi người dùng yêu cầu bằng tiếng Việt tự nhiên, **AI Agent tự động kích hoạt công cụ chạy ngầm ở hậu trường** và chỉ báo cáo kết quả thân thiện cho người dùng.
 
+### Lệnh định hướng cho người dùng mới
+Khi người dùng hỏi *"bắt đầu từ đâu"*, *"tôi phải làm gì"*, *"thư mục này để làm gì"*,
+hoặc tỏ ra bối rối trước cấu trúc dự án: chạy `npm start` và đọc kết quả cho họ.
+Lệnh này in ra việc nên làm tiếp, công việc đang có, và **bản đồ quyền sở hữu thư mục**
+(của bạn / dùng chung / máy móc / đọc thôi).
+
 ### Ví Dụ Thực Tế:
-- User nói: *"Có tài liệu mới trong INPUT, xử lý giúp"* ➔ Agent **tự chạy** `intake.js` ngầm.
+- User nói: *"Có tài liệu mới trong INPUT, xử lý giúp"* ➔ Agent **tự chạy** `npm run intake` ngầm.
+  Lệnh không tham số sẽ tự quét tài liệu rời trong `INPUT/`, chuyển sang Markdown sạch, phân vào
+  5 ngăn, **và dựng luôn** `OUTPUT/<slug>/`, `knowledge/features/<slug>.md`, `00_plan.md`.
+  Người dùng chỉ cần kéo thả file — không phải tự tạo thư mục nào.
+- User nói: *"Bắt đầu từ đâu?"* · *"Thư mục này để làm gì?"* ➔ Agent **tự chạy** `npm start` và đọc kết quả.
 - User nói: *"Sinh cho tôi 50 bộ dữ liệu test"* ➔ Agent **tự chạy** `generate-dataset.js` ngầm.
 - User nói: *"Gộp test case lại đi"* ➔ Agent **tự chạy** `merge-testcases.js` ngầm.
 - User nói: *"Tiến độ thế nào rồi?"* ➔ Agent **tự chạy** `status.js` ngầm và in bảng tiến độ ra chat.

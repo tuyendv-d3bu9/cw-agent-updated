@@ -1,3 +1,6 @@
+# Data Configuration: mcp_config.example
+
+```json
 {
   "mcpServers": {
     "jira": {
@@ -6,3 +9,4 @@
     }
   }
 }
+```

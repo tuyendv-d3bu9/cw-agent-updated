@@ -1,7 +1,7 @@
 # CW QA Agent — Hướng Dẫn Vận Hành
 
 Hệ thống Agent QA chuyên sâu gồm **8 nhóm chuyên gia**, điều hành tự động theo triết lý **Knowledge-First**, **Zero-CLI**, và chuẩn **FACT**.
-Toàn bộ quy tắc cốt lõi nằm tại `AGENTS.md` (root) và `agents/core/QA_STANDARD.md`.
+Toàn bộ quy tắc cốt lõi nằm tại `AGENTS.md` (root) và `qa-system/core/QA_STANDARD.md`.
 
 ---
 
@@ -29,7 +29,7 @@ knowledge/                      BỘ NÃO TRI THỨC VĨNH VIỄN (SSOT)
   _template.md                  Mẫu chuẩn tạo tri thức tính năng mới
   features/<feature-slug>.md    Quy tắc đã chốt · câu trả lời BA · giả định đã chốt · domain constant
 
-agents/                         HỆ THỐNG 9 CHUYÊN GIA QA NỘI BỘ
+qa-system/                      HỆ THỐNG 9 CHUYÊN GIA QA (cũng là npm package sau này)
   qa-lead/AGENT.md              TỔNG CHỈ HUY — Cổng số 0 tiếp nhận & điều phối toàn bộ
   qa-lead/skills/               system-upgrade-governance: nâng cấp chính hệ thống agent
   core/QA_STANDARD.md           Luật chung: verdict · guard · FACT · 06W · risk matrix
@@ -43,7 +43,7 @@ agents/                         HỆ THỐNG 9 CHUYÊN GIA QA NỘI BỘ
   qa-readiness-evaluator/       Cổng Go/No-Go: đánh giá độ chín test design trước khi sang automation
   templates/                    Khuôn mẫu + 7 bước dựng agent mới
   workflows/                    Bản đồ pipeline & các runbook chạy sẵn
-  tools/                        Công cụ nội bộ (xem agents/tools/README.md)
+  tools/                        Công cụ nội bộ (xem qa-system/tools/README.md)
 
 automation/                     TẦNG KIỂM THỬ TỰ ĐỘNG PLAYWRIGHT
   pages/                        Page Object Model: BasePage, ShopPage, CheckoutPage, LoginModal
