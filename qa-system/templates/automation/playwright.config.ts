@@ -25,8 +25,8 @@ const ROOT = path.resolve(__dirname, '..');
 /**
  * URL của hệ thống đang kiểm thử.
  *
- * Thứ tự ưu tiên: biến môi trường QA_BASE_URL -> khối `sut.url` trong
- * `knowledge/_system_map.json`. Nhờ vậy SUT chỉ khai MỘT chỗ (bản đồ hệ thống,
+ * Thứ tự ưu tiên: biến môi trường QA_BASE_URL -> `url` trong `knowledge/_sut.json`
+ * (bản cũ: khối `sut.url` trong `_system_map.json`, vẫn đọc được để tương thích). Nhờ vậy SUT chỉ khai MỘT chỗ (bản đồ hệ thống,
  * đúng vai SSOT) mà cả automation lẫn agent đều dùng chung — không hardcode
  * URL trong code, cũng không bắt người dùng tự đặt biến môi trường.
  *
@@ -35,12 +35,18 @@ const ROOT = path.resolve(__dirname, '..');
  */
 function resolveBaseURL(): string | undefined {
   if (process.env.QA_BASE_URL?.trim()) return process.env.QA_BASE_URL.trim();
-  try {
-    const map = JSON.parse(fs.readFileSync(path.join(ROOT, 'knowledge', '_system_map.json'), 'utf-8'));
-    return map?.sut?.url;
-  } catch {
-    return undefined;
+  // `knowledge/_sut.json` là nơi khai hệ thống đang kiểm thử. Tách khỏi
+  // `_system_map.json` để nhánh khung không bao giờ chạm vào nó — hết xung đột merge.
+  for (const file of ['_sut.json', '_system_map.json']) {
+    try {
+      const j = JSON.parse(fs.readFileSync(path.join(ROOT, 'knowledge', file), 'utf-8'));
+      const url = file === '_sut.json' ? j?.url : j?.sut?.url;   // bản cũ nhúng trong map
+      if (url && !url.startsWith('<')) return url;               // bỏ qua chỗ giữ chỗ của template
+    } catch {
+      /* không có file hoặc JSON hỏng — thử nguồn tiếp theo */
+    }
   }
+  return undefined;
 }
 const slug = process.env.QA_TASK_SLUG?.trim();
 const runId = process.env.QA_RUN_ID?.trim() || 'RUN-local';

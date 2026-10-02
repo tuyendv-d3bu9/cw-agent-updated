@@ -64,7 +64,8 @@
     "init_tool": "qa-system/tools/system/init.js",
     "automation_template": "qa-system/templates/automation/",
     "tool_tests": "qa-system/tools/__tests__/",
-    "test_command": "npm test"
+    "test_command": "npm test",
+    "sut_file": "knowledge/_sut.json"
   },
   "specialized_agents": {
     "qa_lead": {
