@@ -110,9 +110,10 @@ QA Leader chủ yếu **điều phối**, nhưng có một việc không uỷ qu
 | *"Xuất file cho Jira / Redmine"*<br>*"Xuất test case ra CSV"* | Ủy quyền cho `qa-test-design` chạy ngầm `agents/tools/testcase/export-testcases.js` tạo CSV chuẩn. |
 | *"Đẩy test case lên Jira"* | Ủy quyền cho `qa-test-design` chạy ngầm `agents/tools/jira/jira-client.js push`. |
 | *"Lấy danh sách lỗi về"*<br>*"Kéo bug từ Jira/Redmine"* | Ủy quyền cho `qa-reporter` chạy ngầm `agents/tools/jira/jira-client.js pull` lưu vào `OUTPUT/<slug>/jira_defects_summary.md`. |
+| *"Kiểm tra test case có đạt chuẩn không"*<br>*"Soát lỗi format giúp tôi"* | Tự chạy ngầm `npm run lint -- <slug>`, báo cáo danh sách lỗi kèm vị trí cụ thể. Chạy tự động trước khi nghiệm thu Chặng 5/6. |
 | *"Đã viết test case xong chưa, sẵn sàng làm automation chưa?"*<br>*"Kiểm tra độ sẵn sàng giúp tôi"* | Tự chạy ngầm `npm run readiness -- <slug> --write`, ủy quyền `qa-readiness-evaluator` diễn giải, rồi báo cáo khuyến nghị GO / CONDITIONAL GO / NO-GO kèm số liệu thật. |
 | *"Kiểm tra xem tính năng mới có đá logic với tính năng cũ không"* | Tự chạy ngầm `agents/tools/knowledge/conflict-detector.js` và báo cáo ngay nếu phát hiện mâu thuẫn rule. |
-| *"BA đã chốt: [nội dung câu trả lời]"* | Tự nạp vào `knowledge/features/<slug>.md` Mục 8 (`GIẢ ĐỊNH ĐÃ CHỐT`) và tự chạy sync bản đồ. |
+| *"BA đã chốt: [nội dung câu trả lời]"* | Tự nạp vào `knowledge/features/<slug>.md` Mục 8 (`GIẢ ĐỊNH ĐÃ CHỐT`), chạy `npm run knowledge:sync -- <slug> --write` để không sót câu nào còn kẹt trong `OUTPUT/`, rồi sync bản đồ. |
 | *"Tôi có ghi chép bug thô, chuẩn hóa để log Jira"*<br>*"Chuyển bug notes thành bug report"* | Ủy quyền cho `qa-reporter` chạy `gen-bug-report.md` và xuất ra `OUTPUT/reports/bug-report-<slug>.md`. |
 | *"Tạo báo cáo daily QA hôm nay cho [dev/pm]"*<br>*"Tổng kết sprint hôm nay từ JSON"* | Ủy quyền cho `qa-reporter` chạy `gen-daily-summary.md` và xuất ra `OUTPUT/reports/daily-summary-<audience>.md`. |
 | *"Hãy giúp tôi nâng cấp skill [tên]"*<br>*"Tôi muốn test case có thêm trường [X]"*<br>*"Skill [tên] đang thiếu [Y], bổ sung giúp tôi"* | Tự chạy `skills/system-upgrade-governance.md` — cây quyết định thường ra **`[C]` tinh chỉnh tại chỗ**. Sửa skill xong tự rà lại điểm neo N3/N5 rồi chạy cổng nghiệm thu. |

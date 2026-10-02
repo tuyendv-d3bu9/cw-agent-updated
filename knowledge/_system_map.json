@@ -48,7 +48,11 @@
     "ask_gate_audit_command": "npm run gate:audit",
     "jira_sync_results_command": "npm run jira:sync <slug> <run-id>",
     "readiness_tool": "agents/tools/system/readiness.js",
-    "readiness_command": "npm run readiness -- <slug> --write"
+    "readiness_command": "npm run readiness -- <slug> --write",
+    "deliverable_linter": "agents/tools/system/lint-deliverables.js",
+    "lint_command": "npm run lint -- <slug>",
+    "knowledge_sync_tool": "agents/tools/knowledge/sync-answers.js",
+    "knowledge_sync_command": "npm run knowledge:sync -- <slug> --write"
   },
   "specialized_agents": {
     "qa_lead": {
@@ -97,7 +101,18 @@
       "role": "Cổng Go/No-Go trước Automation: số liệu do npm run readiness đo bằng máy, agent diễn giải thành 15_readiness_report.md"
     }
   },
-  "features_inventory": {},
+  "features_inventory": {
+    "function-d-voucher": {
+      "name": "function-d-voucher",
+      "input_file": "INPUT/function-d-voucher.md",
+      "knowledge_file": "knowledge/features/function-d-voucher.md",
+      "output_dir": "OUTPUT/function-d-voucher/",
+      "plan_file": "OUTPUT/function-d-voucher/00_plan.md",
+      "status": "COMPLETED (PASS)",
+      "total_testcases": 34,
+      "last_verdict": "PASS"
+    }
+  },
   "sut": {
     "name": "ShopGo",
     "url": "https://cwshopgo.github.io",

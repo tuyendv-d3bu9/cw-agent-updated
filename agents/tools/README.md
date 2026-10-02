@@ -27,6 +27,7 @@ system/       ← tự kiểm, tiến độ, bản đồ, cổng ASK
 | Tạo file tri thức cho tính năng mới | `npm run knowledge:new <slug>` | `knowledge/new-knowledge.js` |
 | Dựng `knowledge/` cho repo trắng | `npm run knowledge:init` | `knowledge/bootstrap-knowledge.js` |
 | Soát mâu thuẫn rule giữa các tính năng | `npm run knowledge:conflicts [slug]` | `knowledge/conflict-detector.js` |
+| **Chuyển câu trả lời BA từ OUTPUT sang knowledge** | `npm run knowledge:sync -- <slug> --write` | `knowledge/sync-answers.js` |
 | Gộp `batch_*.md` thành spec tổng | `npm run testcases:merge <slug>` | `testcase/merge-testcases.js` |
 | Xuất CSV Jira Xray / Redmine | `npm run testcases:export <slug>` | `testcase/export-testcases.js` |
 | Sinh dataset (0 token LLM) | `npm run data:gen -- --slug <slug> --schema <f.json> --count 50` | `testdata/generate-dataset.js` |
@@ -41,6 +42,7 @@ system/       ← tự kiểm, tiến độ, bản đồ, cổng ASK
 | **Kiểm cổng ASK trước khi sinh chặng 3→6** | `npm run gate [slug]` | `system/gate.js` |
 | Soát dấu vết nhảy cóc cổng ASK | `npm run gate:audit [slug]` | `system/gate.js` |
 | **Đo độ sẵn sàng trước Automation** | `npm run readiness -- <slug> --write` | `system/readiness.js` |
+| **Kiểm chuẩn FACT của deliverable** | `npm run lint -- <slug>` | `system/lint-deliverables.js` |
 
 ---
 
@@ -111,3 +113,29 @@ rồi ghi `OUTPUT/<slug>/15_readiness_metrics.json`.
 
 > ⚠️ `GO` **chưa đủ** để chạy Automation. Cổng biên giới (`AGENTS.md` §1.5) còn đòi
 > người dùng yêu cầu rõ ràng **và** URL môi trường cụ thể.
+
+---
+
+## Linter deliverable (`system/lint-deliverables.js`)
+
+`AGENTS.md` §5 và `QA_STANDARD.md` đặt chuẩn rất chặt — 8 trường, Title mở đầu bằng
+Verify/Validate/Confirm, Tags phải trích `Rule#` và `Viewpoint#`, cấm placeholder,
+cấm ô bảng trống, quét đủ W1→W6. Nhưng thứ duy nhất kiểm những chuẩn đó lại là
+`coverage-review`, tức **LLM tự chấm bài của LLM**.
+
+`npm run lint -- <slug>` biến chuẩn thành điều kiện kiểm được bằng máy:
+
+| Nhóm luật | Kiểm gì |
+|---|---|
+| Test case | `TC_ID` đúng `[MODULE]-[001]` · không trùng · đủ 7 trường còn lại · Title đúng động từ · Steps đánh số và ≤ 8 · Priority hợp lệ · Tags có `Rule#`+`Viewpoint#` · không placeholder |
+| Dòng meta | `Owner:` và `Verdict:` nằm trong 10 dòng đầu (QA_STANDARD §7) |
+| 06W | `02_` quét đủ W1→W6 (QA_STANDARD §4) |
+| Bảng | Không ô nào để trống (QA_STANDARD §2.7) |
+
+Exit `0` = sạch hoặc chỉ cảnh báo · `1` = có lỗi phải sửa.
+
+> **Nguyên tắc khi mở rộng linter: thà bỏ sót còn hơn kêu oan.**
+> Bản đầu bắt nhầm `<script>alert('XSS')</script>` (payload XSS hợp lệ) và `SG-XXXXXX`
+> (mô tả định dạng mã đơn) là placeholder, lại báo "thiếu Verdict" cho file đang có
+> `**Verdict Chặng 1**:`. Linter kêu oan thì người ta tắt nó đi — hỏng đúng mục đích.
+> Luật mới phải được thử trên deliverable thật trước khi bật.

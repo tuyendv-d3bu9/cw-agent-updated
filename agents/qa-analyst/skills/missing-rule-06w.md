@@ -89,6 +89,20 @@ Cập nhật `knowledge/features/<feature-slug>.md`:
 - Mục **8** — khi BA/PO trả lời, người duyệt chuyển kết luận xuống đây kèm ai chốt + ngày.
 - **Không xoá** dòng cũ, chỉ đổi `Trạng thái` (`New` → `Confirmed` / `TREO` / `Rejected`).
 
+## Chốt chặn bắt buộc: chuyển câu trả lời sang `knowledge/`
+
+Khi Chặng 2 chuyển sang `PASS` nhờ BA/PO đã trả lời, **bắt buộc** chạy:
+
+```bash
+npm run knowledge:sync -- <task-slug> --write
+```
+
+Lý do (`QA_STANDARD` §8): `OUTPUT/` là kết quả một lần chạy, có thể bỏ đi;
+`knowledge/` mới là thứ tích luỹ. Câu trả lời chỉ nằm trong `02_missing_rule_report.md`
+thì lần chạy sau sẽ phải đi hỏi lại BA đúng những câu đã được trả lời.
+
+`npm run gate <slug>` sẽ cảnh báo nếu còn mã `MR-xx` kẹt lại trong `OUTPUT/`.
+
 ## Chốt chặn nghiệm thu (Quality Gates)
 - [ ] Quét đủ 6 câu hỏi W1→W6, không bỏ trống bất kỳ câu hỏi nào trong Ma trận 06W.
 - [ ] Mỗi Missing Rule mô tả đủ 8 trường bắt buộc, có mã `MR-xx` tăng dần.
