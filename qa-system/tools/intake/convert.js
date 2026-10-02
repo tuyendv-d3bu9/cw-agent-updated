@@ -9,10 +9,17 @@
  *   - OpenAPI / Swagger / Postman / Config (.json, .yaml, .yml)
  *   - Plain text (.txt, .log)
  *
- * Usage:
- *   npm run convert                          # Converts all docs in ./docs or ./docx -> INPUT/
- *   npm run convert -- <file>                # Single document -> INPUT/
- *   npm run convert -- <src_dir> <out_dir>   # Custom directory -> Custom output
+ * Lệnh:
+ *   npm run convert -- <file>                 Một tài liệu -> INPUT/
+ *   npm run convert -- <src_dir> <out_dir>    Cả thư mục -> thư mục đích
+ *
+ * KHÔNG có chế độ "không tham số thì tự quét một thư mục mặc định".
+ * Bản cũ mặc định quét `./docs` (hoặc `./docx`) — mà `docs/` là tên thư mục tài liệu
+ * tự nhiên nhất của mọi repo. Hệ quả thật: khi dự án có thư mục `docs/`, lệnh này
+ * đổ cả cẩm nang 32 trang vào `INPUT/` như thể đó là tài liệu nghiệp vụ cần kiểm thử.
+ *
+ * Muốn tiếp nhận tài liệu thì dùng `npm run intake` — nó quét `INPUT/`, phân loại
+ * vào 5 ngăn và dựng khung task. `convert` chỉ là bộ chuyển đổi thuần.
  */
 
 const fs = require("fs");
@@ -20,12 +27,25 @@ const path = require("path");
 const { convertDocumentToMarkdown } = require("../lib/doc-converter");
 
 const SUPPORTED_EXTENSIONS = ['.docx', '.xlsx', '.xls', '.csv', '.pdf', '.json', '.yaml', '.yml', '.txt'];
-const DEFAULT_SRC = fs.existsSync("docs") ? "docs" : "docx";
 const DEFAULT_OUT = "INPUT";
 
 const args = process.argv.slice(2);
 const positional = args.filter((a) => !a.startsWith("--"));
-const src = positional[0] || DEFAULT_SRC;
+
+if (positional.length === 0) {
+  console.log(`
+Cách dùng:
+  npm run convert -- <file>                 Chuyển một tài liệu sang Markdown
+  npm run convert -- <thư-mục> [đích]       Chuyển cả thư mục
+
+👉 Nếu bạn muốn ĐƯA TÀI LIỆU VÀO DỰ ÁN, dùng lệnh khác:
+     npm run intake
+   Lệnh đó quét INPUT/, phân loại vào 5 ngăn, và dựng sẵn khung task.
+`);
+  process.exit(0);
+}
+
+const src = positional[0];
 const outDir = positional[1] || DEFAULT_OUT;
 
 function listSupportedFiles(target) {
