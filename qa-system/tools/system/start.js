@@ -42,7 +42,7 @@ const ZONES = [
     icon: '⚙️',
     rows: [
       ['qa-system/', '9 agent QA + skill + công cụ. Sửa ở đây = nâng cấp hệ thống.'],
-      ['automation/', 'Code Playwright dùng chung. Chỉ cần khi làm automation.'],
+      ['automation/', 'Code Playwright cho SUT hiện tại (ShopGo). Chỉ cần ở Mode 4.'],
     ],
   },
   {

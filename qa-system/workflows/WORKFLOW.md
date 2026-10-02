@@ -109,7 +109,7 @@ Nhánh `F` chạy độc lập hoàn toàn, không cần deliverable nào của 
 |---|---|---|---|---|
 | G1 | `qa-exploratory` | `web-journey-discovery` | URL môi trường + `05_test_case_spec.md` | `07_web_journey_discovery.md` (Gherkin BDD + bảng ánh xạ Step ➔ Locator) |
 | G2 | `qa-automation` | `flow-clustering` | `07_web_journey_discovery.md` + `05_test_case_spec.md` | `08_flow_clusters.md` (gom test case thành cụm luồng dùng chung tiền điều kiện) |
-| G3 | `qa-automation` | `pom-generator` | `08_flow_clusters.md` + `knowledge/features/shopgo-ui-map.md` | `automation/pages/*.ts` (Page Object Model) |
+| G3 | `qa-automation` | `pom-generator` | `08_flow_clusters.md` + `knowledge/features/<sut>-ui-map.md` | `automation/pages/*.ts` (Page Object Model) |
 | G4 | `qa-automation` | `test-runner-evidence` | `automation/tests/*.spec.ts` + phạm vi ticket | `runs/RUN-XX_<ticket>/run_result.md` · `evidence/*.png` · `run_defects.md` |
 
 Nhánh G ghi code vào `automation/` và kết quả chạy vào `OUTPUT/<task-slug>/runs/`.
