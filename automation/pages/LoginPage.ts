@@ -1,10 +1,10 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
+import { BasePage } from './BasePage';
 
 /**
  * Page Object Model for ShopGo Authentication & Header
  */
-export class LoginPage {
-  readonly page: Page;
+export class LoginPage extends BasePage {
   readonly headerLoginBtn: Locator;
   readonly toggleDemoBtn: Locator;
   readonly emailInput: Locator;
@@ -15,7 +15,7 @@ export class LoginPage {
   readonly authModal: Locator;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.headerLoginBtn = page.locator('#btn-header-login');
     this.toggleDemoBtn = page.locator('#btn-toggle-demo-accounts');
     this.emailInput = page.locator('input[type="email"], input[placeholder*="email" i]');
@@ -26,12 +26,11 @@ export class LoginPage {
     this.authModal = page.locator('#modal-auth');
   }
 
-  async goto() {
-    await this.page.goto('/');
-    await this.page.waitForLoadState('domcontentloaded');
+  async goto(): Promise<void> {
+    await this.open();
   }
 
-  async login(email: string = 'khachhang@shopgo.vn', password: string = '123456') {
+  async login(email: string = 'khachhang@shopgo.vn', password: string = '123456'): Promise<void> {
     // If already logged in, skip
     if (await this.userProfileBtn.isVisible().catch(() => false)) {
       return;
@@ -62,7 +61,7 @@ export class LoginPage {
     await this.userProfileBtn.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
   }
 
-  async logout() {
+  async logout(): Promise<void> {
     if (await this.userProfileBtn.isVisible().catch(() => false)) {
       await this.userProfileBtn.click();
       if (await this.logoutBtn.isVisible().catch(() => false)) {
