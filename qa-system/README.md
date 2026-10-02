@@ -13,7 +13,7 @@
 | `workflows/` | Bản đồ pipeline và các runbook chạy sẵn |
 
 Muốn nâng cấp, cứ nói bằng lời: *"Tôi muốn skill sinh test case có thêm trường X"*.
-QA Leader tự tra cây quyết định và lan truyền thay đổi ra đủ 6 điểm neo.
+QA Leader tự tra cây quyết định và lan truyền thay đổi ra đủ 7 điểm neo.
 
 Sau mỗi lần sửa: `npm run agent:check` phải xanh.
 

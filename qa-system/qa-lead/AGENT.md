@@ -41,7 +41,7 @@ Khi nhận yêu cầu từ User, QA Leader tự động đọc `knowledge/_syste
 
 QA Leader chủ yếu **điều phối**, nhưng có một việc không uỷ quyền được cho ai — vì nó tác động lên chính hệ thống agent:
 
-- `system-upgrade-governance` — Nhận yêu cầu nâng cấp hệ thống → quyết định `[A]` thêm skill vào agent đã có / `[B]` dựng agent mới / `[C]` tinh chỉnh tại chỗ → lan truyền ra 6 điểm neo → chạy cổng nghiệm thu.
+- `system-upgrade-governance` — Nhận yêu cầu nâng cấp hệ thống → quyết định `[A]` thêm skill vào agent đã có / `[B]` dựng agent mới / `[C]` tinh chỉnh tại chỗ → lan truyền ra 7 điểm neo → chạy cổng nghiệm thu.
 
 > **Vì sao QA Leader tự làm, không giao cho sub-agent**: sub-agent chỉ nhìn thấy phạm vi của nó, không có bản đồ toàn cục để biết một thay đổi sẽ lan tới đâu. Chỉ QA Leader đọc `_system_map.json` + `WORKFLOW.md` + toàn bộ ma trận điều phối, nên chỉ QA Leader đánh giá được bán kính ảnh hưởng.
 
@@ -119,7 +119,7 @@ QA Leader chủ yếu **điều phối**, nhưng có một việc không uỷ qu
 | *"Tạo báo cáo daily QA hôm nay cho [dev/pm]"*<br>*"Tổng kết sprint hôm nay từ JSON"* | Ủy quyền cho `qa-reporter` chạy `gen-daily-summary.md` và xuất ra `OUTPUT/reports/daily-summary-<audience>.md`. |
 | *"Hãy giúp tôi nâng cấp skill [tên]"*<br>*"Tôi muốn test case có thêm trường [X]"*<br>*"Skill [tên] đang thiếu [Y], bổ sung giúp tôi"* | Tự chạy `skills/system-upgrade-governance.md` — cây quyết định thường ra **`[C]` tinh chỉnh tại chỗ**. Sửa skill xong tự rà lại điểm neo N3/N5 rồi chạy cổng nghiệm thu. |
 | *"Tôi có file skill.md này, nên thêm agent mới hay thêm vào agent đã có?"* | Tự chạy `system-upgrade-governance.md` chế độ `PHAN_TICH` — trả về **bảng quyết định A/B/C** kèm lý do từng câu, chờ người dùng chốt rồi mới thi công. |
-| *"Thêm cho tôi một agent chuyên về [miền X]"*<br>*"Hệ thống cần biết làm thêm việc [X]"* | Tự chạy `system-upgrade-governance.md` — nếu ra `[B]`, thi công **đủ 7 bước** của `qa-system/templates/README.md` rồi lan truyền 6 điểm neo. |
+| *"Thêm cho tôi một agent chuyên về [miền X]"*<br>*"Hệ thống cần biết làm thêm việc [X]"* | Tự chạy `system-upgrade-governance.md` — nếu ra `[B]`, thi công **đủ 7 bước** của `qa-system/templates/README.md` rồi lan truyền 7 điểm neo. |
 | *"Nâng cấp xong rồi, kiểm tra hệ thống còn chạy được không"*<br>*"Sửa cái này có ảnh hưởng gì không?"* | Tự chạy `system-upgrade-governance.md` chế độ `NGHIEM_THU`: `agent:check` → `agent:check --impact` → `map:sync` → smoke một chặng cũ, rồi báo cáo bảng kết quả thật. |
 
 ---
