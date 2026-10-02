@@ -1,31 +1,37 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright Configuration for ShopGo Voucher Automation
+ * Playwright Configuration for ShopGo Automation
  */
 export default defineConfig({
   testDir: './tests',
   timeout: 45000,
   expect: {
-    timeout: 8000
+    timeout: 10000,
   },
   fullyParallel: false, // Run sequentially for shared localStorage and stability
+  retries: 0,
   workers: 1,
   reporter: [
     ['list'],
-    ['json', { outputFile: 'test-results/results.json' }]
+    ['html', { outputFolder: '../automation/playwright-report', open: 'never' }],
+    ['json', { outputFile: '../automation/test-results/results.json' }],
   ],
   use: {
     baseURL: 'https://cwshopgo.github.io',
-    trace: 'on-first-retry',
+    locale: 'vi-VN',
+    timezoneId: 'Asia/Ho_Chi_Minh',
+    actionTimeout: 10000,
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
-    viewport: { width: 1280, height: 800 }
+    video: 'off',
+    viewport: { width: 1280, height: 800 },
   },
+  outputDir: './test-results',
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-    }
-  ]
+    },
+  ],
 });

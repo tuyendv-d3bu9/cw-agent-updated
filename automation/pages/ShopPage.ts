@@ -1,75 +1,96 @@
 import { Page, Locator } from '@playwright/test';
+import { BasePage } from './BasePage';
+
+export type Category = 'Tất cả' | 'Thời trang' | 'Công nghệ' | 'Gia dụng';
 
 /**
- * Page Object Model for ShopGo Product Catalog & Storefront
+ * Màn Cửa hàng (tab `shop`) — danh sách sản phẩm, tìm kiếm, lọc danh mục.
  */
-export class ShopPage {
-  readonly page: Page;
+export class ShopPage extends BasePage {
+  readonly searchInput: Locator;
+  readonly emptyResultMessage: Locator;
   readonly navShopBtn: Locator;
 
   constructor(page: Page) {
-    this.page = page;
-    this.navShopBtn = page.locator('#btn-nav-shop');
+    super(page);
+    this.navShopBtn = this.navShop;
+    this.searchInput = page.getByPlaceholder('Tìm theo tên sản phẩm...');
+    this.emptyResultMessage = page.getByText('Không có kết quả khớp với từ khóa');
   }
 
-  async goto() {
-    if (await this.navShopBtn.isVisible().catch(() => false)) {
-      await this.navShopBtn.click();
+  /** Điều hướng tới màn Shop */
+  async goto(): Promise<void> {
+    if (await this.navShop.isVisible().catch(() => false)) {
+      await this.navShop.click();
     } else {
-      await this.page.goto('/');
+      await this.open();
     }
-    await this.page.waitForLoadState('domcontentloaded');
   }
 
-  async addProduct(prodId: string, clicks: number = 1) {
-    const addBtn = this.page.locator(`#btn-add-${prodId}`);
-    await addBtn.waitFor({ state: 'visible', timeout: 5000 });
-    for (let i = 0; i < clicks; i++) {
-      await addBtn.click();
-      await this.page.waitForTimeout(100);
+  /** Nút "Thêm vào giỏ" của một sản phẩm. `productId` dạng `prod-001`. */
+  addToCartButton(productId: string): Locator {
+    return this.page.locator(`#btn-add-${productId}`);
+  }
+
+  /** Thêm sản phẩm vào giỏ hàng `times` lần */
+  async addToCart(productId: string, times = 1): Promise<void> {
+    for (let i = 0; i < times; i++) {
+      await this.addToCartButton(productId).click();
+      if (times > 1) {
+        await this.page.waitForTimeout(100);
+      }
     }
+  }
+
+  /** Alias cho addToCart */
+  async addProduct(prodId: string, clicks: number = 1): Promise<void> {
+    await this.addToCart(prodId, clicks);
+  }
+
+  async search(keyword: string): Promise<void> {
+    await this.searchInput.fill(keyword);
+  }
+
+  async clearSearch(): Promise<void> {
+    await this.searchInput.fill('');
+  }
+
+  async filterByCategory(category: Category): Promise<void> {
+    await this.page.getByRole('button', { name: category, exact: true }).click();
+  }
+
+  /** Số sản phẩm đang hiển thị, đếm qua số nút "Thêm vào giỏ" nhìn thấy được. */
+  async visibleProductCount(): Promise<number> {
+    return this.page.locator('[id^="btn-add-prod-"]').count();
   }
 
   /**
-   * Helper to set up a specific cart subtotal
-   * Examples:
-   * - 190.000 ₫: prod-005 x 1
-   * - 200.000 ₫: prod-003 x 1
-   * - 280.000 ₫: prod-004 x 1
-   * - 300.000 ₫: prod-001 x 2 (150k x 2)
-   * - 350.000 ₫: prod-002 x 1
-   * - 490.000 ₫: prod-005 x 1 + prod-003 x 1 + prod-006 x 1 (190k + 200k + 120k = 510k, or prod-004 x 1 + prod-005 x 1 + prod-006 x 0...)
-   * - 500.000 ₫: prod-001 x 2 + prod-003 x 1 (300k + 200k)
-   * - 600.000 ₫: prod-003 x 3 (200k x 3)
+   * Helper thiết lập giỏ hàng để đạt ngưỡng subtotal mong muốn
    */
-  async setupCartForSubtotal(targetAmount: number) {
+  async setupCartForSubtotal(targetAmount: number): Promise<void> {
     await this.goto();
     if (targetAmount === 150000) {
-      await this.addProduct('prod-001', 1);
+      await this.addToCart('prod-001', 1);
     } else if (targetAmount === 190000) {
-      await this.addProduct('prod-005', 1);
+      await this.addToCart('prod-005', 1);
     } else if (targetAmount === 200000) {
-      await this.addProduct('prod-003', 1);
+      await this.addToCart('prod-003', 1);
     } else if (targetAmount === 280000) {
-      await this.addProduct('prod-004', 1);
+      await this.addToCart('prod-004', 1);
     } else if (targetAmount === 300000) {
-      await this.addProduct('prod-001', 2);
+      await this.addToCart('prod-001', 2);
     } else if (targetAmount === 350000) {
-      await this.addProduct('prod-002', 1);
+      await this.addToCart('prod-002', 1);
     } else if (targetAmount === 490000) {
-      // 200.000 (prod-003) + 150.000 (prod-001) + 140.000...
-      // Or prod-004 (280k) + prod-005 (190k) = 470k...
-      // Let's use prod-005 (190k) + prod-001 (150k) x 2 (300k) = 490.000 ₫!
-      await this.addProduct('prod-005', 1);
-      await this.addProduct('prod-001', 2);
+      await this.addToCart('prod-005', 1);
+      await this.addToCart('prod-001', 2);
     } else if (targetAmount === 500000) {
-      await this.addProduct('prod-001', 2); // 300k
-      await this.addProduct('prod-003', 1); // 200k
+      await this.addToCart('prod-001', 2);
+      await this.addToCart('prod-003', 1);
     } else if (targetAmount === 600000) {
-      await this.addProduct('prod-003', 3); // 200k x 3
+      await this.addToCart('prod-003', 3);
     } else {
-      // Default: 350.000 ₫
-      await this.addProduct('prod-002', 1);
+      await this.addToCart('prod-002', 1);
     }
   }
 }
