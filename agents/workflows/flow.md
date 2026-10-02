@@ -70,6 +70,16 @@
 * **Vào**: Output `01` + `03` + `04`
 * **Ra**: `OUTPUT/<task-slug>/05_test_case_spec.md`
 
+### ⚪ Bước 6: Rà soát độ phủ 3 góc nhìn (`coverage-review`) — [Dự kiến]
+* **Agent**: `qa-test-design` | **Skill**: `coverage-review.md`
+* **Vào**: Output `01` + `03` + `05`
+* **Ra**: `OUTPUT/<task-slug>/06_coverage_review.md`
+
+### ⚪ Chốt chặn: Đánh giá độ sẵn sàng kiểm thử (`gen-readiness-report`) — [Chốt chặn Automation]
+* **Agent**: `qa-readiness-evaluator` | **Skill**: `gen-readiness-report.md`
+* **Vào**: `coverage-plan.json` + `testcases/*.csv` + `validation-report.md` + `specs` + `reviews/`
+* **Ra**: `outputs/reports/readiness-report.md` (Khuyến nghị GO / NO-GO)
+
 ---
 
 ## 3. Khối lệnh tự chạy (Execution Block)

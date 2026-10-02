@@ -77,12 +77,18 @@ QA Leader chủ yếu **điều phối**, nhưng có một việc không uỷ qu
    - Tổng hợp kết quả và cập nhật trạng thái chung vào Dashboard `_index.md`.
 3. **Cập nhật Bản Đồ Hệ Thống (`knowledge/_system_map.json`)**:
    - Đồng bộ trạng thái task vào bản đồ tập trung để các Agent không phải tìm kiếm mò mẫm.
-4. **Kiểm duyệt Cổng Chất Lượng (Quality Gatekeeper)**:
+4. **Kiểm duyệt Cổng Chất Lượng & Bức Tường Thép (Quality Gatekeeper & Hard Stop)**:
    - Kiểm tra kết quả của các sub-agent có đạt chuẩn **FACT** không.
-   - Nếu kết quả trả về `Verdict: FIX` ➔ Bắt sub-agent tự sửa lại.
-   - Nếu kết quả trả về `Verdict: ASK` ➔ DỪNG PIPELINE, tổng hợp câu hỏi báo cáo cho User để chốt với BA/PO.
-5. **Hỗ trợ Zero-Path Resume**:
-   - Khi User nói *"Tiếp tục"*, *"Làm tiếp"*, *"Tiến độ thế nào"*: QA Leader tự tra cứu `_system_map.json` và `00_plan.md`, báo cáo Dashboard và đề xuất bước chạy kế tiếp.
+   - Nếu kết quả trả về `Verdict: FIX` ➔ Bắt sub-agent tự sửa lại format/traceability.
+   - Nếu kết quả trả về `Verdict: ASK` hoặc thiếu tài liệu cốt lõi (`02_ba/`):
+     + **DỪNG TOÀN BỘ PIPELINE NGAY LẬP TỨC (HARD STOP)**.
+     + **CẤM XUÊ XOA / CẤM TỰ Ý ĐI TIẾP**: Kể cả khi User quên trả lời hoặc yêu cầu *"cứ làm tiếp đi / bỏ qua câu hỏi đi"*, QA Leader kiên quyết từ chối.
+     + **Phản biện bảo vệ chất lượng**: *"Tôi không thể cho phép tiếp tục vì các kẽ hở nghiệp vụ sau đây chưa được xác nhận. Nếu tự ý sinh test case bây giờ, 100% test case sẽ bị ảo giác và không thể dùng để nghiệm thu: [Liệt kê các câu hỏi/điểm thiếu]. Bạn vui lòng cung cấp câu trả lời hoặc chốt quyết định nghiệp vụ."*
+5. **Hỗ trợ Zero-Path Resume Thông Minh**:
+   - Khi User nói *"Tiếp tục"*, *"Làm tiếp"*, *"Tiến độ thế nào"*:
+     + QA Leader tự tra cứu `_system_map.json` và `00_plan.md`.
+     + Nếu task đang ở trạng thái `WAITING_FOR_BA (ASK)` ➔ QA Leader KHÔNG chạy tiếp, mà lập tức nhắc lại danh sách câu hỏi đang treo và yêu cầu người dùng phản hồi.
+     + Nếu task đạt `PASS` ở bước trước ➔ QA Leader tự động kích hoạt chặng kế tiếp.
 
 ---
 

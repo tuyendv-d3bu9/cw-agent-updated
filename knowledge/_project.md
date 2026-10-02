@@ -1,9 +1,9 @@
-# Project Knowledge — quy ước dùng cho MỌI feature
+# Project Knowledge — Quy ước dùng chung cho MỌI feature
 
-> Tri thức nền cấp **dự án**, không đổi theo từng tính năng. Mọi skill đọc file này.
-> Trống mục nào thì agent phải gắn `[GIẢ ĐỊNH]` khi cần tới — điền dần để giảm giả định.
+> Tri thức nền cấp **dự án**, không đổi theo từng tính năng. Mọi skill và agent đều đọc file này đầu tiên.
+> Trống mục nào thì agent phải gắn `[GIẢ ĐỊNH]` khi cần tới — người dùng/BA điền dần để giảm thiểu giả định.
 
-Dự án: `ShopGo — Sàn thương mại điện tử demo` · Cập nhật lần cuối: `2026-09-21`
+Dự án: `ShopGo — Sàn thương mại điện tử demo` · Cập nhật lần cuối: `2026-10-02`
 URL môi trường test: `https://cwshopgo.github.io`
 
 ---
@@ -36,7 +36,7 @@ URL môi trường test: `https://cwshopgo.github.io`
 | Criticality Context | Luồng sống còn: **Thêm giỏ → Áp voucher → Thanh toán → Lưu đơn**. Sai công thức tiền là lỗi Blocker |
 
 ## 4. Môi trường test
-| Thuộc tính | Nội dung |
+| Thuộc tính | Cấu hình / Hướng dẫn |
 |---|---|
 | Môi trường | Production-like tĩnh: `https://cwshopgo.github.io` (không có staging riêng) |
 | Cách seed data | **Không có DB server.** Dùng 1 trong 2 cách: (a) thao tác UI, (b) ghi thẳng `localStorage`. **QA Panel không có preset nào dùng được** (`shopgo-ui-map.md` §4) |
@@ -47,7 +47,7 @@ URL môi trường test: `https://cwshopgo.github.io`
 ### 5.1. Jira Xray (Khuyến nghị)
 | Thuộc tính | Cấu hình chuẩn | Ý nghĩa / Ghi chú |
 |---|---|---|
-| Issue Type | `Test` | Loại issue đại diện cho Test Case trong Xray |
+| Issue Type | `Test` | Loại issue đại diện cho Test Case trong Jira Xray |
 | Summary Format | `[<TC_ID>] <Title>` | Ví dụ: `[VCHR-001] Áp mã GIAM50K cho đơn đạt 200.000 ₫` |
 | Manual Steps | `Action`, `Data`, `Expected Result` | 3 cột chuẩn của bảng Manual Test Step trong Xray |
 | Preconditions | `Preconditions` (Text/Wiki) | Tiền điều kiện trước khi thực hiện test |

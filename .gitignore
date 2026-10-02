@@ -2,17 +2,14 @@ node_modules
 .env
 
 .backup/
-OUTPUT/
-OUTPUT/
 
 INPUT/raw 
 
 .agents/
+!.agents/mcp_config.json
 skills-lock.json
 
 TODO.md
-
-.claude
 
 .backups/
 
@@ -21,12 +18,17 @@ TODO.md
 .playwright-mcp/
 
 # Playwright
+test-results/
 automation/test-results/
 automation/playwright-report/
 playwright/.cache/
 
+# Private exam / lecturer docs
 GIANG-VIEN/
-
 GIANG-VIEN.md
-
 THONG-TIN.md
+
+# Scratch docs
+PLAN.md
+VIDEO_RECORDING_SCRIPT.md
+

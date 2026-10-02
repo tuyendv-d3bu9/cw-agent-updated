@@ -8,12 +8,15 @@ Cấu trúc thư mục file (sau khi đã gom agent):
 
 ```
 agents/
+    qa-lead/
     qa-analyst/
     qa-test-design/
     qa-test-data/
     qa-exploratory/
     qa-ui-review/
     qa-reporter/
+    qa-automation/
+    qa-readiness-evaluator/
 
 agents/
     core/QA_STANDARD.md
@@ -37,11 +40,12 @@ workflows/
 | **A · Pipeline chính** | `01 => 02 => 03 => 04 => 05 => 06` | Luôn chạy. Đây là xương sống requirement => test case. |
 | **B · Nhánh dữ liệu** | `09 => 10 => 11 => 12` | Chạy **sau** `05`, khi cần dataset để execute. |
 | **C · Độc lập** | `07` (exploratory) · `08` (UI screenshot) | Gọi bất cứ lúc nào, không chặn nhánh A/B. |
-| **D · Báo cáo lỗi** | `13` (gen-bug-report) · `14` (gen-daily-summary) | Chạy khi Tester có bug notes thô cần chuẩn hóa thành Jira Bug Report. |
-| **E · Quản trị hệ thống** | `system-upgrade-governance` | **Không thuộc pipeline kiểm thử.** Chạy khi cần nâng cấp chính bộ agent: thêm skill, dựng agent mới, tinh chỉnh skill cũ. |
+| **D · Báo cáo lỗi** | `13` (gen-bug-report) · `14` (gen-daily-summary) | Chạy khi Tester có bug notes thô cần chuẩn hóa hoặc tổng kết sprint. |
+| **E · Chốt chặn Automation** | `15` (gen-readiness-report) | Chạy sau thiết kế/data, trước khi viết Playwright Automation để đánh giá Go/No-Go. |
+| **F · Quản trị hệ thống** | `system-upgrade-governance` | **Không thuộc pipeline kiểm thử.** Chạy khi cần nâng cấp chính bộ agent: thêm skill, dựng agent mới, tinh chỉnh skill cũ. |
 
-`07` cần risk area từ `03`. `08` cần ảnh đính kèm, không cần bước nào trước. `13` cần file bug notes thô và file rules.
-Nhánh `E` chạy độc lập hoàn toàn, không cần deliverable nào của A/B/C/D — nhưng **sau khi chạy xong phải smoke lại một chặng của nhánh A** để chứng minh luồng cũ không vỡ.
+`07` cần risk area từ `03`. `08` cần ảnh đính kèm, không cần bước nào trước. `13` cần file bug notes thô và file rules. `15` cần các design-time artifacts (specs, coverage plan, test cases CSV, data validation report, reviews).
+Nhánh `F` chạy độc lập hoàn toàn, không cần deliverable nào của A/B/C/D/E — nhưng **sau khi chạy xong phải smoke lại một chặng của nhánh A** để chứng minh luồng cũ không vỡ.
 
 ---
 
@@ -81,16 +85,22 @@ Nhánh `E` chạy độc lập hoàn toàn, không cần deliverable nào của 
 | 13 | `qa-reporter` | `gen-bug-report` | File bug notes + `knowledge/` | `OUTPUT/reports/bug-report-<slug>.md` |
 | 14 | `qa-reporter` | `gen-daily-summary` | Sprint data JSON + audience | `outputs/reports/daily-summary-<audience>.md` |
 
-### Nhánh E — Quản trị & Nâng cấp Hệ thống (System Governance)
+### Nhánh E — Đánh giá độ sẵn sàng kiểm thử (Design-time QA Readiness Gate)
+
+| # | Agent | Skill | Vào | Ra |
+|---|---|---|---|---|
+| 15 | `qa-readiness-evaluator` | `gen-readiness-report` | `coverage-plan.json` + `testcases/*.csv` + `validation-report.md` + `specs` + `reviews/` | `outputs/reports/readiness-report.md` |
+
+### Nhánh F — Quản trị & Nâng cấp Hệ thống (System Governance)
 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
 | — | `qa-lead` | `system-upgrade-governance` | Yêu cầu nâng cấp của người dùng (hoặc file `.md` họ đưa) + `knowledge/_system_map.json` + `agents/templates/` | `OUTPUT/_upgrades/<ngày>_<tên>.md`<br>**và** thay đổi thật trong `agents/`, `WORKFLOW.md`, `_system_map.json` |
 
-> Nhánh E **không mang số `NN`** vì nó không sinh deliverable trong pipeline kiểm thử của một `task-slug`.
+> Nhánh F **không mang số `NN`** vì nó không sinh deliverable trong pipeline kiểm thử của một `task-slug`.
 > Đây là skill duy nhất được phép ghi vào `agents/` và `knowledge/_system_map.json`.
 
-Mọi output nhánh A-C nằm trong `OUTPUT/<task-slug>/`, kèm `_index.md`. Nhánh D ghi tại `OUTPUT/reports/` hoặc `outputs/reports/`. Nhánh E ghi tại `OUTPUT/_upgrades/`.
+Mọi output nhánh A-C nằm trong `OUTPUT/<task-slug>/`, kèm `_index.md`. Nhánh D & E ghi tại `OUTPUT/reports/` hoặc `outputs/reports/`. Nhánh F ghi tại `OUTPUT/_upgrades/`.
 
 ---
 

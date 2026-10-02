@@ -51,10 +51,20 @@ Dự án được phân định rạch ròi thành 4 khu vực chức năng. Age
 - User **CHỈ CẦN GIAO TIẾP VỚI QA LEADER**. Không cần nhớ hay gọi trực tiếp từng sub-agent con.
 - QA Leader tự động nắm bắt ý định của User, tra cứu `_system_map.json`, lập `00_plan.md` và giao việc cho đúng chuyên gia (`qa-analyst`, `qa-test-design`, `qa-automation`...).
 
-### 1.5. Quy Tắc Biên Giới Nghiêm Ngặt (Boundary Gate — Không Tự Ý Sinh Automation):
+### 1.5. Quy Tắc Biên Giới Nghiêm Ngặt (Boundary Gate & Readiness Gate):
 - **CẤM** tự ý chạy một mạch từ thiết kế Test Cases sang viết script Automation Playwright nếu ứng dụng web chưa sẵn sàng hoặc người dùng chỉ yêu cầu thiết kế Test Case Manual.
 - **Điểm Dừng Chuẩn**: Chặng 6 (`06_coverage_review.md`) là điểm hoàn tất tự nhiên của quy trình thiết kế kiểm thử.
-- Chỉ kích hoạt Tầng Thực Thi (`runs/`) hoặc Automation khi có yêu cầu rõ ràng từ người dùng kèm URL môi trường cụ thể.
+- **Chốt chặn sẵn sàng (Readiness Gate)**: Trước khi kích hoạt Automation, hệ thống yêu cầu đối soát chéo qua `qa-readiness-evaluator` (`gen-readiness-report.md` ➔ `outputs/reports/readiness-report.md`) để xác nhận độ chín của thiết kế và dữ liệu FACT.
+- Chỉ kích hoạt Tầng Thực Thi (`runs/`) hoặc Automation khi có yêu cầu rõ ràng từ người dùng kèm URL môi trường cụ thể và khuyến nghị GO.
+
+### 1.6. Quy Tắc Bức Tường Thép (Iron Gatekeeper — Tuyệt Đối Cấm Nhảy Cóc Khi Vướng ASK):
+- **BẢO VỆ CHẤT LƯỢNG LÀ TRÊN HẾT**: Khi tài liệu thiếu hụt (Cổng 0 thiếu `02_ba/`), hoặc Chặng 2 quét kẽ hở 06W ra Verdict `ASK` (còn Open Questions chưa được xác nhận):
+  + **CẤM TUYỆT ĐỐI**: Không được tự ý nhảy cóc sang Chặng 3 (Viewpoint), Chặng 4 (Test Idea), hay Chặng 5 (Sinh Test Case).
+  + **CẤM XUÊ XOA THEO Ý USER**: Kể cả khi User quên trả lời, giục làm tiếp (*"cứ làm tiếp đi"*, *"bỏ qua câu hỏi đó đi"*, *"viết test case đại đi"*), Agent **BẮT BUỘC PHẢI CỨNG RẮN BẢO VỆ QUAN ĐIỂM CHẶN (HARD STOP)**.
+  + **PHẢN BIỆN CHUẨN MỰC**: Agent phải giải thích rõ ràng với User: *"Nếu sinh test case trên nền tảng nghiệp vụ đang mơ hồ hoặc lủng logic, 100% test case sinh ra sẽ là ảo giác (hallucination), gây lãng phí nguồn lực kiểm thử và tiềm ẩn nguy cơ lọt lỗi nghiêm trọng lên Production."*
+  + **ĐIỀU KIỆN MỞ KHÓA DUY NHẤT (UNLOCK GATE)**: Chỉ được phép tiến sang bước sau khi:
+    (1) User/BA cung cấp câu trả lời giải quyết triệt để các câu hỏi `ASK`, HOẶC
+    (2) User đưa ra quyết định kinh doanh tường minh (Explicit Business Decision) để ghi nhận vào Mục 8 (`GIẢ ĐỊNH ĐÃ CHỐT`) trong `knowledge/features/<slug>.md`.
 
 ---
 
@@ -90,6 +100,7 @@ Ngày tạo: YYYY-MM-DD · Người lập: <Agent/Tool> · Trạng thái: IN-PRO
 - [ ] **Chặng 5**: Sinh Test Case chi tiết 8 trường [qa-test-design/skills/test-case-generation.md] ➔ Ra `05_test_case_spec.md`
 - [ ] **Chặng 6**: Rà soát độ phủ 3 góc nhìn & Nghiệm thu [qa-test-design/skills/coverage-review.md] ➔ Ra `06_coverage_review.md`
 - [ ] **Bổ trợ Dữ liệu (Nếu cần)**: Data Class [qa-test-data/skills/data-class-map.md] · Dataset [qa-test-data/skills/dataset-generation.md] · Boundary [qa-test-data/skills/boundary-negative-dataset.md] · Traceability [qa-test-data/skills/data-validation-traceability.md]
+- [ ] **Chốt chặn Sẵn sàng (Khi sang Automation)**: Đánh giá độ chín test design [qa-readiness-evaluator/skills/gen-readiness-report.md] ➔ Ra `outputs/reports/readiness-report.md`
 
 ### 2.4. Cơ Chế "QA Leader Tự Nắm Tiến Độ" (Zero-Path Typing):
 Người dùng **KHÔNG CẦN** nhớ đường dẫn hay gõ lại `OUTPUT/.../00_plan.md`.
@@ -102,6 +113,13 @@ Mọi AI Agent **bắt buộc tự động đóng vai QA Leader**:
 3. Báo cáo bảng Dashboard tiến độ ngắn gọn và chủ động đề xuất:
    *"Task `<task-slug>` đã hoàn thành xong Chặng X. Tôi đề xuất làm tiếp Chặng Y [hoặc Batch Z]. Bạn có muốn tiếp tục không?"*
 4. Khi người dùng xác nhận (`OK` / `Tiếp tục`), Agent tự động đọc đúng đầu vào của chặng dang dở để làm tiếp mà không làm lại các bước cũ.
+
+### 2.5. Chỉ Dẫn Độc Lập Cho Mọi Coding Agent (Claude Code, Cursor, Codex, Windsurf):
+- **CẤM TỰ Ý TẠO FILE Ở ROOT**: Không tạo thêm `TODO.md`, `CLAUDE.md`, `.cursorrules`... ở thư mục gốc để tránh làm bẩn workspace.
+- **Nơi duy nhất theo dõi tiến trình (Universal Task Tracker)**:
+  + Mọi Agent khi cần kiểm tra hoặc cập nhật tiến độ công việc **bắt buộc đọc và tick `- [x]` trực tiếp vào `OUTPUT/<task-slug>/00_plan.md`**.
+  + Nếu muốn lấy danh sách công việc hiện tại dạng checklist: Chạy lệnh `npm run status`.
+  + File `00_plan.md` sử dụng 100% cú pháp GitHub Flavored Markdown (GFM) tiêu chuẩn, hoàn toàn tương thích và kế thừa mượt mà giữa Antigravity, Claude Code, Cursor và Codex.
 
 ---
 
@@ -178,10 +196,10 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
    - **Testable**: Kỳ vọng đầu ra phải kiểm chứng được nhị phân (Pass/Fail).
 2. **Bắt buộc gắn nhãn `[GIẢ ĐỊNH]`**:
    - Bất kỳ điểm nào tài liệu chưa nêu mà Agent tự suy đoán đều **BẮT BUỘC** gắn tiền tố `[GIẢ ĐỊNH]` kèm mức độ rủi ro.
-3. **Cổng Nghiệm Thu (Verdict Gates)**:
+3. **Cổng Nghiệm Thu Bất Biến & Chốt Chặn Bức Tường Thép (Verdict Gates)**:
    - `PASS`: Đạt chuẩn ➔ Chạy bước tiếp.
    - `FIX`: Sai format/trace ➔ Agent tự sửa.
-   - `ASK`: Hổng nghiệp vụ ➔ DỪNG LẠI, hỏi người dùng, không được tự suy đoán đi tiếp.
+   - `ASK`: Hổng nghiệp vụ / thiếu thông tin ➔ **HARD STOP TUYỆT ĐỐI**. Bắt buộc dừng lại, giữ nguyên hiện trạng, không tự suy đoán, không nhảy cóc sang chặng sau. Kể cả khi User quên trả lời hoặc yêu cầu bỏ qua, Agent bắt buộc từ chối và yêu cầu chốt rõ ràng mới mở cổng đi tiếp.
 4. **Không làm bẩn thư mục gốc (Keep Root Clean)**:
    - Không sinh file tùy tiện ngoài thư mục gốc. Mọi kết quả phân tích PHẢI nằm trong `OUTPUT/<task-slug>/`.
 
@@ -213,6 +231,12 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
   ```bash
   npm run map:sync
   ```
+- Kết nối và tương tác Jira (MCP Server & REST API):
+  ```bash
+  npm run jira:mcp   # Chạy stdio MCP Server cho AI IDEs (Antigravity, Cursor, Claude)
+  npm run jira:pull  # Kéo danh sách bug/defect từ Jira về
+  npm run jira:push  # Chuẩn bị file CSV Xray / đẩy test case lên Jira
+  ```
 
 ---
 
@@ -230,4 +254,5 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
 - User nói: *"Gộp test case lại đi"* ➔ Agent **tự chạy** `merge-testcases.js` ngầm.
 - User nói: *"Tiến độ thế nào rồi?"* ➔ Agent **tự chạy** `status.js` ngầm và in bảng tiến độ ra chat.
 - User nói: *"Đã chốt xong"* ➔ Agent **tự chạy** `sync-system-map.js` ngầm để cập nhật bản đồ vệ tinh.
+- User nói: *"Kiểm tra ticket Jira SHOPGO-101"* hoặc *"Log bug này lên Jira"* ➔ Agent **tự kích hoạt** Jira MCP tool hoặc gọi API ngầm.
 

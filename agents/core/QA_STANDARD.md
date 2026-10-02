@@ -6,13 +6,18 @@
 
 ---
 
-## 1. Verdict — PASS / FIX / ASK
+## 1. Verdict — PASS / FIX / ASK (Cơ Chế Bức Tường Thép — Hard Stop Gate)
 
-| Verdict | Khi nào | Cách xử lý |
-|---|---|---|
-| **PASS** | Đủ thông tin và đạt checklist | Ghi nhận đạt |
-| **FIX** | Đủ thông tin nhưng sai format / trace / consistency | Viết bản sửa cụ thể |
-| **ASK** | Thiếu thông tin / cần nghiệp vụ / rule treo | Chuyển người quyết, ghi rõ cần ai + cần thông tin gì |
+| Verdict | Khi nào | Cách xử lý | Trạng thái Pipeline |
+|---|---|---|---|
+| **PASS** | Đủ thông tin và đạt checklist | Ghi nhận đạt | Mở khóa (Unlock) cho chặng kế tiếp |
+| **FIX** | Đủ thông tin nhưng sai format / trace / consistency | Viết bản sửa cụ thể | Dừng bước hiện tại để sub-agent tự sửa ngay |
+| **ASK** | Thiếu thông tin / cần nghiệp vụ / rule treo / hổng 06W | Chuyển người quyết, ghi rõ cần ai + cần thông tin gì | **HARD STOP PHONG TỎA**: Đóng băng toàn bộ pipeline, cấm nhảy cóc sang chặng sau |
+
+> ⛔ **NGUYÊN TẮC BẤT DI BẤT DỊCH VỚI VERDICT `ASK`**:
+> 1. Khi một bước ra kết luận `ASK`, Agent **TUYỆT ĐỐI KHÔNG ĐƯỢC** tự động làm tiếp các chặng sau (Viewpoint, Test Idea, Test Case...).
+> 2. Nếu User quên trả lời, nói chung chung, hoặc giục làm tiếp (*"cứ làm tiếp đi"*, *"bỏ qua đi"*), Agent **BẮT BUỘC PHẢI TỪ CHỐI** và giải thích rõ: test case sinh ra từ logic hổng sẽ là ảo giác 100%.
+> 3. Cổng chỉ được mở khóa khi User trả lời cụ thể hoặc chốt quyết định rõ ràng vào Mục 8 của file feature knowledge.
 
 **Ngoại lệ** — skill `coverage-review`: rà đủ 3 góc nhìn mà KHÔNG thấy gap nào thì kết luận
 `ASK` (bắt buộc nghi ngờ bỏ sót, không tự quyết `PASS`). `PASS` chỉ xuất hiện khi có xác nhận
