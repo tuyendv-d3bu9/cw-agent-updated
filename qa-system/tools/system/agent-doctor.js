@@ -163,7 +163,7 @@ if (discovered.length === 0) {
   process.exit(1);
 }
 
-console.log(`🔍 Phát hiện ${discovered.length} agent trong agents/\n`);
+console.log(`🔍 Phát hiện ${discovered.length} agent trong qa-system/\n`);
 
 /**
  * Bóc danh sách skill khai báo ở mục tiêu đề chứa chữ "Skill" của AGENT.md.
@@ -250,7 +250,7 @@ if (map) {
 }
 
 // ─── C. WORKFLOW.md có biết đủ mọi skill không ───
-console.log('\n--- Đối soát agents/workflows/WORKFLOW.md ---');
+console.log('\n--- Đối soát qa-system/workflows/WORKFLOW.md ---');
 const wfPath = path.join(agentsDir, 'workflows', 'WORKFLOW.md');
 if (!fs.existsSync(wfPath)) {
   fail('WORKFLOW.md', 'Không tồn tại');

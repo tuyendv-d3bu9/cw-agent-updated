@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
+import fs from 'fs';
 
 /**
  * Cấu hình Playwright — dùng chung cho mọi SUT.
@@ -12,7 +13,7 @@ import path from 'path';
  * chạy test xong thì ảnh bằng chứng rơi vào chỗ không ai thấy và không nộp được.
  *
  * Hai biến môi trường quyết định đích đến (agent tự truyền, người dùng không cần gõ):
- *   QA_BASE_URL   — URL hệ thống đang kiểm thử (SUT). develop không gắn SUT nào.
+ *   QA_BASE_URL   — ghi đè URL của SUT (mặc định lấy từ knowledge/_system_map.json)
  *   QA_TASK_SLUG  — task đang chạy, ví dụ `cart-quantity`
  *   QA_RUN_ID     — mã lượt chạy, ví dụ `RUN-01_smoke`
  *
@@ -20,6 +21,27 @@ import path from 'path';
  * thấy được, và tên `_scratch` nói rõ đây là chạy nháp chưa gắn vào task nào.
  */
 const ROOT = path.resolve(__dirname, '..');
+
+/**
+ * URL của hệ thống đang kiểm thử.
+ *
+ * Thứ tự ưu tiên: biến môi trường QA_BASE_URL -> khối `sut.url` trong
+ * `knowledge/_system_map.json`. Nhờ vậy SUT chỉ khai MỘT chỗ (bản đồ hệ thống,
+ * đúng vai SSOT) mà cả automation lẫn agent đều dùng chung — không hardcode
+ * URL trong code, cũng không bắt người dùng tự đặt biến môi trường.
+ *
+ * Nhánh khung (develop) không có khối `sut` nên giá trị là undefined: đúng, vì
+ * nhánh đó không gắn với hệ thống nào.
+ */
+function resolveBaseURL(): string | undefined {
+  if (process.env.QA_BASE_URL?.trim()) return process.env.QA_BASE_URL.trim();
+  try {
+    const map = JSON.parse(fs.readFileSync(path.join(ROOT, 'knowledge', '_system_map.json'), 'utf-8'));
+    return map?.sut?.url;
+  } catch {
+    return undefined;
+  }
+}
 const slug = process.env.QA_TASK_SLUG?.trim();
 const runId = process.env.QA_RUN_ID?.trim() || 'RUN-local';
 
@@ -42,8 +64,7 @@ export default defineConfig({
     ['json', { outputFile: path.join(runDir, 'results.json') }],
   ],
   use: {
-    // SUT do nhánh sử dụng cung cấp. develop là nhánh khung, không gắn hệ thống nào.
-    baseURL: process.env.QA_BASE_URL,
+    baseURL: resolveBaseURL(),
     locale: 'vi-VN',
     timezoneId: 'Asia/Ho_Chi_Minh',
     actionTimeout: 10000,

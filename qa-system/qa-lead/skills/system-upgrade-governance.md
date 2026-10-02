@@ -3,7 +3,7 @@ name: system-upgrade-governance
 description: >
   Điều phối việc NÂNG CẤP CHÍNH HỆ THỐNG AGENT: nhận yêu cầu nâng cấp (hoặc file skill.md do người
   dùng đưa), quyết định thêm skill vào agent đã có / dựng agent mới / tinh chỉnh tại chỗ, lan truyền
-  thay đổi ra đủ 6 điểm neo của hệ thống, rồi chạy cổng nghiệm thu để bảo đảm luồng cũ không vỡ.
+  thay đổi ra đủ 7 điểm neo của hệ thống, rồi chạy cổng nghiệm thu để bảo đảm luồng cũ không vỡ.
 ---
 
 # Skill: system-upgrade-governance
@@ -49,7 +49,7 @@ thì skill này bảo đảm **ba điều**:
 
 - **Không sửa `qa-system/core/QA_STANDARD.md`** trừ khi thay đổi thực sự áp cho **≥ 2 skill**. Đây là hiến pháp tầng luật chung; sửa bừa là làm vỡ mọi agent cùng lúc.
 - **Không tạo agent mới khi chỉ cần thêm một skill.** Lạm phát agent làm ma trận điều phối của QA Leader mất khả năng đọc.
-- **Không sửa file rồi bỏ dở việc khai báo.** Sửa xong phần nội dung mà chưa lan truyền đủ 6 điểm neo §4 thì coi như **chưa hoàn thành**, verdict là `FIX`.
+- **Không sửa file rồi bỏ dở việc khai báo.** Sửa xong phần nội dung mà chưa lan truyền đủ 7 điểm neo §4 thì coi như **chưa hoàn thành**, verdict là `FIX`.
 - **Không tự ý đánh số `NN` trùng** với số đã dùng. Trước khi cấp số phải liệt kê dãy đang dùng.
 - **Không xoá skill/agent cũ** để "dọn cho gọn". Chỉ thêm và sửa. Việc gỡ bỏ là quyết định của con người (§6).
 - Không chép lại bảng Verdict / FACT / 06W / chuỗi biên vào file mới — chỉ trỏ tới `qa-system/core/QA_STANDARD.md`.
@@ -121,7 +121,7 @@ Chỉ áp dụng khi skill mới **sinh ra một file deliverable mới** trong 
 > Dãy tại thời điểm viết file này: `01`–`14` đã dùng. Số mới bắt đầu từ `15`.
 > **Luôn kiểm tra lại thực tế**, đừng tin con số này nếu hệ thống đã được nâng cấp nhiều lần.
 
-## 4. Bước 4 — Lan truyền ra 6 điểm neo (phần dễ quên nhất)
+## 4. Bước 4 — Lan truyền ra 7 điểm neo (phần dễ quên nhất)
 
 Đây là khác biệt giữa "sửa được file" và "hệ thống vẫn chạy". Đánh dấu từng dòng sau khi làm xong.
 
@@ -208,7 +208,7 @@ Owner: qa-system/qa-lead/skills/system-upgrade-governance.md · Ngày: <YYYY-MM-
 |---|---|---|
 | <…> | <AGENT.md / skills/ / QA_STANDARD.md / knowledge/> | <…> |
 
-## 4. Lan truyền 6 điểm neo
+## 4. Lan truyền 7 điểm neo
 | # | Điểm neo | File đã sửa | Nội dung thay đổi | Trạng thái |
 |---|---|---|---|---|
 | N1 | skills/ | `agents/…/….md` | <…> | ĐÃ XONG |
@@ -217,6 +217,7 @@ Owner: qa-system/qa-lead/skills/system-upgrade-governance.md · Ngày: <YYYY-MM-
 | N4 | _system_map.json | routing_table | <…> | ĐÃ XONG |
 | N5 | qa-lead/AGENT.md | §2 + §5 | <…> | ĐÃ XONG |
 | N6 | agent-doctor.js | PIPELINE_DEPENDENCIES | <…> | KHÔNG ÁP DỤNG |
+| N7 | lint-deliverables.js | luật kiểm deliverable | <…> | KHÔNG ÁP DỤNG |
 
 ## 5. Cổng nghiệm thu
 | # | Kiểm tra | Kết quả thật |

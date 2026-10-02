@@ -23,7 +23,37 @@ const { PATHS, taskDir, listTaskSlugs } = require('../lib/paths');
 
 // ───────────────────── Luật ─────────────────────
 
-const FIELDS = ['Title', 'Precondition', 'Test Steps', 'Test Data', 'Expected Result', 'Priority', 'Tags'];
+/**
+ * Các trường bắt buộc của một test case, KHÔNG kể `TC_ID` (nằm ở heading).
+ *
+ * Đọc trực tiếp từ bảng "Định dạng N trường bắt buộc" trong skill
+ * `test-case-generation.md`, thay vì chép cứng ở đây. Lý do: khi ai đó nâng cấp
+ * skill để thêm trường mới (ví dụ `Boundary Profile`), linter tự biết mà kiểm —
+ * không im lặng bỏ qua trường vừa thêm. Skill là nguồn chân lý, linter chỉ thi hành.
+ *
+ * Không đọc được thì dùng danh sách dự phòng để linter vẫn chạy.
+ */
+const FALLBACK_FIELDS = ['Title', 'Precondition', 'Test Steps', 'Test Data', 'Expected Result', 'Priority', 'Tags'];
+
+function loadFields() {
+  const skill = path.join(PATHS.SYSTEM || PATHS.AGENTS, 'qa-test-design', 'skills', 'test-case-generation.md');
+  if (!fs.existsSync(skill)) return FALLBACK_FIELDS;
+
+  const text = fs.readFileSync(skill, 'utf-8');
+  const section = text.split(/^##\s+Định dạng\s+\d+\s+trường bắt buộc/m)[1];
+  if (!section) return FALLBACK_FIELDS;
+
+  const fields = [];
+  for (const line of section.split('\n')) {
+    if (!line.trim().startsWith('|')) continue;
+    const m = line.match(/^\|\s*`([^`]+)`\s*\|/);
+    if (m && m[1] !== 'TC_ID') fields.push(m[1].trim());
+    if (/^##\s/.test(line)) break;
+  }
+  return fields.length ? fields : FALLBACK_FIELDS;
+}
+
+const FIELDS = loadFields();
 const TITLE_VERBS = /^(Verify|Validate|Confirm)\b/i;
 const TC_ID_FORMAT = /^[A-Z][A-Z0-9]{1,5}-\d{3}$/;
 const PRIORITIES = new Set(['high', 'medium', 'low', 'critical', 'blocker']);
@@ -121,10 +151,14 @@ function lintTestCases(dir, R) {
 
       // 7 trường còn lại (TC_ID là trường thứ 8, đã lấy ở heading)
       const values = {};
+      // Điểm dừng là BẤT KỲ trường nào khác, không phải riêng trường kế tiếp.
+      // Nếu chỉ chặn ở trường kế tiếp thì khi trường đó vắng mặt, trường đang xét
+      // cũng bị báo thiếu theo — một lỗi dây chuyền báo oan.
+      const anyField = FIELDS.map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
       for (const f of FIELDS) {
-        const next = FIELDS[FIELDS.indexOf(f) + 1];
-        const stop = next ? `(?=-\\s+\\*\\*${next}\\*\\*)` : '(?=\\n###|$)';
-        const m = sec.match(new RegExp(`-\\s+\\*\\*${f}\\*\\*:\\s*([\\s\\S]*?)${stop}`));
+        const esc = f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const stop = `(?=\\n-\\s+\\*\\*(?:${anyField})\\*\\*:|\\n###|$)`;
+        const m = sec.match(new RegExp(`-\\s+\\*\\*${esc}\\*\\*:\\s*([\\s\\S]*?)${stop}`));
         const v = m ? m[1].trim() : null;
         values[f] = v;
 
