@@ -25,7 +25,7 @@ Agent **bắt buộc** tuân thủ trong suốt runbook:
 | L2 | **Chỉ ghi đúng một file:** `OUTPUT/_session.md`. Không sửa, không tạo file nào khác trong repo |
 | L3 | **Không bắt đầu bài thi.** Không đọc `INPUT/`, không tạo `OUTPUT/<task-slug>/`, không lập `00_plan.md`, không chạy Chặng nào, không nâng cấp agent. Các việc đó được chấm điểm, học viên sẽ tự bắt đầu khi làm bài |
 | L4 | **Dán kết quả thật.** Mỗi lệnh phải trích nguyên văn các dòng kết quả chính. Không được ghi "OK" khi chưa chạy |
-| L5 | **Lỗi thì dừng và báo, không tự "chữa cháy".** Cấm sửa code, test, cấu hình trong `agents/` hay `automation/` để lệnh chạy xanh |
+| L5 | **Lỗi thì dừng và báo, không tự "chữa cháy".** Cấm sửa code, test, cấu hình trong `qa-system/` hay `automation/` để lệnh chạy xanh |
 | L6 | **Làm tuần tự Bước 0 → 5.** Bước nào chưa đạt thì không sang bước sau |
 
 ---

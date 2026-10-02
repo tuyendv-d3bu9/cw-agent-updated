@@ -14,82 +14,116 @@
   "routing_table": {
     "view_project_rules": "knowledge/_project.md",
     "view_glossary_terms": "knowledge/_glossary.md",
-    "qa_standards_fact": "agents/core/QA_STANDARD.md",
+    "qa_standards_fact": "qa-system/core/QA_STANDARD.md",
     "master_constitution": "AGENTS.md",
-    "orchestrator_agent": "agents/qa-lead/AGENT.md",
+    "orchestrator_agent": "qa-system/qa-lead/AGENT.md",
     "tasks_progress_command": "npm run status",
     "convert_docx_command": "npm run convert",
     "create_feature_knowledge_command": "npm run knowledge:new <slug>",
     "merge_testcases_command": "npm run testcases:merge <slug>",
     "sync_system_map_command": "npm run map:sync",
-    "generate_bug_report": "agents/qa-reporter/skills/gen-bug-report.md",
-    "generate_daily_summary": "agents/qa-reporter/skills/gen-daily-summary.md",
-    "generate_readiness_report": "agents/qa-readiness-evaluator/skills/gen-readiness-report.md",
-    "web_journey_discovery": "agents/qa-exploratory/skills/web-journey-discovery.md",
-    "flow_clustering": "agents/qa-automation/skills/flow-clustering.md",
-    "pom_generator": "agents/qa-automation/skills/pom-generator.md",
-    "test_runner_evidence": "agents/qa-automation/skills/test-runner-evidence.md",
-    "jira_mcp_server": "agents/tools/jira-mcp-server.js",
-    "jira_mcp_guide": "agents/integrations/jira-mcp-guide.md",
+    "generate_bug_report": "qa-system/qa-reporter/skills/gen-bug-report.md",
+    "generate_daily_summary": "qa-system/qa-reporter/skills/gen-daily-summary.md",
+    "generate_readiness_report": "qa-system/qa-readiness-evaluator/skills/gen-readiness-report.md",
+    "web_journey_discovery": "qa-system/qa-exploratory/skills/web-journey-discovery.md",
+    "flow_clustering": "qa-system/qa-automation/skills/flow-clustering.md",
+    "pom_generator": "qa-system/qa-automation/skills/pom-generator.md",
+    "test_runner_evidence": "qa-system/qa-automation/skills/test-runner-evidence.md",
+    "jira_mcp_server": "qa-system/tools/jira/mcp-server.js",
+    "jira_mcp_guide": "qa-system/integrations/jira-mcp-guide.md",
     "template_input_dir": "INPUT/_template/",
     "template_run_dir": "OUTPUT/_template_run/",
-    "system_upgrade_governance": "agents/qa-lead/skills/system-upgrade-governance.md",
-    "agent_extension_guide": "agents/templates/README.md",
-    "agent_template": "agents/templates/AGENT.md",
-    "skill_template": "agents/templates/skills/ten-skill.md",
-    "shopgo_ui_map": "knowledge/features/shopgo-ui-map.md",
-    "graduation_runbook": "agents/workflows/run-graduation.md",
+    "system_upgrade_governance": "qa-system/qa-lead/skills/system-upgrade-governance.md",
+    "agent_extension_guide": "qa-system/templates/README.md",
+    "agent_template": "qa-system/templates/AGENT.md",
+    "skill_template": "qa-system/templates/skills/ten-skill.md",
     "integrity_check_command": "npm run agent:check",
-    "impact_analysis_command": "npm run agent:check -- --impact <agent>"
+    "impact_analysis_command": "npm run agent:check -- --impact <agent>",
+    "tools_index": "qa-system/tools/README.md",
+    "ask_gate_tool": "qa-system/tools/system/gate.js",
+    "ask_gate_hook": "qa-system/tools/system/gate-hook.js",
+    "ask_gate_command": "npm run gate",
+    "ask_gate_audit_command": "npm run gate:audit",
+    "jira_sync_results_command": "npm run jira:sync <slug> <run-id>",
+    "readiness_tool": "qa-system/tools/system/readiness.js",
+    "readiness_command": "npm run readiness -- <slug> --write",
+    "deliverable_linter": "qa-system/tools/system/lint-deliverables.js",
+    "lint_command": "npm run lint -- <slug>",
+    "knowledge_sync_tool": "qa-system/tools/knowledge/sync-answers.js",
+    "knowledge_sync_command": "npm run knowledge:sync -- <slug> --write",
+    "orientation_command": "npm start",
+    "orientation_tool": "qa-system/tools/system/start.js",
+    "intake_autoscan_command": "npm run intake",
+    "input_guide": "INPUT/README.md",
+    "output_guide": "OUTPUT/README.md",
+    "knowledge_guide": "knowledge/README.md",
+    "system_guide": "qa-system/README.md",
+    "sprint_data_template": "qa-system/templates/sprint-data.example.json",
+    "dataset_schema_template": "qa-system/templates/dataset-schema.example.json",
+    "shopgo_ui_map": "knowledge/features/shopgo-ui-map.md",
+    "graduation_runbook": "qa-system/workflows/run-graduation.md"
   },
   "specialized_agents": {
     "qa_lead": {
-      "path": "agents/qa-lead/AGENT.md",
+      "path": "qa-system/qa-lead/AGENT.md",
       "role": "Tổng chỉ huy điều phối, giao việc, nghiệm thu; sở hữu skill system-upgrade-governance để nâng cấp chính hệ thống agent",
-      "skills_path": "agents/qa-lead/skills/"
+      "skills_path": "qa-system/qa-lead/skills/"
     },
     "qa_analyst": {
-      "path": "agents/qa-analyst/AGENT.md",
-      "skills_path": "agents/qa-analyst/skills/",
+      "path": "qa-system/qa-analyst/AGENT.md",
+      "skills_path": "qa-system/qa-analyst/skills/",
       "role": "01->04: Phân tích yêu cầu, kẽ hở 06W, viewpoint, test idea"
     },
     "qa_test_design": {
-      "path": "agents/qa-test-design/AGENT.md",
-      "skills_path": "agents/qa-test-design/skills/",
+      "path": "qa-system/qa-test-design/AGENT.md",
+      "skills_path": "qa-system/qa-test-design/skills/",
       "role": "05->06: Sinh test case 8 trường, chia lô, rà soát độ phủ"
     },
     "qa_test_data": {
-      "path": "agents/qa-test-data/AGENT.md",
-      "skills_path": "agents/qa-test-data/skills/",
+      "path": "qa-system/qa-test-data/AGENT.md",
+      "skills_path": "qa-system/qa-test-data/skills/",
       "role": "09->12: Sinh data class, dataset thực tế, boundary dataset, traceability"
     },
     "qa_ui_review": {
-      "path": "agents/qa-ui-review/AGENT.md",
-      "skills_path": "agents/qa-ui-review/skills/",
+      "path": "qa-system/qa-ui-review/AGENT.md",
+      "skills_path": "qa-system/qa-ui-review/skills/",
       "role": "08: Phân tích bố cục giao diện, màu sắc, font chữ, accessibility (Vision)"
     },
     "qa_exploratory": {
-      "path": "agents/qa-exploratory/AGENT.md",
-      "skills_path": "agents/qa-exploratory/skills/",
+      "path": "qa-system/qa-exploratory/AGENT.md",
+      "skills_path": "qa-system/qa-exploratory/skills/",
       "role": "07: Thăm dò không kịch bản và mò web quét DOM"
     },
     "qa_reporter": {
-      "path": "agents/qa-reporter/AGENT.md",
-      "skills_path": "agents/qa-reporter/skills/",
+      "path": "qa-system/qa-reporter/AGENT.md",
+      "skills_path": "qa-system/qa-reporter/skills/",
       "role": "13: Chuẩn hóa bug report 7 trường, daily summary 4 section"
     },
     "qa_automation": {
-      "path": "agents/qa-automation/AGENT.md",
-      "skills_path": "agents/qa-automation/skills/",
+      "path": "qa-system/qa-automation/AGENT.md",
+      "skills_path": "qa-system/qa-automation/skills/",
       "role": "Gom cụm luồng hành trình, sinh POM và thực thi Playwright E2E bắt evidence"
     },
     "qa_readiness_evaluator": {
-      "path": "agents/qa-readiness-evaluator/AGENT.md",
-      "skills_path": "agents/qa-readiness-evaluator/skills/",
-      "role": "Đánh giá mức độ sẵn sàng kiểm thử (Design-time QA Readiness) trước khi chuyển sang Test Automation"
+      "path": "qa-system/qa-readiness-evaluator/AGENT.md",
+      "skills_path": "qa-system/qa-readiness-evaluator/skills/",
+      "role": "Cổng Go/No-Go trước Automation: số liệu do npm run readiness đo bằng máy, agent diễn giải thành 15_readiness_report.md"
     }
   },
   "features_inventory": {},
+  "tools_layout": {
+    "policy": "Tool gom theo nhóm chức năng. Mở đúng thư mục, không quét cả qa-system/tools/.",
+    "index": "qa-system/tools/README.md",
+    "groups": {
+      "lib": "Code dùng chung (paths, env, jira-api, doc-converter) — không gọi trực tiếp",
+      "intake": "Đưa tài liệu ngoài vào INPUT/",
+      "knowledge": "Khởi tạo & soát tri thức",
+      "testcase": "Gộp và xuất test case",
+      "testdata": "Sinh dữ liệu kiểm thử",
+      "jira": "Mọi giao tiếp Jira (pull/push/sync/mcp)",
+      "system": "Tự kiểm, tiến độ, bản đồ, cổng ASK"
+    }
+  },
   "sut": {
     "name": "ShopGo",
     "url": "https://cwshopgo.github.io",

@@ -5,7 +5,20 @@
 
 ---
 
-## 0. Câu mở đầu phiên làm việc
+## 0. Lạc đường thì gõ gì
+
+Không nhớ gì cả, chỉ cần một câu:
+
+```
+Tôi nên làm gì tiếp?
+```
+
+Agent chạy `npm start` và trả lời: đang ở đâu, làm gì tiếp, thư mục nào là của bạn.
+Dùng được ở **mọi thời điểm**, kể cả khi bạn quên sạch mình đang làm dở cái gì.
+
+---
+
+## 0b. Câu mở đầu phiên làm việc
 
 Gõ câu này **đầu tiên** mỗi khi mở IDE lên:
 
@@ -73,7 +86,7 @@ nên đặt vào tầng nào, thuộc agent nào, và cần khai báo ở đâu.
 ### 2.1. Khởi động một mạch
 
 ```
-Đọc agents/workflows/run-graduation.md và thực hiện với task-slug = <slug>.
+Đọc qa-system/workflows/run-graduation.md và thực hiện với task-slug = <slug>.
 ```
 
 ### 2.2. Điều khiển tiến độ
@@ -103,6 +116,17 @@ Kiểm tra agent có thật sự ghi nhớ không:
 ```
 Chặng 2 lần này có hỏi lại câu nào tôi đã trả lời không? Nếu có thì bạn chưa đọc knowledge.
 ```
+
+> ⚠️ **Cổng ASK là chặn cứng bằng máy, không phải lời hứa của agent.**
+> Khi còn câu hỏi treo, hệ thống **từ chối ghi** file Chặng 3→6 — câu *"cứ làm tiếp đi"*
+> không mở được. Muốn xem cổng đang mở hay đóng:
+>
+> ```
+> Cho tôi xem các câu hỏi đang treo
+> ```
+>
+> Agent chạy `npm run gate <slug>` và đọc kết quả thật. Cổng chỉ mở khi câu trả lời
+> được ghi vào `knowledge/features/<slug>.md` — tức là có dấu vết, không phải nói miệng.
 
 ### 2.4. Khi phát hiện tài liệu BA sai so với hệ thống thật
 
@@ -156,6 +180,33 @@ hay là hệ thống thật chạy khác tài liệu? Dẫn bằng chứng.
 
 ---
 
+## 3b. Ba cổng chất lượng chạy bằng máy
+
+Hệ thống có ba cổng tự kiểm. Biết gọi chúng thì không phải tin lời agent.
+
+| Muốn biết | Nói với agent | Agent chạy ngầm |
+|---|---|---|
+| Còn câu hỏi nào chưa chốt không | *"Cho tôi xem các câu hỏi đang treo"* | `npm run gate <slug>` |
+| Test case đã đạt chuẩn 8 trường chưa | *"Kiểm tra test case có đạt chuẩn không"* | `npm run lint -- <slug>` |
+| Đã đủ chín để làm automation chưa | *"Kiểm tra độ sẵn sàng giúp tôi"* | `npm run readiness -- <slug>` |
+
+Câu ép agent đưa bằng chứng thật:
+
+```
+Dán nguyên văn kết quả của cả ba cổng vào đây. Tôi không cần bạn tóm tắt.
+```
+
+Nếu BA đã trả lời mà agent quên ghi vào tri thức:
+
+```
+Các câu BA đã chốt ở Chặng 2 đã được ghi vào knowledge chưa? Nếu chưa thì đồng bộ ngay.
+```
+
+> Agent chạy `npm run knowledge:sync -- <slug> --write`. Việc này quan trọng vì
+> `OUTPUT/` có thể xoá đi chạy lại — câu trả lời của BA chỉ sống nếu nằm trong `knowledge/`.
+
+---
+
 ## 4. Câu dùng để ép agent làm đúng
 
 Học viên hay quên: agent rất dễ "chạy tắt". Đây là các câu kéo nó về khuôn khổ.
@@ -195,7 +246,7 @@ Câu này tự chạy lại kiểm tra toàn vẹn, đồng bộ bản đồ, đ
 ## 6. Ba nguyên tắc khi nói chuyện với Agent
 
 **1. Nói mục tiêu, đừng nói đường dẫn.**
-Thay vì *"mở file agents/qa-test-design/skills/test-case-generation.md"*, hãy nói *"tôi muốn nâng cấp skill sinh test case"*. Agent tự tra bản đồ.
+Thay vì *"mở file qa-system/qa-test-design/skills/test-case-generation.md"*, hãy nói *"tôi muốn nâng cấp skill sinh test case"*. Agent tự tra bản đồ.
 
 **2. Yêu cầu bằng chứng, đừng tin lời khai.**
 Agent rất hay nói "đã hoàn thành". Luôn hỏi lại *"cho tôi xem kết quả thật"*.

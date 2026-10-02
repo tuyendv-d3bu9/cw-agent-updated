@@ -60,10 +60,10 @@ Bạn **không phải** làm lại các việc sau:
 | Tài liệu đầu vào (Business brief + PRD) | `INPUT/<task-slug>/` |
 | Quy ước dự án ShopGo (tiền tệ, định dạng, môi trường) | `knowledge/_project.md` |
 | Bản đồ giao diện & toàn bộ locator | `knowledge/features/shopgo-ui-map.md` |
-| Runbook chạy một mạch `01→06→automation` | `agents/workflows/run-graduation.md` |
+| Runbook chạy một mạch `01→06→automation` | `qa-system/workflows/run-graduation.md` |
 | Khung Page Object Model Playwright | `automation/pages/` (`BasePage`, `ShopPage`, `CheckoutPage`, `LoginModal`) |
 | Bộ test mồi đã chạy xanh | `automation/tests/smoke.spec.ts` |
-| Skill nâng cấp hệ thống cho QA Leader | `agents/qa-lead/skills/system-upgrade-governance.md` |
+| Skill nâng cấp hệ thống cho QA Leader | `qa-system/qa-lead/skills/system-upgrade-governance.md` |
 | Bộ câu chat mẫu | [CHEATSHEET-CAU-CHAT.md](CHEATSHEET-CAU-CHAT.md) |
 | Biên bản nâng cấp mẫu đã điền đầy đủ | [VI-DU-BIEN-BAN-NANG-CAP.md](VI-DU-BIEN-BAN-NANG-CAP.md) |
 
@@ -83,7 +83,7 @@ Pipeline sẽ **dừng lại** ở Chặng 2 và hỏi bạn một loạt câu h
 Khi gặp `ASK`, bạn **đóng vai BA** và trả lời dứt khoát. Câu trả lời được ghi vào `knowledge/features/<task-slug>.md` mục 7 và 8. Chạy lại thì agent **không được hỏi lại** những gì đã chốt — nếu nó hỏi lại, đó mới là lỗi.
 
 ### Luật 3 — Nâng cấp phải lan truyền đủ
-Sửa một file rồi dừng là **chưa xong**. Mỗi thay đổi phải được khai báo ra tới 6 điểm neo của hệ thống. Chi tiết ở `agents/qa-lead/skills/system-upgrade-governance.md` §4. Đề của bạn sẽ ghi rõ phải chạm những điểm nào.
+Sửa một file rồi dừng là **chưa xong**. Mỗi thay đổi phải được khai báo ra tới 6 điểm neo của hệ thống. Chi tiết ở `qa-system/qa-lead/skills/system-upgrade-governance.md` §4. Đề của bạn sẽ ghi rõ phải chạm những điểm nào.
 
 ---
 
@@ -124,7 +124,7 @@ Họ tên viết liền, không dấu, viết hoa chữ cái đầu mỗi từ. 
 Bên trong **bắt buộc** có:
 
 ```
-agents/                      toàn bộ — để thấy phần nâng cấp của bạn
+qa-system/                   toàn bộ — để thấy phần nâng cấp của bạn
 OUTPUT/<task-slug>/          00_plan.md · 01_ → 06_ · _index.md · runs/
 OUTPUT/_upgrades/            biên bản nâng cấp hệ thống (Phần A)
 knowledge/                   _system_map.json đã đồng bộ · features/<task-slug>.md

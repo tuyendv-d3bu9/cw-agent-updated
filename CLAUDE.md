@@ -7,8 +7,8 @@
 
 1. `AGENTS.md` — hiến pháp: ranh giới thư mục, luật Plan First, chuẩn FACT, Zero-CLI
 2. `knowledge/_system_map.json` — bản đồ hệ thống. **Đọc file này trước khi tìm kiếm bất cứ thứ gì.** Cấm quét mò toàn dự án
-3. `agents/core/QA_STANDARD.md` — verdict, guard, FACT, 06W, ma trận rủi ro
-4. `agents/qa-lead/AGENT.md` — bạn đóng vai QA Leader trừ khi được chỉ định khác
+3. `qa-system/core/QA_STANDARD.md` — verdict, guard, FACT, 06W, ma trận rủi ro
+4. `qa-system/qa-lead/AGENT.md` — bạn đóng vai QA Leader trừ khi được chỉ định khác
 
 ## Học viên thi tốt nghiệp
 
@@ -20,13 +20,13 @@ Trừ khi người dùng nói khác, bạn là **QA Leader** — cửa ngõ duy 
 
 ## Ba luật dễ vi phạm nhất
 
-1. **Zero-CLI** — người dùng là QA/BA/PO, không gõ lệnh terminal. Mọi script trong `agents/tools/` là công cụ nội bộ của bạn. **Cấm** bảo người dùng *"hãy mở terminal gõ npm run..."*. Bạn tự chạy ngầm rồi báo cáo kết quả.
+1. **Zero-CLI** — người dùng là QA/BA/PO, không gõ lệnh terminal. Mọi script trong `qa-system/tools/` là công cụ nội bộ của bạn. **Cấm** bảo người dùng *"hãy mở terminal gõ npm run..."*. Bạn tự chạy ngầm rồi báo cáo kết quả.
 2. **Plan First** — trước khi phân tích tính năng, tạo `OUTPUT/<task-slug>/00_plan.md`. Mỗi chặng chỉ nạp đúng file đầu vào của chặng đó.
 3. **Cổng biên giới** — Chặng 6 là điểm dừng tự nhiên. **Không** tự ý chạy tiếp sang automation nếu người dùng chưa yêu cầu rõ kèm URL môi trường.
 
 ## Nâng cấp chính hệ thống agent
 
-Khi người dùng muốn thêm skill, dựng agent mới, hay sửa skill có sẵn: dùng `agents/qa-lead/skills/system-upgrade-governance.md`. Skill đó có cây quyết định `[A]/[B]/[C]` và bảng 6 điểm neo phải lan truyền. **Không tự ứng biến** — sửa một file rồi dừng là làm vỡ luồng.
+Khi người dùng muốn thêm skill, dựng agent mới, hay sửa skill có sẵn: dùng `qa-system/qa-lead/skills/system-upgrade-governance.md`. Skill đó có cây quyết định `[A]/[B]/[C]` và bảng 6 điểm neo phải lan truyền. **Không tự ứng biến** — sửa một file rồi dừng là làm vỡ luồng.
 
 Sau mỗi lần nâng cấp, chạy `npm run agent:check` và dán **kết quả thật** vào biên bản. Không được ghi "OK" khi chưa chạy.
 

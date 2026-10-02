@@ -44,6 +44,9 @@ npm run agent:check
 
 # 4. Chạy bộ test mồi để xác nhận mọi thứ hoạt động
 npm run test:e2e
+
+# 5. Xem mình đang ở đâu và làm gì tiếp
+npm start
 ```
 
 > Bình thường bạn **không cần** gõ các lệnh này, agent tự chạy. Chỉ tự gõ khi agent báo không chạy được lệnh trên máy bạn.
@@ -52,13 +55,32 @@ npm run test:e2e
 
 ## 3. Kết quả đúng trông như thế nào
 
-**Lệnh 3** — kiểm tra hệ thống Agent:
+**Lệnh 3** — kiểm tra hệ thống Agent. Dòng cuối phải là `🎉 TOÀN VẸN`:
 
 ```
-🤖 Agent: [ qa-lead ] -> ✅ OK
-🤖 Agent: [ qa-analyst ] -> ✅ OK
-... (9 agent đều OK)
-🎉 100% SYSTEM INTEGRITY VERIFIED
+
+🔍 Phát hiện 9 agent trong qa-system/
+
+🤖 qa-analyst                 ✅ 4 skill
+🤖 qa-automation              ✅ 3 skill
+🤖 qa-exploratory             ✅ 2 skill
+🤖 qa-lead                    ✅ 1 skill
+🤖 qa-readiness-evaluator     ✅ 1 skill
+🤖 qa-reporter                ✅ 2 skill
+🤖 qa-test-data               ✅ 4 skill
+🤖 qa-test-design             ✅ 2 skill
+🤖 qa-ui-review               ✅ 1 skill
+
+
+--- Đối soát knowledge/_system_map.json ---
+   9 agent · 50 mục routing
+
+--- Đối soát qa-system/workflows/WORKFLOW.md ---
+   20/20 skill có mặt trong bảng điều phối
+
+...
+
+🎉 TOÀN VẸN: agent · skill · bản đồ · workflow · package · cổng ASK đều khớp.
 ```
 
 **Lệnh 4** — bộ test mồi, phải **xanh cả 5 ca**:
@@ -73,41 +95,30 @@ ok 5 SMOKE-05 Áp mã GIAM50K cho đơn đủ điều kiện thì giảm đúng 
 5 passed
 ```
 
-**Nếu cả 5 ca xanh, bạn đã sẵn sàng.** Không cần làm gì thêm.
+**Lệnh 5** — bảng định hướng. Đây là lệnh bạn sẽ dùng lại nhiều nhất:
+
+```
+👉 LÀM GÌ TIẾP
+  Chưa có task nào. Bắt đầu bằng cách kéo tài liệu của BA vào thư mục INPUT/.
+  Rồi nói với agent:  "Tôi vừa bỏ tài liệu vào INPUT, xử lý giúp"
+
+🗺️  THƯ MỤC NÀO LÀ CỦA AI
+  📥 CỦA BẠN          INPUT/ OUTPUT/        — thoải mái thêm, sửa, xoá
+  🧠 DÙNG CHUNG       knowledge/            — bạn và agent cùng ghi
+  ⚙️  MÁY MÓC          qa-system/ automation/ — chỉ đụng khi cố ý nâng cấp
+  📖 ĐỌC THÔI         AGENTS.md DE-BAI/     — agent tự đọc, bạn không cần
+```
 
 ---
 
-## 4. Xử lý sự cố
+## 4. Lạc đường thì gõ gì
 
-| Hiện tượng | Nguyên nhân | Cách xử lý |
-|---|---|---|
-| `npm install` báo lỗi mạng | Proxy công ty chặn | Thử mạng khác (điện thoại phát wifi), hoặc `npm config set registry https://registry.npmjs.org/` |
-| `npx playwright install` tải mãi không xong | File trình duyệt lớn, mạng chậm | Để chạy nền, đừng tắt terminal. Có thể mất tới 15 phút |
-| Test đỏ, báo `net::ERR_` hoặc timeout khi mở trang | Không vào được `https://cwshopgo.github.io` | Mở trang đó bằng trình duyệt kiểm tra. Nếu trình duyệt cũng không vào được thì là vấn đề mạng, báo giảng viên |
-| Test đỏ nhưng trang web mở bình thường | Có thể site vừa đổi nội dung | Chụp màn hình lỗi gửi giảng viên trước khi bắt đầu làm bài |
-| `node` không nhận lệnh | Chưa cài Node.js hoặc chưa thêm vào PATH | Cài lại từ nodejs.org, chọn bản LTS |
-
----
-
-## 5. Làm quen trước với hệ thống dưới thử nghiệm
-
-Mở `https://cwshopgo.github.io` bằng trình duyệt và thử 5 phút:
-
-1. Xem 6 sản phẩm ở màn Cửa hàng, thử lọc theo danh mục và tìm kiếm.
-2. Thêm vài sản phẩm vào giỏ.
-3. Bấm **Thanh toán** — chú ý xem điều gì xảy ra khi chưa đăng nhập.
-4. Đăng nhập bằng `khachhang@shopgo.vn` / `123456`.
-5. Thử áp mã `GIAM50K`, rồi `SALE20`, rồi `HETHAN`, rồi một mã bịa ra.
-
-Hiểu sẵn hệ thống sẽ giúp bạn nhanh hơn rất nhiều ở phần đóng vai BA trả lời câu hỏi.
-
----
-
-## 6. Đọc trước (không bắt buộc nhưng rất nên)
-
-| File | Vì sao nên đọc |
+| Tình huống | Gõ / nói |
 |---|---|
-| [README.md](README.md) | Luật chơi của bài thi |
-| Đề mình đã chọn | Biết trước mình phải làm gì |
-| [CHEATSHEET-CAU-CHAT.md](CHEATSHEET-CAU-CHAT.md) | Biết cách ra lệnh cho Agent |
-| `knowledge/features/shopgo-ui-map.md` | Hiểu hệ thống dưới thử nghiệm |
+| Không biết bắt đầu từ đâu | `npm start` — hoặc hỏi agent *"tôi nên làm gì tiếp?"* |
+| Không biết đang làm tới đâu | *"Tiến độ thế nào rồi?"* |
+| Agent dừng lại không chịu làm tiếp | Cổng ASK đang đóng. Hỏi *"cho tôi xem các câu hỏi đang treo"* |
+| Muốn biết test case đã đạt chuẩn chưa | *"Kiểm tra test case có đạt chuẩn không"* |
+| Muốn biết đã sẵn sàng làm automation chưa | *"Kiểm tra độ sẵn sàng giúp tôi"* |
+
+> Bạn **không cần** nhớ lệnh terminal nào. Mọi dòng trên đều nói được bằng tiếng Việt.

@@ -59,7 +59,7 @@ Kiểm **đủ** các dòng sau. Mỗi dòng ghi `ĐẠT` hoặc `CẢNH BÁO` k
 
 | # | Kiểm tra | Đạt khi |
 |---|---|---|
-| K1 | Thư mục bắt buộc | Có `agents/` · `OUTPUT/<task-slug>/` · `OUTPUT/_upgrades/` · `knowledge/` · `automation/pages/` · `automation/tests/` |
+| K1 | Thư mục bắt buộc | Có `qa-system/` · `OUTPUT/<task-slug>/` · `OUTPUT/_upgrades/` · `knowledge/` · `automation/pages/` · `automation/tests/` |
 | K2 | File pipeline | `OUTPUT/<task-slug>/` có `00_plan.md`, `_index.md`, và đủ 6 file bắt đầu bằng `01_` … `06_` |
 | K3 | Knowledge của đề | Có `knowledge/features/<task-slug>.md`, mục 8 có **ít nhất 3** giả định đã chốt kèm người phê duyệt và ngày |
 | K4 | Biên bản Phần A | Có đúng file biên bản của đề (bảng Bước 0) |
@@ -68,7 +68,7 @@ Kiểm **đủ** các dòng sau. Mỗi dòng ghi `ĐẠT` hoặc `CẢNH BÁO` k
 | K7 | Ca `FAIL` có giải trình | Nếu `run_result.md` có ca `FAIL` thì phải có `run_defects.md` cùng thư mục |
 | K8 | Bắt buộc dùng thành quả A vào B | DE-01: `05_test_case_spec.md` có trường `Boundary Profile`. DE-02: có file đầu ra của skill `regression-suite-selection` trong `OUTPUT/shopgo-cart-qty/` |
 | K9 | Dấu hiệu `page.goto` | Tìm `page.goto(` trong `automation/**/*.ts`, **bỏ qua** `automation/pages/BasePage.ts`. Có kết quả thì `CẢNH BÁO` (trừ 5 điểm, P6) |
-| K10 | File rác | Không có file mới do bài làm sinh ra nằm ngoài `OUTPUT/`, `automation/`, `agents/`, `knowledge/` và `BAO-CAO.md`. Dùng `git status --short` để xem (trừ 3 điểm, P4) |
+| K10 | File rác | Không có file mới do bài làm sinh ra nằm ngoài `OUTPUT/`, `automation/`, `qa-system/`, `knowledge/` và `BAO-CAO.md`. Dùng `git status --short` để xem (trừ 3 điểm, P4) |
 | K11 | `INPUT/` nguyên vẹn | `git status --short INPUT/` **không** có dòng nào. Có thì `CẢNH BÁO` nghiêm trọng (trừ 10 điểm, P1) |
 | K12 | `BAO-CAO.md` | Có ở thư mục gốc, đủ 4 mục theo mẫu `DE-BAI/README.md` §8 (kiểm tiếp ở Bước 3) |
 
@@ -141,7 +141,7 @@ Liệt kê nội dung zip (`unzip -l` trên macOS/Linux, `tar -tf` trên Windows
 | # | Kiểm tra | Đạt khi |
 |---|---|---|
 | Z1 | Tên file | Khớp `^NOP-BAI_[A-Za-z]+_De-0[12]\.zip$` và trùng tên trong `OUTPUT/_session.md` |
-| Z2 | Có đủ | `agents/` · `OUTPUT/<task-slug>/` · `OUTPUT/_upgrades/` · `OUTPUT/_session.md` · `knowledge/` · `automation/pages/` · `automation/tests/` · `BAO-CAO.md` |
+| Z2 | Có đủ | `qa-system/` · `OUTPUT/<task-slug>/` · `OUTPUT/_upgrades/` · `OUTPUT/_session.md` · `knowledge/` · `automation/pages/` · `automation/tests/` · `BAO-CAO.md` |
 | Z3 | Không có | Không có đường dẫn nào chứa `node_modules/`, `.git/`, `test-results/`, `playwright-report/` |
 | Z4 | Dung lượng | Ghi lại dung lượng. Trên 50 MB thì gần như chắc chắn đã lẫn thư mục cấm, quay lại Bước 5 |
 

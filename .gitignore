@@ -17,18 +17,15 @@ TODO.md
 
 .playwright-mcp/
 
-# Playwright
-test-results/
-automation/test-results/
-automation/playwright-report/
-playwright/.cache/
+PLAN.md
+VIDEO_RECORDING_SCRIPT.md
+
+OUTPUT/_scratch/
+
+**/index.html
+.DS_Store
 
 # Private exam / lecturer docs
 GIANG-VIEN/
 GIANG-VIEN.md
 THONG-TIN.md
-
-# Scratch docs
-PLAN.md
-VIDEO_RECORDING_SCRIPT.md
-
