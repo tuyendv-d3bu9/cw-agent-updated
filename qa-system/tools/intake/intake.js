@@ -36,16 +36,27 @@ function slugify(text) {
 
 // Classify document content into 1 of 5 intake buckets
 function classifyDocument(content, filename) {
+  const haystackEarly = `${String(content).toLowerCase()} ${String(filename).toLowerCase()}`;
   const lowerContent = (content + ' ' + filename).toLowerCase();
 
-  // 03_dev (Technical specs, APIs, DB Schemas)
+  // 03_dev — API, schema, tài liệu kỹ thuật.
+  //
+  // Luật cũ đòi đúng chữ `database schema` nên trượt `DB schema`, và không nhận
+  // ra đường dẫn API dạng `POST /api/login`. Tài liệu kỹ thuật khi đó rơi về
+  // ngăn mặc định `02_ba`, làm bẩn đúng ngăn bắt buộc của Cổng 0.
+  const fn = filename.toLowerCase();
   if (
     lowerContent.includes('swagger') ||
     lowerContent.includes('openapi') ||
     lowerContent.includes('status code') ||
     lowerContent.includes('database schema') ||
+    lowerContent.includes('db schema') ||
     lowerContent.includes('endpoint') ||
     lowerContent.includes('postman') ||
+    lowerContent.includes('migration') ||
+    /\b(get|post|put|patch|delete)\s+\/\S/i.test(content) ||
+    /\bcurl\s+-/i.test(content) ||
+    /\b(technical[ _-]?spec|tech[ _-]?spec|api[ _-]?spec|db[ _-]?schema)\b/.test(fn) ||
     filename.endsWith('.json') ||
     filename.endsWith('.yaml') ||
     filename.endsWith('.yml') ||
@@ -66,15 +77,35 @@ function classifyDocument(content, filename) {
     return '04_design';
   }
 
-  // 05_communication (Meetings, Q&A, change requests, chat logs)
+  // 02_ba — xét TRƯỚC mọi ngăn khác.
+  //
+  // Đây là ngăn BẮT BUỘC của Cổng 0: thiếu nó thì pipeline dừng. Xếp nhầm một PRD
+  // sang ngăn khác sẽ làm cổng báo thiếu tài liệu trong khi tài liệu đang nằm ngay đó.
+  // Nên khi có dấu hiệu BA rõ ràng thì chốt luôn, không để luật khác cướp mất.
+  const baHints = [
+    'prd', 'srs', 'user story', 'use case', 'acceptance criteria', 'tiêu chí chấp nhận',
+    'đặc tả', 'dac ta', 'yêu cầu chức năng', 'yeu cau chuc nang', 'business requirement',
+    'functional requirement', 'luồng nghiệp vụ', 'luong nghiep vu',
+  ];
+  if (baHints.some((h) => haystackEarly.includes(h))) {
+    return '02_ba';
+  }
+
+  // 05_communication — trao đổi, biên bản, thay đổi yêu cầu.
+  //
+  // KHÔNG dùng từ `email` làm dấu hiệu: nó xuất hiện trong gần như mọi PRD đăng ký
+  // / đăng nhập dưới dạng TÊN TRƯỜNG dữ liệu, nên luật cũ đẩy nhầm PRD sang đây rồi
+  // làm cổng "bắt buộc có 02_ba" báo thiếu.
   if (
     lowerContent.includes('biên bản họp') ||
     lowerContent.includes('meeting minutes') ||
     lowerContent.includes('q&a') ||
     lowerContent.includes('hỏi đáp') ||
     lowerContent.includes('change request') ||
-    lowerContent.includes('slack') ||
-    lowerContent.includes('email')
+    lowerContent.includes('yêu cầu thay đổi') ||
+    lowerContent.includes('chat log') ||
+    lowerContent.includes('trao đổi với ba') ||
+    /\b(biên bản|bien ban|hop|meeting|cr[-_ ]?\d+)\b/.test(filename.toLowerCase())
   ) {
     return '05_communication';
   }

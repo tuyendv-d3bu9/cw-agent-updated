@@ -235,6 +235,17 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
 
 ## 6. Lệnh Tiện Ích
 
+- **Khởi tạo dự án mới (chạy đầu tiên)** — dựng `INPUT/` 5 ngăn, `OUTPUT/`, `knowledge/`,
+  `automation/`, cài thư viện, rồi tự kiểm. Chạy lại bao nhiêu lần cũng được, **không ghi đè**:
+  ```bash
+  npm run init                  # dựng + cài + tự kiểm
+  npm run init -- --dry-run     # xem trước sẽ tạo gì
+  ```
+- **Xem đang ở đâu, làm gì tiếp**:
+  ```bash
+  npm start
+  ```
+
 > Mục lục đầy đủ kèm bảng tra "cần gì → chạy gì": [`qa-system/tools/README.md`](qa-system/tools/README.md).
 > Tool được gom theo nhóm chức năng (`intake/ knowledge/ testcase/ testdata/ jira/ system/ lib/`).
 

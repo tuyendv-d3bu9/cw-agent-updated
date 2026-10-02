@@ -1,7 +1,7 @@
 {
   "system_name": "CW QA Agent Ecosystem",
   "version": "2.0.0",
-  "last_updated": "2026-09-18",
+  "last_updated": "<YYYY-MM-DD>",
   "ssot_policy": "Tri thức trong knowledge/ là tối cao. CẤM đọc dò từng file, tra cứu bảng routing_table để mở đúng file đích.",
   "project_conventions": {
     "project_name": "<Tên Dự Án>",
@@ -24,17 +24,48 @@
     "sync_system_map_command": "npm run map:sync",
     "generate_bug_report": "qa-system/qa-reporter/skills/gen-bug-report.md",
     "generate_daily_summary": "qa-system/qa-reporter/skills/gen-daily-summary.md",
+    "generate_readiness_report": "qa-system/qa-readiness-evaluator/skills/gen-readiness-report.md",
     "web_journey_discovery": "qa-system/qa-exploratory/skills/web-journey-discovery.md",
     "flow_clustering": "qa-system/qa-automation/skills/flow-clustering.md",
     "pom_generator": "qa-system/qa-automation/skills/pom-generator.md",
     "test_runner_evidence": "qa-system/qa-automation/skills/test-runner-evidence.md",
+    "jira_mcp_server": "qa-system/tools/jira/mcp-server.js",
+    "jira_mcp_guide": "qa-system/integrations/jira-mcp-guide.md",
     "template_input_dir": "INPUT/_template/",
-    "template_run_dir": "OUTPUT/_template_run/"
+    "template_run_dir": "OUTPUT/_template_run/",
+    "system_upgrade_governance": "qa-system/qa-lead/skills/system-upgrade-governance.md",
+    "agent_extension_guide": "qa-system/templates/README.md",
+    "agent_template": "qa-system/templates/AGENT.md",
+    "skill_template": "qa-system/templates/skills/ten-skill.md",
+    "integrity_check_command": "npm run agent:check",
+    "impact_analysis_command": "npm run agent:check -- --impact <agent>",
+    "tools_index": "qa-system/tools/README.md",
+    "ask_gate_tool": "qa-system/tools/system/gate.js",
+    "ask_gate_hook": "qa-system/tools/system/gate-hook.js",
+    "ask_gate_command": "npm run gate",
+    "ask_gate_audit_command": "npm run gate:audit",
+    "jira_sync_results_command": "npm run jira:sync <slug> <run-id>",
+    "readiness_tool": "qa-system/tools/system/readiness.js",
+    "readiness_command": "npm run readiness -- <slug> --write",
+    "deliverable_linter": "qa-system/tools/system/lint-deliverables.js",
+    "lint_command": "npm run lint -- <slug>",
+    "knowledge_sync_tool": "qa-system/tools/knowledge/sync-answers.js",
+    "knowledge_sync_command": "npm run knowledge:sync -- <slug> --write",
+    "orientation_command": "npm start",
+    "orientation_tool": "qa-system/tools/system/start.js",
+    "intake_autoscan_command": "npm run intake",
+    "input_guide": "INPUT/README.md",
+    "output_guide": "OUTPUT/README.md",
+    "knowledge_guide": "knowledge/README.md",
+    "system_guide": "qa-system/README.md",
+    "sprint_data_template": "qa-system/templates/sprint-data.example.json",
+    "dataset_schema_template": "qa-system/templates/dataset-schema.example.json"
   },
   "specialized_agents": {
     "qa_lead": {
       "path": "qa-system/qa-lead/AGENT.md",
-      "role": "Tổng chỉ huy điều phối, giao việc và nghiệm thu"
+      "role": "Tổng chỉ huy điều phối, giao việc, nghiệm thu; sở hữu skill system-upgrade-governance để nâng cấp chính hệ thống agent",
+      "skills_path": "qa-system/qa-lead/skills/"
     },
     "qa_analyst": {
       "path": "qa-system/qa-analyst/AGENT.md",
@@ -70,6 +101,11 @@
       "path": "qa-system/qa-automation/AGENT.md",
       "skills_path": "qa-system/qa-automation/skills/",
       "role": "Gom cụm luồng hành trình, sinh POM và thực thi Playwright E2E bắt evidence"
+    },
+    "qa_readiness_evaluator": {
+      "path": "qa-system/qa-readiness-evaluator/AGENT.md",
+      "skills_path": "qa-system/qa-readiness-evaluator/skills/",
+      "role": "Cổng Go/No-Go trước Automation: số liệu do npm run readiness đo bằng máy, agent diễn giải thành 15_readiness_report.md"
     }
   },
   "features_inventory": {}
