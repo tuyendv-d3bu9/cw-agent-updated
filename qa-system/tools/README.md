@@ -45,6 +45,7 @@ system/       ← tự kiểm, tiến độ, bản đồ, cổng ASK
 | Soát dấu vết nhảy cóc cổng ASK | `npm run gate:audit [slug]` | `system/gate.js` |
 | **Đo độ sẵn sàng trước Automation** | `npm run readiness -- <slug> --write` | `system/readiness.js` |
 | **Kiểm chuẩn FACT của deliverable** | `npm run lint -- <slug>` | `system/lint-deliverables.js` |
+| **Chạy test cho chính các tool này** | `npm test` | `__tests__/` |
 
 ---
 
@@ -141,3 +142,33 @@ Exit `0` = sạch hoặc chỉ cảnh báo · `1` = có lỗi phải sửa.
 > (mô tả định dạng mã đơn) là placeholder, lại báo "thiếu Verdict" cho file đang có
 > `**Verdict Chặng 1**:`. Linter kêu oan thì người ta tắt nó đi — hỏng đúng mục đích.
 > Luật mới phải được thử trên deliverable thật trước khi bật.
+
+---
+
+## `__tests__/` — test cho chính các tool
+
+```bash
+npm test        # 49 ca, chạy bằng node:test có sẵn, không thêm thư viện nào
+```
+
+Mỗi ca ở đây là **một lỗi đã xảy ra thật**, không phải test cho đủ hình thức.
+Trong một phiên làm việc, các tool này hỏng 9 lần và **không lần nào lộ ra khi
+đọc code** — chỉ lộ khi chạy trên dữ liệu thật hoặc trên một dự án trắng:
+
+| Lỗi | Ca test giữ chỗ |
+|---|---|
+| `\Z` không tồn tại trong regex JS → Mục 8 cuối file không đọc được, đường mở khoá cổng ASK im lặng hỏng | `gate.test.js` |
+| Từ khoá `email` đẩy mọi PRD đăng nhập sang `05_communication` → Cổng 0 báo thiếu `02_ba` | `intake.test.js` |
+| `slugify` nuốt nguyên âm tiếng Việt → `Giỏ Hàng` thành `gi-hng` | `intake.test.js` |
+| `03_dev` đòi đúng chữ `database schema` nên trượt `DB schema` | `intake.test.js` |
+| Linter coi payload XSS và `SG-XXXXXX` là placeholder | `lint.test.js` |
+| Linter báo trùng giữa `batch_*.md` và spec tổng, trong khi batch là nguồn được gộp vào spec | `lint.test.js` |
+| Linter ép `Rule#BR-<số>` nên báo oan `Rule#GAP-H2` | `lint.test.js` |
+| Thiếu một trường bị báo thành hai lỗi (điểm dừng regex sai) | `lint.test.js` |
+| `_comment` trong schema biến thành một cột dữ liệu rác | `readiness.test.js` |
+
+**Khi sửa một tool, viết ca test trước.** Nếu không tái hiện được lỗi bằng test
+thì chưa hiểu lỗi.
+
+Quy ước: file `*.test.js`, dùng `helpers.js` để dựng dự án giả trong thư mục tạm —
+test không bao giờ đụng vào `OUTPUT/` hay `knowledge/` thật.

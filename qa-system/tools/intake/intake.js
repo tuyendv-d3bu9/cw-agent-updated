@@ -24,9 +24,21 @@ let targetSlug = slugIndex !== -1 ? args[slugIndex + 1] : null;
 const positional = args.filter((a, idx) => !a.startsWith('--') && idx !== slugIndex + 1);
 const targetInput = positional[0];
 
+/**
+ * Chuyển chuỗi thành slug.
+ *
+ * Phải bóc dấu tiếng Việt TRƯỚC khi lọc ký tự. Bản cũ lọc thẳng bằng `[^\w\s-]`
+ * nên "Giỏ Hàng Số Lượng" ra "gi-hng-s-lng" — nguyên âm có dấu bị xoá sạch,
+ * task-slug thành chuỗi vô nghĩa mà người dùng không đọc được.
+ *
+ * `normalize('NFD')` tách chữ cái khỏi dấu, rồi xoá riêng phần dấu (U+0300–U+036F).
+ * Chữ `đ/Đ` không có dạng tách nên phải xử lý riêng.
+ */
 function slugify(text) {
-  return text
-    .toString()
+  return String(text)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')   // bỏ dấu thanh và dấu mũ
+    .replace(/[đĐ]/g, 'd')
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, '')
@@ -320,7 +332,12 @@ async function main() {
   }
 }
 
-main().catch(err => {
-  console.error('❌ Error:', err.message);
-  process.exit(1);
-});
+// Chỉ chạy khi được gọi trực tiếp — để test import được các hàm thuần bên dưới.
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('❌ Error:', err.message);
+    process.exit(1);
+  });
+}
+
+module.exports = { classifyDocument, slugify, pickSlug, looseFiles };

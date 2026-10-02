@@ -249,6 +249,10 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
 > Mục lục đầy đủ kèm bảng tra "cần gì → chạy gì": [`qa-system/tools/README.md`](qa-system/tools/README.md).
 > Tool được gom theo nhóm chức năng (`intake/ knowledge/ testcase/ testdata/ jira/ system/ lib/`).
 
+- **Chạy test cho chính các tool nội bộ** (sau khi sửa bất kỳ tool nào):
+  ```bash
+  npm test
+  ```
 - **Kiểm cổng ASK trước khi sinh Chặng 3→6** (bắt buộc, xem §1.6.1):
   ```bash
   npm run gate <task-slug>          # exit 0 = mở, exit 1 = đóng
