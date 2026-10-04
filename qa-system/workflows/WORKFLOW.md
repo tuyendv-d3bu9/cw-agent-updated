@@ -43,7 +43,7 @@ workflows/
 | **D · Báo cáo lỗi** | `13` (gen-bug-report) · `14` (gen-daily-summary) | Chạy khi Tester có bug notes thô cần chuẩn hóa hoặc tổng kết sprint. |
 | **E · Chốt chặn Automation** | `15` (gen-readiness-report) | Chạy sau thiết kế/data, **trước Nhánh G**. Số liệu đo bằng `npm run readiness`. Kết quả `GO` vẫn chưa đủ để chạy G — xem cổng biên giới §1.5. |
 | **G · Automation E2E** | `web-journey-discovery` (mò web) · `flow-clustering` · `pom-generator` · `test-runner-evidence` | **Chỉ chạy khi người dùng yêu cầu rõ kèm URL môi trường VÀ readiness-report khuyến nghị GO** (§1.5 AGENTS.md). |
-| **F · Quản trị hệ thống** | `system-upgrade-governance` | **Không thuộc pipeline kiểm thử.** Chạy khi cần nâng cấp chính bộ agent: thêm skill, dựng agent mới, tinh chỉnh skill cũ. |
+| **F · Quản trị hệ thống** | `system-upgrade-governance` · `workflow-authoring` | **Không thuộc pipeline kiểm thử.** Chạy khi cần nâng cấp chính bộ agent: thêm skill, dựng agent mới, tinh chỉnh skill cũ. |
 
 `07` cần risk area từ `03`. `08` cần ảnh đính kèm, không cần bước nào trước. `13` cần file bug notes thô và file rules. `15` cần các deliverable thiết kế của chính task đó (`01_` `02_` `03_` `05_` `06_` `12_`) và `knowledge/features/<slug>.md`.
 Nhánh `F` chạy độc lập hoàn toàn, không cần deliverable nào của A/B/C/D/E — nhưng **sau khi chạy xong phải smoke lại một chặng của nhánh A** để chứng minh luồng cũ không vỡ.
@@ -119,10 +119,11 @@ Kết quả chạy đẩy lên Jira bằng `npm run jira:sync <slug> <run-id>`.
 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
+| — | `qa-lead` | `workflow-authoring` | Mô tả quy trình bằng lời (TẠO) hoặc câu ngắn khớp cụm kích hoạt (CHẠY) + `knowledge/_system_map.json` + `qa-system/templates/workflows/` | `qa-system/workflows/run-<tên>.md` · checklist trong `OUTPUT/<slug>/00_plan.md` |
 | — | `qa-lead` | `system-upgrade-governance` | Yêu cầu nâng cấp của người dùng (hoặc file `.md` họ đưa) + `knowledge/_system_map.json` + `qa-system/templates/` | `OUTPUT/_upgrades/<ngày>_<tên>.md`<br>**và** thay đổi thật trong `agents/`, `WORKFLOW.md`, `_system_map.json` |
 
 > Nhánh F **không mang số `NN`** vì nó không sinh deliverable trong pipeline kiểm thử của một `task-slug`.
-> Đây là skill duy nhất được phép ghi vào `agents/` và `knowledge/_system_map.json`.
+> Hai skill này, cùng sở hữu bởi `qa-lead`, là những skill duy nhất được phép ghi vào `qa-system/` và `knowledge/_system_map.json`.
 
 Mọi output nhánh A-C nằm trong `OUTPUT/<task-slug>/`, kèm `_index.md`. Nhánh D & E ghi tại `OUTPUT/reports/`. Nhánh G ghi code vào `automation/` và kết quả chạy vào `OUTPUT/<task-slug>/runs/`. Nhánh F ghi tại `OUTPUT/_upgrades/`.
 
@@ -173,17 +174,30 @@ Chạy lần 2  =>  01/02 đọc knowledge trước  =>  ít [GIẢ ĐỊNH] hơ
 
 ---
 
-## 6. Runbook có sẵn
+## 6. Workflow (runbook) — tạo bằng lời, chạy bằng câu ngắn
 
-| File | Chạy gì | Dùng khi |
+Mỗi workflow là **một file** `workflows/<tên>.md` có frontmatter liệt kê **cụm kích hoạt** và **các bước**.
+File là nguồn chân lý duy nhất — không còn bảng khai báo thủ công nào phải đồng bộ.
+
+```bash
+npm run workflow -- list        # có những workflow nào, nói câu nào để chạy
+npm run workflow -- validate    # kiểm toàn bộ (agent:check cũng tự kiểm)
+```
+
+**Tạo**: người dùng mô tả quy trình bằng lời → `qa-lead` chạy skill `workflow-authoring` → file mới, đã `validate` xanh.
+**Chạy**: người dùng nói một câu ngắn khớp cụm kích hoạt → `workflow find` → `workflow start` → làm từng bước.
+
+Hai loại:
+
+| `format` | Là gì | Ai kiểm |
 |---|---|---|
-| `workflows/run-to-testcase.md` | Nhánh A `01 => 05` | Từ requirement thô ra test case spec. Dừng trước chốt chặn. |
-| `workflows/run-testcase.md` | Nhánh A `01 => 05`, nhánh B `09 => 12`, rồi `06` | Chạy trọn bộ, cần test suite kèm dataset sẵn sàng execute. |
-| `workflows/re-run-testcase.md` | Chạy lại từ bước bị ảnh hưởng | Đã chạy 1 lần, dừng ở `ASK`/`FIX`, nay đã có câu trả lời BA. Vòng 2 của vòng knowledge (§4). |
-| `workflows/verify-testcase.md` | Chỉ `06` + kiểm tay 4 mũi | Đã có `05`, cần nghiệm thu trước khi bàn giao. Không sinh mới. |
-| `workflows/flow.md` | Kịch bản luồng tự động | Trỏ file để agent tự xác định bước đang kích hoạt. |
+| `v1` | Có `steps` máy đọc được: agent + skill hoặc tool, cổng, file ra | `validate` kiểm agent/skill có thật, **không cho lách cổng ASK và cổng automation** |
+| `legacy` | Runbook viết tay có từ trước; chỉ có cụm kích hoạt, thân là văn xuôi | `validate` chỉ kiểm cụm kích hoạt không trùng |
 
-Thêm runbook mới: tạo `workflows/run-<mục-tiêu>.md`, khai vào bảng này. Không sửa bản đồ.
+**Luật không thể lách** (`validate` từ chối workflow vi phạm):
+- Bước dùng skill Chặng 3→6 phải có cổng `ask` đứng trước.
+- Bước của `qa-automation` phải có `readiness` **và** `confirm` đứng trước.
+- Giá trị `output` chỉ được ghi trong `OUTPUT/<slug>/`.
 
 **Thứ tự `06` trong `run-testcase.md`**: `06` chạy **sau** `12`, không phải ngay sau `05`.
 Skill `12` phát hiện test case `CHƯA CÓ DATA` và record mồ côi — đó là đầu vào thật cho gap

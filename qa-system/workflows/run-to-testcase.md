@@ -1,3 +1,14 @@
+---
+name: run-to-testcase
+title: "Từ requirement thô đến test case spec"
+description: "Chạy Chặng 1 đến 5 để ra bản đặc tả test case, dừng trước chốt chặn."
+format: legacy
+triggers:
+  - "từ tài liệu ra test case"
+  - "sinh test case từ yêu cầu"
+  - "phân tích và viết test case"
+---
+
 # RUNBOOK — Từ requirement thô đến Test Case Spec (`01 → 05`)
 
 > File này để **CHẠY**. Dán nguyên khối lệnh ở §2 vào Antigravity, hoặc trỏ chính file này:

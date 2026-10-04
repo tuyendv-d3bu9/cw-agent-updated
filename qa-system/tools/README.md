@@ -45,6 +45,7 @@ system/       ← tự kiểm, tiến độ, bản đồ, cổng ASK
 | Soát dấu vết nhảy cóc cổng ASK | `npm run gate:audit [slug]` | `system/gate.js` |
 | **Đo độ sẵn sàng trước Automation** | `npm run readiness -- <slug> --write` | `system/readiness.js` |
 | **Kiểm chuẩn FACT của deliverable** | `npm run lint -- <slug>` | `system/lint-deliverables.js` |
+| **Tạo / tìm / chạy workflow** | `npm run workflow -- <list\|find\|show\|start\|new\|validate>` | `system/workflow.js` |
 | **Chạy test cho chính các tool này** | `npm test` | `__tests__/` |
 
 ---

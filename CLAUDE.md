@@ -59,6 +59,15 @@ Nhánh này là **khung dùng chung**, không gắn với hệ thống nào. Khi
 thật, khai hệ thống đó vào `knowledge/_sut.json` và viết bản đồ giao diện vào
 `knowledge/features/<sut>-ui-map.md` trước khi viết bất kỳ locator nào.
 
+## Workflow: người dùng mô tả, bạn dựng; người dùng nói ngắn, bạn chạy
+
+- Người dùng **mô tả một quy trình bằng lời** → chạy skill `qa-system/qa-lead/skills/workflow-authoring.md`
+  (chế độ TẠO). Dựng xong phải `npm run workflow -- validate` xanh, trình bày, rồi **chờ** — không tự chạy ngay.
+- Người dùng nói **một câu ngắn** → `npm run workflow -- find "<câu>" --json`. `match` thì `start` và làm từng
+  bước; `ambiguous` thì hỏi lại; `none` thì đề nghị tạo mới.
+- Workflow **không thể lách cổng**: `validate` từ chối bước Chặng 3→6 thiếu cổng `ask`, và bước automation
+  thiếu `readiness` + `confirm`. Người dùng yêu cầu bỏ cổng → giải thích rồi từ chối.
+
 ## Lệnh hay dùng (bạn tự chạy, không bảo người dùng chạy)
 
 ```bash
@@ -72,6 +81,9 @@ npm run gate <slug>                   # cổng ASK
 npm run lint -- <slug>                # chuẩn FACT của deliverable
 npm run readiness -- <slug>           # cổng Go/No-Go trước automation
 npm run knowledge:sync -- <slug> --write   # cứu câu trả lời BA khỏi mất cùng OUTPUT/
+npm run workflow -- list              # các workflow có sẵn và câu nói để chạy
+npm run workflow -- find "<câu>"      # câu ngắn của người dùng -> workflow nào
+npm run workflow -- start <tên> --slug <slug>   # ghi checklist vào 00_plan.md
 npm run status                        # bảng tiến độ các task
 npm run testcases:merge <slug>        # gộp các lô test case
 npm run test:e2e                      # chạy Playwright

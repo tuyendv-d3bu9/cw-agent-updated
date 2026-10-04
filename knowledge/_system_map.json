@@ -65,7 +65,12 @@
     "automation_template": "qa-system/templates/automation/",
     "tool_tests": "qa-system/tools/__tests__/",
     "test_command": "npm test",
-    "sut_file": "knowledge/_sut.json"
+    "sut_file": "knowledge/_sut.json",
+    "workflow_tool": "qa-system/tools/system/workflow.js",
+    "workflow_command": "npm run workflow -- <list|find|show|start|new|validate>",
+    "workflow_authoring_skill": "qa-system/qa-lead/skills/workflow-authoring.md",
+    "workflow_template": "qa-system/templates/workflows/workflow.md",
+    "workflows_dir": "qa-system/workflows/"
   },
   "specialized_agents": {
     "qa_lead": {

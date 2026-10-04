@@ -1,3 +1,14 @@
+---
+name: re-run-testcase
+title: "Chạy lại sau khi BA trả lời"
+description: "Chạy lại từ bước bị ảnh hưởng sau khi BA chốt câu hỏi hoặc sau verdict FIX."
+format: legacy
+triggers:
+  - "BA đã trả lời chạy lại"
+  - "chạy lại sau khi BA chốt"
+  - "làm lại sau khi có câu trả lời"
+---
+
 # RUNBOOK — Chạy lại sau khi có câu trả lời BA / sau verdict FIX
 
 > File này để **CHẠY**. Trỏ: *"Đọc `workflows/re-run-testcase.md` và thực hiện."*
