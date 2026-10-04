@@ -344,6 +344,23 @@ try {
   warn('readiness', `Could not measure readiness: ${e.message}`);
 }
 
+// ─── H. Workflows ───
+console.log('\n--- Cross-checking workflows ---');
+try {
+  const wf = require('./workflow');
+  const all = wf.loadAll();
+  let v1 = 0;
+  for (const w of all) {
+    if (w.meta.format !== 'legacy') v1++;
+    for (const i of wf.validate(w, all)) {
+      (i.level === 'ERROR' ? fail : warn)(`workflow/${w.fileName}`, i.msg);
+    }
+  }
+  console.log(`   ${all.length} workflow(s): ${v1} v1, ${all.length - v1} legacy`);
+} catch (e) {
+  warn('workflow', `Could not validate workflows: ${e.message}`);
+}
+
 // ─── Summary ───
 const fails = problems.filter((p) => p.level === 'FAIL');
 const warns = problems.filter((p) => p.level === 'WARN');

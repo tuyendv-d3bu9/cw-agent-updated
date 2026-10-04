@@ -1,3 +1,13 @@
+---
+name: flow
+title: "Luồng phân tích và thiết kế tự động"
+description: "Kịch bản để agent tự xác định bước đang kích hoạt trong luồng phân tích."
+format: legacy
+triggers:
+  - "chạy luồng phân tích tự động"
+  - "luồng thiết kế kiểm thử tự động"
+---
+
 # FLOW — Luồng Phân Tích & Thiết Kế QA Tự Động
 
 > **Mục đích**: File định nghĩa kịch bản thực thi luồng làm việc QA tự động.

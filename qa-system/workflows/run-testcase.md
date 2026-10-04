@@ -1,3 +1,14 @@
+---
+name: run-testcase
+title: "Chạy trọn bộ test design và dữ liệu"
+description: "Chạy Chặng 1 đến 6 kèm bộ dữ liệu 09 đến 12, ra test suite sẵn sàng thực thi."
+format: legacy
+triggers:
+  - "chạy trọn bộ test case"
+  - "làm đầy đủ test case kèm dữ liệu"
+  - "chạy toàn bộ quy trình kiểm thử"
+---
+
 # RUNBOOK — Chạy trọn bộ (`01 → 06` + `09 → 12`)
 
 > File này để **CHẠY**. Dán nguyên khối lệnh ở §2, hoặc trỏ chính file này:

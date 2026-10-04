@@ -1,3 +1,14 @@
+---
+name: verify-testcase
+title: "Nghiệm thu test suite"
+description: "Chỉ rà soát độ phủ Chặng 6 và kiểm tay, không sinh mới."
+format: legacy
+triggers:
+  - "nghiệm thu test case"
+  - "kiểm tra bộ test trước khi bàn giao"
+  - "rà soát lại bộ test case"
+---
+
 # RUNBOOK — Nghiệm thu test suite (không sinh mới)
 
 > File này để **CHẠY**. Trỏ: *"Đọc `workflows/verify-testcase.md` và thực hiện."*
