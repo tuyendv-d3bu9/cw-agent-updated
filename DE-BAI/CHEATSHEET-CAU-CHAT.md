@@ -207,6 +207,45 @@ Các câu BA đã chốt ở Chặng 2 đã được ghi vào knowledge chưa? N
 
 ---
 
+## 3c. Tạo workflow bằng lời, chạy bằng câu ngắn
+
+Workflow là một quy trình bạn **mô tả một lần**, rồi từ đó chỉ cần **một câu** là chạy.
+Bạn không viết file nào — agent dựng và máy kiểm.
+
+**Bước 1 — Mô tả.** Nói thẳng quy trình bạn muốn, theo thứ tự, kèm chỗ phải dừng chờ BA:
+
+```
+Tôi muốn tạo workflow: mỗi khi BA gửi tài liệu mới thì phân tích rủi ro, quét kẽ hở,
+nếu còn câu hỏi thì dừng lại hỏi BA, rồi mới chọn viewpoint, thiết kế test idea,
+sinh test case và kiểm chuẩn trước khi báo xong.
+```
+
+Agent dựng file, kiểm hợp lệ bằng máy, rồi **trình bày bảng bước + câu để chạy** và chờ bạn.
+Nó **không tự chạy ngay**. Muốn chỉnh thì nói tiếp, ví dụ: *"Thêm bước nghiệm thu trước khi báo xong"*.
+
+**Bước 2 — Bắt agent chứng minh.**
+
+```
+Cho tôi xem kết quả kiểm hợp lệ thật của workflow vừa tạo, và nói tôi gõ câu nào để chạy.
+```
+
+**Bước 3 — Kích hoạt bằng câu ngắn.** Chỉ cần nói như người bình thường:
+
+```
+BA vừa gửi tài liệu mới
+```
+
+Agent tìm đúng workflow, ghi checklist vào `00_plan.md`, rồi làm từng bước và **dừng ở mọi cổng**.
+Câu quá mơ hồ thì nó hỏi lại chứ không đoán. Muốn biết có những gì: *"Có những workflow nào?"*
+
+> ⚠️ **Workflow không thể lách cổng.** Máy từ chối workflow có bước Chặng 3→6 mà thiếu cổng ASK,
+> hay bước automation mà thiếu kiểm độ sẵn sàng và xác nhận của bạn. Nếu bạn bảo agent bỏ cổng,
+> nó sẽ giải thích và từ chối — đó là thiết kế, không phải lỗi.
+
+Với bài thi: câu *"chạy bài tốt nghiệp"* kích hoạt runbook `run-graduation`.
+
+---
+
 ## 4. Câu dùng để ép agent làm đúng
 
 Học viên hay quên: agent rất dễ "chạy tắt". Đây là các câu kéo nó về khuôn khổ.

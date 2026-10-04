@@ -57,7 +57,7 @@ Bạn **không phải** làm lại các việc sau:
 
 | Đã có sẵn | Ở đâu |
 |---|---|
-| Tài liệu đầu vào (Business brief + PRD) | `INPUT/<task-slug>/` |
+| Tài liệu đầu vào: business brief, PRD, môi trường kiểm thử (`03_dev`), bản đồ giao diện (`04_design`), phạm vi kiểm thử (`05_communication`) | `INPUT/<task-slug>/` |
 | Quy ước dự án ShopGo (tiền tệ, định dạng, môi trường) | `knowledge/_project.md` |
 | Bản đồ giao diện & toàn bộ locator | `knowledge/features/shopgo-ui-map.md` |
 | Runbook chạy một mạch `01→06→automation` | `qa-system/workflows/run-graduation.md` |
