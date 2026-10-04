@@ -24,3 +24,6 @@ OUTPUT/_scratch/
 
 **/index.html
 .DS_Store
+
+# Tài liệu riêng của giảng viên — không bao giờ phát cho học viên
+GIANG-VIEN/
