@@ -245,6 +245,15 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
 > Mục lục đầy đủ kèm bảng tra "cần gì → chạy gì": [`qa-system/tools/README.md`](qa-system/tools/README.md).
 > Tool được gom theo nhóm chức năng (`intake/ knowledge/ testcase/ testdata/ jira/ system/ lib/`).
 
+- **Workflow — tạo bằng lời mô tả, chạy bằng câu ngắn** (agent tự chạy, người dùng không gõ):
+  ```bash
+  npm run workflow -- list                    # có workflow nào, nói câu nào để chạy
+  npm run workflow -- find "<câu người dùng>" # câu ngắn -> workflow nào (match / ambiguous / none)
+  npm run workflow -- start <tên> --slug <slug>   # ghi checklist vào 00_plan.md rồi chạy từng bước
+  npm run workflow -- validate                # kiểm toàn bộ; không cho lách cổng ASK / automation
+  ```
+  Người dùng **mô tả** quy trình → chạy skill `workflow-authoring` để dựng file. Người dùng nói **một câu**
+  khớp cụm kích hoạt → `find` rồi `start`. Câu mơ hồ thì hỏi lại, không đoán.
 - **Chạy test cho chính các tool nội bộ** (sau khi sửa bất kỳ tool nào):
   ```bash
   npm test
@@ -310,6 +319,8 @@ Lệnh này in ra việc nên làm tiếp, công việc đang có, và **bản �
   Lệnh không tham số sẽ tự quét tài liệu rời trong `INPUT/`, chuyển sang Markdown sạch, phân vào
   5 ngăn, **và dựng luôn** `OUTPUT/<slug>/`, `knowledge/features/<slug>.md`, `00_plan.md`.
   Người dùng chỉ cần kéo thả file — không phải tự tạo thư mục nào.
+- User nói: *"Tôi muốn tạo workflow: mỗi khi … thì …"* ➔ Agent chạy skill `workflow-authoring` (chế độ TẠO), `validate` đến khi xanh, trình bày rồi **chờ**.
+- User nói một câu ngắn như *"BA gửi tài liệu mới"* ➔ Agent chạy `npm run workflow -- find` rồi `start`, làm từng bước và dừng ở mọi cổng.
 - User nói: *"Bắt đầu từ đâu?"* · *"Thư mục này để làm gì?"* ➔ Agent **tự chạy** `npm start` và đọc kết quả.
 - User nói: *"Sinh cho tôi 50 bộ dữ liệu test"* ➔ Agent **tự chạy** `generate-dataset.js` ngầm.
 - User nói: *"Gộp test case lại đi"* ➔ Agent **tự chạy** `merge-testcases.js` ngầm.

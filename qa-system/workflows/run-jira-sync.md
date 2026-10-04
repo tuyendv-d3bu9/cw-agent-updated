@@ -1,3 +1,14 @@
+---
+name: run-jira-sync
+title: "Đồng bộ Jira và Redmine"
+description: "Xuất CSV, đẩy test case lên Jira, hoặc kéo danh sách bug về phân tích."
+format: legacy
+triggers:
+  - "đồng bộ Jira"
+  - "đẩy test case lên Jira"
+  - "kéo bug từ Jira về"
+---
+
 # Workflow: Đồng Bộ Jira & Redmine (Export / Push / Pull)
 
 > **Mục đích**: Chuẩn hóa quy trình đưa Test Case từ Agent lên Jira Xray / Redmine và kéo danh sách Bug về phân tích rủi ro.

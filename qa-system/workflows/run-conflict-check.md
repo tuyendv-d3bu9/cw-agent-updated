@@ -1,3 +1,14 @@
+---
+name: run-conflict-check
+title: "Rà soát xung đột tri thức chéo"
+description: "Phát hiện kẽ hở logic đá nhau giữa tính năng đang phân tích và các tính năng đã có."
+format: legacy
+triggers:
+  - "kiểm tra xung đột tri thức"
+  - "tính năng mới có đá logic cũ không"
+  - "rà soát mâu thuẫn giữa các tính năng"
+---
+
 # Workflow: Rà Soát Xung Đột Tri Thức Chéo (Cross-Feature Conflict Check)
 
 > **Mục đích**: Tự động phát hiện các kẽ hở logic đá nhau giữa tính năng đang phân tích với toàn bộ các tính năng đã có trong `knowledge/features/*.md`.
