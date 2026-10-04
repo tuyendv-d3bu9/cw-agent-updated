@@ -1,3 +1,14 @@
+---
+name: run-graduation
+title: "Chạy bài tốt nghiệp từ đầu đến automation"
+description: "Chạy Chặng 1 đến 6 rồi tiếp sang automation, với hai điểm dừng bắt buộc: cổng ASK và cổng biên giới."
+format: legacy
+triggers:
+  - "chạy bài tốt nghiệp"
+  - "làm trọn bài tốt nghiệp"
+  - "chạy từ tài liệu đến automation"
+---
+
 # RUNBOOK — Chạy Một Mạch: Requirement ➔ Test Case ➔ Automation (Project Tốt Nghiệp)
 
 > File này để **CHẠY**, không phải để đọc tham khảo.

@@ -39,15 +39,34 @@ Ba ràng buộc cứng:
 - **Màn Thanh toán cần đăng nhập** → chặn ngay ở bước điều hướng, không phải lúc bấm đặt hàng
 - **So sánh tiền** → dùng `BasePage.parseMoney()`, không so chuỗi thô
 
+## Workflow: người dùng mô tả, bạn dựng; người dùng nói ngắn, bạn chạy
+
+- Người dùng **mô tả một quy trình bằng lời** → chạy skill `qa-system/qa-lead/skills/workflow-authoring.md`
+  (chế độ TẠO). Dựng xong phải `npm run workflow -- validate` xanh, trình bày, rồi **chờ** — không tự chạy ngay.
+- Người dùng nói **một câu ngắn** → `npm run workflow -- find "<câu>" --json`. `match` thì `start` và làm từng
+  bước; `ambiguous` thì hỏi lại; `none` thì đề nghị tạo mới.
+- Workflow **không thể lách cổng**: `validate` từ chối bước Chặng 3→6 thiếu cổng `ask`, và bước automation
+  thiếu `readiness` + `confirm`. Người dùng yêu cầu bỏ cổng → giải thích rồi từ chối.
+
 ## Lệnh hay dùng (bạn tự chạy, không bảo người dùng chạy)
 
 ```bash
-npm run agent:check                       # kiểm toàn vẹn hệ thống agent
-npm run agent:check -- --impact <agent>   # bán kính ảnh hưởng trước khi sửa
-npm run map:sync                          # đồng bộ bản đồ hệ thống
-npm run status                            # bảng tiến độ các task
-npm run testcases:merge <slug>            # gộp các lô test case
-npm run test:e2e                          # chạy Playwright
+npm run init                          # khởi tạo dự án mới, an toàn chạy lại
+npm start                             # đang ở đâu · làm gì tiếp · thư mục nào của ai
+npm run intake                        # nhận tài liệu rời trong INPUT/, dựng khung task
+npm test                              # 49 ca test cho tool nội bộ
+npm run agent:check                   # kiểm toàn vẹn hệ thống agent
+npm run agent:check -- --impact <ag>  # bán kính ảnh hưởng trước khi sửa
+npm run gate <slug>                   # cổng ASK
+npm run lint -- <slug>                # chuẩn FACT của deliverable
+npm run readiness -- <slug>           # cổng Go/No-Go trước automation
+npm run knowledge:sync -- <slug> --write   # cứu câu trả lời BA khỏi mất cùng OUTPUT/
+npm run workflow -- list              # các workflow có sẵn và câu nói để chạy
+npm run workflow -- find "<câu>"      # câu ngắn của người dùng -> workflow nào
+npm run workflow -- start <tên> --slug <slug>   # ghi checklist vào 00_plan.md
+npm run status                        # bảng tiến độ các task
+npm run testcases:merge <slug>        # gộp các lô test case
+npm run test:e2e                      # chạy Playwright
 ```
 
 ## Bối cảnh khoá học

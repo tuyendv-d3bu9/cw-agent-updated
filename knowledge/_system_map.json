@@ -67,7 +67,12 @@
     "test_command": "npm test",
     "sut_file": "knowledge/_sut.json",
     "shopgo_ui_map": "knowledge/features/shopgo-ui-map.md",
-    "graduation_runbook": "qa-system/workflows/run-graduation.md"
+    "graduation_runbook": "qa-system/workflows/run-graduation.md",
+    "workflow_tool": "qa-system/tools/system/workflow.js",
+    "workflow_command": "npm run workflow -- <list|find|show|start|new|validate>",
+    "workflow_authoring_skill": "qa-system/qa-lead/skills/workflow-authoring.md",
+    "workflow_template": "qa-system/templates/workflows/workflow.md",
+    "workflows_dir": "qa-system/workflows/"
   },
   "specialized_agents": {
     "qa_lead": {
