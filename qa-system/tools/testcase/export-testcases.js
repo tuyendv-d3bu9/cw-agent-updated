@@ -175,9 +175,7 @@ function exportRedmineCSV(testCases, outputPath) {
   fs.writeFileSync(outputPath, csvContent, 'utf-8');
 }
 
-function main() {
-  let taskSlug = process.argv[2];
-
+function exportTestCases(taskSlug) {
   if (!taskSlug) {
     if (fs.existsSync(OUTPUT_DIR)) {
       const dirs = fs.readdirSync(OUTPUT_DIR).filter(f => {
@@ -226,4 +224,14 @@ function main() {
   console.log(`\n🎉 Data export complete for task [${taskSlug}]!`);
 }
 
-main();
+if (require.main === module) {
+  exportTestCases(process.argv[2]);
+}
+
+module.exports = {
+  exportTestCases,
+  parseTestCasesFromMarkdown,
+  exportJiraXrayCSV,
+  exportRedmineCSV,
+};
+

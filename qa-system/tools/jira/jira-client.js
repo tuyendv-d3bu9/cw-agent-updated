@@ -163,7 +163,8 @@ async function pushTestCases(slug, cfg) {
   if (!cfg.ok) {
     if (!fs.existsSync(jiraCsv)) {
       console.log('No CSV yet, invoking export-testcases...');
-      require('../testcase/export-testcases');
+      const { exportTestCases } = require('../testcase/export-testcases');
+      exportTestCases(slug);
     }
     console.log(`\nFILE IMPORT MODE (missing: ${cfg.missing.join(', ')})`);
     console.log(`   - Jira Xray : ${path.relative(PATHS.ROOT, jiraCsv)}`);
