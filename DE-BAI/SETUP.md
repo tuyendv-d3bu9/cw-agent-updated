@@ -61,11 +61,10 @@ npm start
 ===============================================================
            AGENT SYSTEM INTEGRITY CHECK (AGENT DOCTOR)          
 ===============================================================
-Discovered 9 agent(s) under qa-system/
+Discovered 8 agent(s) under qa-system/
 🤖 qa-analyst                 ✅ 4 skill
-🤖 qa-automation              ✅ 3 skill
-🤖 qa-exploratory             ✅ 2 skill
-🤖 qa-lead                    ✅ 1 skill
+🤖 qa-automation              ✅ 5 skill
+🤖 qa-lead                    ✅ 2 skill
 🤖 qa-readiness-evaluator     ✅ 1 skill
 🤖 qa-reporter                ✅ 2 skill
 🤖 qa-test-data               ✅ 4 skill
@@ -73,10 +72,10 @@ Discovered 9 agent(s) under qa-system/
 🤖 qa-ui-review               ✅ 1 skill
 
 --- Cross-checking knowledge/_system_map.json ---
-   9 agent(s) · 50 routing entries
+   8 agent(s) · 62 routing entries
 
 --- Cross-checking qa-system/workflows/WORKFLOW.md ---
-   20/20 skill(s) present in the dispatch table
+   21/21 skill(s) present in the dispatch table
 
 ...
 

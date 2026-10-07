@@ -2,7 +2,7 @@
 
 > **Tri thức nền dùng chung cho MỌI tính năng của ShopGo.**
 > Mọi agent cần thao tác/kiểm thử UI ShopGo **đọc file này trước**, không tự mò DOM.
-> Đặc biệt bắt buộc với `qa-exploratory` (web-journey-discovery) và `qa-automation` (pom-generator).
+> Đặc biệt bắt buộc với `qa-automation` (web-journey-discovery, pom-generator).
 
 Nguồn: bóc tách trực tiếp từ bundle production `https://cwshopgo.github.io/assets/index-*.js` · Cập nhật: `2026-09-21` · Trạng thái: `APPROVED`
 
