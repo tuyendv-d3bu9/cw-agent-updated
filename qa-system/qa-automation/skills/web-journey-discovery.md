@@ -37,7 +37,7 @@ Ghi ra `OUTPUT/<task-slug>/07_web_journey_discovery.md` (kèm file Gherkin riên
 
 ```markdown
 # WEB JOURNEY DISCOVERY & GHERKIN SPEC — [TÊN ỨNG DỤNG / DOMAIN]
-URL khảo sát: [URL] · Thời gian: YYYY-MM-DD · Người thực hiện: qa-exploratory
+URL khảo sát: [URL] · Thời gian: YYYY-MM-DD · Người thực hiện: qa-automation
 
 ## 1. Kịch Bản Gherkin BDD (Chuẩn Hóa Từ Thực Tế Khám Phá)
 

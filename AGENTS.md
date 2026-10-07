@@ -178,7 +178,7 @@ Khi số lượng Test Case dự tính vượt quá **50 test cases** (hoặc l�
   3. Xuất bảng dữ liệu chuẩn markdown hoặc CSV/JSON vào `OUTPUT/<task-slug>/10_dataset.md`.
 
 ### 3.2. Chuẩn Hóa Gherkin BDD (`Given - When - Then`) Cho Luồng Mò Web:
-- Khi Agent thực hiện khám phá ứng dụng web (`qa-exploratory` với skill `web-journey-discovery`), toàn bộ hành trình người dùng **BẮT BUỘC** được chuẩn hóa thành kịch bản **Gherkin BDD** (`.feature`).
+- Khi Agent thực hiện khám phá ứng dụng web (`qa-automation` với skill `web-journey-discovery`), toàn bộ hành trình người dùng **BẮT BUỘC** được chuẩn hóa thành kịch bản **Gherkin BDD** (`.feature`).
 - **Cấu trúc chuẩn**:
   + `Given`: Tiền điều kiện môi trường, trạng thái đăng nhập, dữ liệu giỏ hàng.
   + `When`: Hành động của người dùng (click nút, nhập mã voucher, chuyển trang).
