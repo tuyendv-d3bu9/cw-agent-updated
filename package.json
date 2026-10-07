@@ -8,6 +8,7 @@
     "test": "node --test \"qa-system/tools/__tests__/*.test.js\"",
     "start": "node qa-system/tools/system/start.js",
     "intake": "node qa-system/tools/intake/intake.js",
+    "intake:bulk": "node qa-system/tools/intake/bulk-intake.js",
     "convert": "node qa-system/tools/intake/convert.js",
     "knowledge:new": "node qa-system/tools/knowledge/new-knowledge.js",
     "knowledge:init": "node qa-system/tools/knowledge/bootstrap-knowledge.js",

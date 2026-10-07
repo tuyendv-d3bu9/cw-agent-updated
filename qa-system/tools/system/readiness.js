@@ -26,9 +26,9 @@ const TRACE_FLOOR = 80; // below this is an automatic NO-GO
 const read = (p) => (fs.existsSync(p) ? fs.readFileSync(p, 'utf-8') : null);
 const uniq = (a) => [...new Set(a)];
 
-/** Identifiers present in a document, e.g. BR-01, VP-03, MR-07. */
+/** Identifiers present in a document, e.g. BR-01, BR-AUTH-01, VP-03, MR-07. */
 function ids(text, prefix) {
-  return text ? uniq(text.match(new RegExp(`\\b${prefix}-\\d+\\b`, 'g')) || []).sort() : [];
+  return text ? uniq(text.match(new RegExp(`\\b${prefix}(?:-[A-Za-z0-9]+)*-\\d+\\b`, 'g')) || []).sort() : [];
 }
 
 /**
@@ -56,8 +56,8 @@ function readTestCases(dir) {
     const tags = (sec.match(/-\s+\*\*Tags\*\*:\s*([^\n]+)/) || [, ''])[1];
     cases.push({
       id: idm[1].trim(),
-      rules: uniq([...tags.matchAll(/Rule#(BR-\d+)/g)].map((m) => m[1])).sort(),
-      viewpoints: uniq([...tags.matchAll(/Viewpoint#(VP-\d+)/g)].map((m) => m[1])).sort(),
+      rules: uniq([...tags.matchAll(/Rule#(BR(?:-[A-Za-z0-9]+)*-\d+)/g)].map((m) => m[1])).sort(),
+      viewpoints: uniq([...tags.matchAll(/Viewpoint#(VP(?:-[A-Za-z0-9]+)*-\d+)/g)].map((m) => m[1])).sort(),
       priority: (sec.match(/-\s+\*\*Priority\*\*:\s*([^\n]+)/) || [, ''])[1].trim(),
     });
   }

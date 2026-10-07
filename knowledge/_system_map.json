@@ -1,7 +1,7 @@
 {
   "system_name": "CW QA Agent Ecosystem",
   "version": "2.0.0",
-  "last_updated": "2026-10-02",
+  "last_updated": "2026-10-04",
   "ssot_policy": "Tri thức trong knowledge/ là tối cao. CẤM đọc dò từng file, tra cứu bảng routing_table để mở đúng file đích.",
   "project_conventions": {
     "project_name": "<Tên Dự Án>",
@@ -54,6 +54,8 @@
     "orientation_command": "npm start",
     "orientation_tool": "qa-system/tools/system/start.js",
     "intake_autoscan_command": "npm run intake",
+    "bulk_intake_command": "npm run intake:bulk [-- <dir>] [--dry-run]",
+    "bulk_intake_tool": "qa-system/tools/intake/bulk-intake.js",
     "input_guide": "INPUT/README.md",
     "output_guide": "OUTPUT/README.md",
     "knowledge_guide": "knowledge/README.md",
