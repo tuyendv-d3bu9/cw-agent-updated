@@ -36,7 +36,6 @@ qa-system/                      HỆ THỐNG 9 CHUYÊN GIA QA (cũng là npm pac
   qa-analyst/                   01->04: Tóm tắt yêu cầu, 06W kẽ hở, viewpoint, test idea
   qa-test-design/               05->06: Test case 8 trường, rà soát độ phủ 3 góc nhìn
   qa-test-data/                 09->12: Data class, dataset, validation & traceability
-  qa-exploratory/               07: Thăm dò theo charter & Mò web quét DOM thực tế
   qa-ui-review/                 08: Phân tích ảnh màn hình (Vision)
   qa-reporter/                  13: Chuẩn hóa bug report 7 trường & Daily QA summary
   qa-automation/                Playwright E2E: Gom cụm luồng, sinh POM, chạy test & chụp evidence

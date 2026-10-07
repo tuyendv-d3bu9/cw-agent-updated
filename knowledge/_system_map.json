@@ -25,7 +25,8 @@
     "generate_bug_report": "qa-system/qa-reporter/skills/gen-bug-report.md",
     "generate_daily_summary": "qa-system/qa-reporter/skills/gen-daily-summary.md",
     "generate_readiness_report": "qa-system/qa-readiness-evaluator/skills/gen-readiness-report.md",
-    "web_journey_discovery": "qa-system/qa-exploratory/skills/web-journey-discovery.md",
+    "web_journey_discovery": "qa-system/qa-automation/skills/web-journey-discovery.md",
+    "exploratory_charter": "qa-system/qa-automation/skills/exploratory-charter.md",
     "flow_clustering": "qa-system/qa-automation/skills/flow-clustering.md",
     "pom_generator": "qa-system/qa-automation/skills/pom-generator.md",
     "test_runner_evidence": "qa-system/qa-automation/skills/test-runner-evidence.md",
@@ -101,11 +102,6 @@
       "skills_path": "qa-system/qa-ui-review/skills/",
       "role": "08: Phân tích bố cục giao diện, màu sắc, font chữ, accessibility (Vision)"
     },
-    "qa_exploratory": {
-      "path": "qa-system/qa-exploratory/AGENT.md",
-      "skills_path": "qa-system/qa-exploratory/skills/",
-      "role": "07: Thăm dò không kịch bản và mò web quét DOM"
-    },
     "qa_reporter": {
       "path": "qa-system/qa-reporter/AGENT.md",
       "skills_path": "qa-system/qa-reporter/skills/",
@@ -114,7 +110,7 @@
     "qa_automation": {
       "path": "qa-system/qa-automation/AGENT.md",
       "skills_path": "qa-system/qa-automation/skills/",
-      "role": "Gom cụm luồng hành trình, sinh POM và thực thi Playwright E2E bắt evidence"
+      "role": "07 + Automation: Mò web quét DOM, gom cụm luồng, sinh POM, thực thi Playwright E2E bắt evidence; kèm charter thăm dò cho con người"
     },
     "qa_readiness_evaluator": {
       "path": "qa-system/qa-readiness-evaluator/AGENT.md",

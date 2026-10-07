@@ -12,7 +12,7 @@ description: >
 Tạo ra các class Page Object Model (POM) chuyên nghiệp, module hóa, bảo trì dễ dàng, phân tách tuyệt đối giữa cấu trúc phần tử (Locators) và hành động người dùng (Actions).
 
 ## Đầu vào
-- Snapshot DOM / Accessibility Tree từ web exploration (Playwright MCP hoặc `qa-exploratory`).
+- Snapshot DOM / Accessibility Tree từ web exploration (Playwright MCP hoặc skill `web-journey-discovery` cùng agent).
 - Danh sách hành động trong Test Cases (Steps).
 
 ## Nguyên tắc sinh Locator chuẩn Playwright (Bắt Buộc)
