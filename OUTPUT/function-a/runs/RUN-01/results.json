@@ -1,0 +1,824 @@
+{
+  "config": {
+    "argv": [
+      "/Users/tuyendv7517/.nvm/versions/node/v24.14.0/bin/node",
+      "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/node_modules/.bin/playwright",
+      "test",
+      "-c",
+      "automation/playwright.config.ts",
+      "automation/tests/auth.spec.ts"
+    ],
+    "configFile": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/automation/playwright.config.ts",
+    "rootDir": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/automation/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/automation/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "auth.spec.ts",
+      "file": "auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "CW ShopGo Authentication Regression Suite (RUN-01 · function-a)",
+          "file": "auth.spec.ts",
+          "line": 19,
+          "column": 6,
+          "specs": [
+            {
+              "title": "AUTH-001: Verify đăng nhập thành công với tài khoản Khách thường",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2216,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:06:53.389Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-e8844--với-tài-khoản-Khách-thường-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-1d581afa22cf2aec9d02",
+              "file": "auth.spec.ts",
+              "line": 34,
+              "column": 7
+            },
+            {
+              "title": "AUTH-002: Verify đăng nhập thành công với tài khoản VIP và hiển thị nhãn VIP",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2904,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:06:55.703Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-e97c5-ản-VIP-và-hiển-thị-nhãn-VIP-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-74df0ed685ff6c0b43fc",
+              "file": "auth.spec.ts",
+              "line": 48,
+              "column": 7
+            },
+            {
+              "title": "AUTH-003: Verify đăng nhập tự động điền bằng nút Demo Accounts",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3650,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:06:58.620Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-375ed-điền-bằng-nút-Demo-Accounts-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-6f2117fe1866b2e1f31a",
+              "file": "auth.spec.ts",
+              "line": 58,
+              "column": 7
+            },
+            {
+              "title": "AUTH-004: Verify chuyển hướng sang màn Thanh toán sau khi đăng nhập từ nút Checkout",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2520,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:02.293Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-074bd-i-đăng-nhập-từ-nút-Checkout-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-b805f999b023cebf57d9",
+              "file": "auth.spec.ts",
+              "line": 71,
+              "column": 7
+            },
+            {
+              "title": "AUTH-005: Validate hiển thị thông báo lỗi khi nhập sai mật khẩu",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2703,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:04.829Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-67e79-o-lỗi-khi-nhập-sai-mật-khẩu-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-559e4b0ca05edd2f1c6f",
+              "file": "auth.spec.ts",
+              "line": 91,
+              "column": 7
+            },
+            {
+              "title": "AUTH-006: Validate hiển thị thông báo lỗi khi nhập email không tồn tại trong hệ thống",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2984,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:07.554Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-e85f9-hông-tồn-tại-trong-hệ-thống-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-575bd22ee23043f36752",
+              "file": "auth.spec.ts",
+              "line": 101,
+              "column": 7
+            },
+            {
+              "title": "AUTH-007: Validate chặn submit và hiển thị thông báo khi để trống trường Email",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2271,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:10.553Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-be438-o-khi-để-trống-trường-Email-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-d0ea2a7084485eda2d26",
+              "file": "auth.spec.ts",
+              "line": 111,
+              "column": 7
+            },
+            {
+              "title": "AUTH-008: Validate chặn submit và hiển thị thông báo khi để trống trường Mật khẩu",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2145,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:12.835Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-e100c-hi-để-trống-trường-Mật-khẩu-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-d5f09246e7a1383e9ff2",
+              "file": "auth.spec.ts",
+              "line": 126,
+              "column": 7
+            },
+            {
+              "title": "AUTH-009: Validate chặn submit và hiển thị thông báo khi để trống cả hai trường",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2175,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:14.993Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-bdb4e--khi-để-trống-cả-hai-trường-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-4b3335df94df7aff373b",
+              "file": "auth.spec.ts",
+              "line": 140,
+              "column": 7
+            },
+            {
+              "title": "AUTH-010: Validate chặn submit khi nhập email sai định dạng cú pháp thiếu @",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2009,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:17.183Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-b08f9-ai-định-dạng-cú-pháp-thiếu--chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-fab6605f533a8eb9a8ef",
+              "file": "auth.spec.ts",
+              "line": 156,
+              "column": 7
+            },
+            {
+              "title": "AUTH-011: Confirm tự động trim khoảng trắng thừa ở hai đầu email khi đăng nhập",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2774,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:19.205Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-978ff-hai-đầu-email-khi-đăng-nhập-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-22ce8be070bafec27c22",
+              "file": "auth.spec.ts",
+              "line": 170,
+              "column": 7
+            },
+            {
+              "title": "AUTH-012: Confirm không phân biệt chữ hoa thường trong email khi đăng nhập",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2734,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:21.992Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-fa9d4-g-trong-email-khi-đăng-nhập-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-2a91464c559ef774cfad",
+              "file": "auth.spec.ts",
+              "line": 180,
+              "column": 7
+            },
+            {
+              "title": "AUTH-013: Verify trường Mật khẩu được che giấu ký tự trên modal đăng nhập",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1881,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:24.736Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-0b9cd--ký-tự-trên-modal-đăng-nhập-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-700bdeaa279085bf6f9a",
+              "file": "auth.spec.ts",
+              "line": 193,
+              "column": 7
+            },
+            {
+              "title": "AUTH-014: Verify chuyển đổi giữa hai tài khoản không bị lẫn lộn danh tính người dùng",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4200,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:26.630Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-ad579-ẫn-lộn-danh-tính-người-dùng-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-c96a8aaacb06c312ee58",
+              "file": "auth.spec.ts",
+              "line": 200,
+              "column": 7
+            },
+            {
+              "title": "AUTH-015: Confirm hệ thống duy trì hoạt động ổn định khi nhập sai mật khẩu nhiều lần liên tiếp",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4140,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:30.838Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-7a589-ật-khẩu-nhiều-lần-liên-tiếp-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-18b38ab15a615c22f1a2",
+              "file": "auth.spec.ts",
+              "line": 222,
+              "column": 7
+            },
+            {
+              "title": "AUTH-016: Confirm submit form đăng nhập bằng phím Enter tại ô Mật khẩu",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2724,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:34.989Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-61ebc-g-phím-Enter-tại-ô-Mật-khẩu-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-e9be534e497f13bb2ae2",
+              "file": "auth.spec.ts",
+              "line": 240,
+              "column": 7
+            },
+            {
+              "title": "AUTH-017: Verify đóng modal đăng nhập mà không làm thay đổi trạng thái trang",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2219,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:37.752Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-3238d-m-thay-đổi-trạng-thái-trang-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-7a33d3b4a2d5945f20e3",
+              "file": "auth.spec.ts",
+              "line": 252,
+              "column": 7
+            },
+            {
+              "title": "AUTH-018: Verify khôi phục phiên đăng nhập khi làm mới trang (F5) và điều hướng về trang chủ khi đăng xuất",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3250,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T14:07:39.983Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/tuyendv7517/Documents/Projects/CW-Tech-Academy/github/cw-agent-updated/OUTPUT/function-a/runs/RUN-01/evidence/auth-CW-ShopGo-Authenticat-0d17b--về-trang-chủ-khi-đăng-xuất-chromium/test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-7ef90f42ce01e34d609c",
+              "file": "auth.spec.ts",
+              "line": 268,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T14:06:53.126Z",
+    "duration": 50272.835,
+    "expected": 18,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

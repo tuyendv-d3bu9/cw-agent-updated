@@ -122,7 +122,48 @@
       "role": "Cổng Go/No-Go trước Automation: số liệu do npm run readiness đo bằng máy, agent diễn giải thành 15_readiness_report.md"
     }
   },
-  "features_inventory": {},
+  "features_inventory": {
+    "function-a": {
+      "name": "function-a",
+      "input_file": "INPUT/function-a",
+      "knowledge_file": "knowledge/features/function-a.md",
+      "output_dir": "OUTPUT/function-a/",
+      "plan_file": "OUTPUT/function-a/00_plan.md",
+      "status": "COMPLETED (PASS)",
+      "total_testcases": 18,
+      "last_verdict": "PASS"
+    },
+    "function-d-voucher": {
+      "name": "function-d-voucher",
+      "input_file": "INPUT/function-d-voucher",
+      "knowledge_file": "knowledge/features/function-d-voucher.md",
+      "output_dir": "OUTPUT/function-d-voucher/",
+      "plan_file": "OUTPUT/function-d-voucher/00_plan.md",
+      "status": "COMPLETED (PASS)",
+      "total_testcases": 36,
+      "last_verdict": "PASS"
+    },
+    "reports": {
+      "name": "reports",
+      "input_file": "INPUT/reports.md",
+      "knowledge_file": "knowledge/features/reports.md",
+      "output_dir": "OUTPUT/reports/",
+      "plan_file": "OUTPUT/reports/00_plan.md",
+      "status": "IN-PROGRESS",
+      "total_testcases": 0,
+      "last_verdict": "UNKNOWN"
+    },
+    "spec-function-d": {
+      "name": "spec-function-d",
+      "input_file": "INPUT/spec-function-d",
+      "knowledge_file": "knowledge/features/spec-function-d.md",
+      "output_dir": "OUTPUT/spec-function-d/",
+      "plan_file": "OUTPUT/spec-function-d/00_plan.md",
+      "status": "IN-PROGRESS",
+      "total_testcases": 0,
+      "last_verdict": "UNKNOWN"
+    }
+  },
   "tools_layout": {
     "policy": "Tool gom theo nhóm chức năng. Mở đúng thư mục, không quét cả qa-system/tools/.",
     "index": "qa-system/tools/README.md",

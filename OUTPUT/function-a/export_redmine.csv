@@ -1,0 +1,354 @@
+﻿"Tracker","Subject","Description","Priority","Category","Status"
+"Test Case","[AUTH-001] Verify đăng nhập thành công với tài khoản Khách thường","*Objective*: Verify đăng nhập thành công với tài khoản Khách thường
+
+h4. Preconditions:
+• Trình duyệt truy cập `https://cwshopgo.github.io`
+• Người dùng ở trạng thái khách vãng lai (chưa đăng nhập)
+• `localStorage` đã xóa sạch phiên đăng nhập cũ
+
+h4. Test Steps:
+1. Click vào nút ""Đăng nhập"" `#btn-header-login` trên Header
+  2. Nhập email `khachhang@shopgo.vn` vào ô `getByPlaceholder('Nhập email...')`
+  3. Nhập mật khẩu `123456` vào ô `getByPlaceholder('Nhập mật khẩu...')`
+  4. Click nút xác nhận Đăng nhập trong modal
+
+h4. Test Data:
+• Email: `khachhang@shopgo.vn`
+• Mật khẩu: `123456`
+
+h4. Expected Result:
+• Modal đăng nhập đóng lại
+• Nút `#btn-header-login` biến mất
+• Nút `#btn-user-profile` hiển thị tên chính xác `Nguyễn Văn An`
+• Khóa `shopgo_user` trong `localStorage` được cập nhật thông tin tài khoản thường
+
+*Tags*: Rule#BR-AUTH-01, Rule#BR-AUTH-02, Viewpoint#Happy Path, Module#AUTH, Automated","High","AUTH","New"
+"Test Case","[AUTH-002] Verify đăng nhập thành công với tài khoản VIP và hiển thị nhãn VIP","*Objective*: Verify đăng nhập thành công với tài khoản VIP và hiển thị nhãn VIP
+
+h4. Preconditions:
+• Trình duyệt truy cập `https://cwshopgo.github.io`
+• Người dùng ở trạng thái chưa đăng nhập
+
+h4. Test Steps:
+1. Click vào nút ""Đăng nhập"" `#btn-header-login` trên Header
+  2. Nhập email `vip@shopgo.vn` vào ô Email
+  3. Nhập mật khẩu `123456` vào ô Mật khẩu
+  4. Click nút xác nhận Đăng nhập
+
+h4. Test Data:
+• Email: `vip@shopgo.vn`
+• Mật khẩu: `123456`
+
+h4. Expected Result:
+• Đăng nhập thành công và modal đóng lại
+• Header hiển thị nút `#btn-user-profile` với tên và huy hiệu `Trần Thị Mai (VIP)`
+• Không hiển thị tên của tài khoản khách hàng thường
+
+*Tags*: Rule#BR-AUTH-01, Rule#BR-AUTH-02, Rule#BR-AUTH-07, Viewpoint#Happy Path, Module#AUTH, Automated","High","AUTH","New"
+"Test Case","[AUTH-003] Verify đăng nhập tự động điền bằng nút Demo Accounts","*Objective*: Verify đăng nhập tự động điền bằng nút Demo Accounts
+
+h4. Preconditions:
+• Trình duyệt truy cập `https://cwshopgo.github.io` ở trạng thái chưa đăng nhập
+
+h4. Test Steps:
+1. Click vào nút ""Đăng nhập"" `#btn-header-login`
+  2. Click vào nút xem danh sách tài khoản demo `#btn-toggle-demo-accounts`
+  3. Click chọn tài khoản VIP `vip@shopgo.vn` từ danh sách demo
+  4. Click nút Đăng nhập
+
+h4. Test Data:
+• Tài khoản chọn: `vip@shopgo.vn`
+
+h4. Expected Result:
+• Form tự động điền Email `vip@shopgo.vn` và Mật khẩu `123456`
+• Đăng nhập thành công, Header hiển thị tên `Trần Thị Mai (VIP)`
+
+*Tags*: Rule#BR-AUTH-01, Viewpoint#Happy Path, Module#AUTH, Automated","Normal","AUTH","New"
+"Test Case","[AUTH-004] Verify chuyển hướng sang màn Thanh toán sau khi đăng nhập từ nút Checkout","*Objective*: Verify chuyển hướng sang màn Thanh toán sau khi đăng nhập từ nút Checkout
+
+h4. Preconditions:
+• Người dùng chưa đăng nhập
+• Giỏ hàng đã có ít nhất 1 sản phẩm (ví dụ click `#btn-add-prod-001`)
+
+h4. Test Steps:
+1. Click vào nút Thanh toán `#btn-nav-checkout` trên Header
+  2. Quan sát modal đăng nhập tự động bật lên kèm thông báo yêu cầu đăng nhập
+  3. Nhập email `khachhang@shopgo.vn` và mật khẩu `123456`
+  4. Click nút Đăng nhập
+
+h4. Test Data:
+• Email: `khachhang@shopgo.vn`
+• Mật khẩu: `123456`
+
+h4. Expected Result:
+• Đăng nhập thành công
+• Hệ thống tự động chuyển tiếp vào màn hình Thanh toán (`checkout`) với sản phẩm trong giỏ vẫn được giữ nguyên
+
+*Tags*: Rule#BR-AUTH-03, Viewpoint#Happy Path, Module#AUTH, Automated","High","AUTH","New"
+"Test Case","[AUTH-005] Validate hiển thị thông báo lỗi khi nhập sai mật khẩu","*Objective*: Validate hiển thị thông báo lỗi khi nhập sai mật khẩu
+
+h4. Preconditions:
+• Modal đăng nhập đang mở trên trang chủ
+
+h4. Test Steps:
+1. Nhập email hợp lệ `khachhang@shopgo.vn` vào ô Email
+  2. Nhập mật khẩu sai `12345678` vào ô Mật khẩu
+  3. Click nút Đăng nhập
+
+h4. Test Data:
+• Email: `khachhang@shopgo.vn`
+• Mật khẩu sai: `12345678`
+
+h4. Expected Result:
+• Đăng nhập không thành công, modal không đóng
+• Hệ thống hiển thị thông báo lỗi màu đỏ nguyên văn: `""Email hoặc mật khẩu không chính xác.""`
+• Không tạo phiên đăng nhập mới trong `localStorage`
+
+*Tags*: Rule#BR-AUTH-04, Viewpoint#Negative, Module#AUTH, Automated","High","AUTH","New"
+"Test Case","[AUTH-006] Validate hiển thị thông báo lỗi khi nhập email không tồn tại trong hệ thống","*Objective*: Validate hiển thị thông báo lỗi khi nhập email không tồn tại trong hệ thống
+
+h4. Preconditions:
+• Modal đăng nhập đang mở trên trang chủ
+
+h4. Test Steps:
+1. Nhập email chưa đăng ký `chuadangky@shopgo.vn` vào ô Email
+  2. Nhập mật khẩu `123456` vào ô Mật khẩu
+  3. Click nút Đăng nhập
+
+h4. Test Data:
+• Email: `chuadangky@shopgo.vn`
+• Mật khẩu: `123456`
+
+h4. Expected Result:
+• Hệ thống từ chối đăng nhập
+• Hiển thị thông báo lỗi nguyên văn: `""Email hoặc mật khẩu không chính xác.""`
+
+*Tags*: Rule#BR-AUTH-04, Viewpoint#Negative, Module#AUTH, Automated","High","AUTH","New"
+"Test Case","[AUTH-007] Validate chặn submit và hiển thị thông báo khi để trống trường Email","*Objective*: Validate chặn submit và hiển thị thông báo khi để trống trường Email
+
+h4. Preconditions:
+• Modal đăng nhập đang mở trên trang chủ
+
+h4. Test Steps:
+1. Để trống trường Email
+  2. Nhập mật khẩu `123456` vào ô Mật khẩu
+  3. Click nút Đăng nhập
+
+h4. Test Data:
+• Email: `""""` (chuỗi rỗng)
+• Mật khẩu: `123456`
+
+h4. Expected Result:
+• Form chặn gửi dữ liệu
+• Hiển thị thông báo lỗi: `""Vui lòng nhập đầy đủ thông tin.""`
+
+*Tags*: Rule#BR-AUTH-05, Viewpoint#Negative, Module#AUTH, Automated","High","AUTH","New"
+"Test Case","[AUTH-008] Validate chặn submit và hiển thị thông báo khi để trống trường Mật khẩu","*Objective*: Validate chặn submit và hiển thị thông báo khi để trống trường Mật khẩu
+
+h4. Preconditions:
+• Modal đăng nhập đang mở trên trang chủ
+
+h4. Test Steps:
+1. Nhập email `vip@shopgo.vn` vào ô Email
+  2. Để trống ô Mật khẩu
+  3. Click nút Đăng nhập
+
+h4. Test Data:
+• Email: `vip@shopgo.vn`
+• Mật khẩu: `""""` (chuỗi rỗng)
+
+h4. Expected Result:
+• Form chặn submit và hiển thị thông báo: `""Vui lòng nhập đầy đủ thông tin.""`
+
+*Tags*: Rule#BR-AUTH-05, Viewpoint#Negative, Module#AUTH, Automated","High","AUTH","New"
+"Test Case","[AUTH-009] Validate chặn submit và hiển thị thông báo khi để trống cả hai trường","*Objective*: Validate chặn submit và hiển thị thông báo khi để trống cả hai trường
+
+h4. Preconditions:
+• Modal đăng nhập đang mở với cả hai ô trống
+
+h4. Test Steps:
+1. Không nhập dữ liệu vào ô Email
+  2. Không nhập dữ liệu vào ô Mật khẩu
+  3. Click nút Đăng nhập
+
+h4. Test Data:
+• Email: `""""`
+• Mật khẩu: `""""`
+
+h4. Expected Result:
+• Hệ thống chặn submit và hiển thị thông báo: `""Vui lòng nhập đầy đủ thông tin.""`
+
+*Tags*: Rule#BR-AUTH-05, Viewpoint#Negative, Module#AUTH, Automated","High","AUTH","New"
+"Test Case","[AUTH-010] Validate chặn submit khi nhập email sai định dạng cú pháp thiếu @","*Objective*: Validate chặn submit khi nhập email sai định dạng cú pháp thiếu @
+
+h4. Preconditions:
+• Modal đăng nhập đang mở trên trang chủ
+
+h4. Test Steps:
+1. Nhập chuỗi `khachhangshopgo.vn` (không có ký tự `@`) vào ô Email
+  2. Nhập mật khẩu `123456` vào ô Mật khẩu
+  3. Click nút Đăng nhập
+
+h4. Test Data:
+• Email sai format: `khachhangshopgo.vn`
+• Mật khẩu: `123456`
+
+h4. Expected Result:
+• Trình duyệt hoặc hệ thống kích hoạt cảnh báo validation định dạng email không hợp lệ
+• Không gửi yêu cầu đăng nhập
+
+*Tags*: Rule#BR-AUTH-04, Viewpoint#Negative, Module#AUTH, Automated","Normal","AUTH","New"
+"Test Case","[AUTH-011] Confirm tự động trim khoảng trắng thừa ở hai đầu email khi đăng nhập","*Objective*: Confirm tự động trim khoảng trắng thừa ở hai đầu email khi đăng nhập
+
+h4. Preconditions:
+• Modal đăng nhập đang mở trên trang chủ
+
+h4. Test Steps:
+1. Nhập chuỗi `""  khachhang@shopgo.vn  ""` (có khoảng trắng 2 đầu) vào ô Email
+  2. Nhập mật khẩu `123456` vào ô Mật khẩu
+  3. Click nút Đăng nhập
+
+h4. Test Data:
+• Email: `""  khachhang@shopgo.vn  ""`
+• Mật khẩu: `123456`
+
+h4. Expected Result:
+• Hệ thống tự động loại bỏ khoảng trắng thừa 2 đầu
+• Đăng nhập thành công và Header hiển thị tên `Nguyễn Văn An`
+
+*Tags*: Rule#BR-AUTH-01, Viewpoint#Boundary, Module#AUTH, Automated","Normal","AUTH","New"
+"Test Case","[AUTH-012] Confirm không phân biệt chữ hoa thường trong email khi đăng nhập","*Objective*: Confirm không phân biệt chữ hoa thường trong email khi đăng nhập
+
+h4. Preconditions:
+• Modal đăng nhập đang mở trên trang chủ
+
+h4. Test Steps:
+1. Nhập chuỗi `VIP@SHOPGO.VN` (chữ in hoa toàn bộ) vào ô Email
+  2. Nhập mật khẩu `123456` vào ô Mật khẩu
+  3. Click nút Đăng nhập
+
+h4. Test Data:
+• Email: `VIP@SHOPGO.VN`
+• Mật khẩu: `123456`
+
+h4. Expected Result:
+• Hệ thống đối soát không phân biệt chữ hoa thường
+• Đăng nhập thành công và hiển thị tên `Trần Thị Mai (VIP)`
+
+*Tags*: Rule#BR-AUTH-01, Viewpoint#Boundary, Module#AUTH, Automated","Normal","AUTH","New"
+"Test Case","[AUTH-013] Verify trường Mật khẩu được che giấu ký tự trên modal đăng nhập","*Objective*: Verify trường Mật khẩu được che giấu ký tự trên modal đăng nhập
+
+h4. Preconditions:
+• Modal đăng nhập đang mở
+
+h4. Test Steps:
+1. Nhập `123456` vào trường ô Mật khẩu
+  2. Kiểm tra thuộc tính type của thẻ input mật khẩu trong DOM
+
+h4. Test Data:
+• Mật khẩu: `123456`
+
+h4. Expected Result:
+• Phần tử input mật khẩu có thuộc tính `type=""password""`
+• Các ký tự đã gõ được hiển thị dưới dạng dấu chấm bảo mật (masking dots)
+
+*Tags*: Rule#BR-AUTH-01, Viewpoint#Security, Module#AUTH, Automated","High","AUTH","New"
+"Test Case","[AUTH-014] Verify chuyển đổi giữa hai tài khoản không bị lẫn lộn danh tính người dùng","*Objective*: Verify chuyển đổi giữa hai tài khoản không bị lẫn lộn danh tính người dùng
+
+h4. Preconditions:
+• Người dùng đang đăng nhập với tài khoản Khách thường `Nguyễn Văn An`
+
+h4. Test Steps:
+1. Click vào menu người dùng `#btn-user-profile`
+  2. Click nút Đăng xuất `#btn-logout`
+  3. Click nút Đăng nhập `#btn-header-login`
+  4. Nhập email `vip@shopgo.vn` và mật khẩu `123456`
+  5. Click nút Đăng nhập
+
+h4. Test Data:
+• Tài khoản cũ: `khachhang@shopgo.vn`
+• Tài khoản mới: `vip@shopgo.vn` / `123456`
+
+h4. Expected Result:
+• Hệ thống đăng nhập thành công vào tài khoản VIP
+• Header cập nhật chính xác tên `Trần Thị Mai (VIP)`
+• Không còn bất kỳ dấu hiệu hiển thị nào của `Nguyễn Văn An`
+
+*Tags*: Rule#BR-AUTH-02, Rule#BR-AUTH-08, Viewpoint#Security, Module#AUTH, Automated","High","AUTH","New"
+"Test Case","[AUTH-015] Confirm hệ thống duy trì hoạt động ổn định khi nhập sai mật khẩu nhiều lần liên tiếp","*Objective*: Confirm hệ thống duy trì hoạt động ổn định khi nhập sai mật khẩu nhiều lần liên tiếp
+
+h4. Preconditions:
+• Modal đăng nhập đang mở
+
+h4. Test Steps:
+1. Nhập email `khachhang@shopgo.vn`
+  2. Nhập mật khẩu sai `sai_pass` và click Đăng nhập
+  3. Lặp lại thao tác click Đăng nhập với mật khẩu sai liên tiếp 5 lần
+
+h4. Test Data:
+• Email: `khachhang@shopgo.vn`
+• Mật khẩu sai: `sai_pass`
+• Số lần thử: 5 lần
+
+h4. Expected Result:
+• Hệ thống vẫn phản hồi thông báo `""Email hoặc mật khẩu không chính xác.""` sau mỗi lần thử
+• Giao diện không bị treo, form không bị crash lỗi JavaScript
+
+*Tags*: Rule#BR-AUTH-06, Viewpoint#Security, Module#AUTH, Manual","Normal","AUTH","New"
+"Test Case","[AUTH-016] Confirm submit form đăng nhập bằng phím Enter tại ô Mật khẩu","*Objective*: Confirm submit form đăng nhập bằng phím Enter tại ô Mật khẩu
+
+h4. Preconditions:
+• Modal đăng nhập đang mở
+
+h4. Test Steps:
+1. Nhập email `khachhang@shopgo.vn` vào ô Email
+  2. Nhập mật khẩu `123456` vào ô Mật khẩu
+  3. Nhấn phím `Enter` trên bàn phím khi con trỏ đang ở ô Mật khẩu
+
+h4. Test Data:
+• Email: `khachhang@shopgo.vn`
+• Mật khẩu: `123456`
+• Phím nhấn: `Enter`
+
+h4. Expected Result:
+• Form tự động submit mà không cần click chuột vào nút Đăng nhập
+• Đăng nhập thành công và modal đóng lại
+
+*Tags*: Rule#BR-AUTH-01, Viewpoint#UX/Usability, Module#AUTH, Automated","Low","AUTH","New"
+"Test Case","[AUTH-017] Verify đóng modal đăng nhập mà không làm thay đổi trạng thái trang","*Objective*: Verify đóng modal đăng nhập mà không làm thay đổi trạng thái trang
+
+h4. Preconditions:
+• Người dùng đang ở màn hình Cửa hàng (`shop`)
+• Modal đăng nhập đang mở
+
+h4. Test Steps:
+1. Click vào nút đóng modal hoặc click vào vùng nền mờ bên ngoài modal
+  2. Quan sát giao diện trang
+
+h4. Test Data:
+• Hành động: Click nút đóng
+
+h4. Expected Result:
+• Modal đăng nhập đóng lại hoàn toàn
+• Người dùng vẫn ở lại màn hình Cửa hàng, nút `#btn-header-login` vẫn hiển thị bình thường
+
+*Tags*: Rule#BR-AUTH-01, Viewpoint#UX/Usability, Module#AUTH, Automated","Low","AUTH","New"
+"Test Case","[AUTH-018] Verify khôi phục phiên đăng nhập khi làm mới trang (F5) và điều hướng về trang chủ khi đăng xuất","*Objective*: Verify khôi phục phiên đăng nhập khi làm mới trang (F5) và điều hướng về trang chủ khi đăng xuất
+
+h4. Preconditions:
+• Người dùng đã đăng nhập thành công với tài khoản VIP `Trần Thị Mai (VIP)`
+
+h4. Test Steps:
+1. Nhấn nút F5 (reload trang) của trình duyệt
+  2. Kiểm tra Header sau khi trang load xong
+  3. Click `#btn-user-profile` để mở menu người dùng
+  4. Click nút Đăng xuất `#btn-logout`
+
+h4. Test Data:
+• Tài khoản: `vip@shopgo.vn`
+
+h4. Expected Result:
+• Sau khi F5: Header vẫn giữ nguyên trạng thái đăng nhập `Trần Thị Mai (VIP)` từ `localStorage`
+• Sau khi click Đăng xuất: Hệ thống điều hướng quay về trang chủ (`shop`), Header quay về nút `#btn-header-login`, giỏ hàng không hiển thị
+
+*Tags*: Rule#BR-AUTH-03, Rule#BR-AUTH-08, Viewpoint#Integration, Module#AUTH, Automated","High","AUTH","New"

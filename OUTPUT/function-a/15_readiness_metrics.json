@@ -1,0 +1,78 @@
+{
+  "slug": "function-a",
+  "generatedAt": "2026-10-04T13:55:13.185Z",
+  "sources": {
+    "01_requirement_risk_summary.md": true,
+    "02_missing_rule_report.md": true,
+    "03_viewpoint_report.md": true,
+    "testcases": "05_test_case_spec.md",
+    "06_coverage_review.md": true,
+    "12_data_validation_traceability.md": true,
+    "knowledge/features/function-a.md": true
+  },
+  "coverage": {
+    "viewpointsPlanned": [
+      "VP-01",
+      "VP-02",
+      "VP-03",
+      "VP-04",
+      "VP-05",
+      "VP-06"
+    ],
+    "viewpointsCovered": [
+      "VP-01",
+      "VP-02",
+      "VP-03",
+      "VP-04",
+      "VP-05",
+      "VP-06"
+    ],
+    "viewpointsUncovered": [],
+    "rulesTotal": [
+      "BR-AUTH-01",
+      "BR-AUTH-02",
+      "BR-AUTH-03",
+      "BR-AUTH-04",
+      "BR-AUTH-05",
+      "BR-AUTH-06",
+      "BR-AUTH-07",
+      "BR-AUTH-08"
+    ],
+    "rulesCovered": [
+      "BR-AUTH-01",
+      "BR-AUTH-02",
+      "BR-AUTH-07",
+      "BR-AUTH-03",
+      "BR-AUTH-04",
+      "BR-AUTH-05",
+      "BR-AUTH-08",
+      "BR-AUTH-06"
+    ],
+    "rulesUncovered": [],
+    "rulesReferencedButUndefined": []
+  },
+  "testCases": {
+    "total": 18,
+    "traced": 18,
+    "tracePct": 100,
+    "untraced": []
+  },
+  "askGate": {
+    "blocked": false,
+    "pending": [],
+    "reasons": [],
+    "advisories": []
+  },
+  "riskyCases": [],
+  "data": {
+    "hasValidation": true,
+    "issues": []
+  },
+  "reviewVerdict": "PASS",
+  "recommendation": {
+    "verdict": "GO",
+    "blockers": [],
+    "conditions": [],
+    "exitCode": 0
+  }
+}

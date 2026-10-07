@@ -1,0 +1,58 @@
+{
+  "project": "ShopGo E-Commerce",
+  "task": "function-a",
+  "report_date": "2026-10-04",
+  "run": "RUN-01",
+  "environment": "https://cwshopgo.github.io",
+  "_source": [
+    "OUTPUT/function-a/runs/RUN-01/run_result.md",
+    "OUTPUT/function-a/jira_testcase_mapping.md"
+  ],
+  "scope": {
+    "total_test_cases": 18,
+    "automation_scope": 18,
+    "expected_pass": 18,
+    "expected_fail": 0,
+    "out_of_scope": []
+  },
+  "execution": {
+    "executed": 18,
+    "passed": 18,
+    "failed": 0,
+    "blocked": 0,
+    "remaining": 0,
+    "duration": "50.3s",
+    "features": ["function-a: Authentication & Authorization"],
+    "results": [
+      { "tc": "AUTH-001", "jira": "SG-38", "title": "Verify đăng nhập thành công với tài khoản Khách thường", "status": "PASS" },
+      { "tc": "AUTH-002", "jira": "SG-39", "title": "Verify đăng nhập thành công với tài khoản VIP và hiển thị nhãn VIP", "status": "PASS" },
+      { "tc": "AUTH-003", "jira": "SG-40", "title": "Verify đăng nhập tự động điền bằng nút Demo Accounts", "status": "PASS" },
+      { "tc": "AUTH-004", "jira": "SG-41", "title": "Verify chuyển hướng sang màn Thanh toán sau khi đăng nhập từ nút Checkout", "status": "PASS" },
+      { "tc": "AUTH-005", "jira": "SG-42", "title": "Validate hiển thị thông báo lỗi khi nhập sai mật khẩu", "status": "PASS" },
+      { "tc": "AUTH-006", "jira": "SG-43", "title": "Validate hiển thị thông báo lỗi khi nhập email không tồn tại trong hệ thống", "status": "PASS" },
+      { "tc": "AUTH-007", "jira": "SG-44", "title": "Validate chặn submit và hiển thị thông báo khi để trống trường Email", "status": "PASS" },
+      { "tc": "AUTH-008", "jira": "SG-45", "title": "Validate chặn submit và hiển thị thông báo khi để trống trường Mật khẩu", "status": "PASS" },
+      { "tc": "AUTH-009", "jira": "SG-46", "title": "Validate chặn submit và hiển thị thông báo khi để trống cả hai trường", "status": "PASS" },
+      { "tc": "AUTH-010", "jira": "SG-47", "title": "Validate chặn submit khi nhập email sai định dạng cú pháp thiếu @", "status": "PASS" },
+      { "tc": "AUTH-011", "jira": "SG-48", "title": "Confirm tự động trim khoảng trắng thừa ở hai đầu email khi đăng nhập", "status": "PASS" },
+      { "tc": "AUTH-012", "jira": "SG-49", "title": "Confirm không phân biệt chữ hoa thường trong email khi đăng nhập", "status": "PASS" },
+      { "tc": "AUTH-013", "jira": "SG-50", "title": "Verify trường Mật khẩu được che giấu ký tự trên modal đăng nhập", "status": "PASS" },
+      { "tc": "AUTH-014", "jira": "SG-51", "title": "Verify chuyển đổi giữa hai tài khoản không bị lẫn lộn danh tính người dùng", "status": "PASS" },
+      { "tc": "AUTH-015", "jira": "SG-52", "title": "Confirm hệ thống duy trì hoạt động ổn định khi nhập sai mật khẩu nhiều lần liên tiếp", "status": "PASS" },
+      { "tc": "AUTH-016", "jira": "SG-53", "title": "Confirm submit form đăng nhập bằng phím Enter tại ô Mật khẩu", "status": "PASS" },
+      { "tc": "AUTH-017", "jira": "SG-54", "title": "Verify đóng modal đăng nhập mà không làm thay đổi trạng thái trang", "status": "PASS" },
+      { "tc": "AUTH-018", "jira": "SG-55", "title": "Verify khôi phục phiên đăng nhập khi làm mới trang (F5) và điều hướng về trang chủ khi đăng xuất", "status": "PASS" }
+    ]
+  },
+  "defects": [],
+  "next_actions": [
+    {
+      "task": "Nghiệm thu toàn bộ 18 test cases trên Jira board SG và bàn giao kết quả đợt chạy RUN-01",
+      "owner": "QA Lead & PM"
+    },
+    {
+      "task": "Mở rộng pipeline E2E cho các tính năng tiếp theo (function-b: Giỏ hàng, function-c: Thanh toán)",
+      "owner": "qa-automation"
+    }
+  ]
+}
