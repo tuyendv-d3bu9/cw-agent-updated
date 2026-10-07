@@ -50,7 +50,7 @@ const PIPELINE_DEPENDENCIES = {
       { step: '04', name: 'qa-analyst/test-idea-design', reason: 'Allocates test ideas per viewpoint' },
       { step: '05', name: 'qa-test-design/test-case-generation', reason: 'Traces VP-xx IDs into test case tags' },
       { step: '06', name: 'qa-test-design/coverage-review', reason: 'Reviews viewpoint coverage' },
-      { step: '07', name: 'qa-exploratory/exploratory-charter', reason: 'Derives exploratory charters from risk areas' }
+      { step: '07', name: 'qa-automation/exploratory-charter', reason: 'Derives exploratory charters from risk areas' }
     ]
   },
   '04': {

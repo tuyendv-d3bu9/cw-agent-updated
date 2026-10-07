@@ -43,7 +43,7 @@ Ghi ra `OUTPUT/<task-slug>/07_exploratory_charter.md`:
 
 ```markdown
 # EXPLORATORY CHARTER SET — [TÊN TÍNH NĂNG]
-Owner: qa-system/qa-exploratory/exploratory-charter · Nguồn: OUTPUT/<task-slug>/03_viewpoint_report.md · Verdict: <PASS/ASK>
+Owner: qa-system/qa-automation/exploratory-charter · Nguồn: OUTPUT/<task-slug>/03_viewpoint_report.md · Verdict: <PASS/ASK>
 
 ## 1. Bảng tổng hợp Charter theo rủi ro
 | # | Charter (tóm tắt Mission) | Risk nhắm tới | Mức rủi ro | Time-box |

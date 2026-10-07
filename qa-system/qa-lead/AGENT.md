@@ -27,7 +27,8 @@ Khi nhận yêu cầu từ User, QA Leader tự động đọc `knowledge/_syste
 | **Rà soát độ phủ 3 góc nhìn** | `qa-test-design` | `coverage-review.md` | `06_coverage_review.md` |
 | **Sinh Dataset thực tế & biên** | `qa-test-data` | `data-class-map.md`<br>`dataset-generation.md`<br>`boundary-negative-dataset.md` | `09_*` đến `11_*` |
 | **Traceability Data ↔ Case** | `qa-test-data` | `data-validation-traceability.md` | `12_data_validation_traceability.md` |
-| **Mò web & Khám phá luồng** | `qa-exploratory` | `web-journey-discovery.md` | `07_web_journey_discovery.md` |
+| **Mò web & Khám phá luồng** | `qa-automation` | `web-journey-discovery.md` | `07_web_journey_discovery.md` |
+| **Charter thăm dò cho phiên của con người** | `qa-automation` | `exploratory-charter.md` | `07_exploratory_charter.md` |
 | **Gom cụm luồng & Sinh POM** | `qa-automation` | `flow-clustering.md`<br>`pom-generator.md` | `automation/pages/*.ts` |
 | **Chạy Test & Chụp Evidence (Theo Ticket)** | `qa-automation` | `test-runner-evidence.md` | `runs/<run-id>/run_result.md`<br>`evidence/*.png` |
 | **Đánh giá sẵn sàng trước Automation** | `qa-readiness-evaluator` | `gen-readiness-report.md`<br>+ `npm run readiness` | `15_readiness_metrics.json`<br>`15_readiness_report.md` |

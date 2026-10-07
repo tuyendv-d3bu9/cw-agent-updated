@@ -58,7 +58,7 @@ Theo `qa-system/core/QA_STANDARD.md` §1.
 ## Bàn giao
 - `01` (Business Rules, Risk Matrix) → `02`, `03`, và `qa-system/qa-test-design/coverage-review`
 - `02` (Missing Rules) → `03`
-- `03` (Risk Area + Viewpoints) → `04`, `agents/qa-exploratory`, `qa-system/qa-test-design/coverage-review`
+- `03` (Risk Area + Viewpoints) → `04`, `qa-system/qa-automation` (exploratory-charter), `qa-system/qa-test-design/coverage-review`
 - `04` (Test Idea "Giữ") → `qa-system/qa-test-design/test-case-generation`
 
 ## Cách gọi

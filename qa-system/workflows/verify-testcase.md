@@ -116,5 +116,5 @@ bàn giao, đừng để trống:
 3. **Cross-system Impact** — tác động tích hợp liên hệ thống ngoài phạm vi tài liệu
 4. **Exploratory Insights** — góc thăm dò sâu theo kinh nghiệm thực chiến
 
-Cần thăm dò thêm → chạy `qa-system/qa-exploratory/skills/exploratory-charter.md`, không nhồi
+Cần thăm dò thêm → chạy `qa-system/qa-automation/skills/exploratory-charter.md`, không nhồi
 vào test suite scripted.

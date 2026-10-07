@@ -12,7 +12,6 @@ agents/
     qa-analyst/
     qa-test-design/
     qa-test-data/
-    qa-exploratory/
     qa-ui-review/
     qa-reporter/
     qa-automation/
@@ -80,7 +79,7 @@ Nhánh `F` chạy độc lập hoàn toàn, không cần deliverable nào của 
 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
-| 7 | `qa-exploratory` | `exploratory-charter` | Risk area ở `03` | `07_exploratory_charter.md` |
+| 7 | `qa-automation` | `exploratory-charter` | Risk area ở `03` | `07_exploratory_charter.md` |
 | 8 | `qa-ui-review` | `ui-screenshot-review` | Ảnh đính kèm | `08_ui_screenshot_analysis.md` |
 
 ### Nhánh D — Báo cáo lỗi & Tổng kết Sprint (Defect Reporting & Summary)
@@ -107,7 +106,7 @@ Nhánh `F` chạy độc lập hoàn toàn, không cần deliverable nào của 
 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
-| G1 | `qa-exploratory` | `web-journey-discovery` | URL môi trường + `05_test_case_spec.md` | `07_web_journey_discovery.md` (Gherkin BDD + bảng ánh xạ Step ➔ Locator) |
+| G1 | `qa-automation` | `web-journey-discovery` | URL môi trường + `05_test_case_spec.md` | `07_web_journey_discovery.md` (Gherkin BDD + bảng ánh xạ Step ➔ Locator) |
 | G2 | `qa-automation` | `flow-clustering` | `07_web_journey_discovery.md` + `05_test_case_spec.md` | `08_flow_clusters.md` (gom test case thành cụm luồng dùng chung tiền điều kiện) |
 | G3 | `qa-automation` | `pom-generator` | `08_flow_clusters.md` + `knowledge/features/<sut>-ui-map.md` | `automation/pages/*.ts` (Page Object Model) |
 | G4 | `qa-automation` | `test-runner-evidence` | `automation/tests/*.spec.ts` + phạm vi ticket | `runs/RUN-XX_<ticket>/run_result.md` · `evidence/*.png` · `run_defects.md` |
