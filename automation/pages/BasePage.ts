@@ -1,4 +1,5 @@
 import { Page, Locator, expect } from '@playwright/test';
+import { TestEvidence } from '../utils/evidence';
 
 /**
  * BasePage — phần dùng chung cho mọi màn của ShopGo.
@@ -11,6 +12,7 @@ import { Page, Locator, expect } from '@playwright/test';
  */
 export class BasePage {
   readonly page: Page;
+  evidence?: TestEvidence;
 
   // Thanh điều hướng — luôn hiển thị ở mọi màn
   readonly navShop: Locator;
@@ -53,8 +55,17 @@ export class BasePage {
     await expect(this.navShop).toBeVisible();
   }
 
+  /** Cuộn trang lên trên cùng để đảm bảo hiển thị rõ bằng chứng khi chụp ảnh hoặc quay video */
+  async scrollToTop(): Promise<void> {
+    await this.page.evaluate(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    });
+    await this.page.waitForTimeout(150);
+  }
+
   async gotoShop(): Promise<void> {
     await this.navShop.click();
+    await this.scrollToTop();
   }
 
   /**
@@ -69,11 +80,13 @@ export class BasePage {
    */
   async gotoCheckout(): Promise<void> {
     await this.navCheckout.click();
+    await this.scrollToTop();
   }
 
   /** Sang màn Đơn hàng. Cũng yêu cầu đăng nhập, xem ghi chú ở gotoCheckout(). */
   async gotoOrders(): Promise<void> {
     await this.navOrders.click();
+    await this.scrollToTop();
   }
 
   async logout(): Promise<void> {
@@ -83,6 +96,19 @@ export class BasePage {
 
   async isLoggedIn(): Promise<boolean> {
     return this.btnUserProfile.isVisible();
+  }
+
+  /** Gắn đối tượng quản lý Evidence cho Page */
+  setEvidence(evidence: TestEvidence): this {
+    this.evidence = evidence;
+    return this;
+  }
+
+  /** Ghi nhận ảnh cho 1 bước thao tác (chỉ chụp khi video mode là OFF) */
+  async step(stepDesc: string): Promise<void> {
+    if (this.evidence) {
+      await this.evidence.step(stepDesc);
+    }
   }
 
   /**

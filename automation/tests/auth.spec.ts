@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { LoginModal, ACCOUNTS } from '../pages/LoginModal';
 import { ShopPage } from '../pages/ShopPage';
+import { TestEvidence, captureEvidence as captureEvidenceUtil } from '../utils/evidence';
 
 const EVIDENCE_DIR = path.resolve(process.cwd(), 'OUTPUT/function-a/runs/RUN-01/evidence');
 
@@ -11,9 +12,7 @@ if (!fs.existsSync(EVIDENCE_DIR)) {
 }
 
 async function captureEvidence(page: any, tcId: string, isPass: boolean) {
-  const status = isPass ? 'PASS' : 'FAIL';
-  const screenshotPath = path.join(EVIDENCE_DIR, `${tcId}_${status}.png`);
-  await page.screenshot({ path: screenshotPath, fullPage: true });
+  return captureEvidenceUtil(page, tcId, isPass, { baseDir: EVIDENCE_DIR });
 }
 
 test.describe('CW ShopGo Authentication Regression Suite (RUN-01 · function-a)', () => {
@@ -32,8 +31,18 @@ test.describe('CW ShopGo Authentication Regression Suite (RUN-01 · function-a)'
   // VIEWPOINT 1: HAPPY PATH (VP-01)
   // =========================================================================
   test('AUTH-001: Verify đăng nhập thành công với tài khoản Khách thường', async ({ page }) => {
+    const evidence = new TestEvidence(page, 'AUTH-001', { baseDir: EVIDENCE_DIR });
+
+    // Bước 1: Load xong web
+    await evidence.step('load_xong_web');
+
+    // Bước 2: Mở modal đăng nhập
     await loginPage.openFromHeader();
+    await evidence.step('mo_modal_dang_nhap');
+
+    // Bước 3: Điền thông tin đăng nhập
     await loginPage.submitCredentials(ACCOUNTS.customer.email, ACCOUNTS.customer.password);
+    await evidence.step('dien_thong_tin_dang_nhap');
 
     await expect(loginPage.btnUserProfile).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(ACCOUNTS.customer.name).first()).toBeVisible();
@@ -42,7 +51,8 @@ test.describe('CW ShopGo Authentication Regression Suite (RUN-01 · function-a)'
     expect(storedUser).not.toBeNull();
     expect(storedUser).toContain(ACCOUNTS.customer.email);
 
-    await captureEvidence(page, 'AUTH-001', true);
+    // Kết quả cuối cùng (_result)
+    await evidence.result(true);
   });
 
   test('AUTH-002: Verify đăng nhập thành công với tài khoản VIP và hiển thị nhãn VIP', async ({ page }) => {

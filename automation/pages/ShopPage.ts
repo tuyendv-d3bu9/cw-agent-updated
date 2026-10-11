@@ -92,5 +92,6 @@ export class ShopPage extends BasePage {
     } else {
       await this.addToCart('prod-002', 1);
     }
+    await this.scrollToTop();
   }
 }

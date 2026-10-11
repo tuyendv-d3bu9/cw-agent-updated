@@ -27,10 +27,19 @@ cách dọn trạng thái của *hệ thống đó*. Agent `qa-automation` sinh 
 ```
 automation/                      CODE — sống qua nhiều lượt chạy, dùng lại cho mọi task
 OUTPUT/<task>/runs/RUN-XX/       KẾT QUẢ — xoá và chạy lại được
-  ├─ evidence/*.png              ảnh bằng chứng để nộp bài / log Jira
+  ├─ evidence/                   bằng chứng kiểm thử (ảnh từng bước hoặc video)
+  │    ├─ <TC_ID>/               mỗi testcase là 1 folder riêng biệt
+  │    │    ├─ 01_load_web.png   ảnh từng bước có số thứ tự
+  │    │    ├─ 02_input.png
+  │    │    └─ 03_PASS_result.png ảnh kết quả cuối cùng có hậu tố "_result"
+  │    │    (hoặc <TC_ID>_result.webm nếu bật mode video)
   ├─ report/                     báo cáo HTML
   └─ results.json
 ```
+
+Cấu hình Evidence qua file `.env`:
+- `evidence_video=OFF`: Chụp ảnh từng bước (mỗi testcase 1 folder, ảnh kết quả có hậu tố `_result`).
+- `evidence_video=ON` : Quay video toàn bộ quá trình chạy làm evidence cho từng testcase.
 
 Agent truyền `QA_TASK_SLUG` và `QA_RUN_ID` để config biết ghi vào đâu.
 Không truyền thì rơi về `OUTPUT/_scratch/` — vẫn thấy được, tên nói rõ là chạy nháp.

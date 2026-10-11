@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { LoginModal } from '../pages/LoginModal';
 import { ShopPage } from '../pages/ShopPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
+import { TestEvidence, captureEvidence as captureEvidenceUtil } from '../utils/evidence';
 
 const EVIDENCE_DIR = path.resolve(process.cwd(), 'OUTPUT/function-d-voucher/runs/RUN-01_voucher-regression/evidence');
 
@@ -12,9 +13,7 @@ if (!fs.existsSync(EVIDENCE_DIR)) {
 }
 
 async function captureEvidence(page: any, tcId: string, isPass: boolean) {
-  const status = isPass ? 'PASS' : 'FAIL';
-  const screenshotPath = path.join(EVIDENCE_DIR, `${tcId}_${status}.png`);
-  await page.screenshot({ path: screenshotPath, fullPage: true });
+  return captureEvidenceUtil(page, tcId, isPass, { baseDir: EVIDENCE_DIR });
 }
 
 test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
@@ -121,14 +120,25 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
   // =========================================================================
   test.describe('Cụm 2: Mã không hợp lệ & Lỗi nhập', () => {
     test('VCHR-006: Từ chối áp dụng mã voucher đã hết hạn HETHAN', async ({ page }) => {
+      const evidence = new TestEvidence(page, 'VCHR-006', { baseDir: EVIDENCE_DIR });
+
+      // Bước 1: Load web & setup giỏ hàng
+      await evidence.step('load_xong_web');
       await shopPage.setupCartForSubtotal(200000);
       await checkoutPage.goto();
+      await evidence.step('chuyen_sang_man_checkout');
 
-      await checkoutPage.applyVoucher('HETHAN');
+      // Bước 2: Nhập mã voucher hết hạn
+      await checkoutPage.voucherInput.fill('HETHAN');
+      await evidence.step('dien_ma_voucher_hethan');
+
+      // Bước 3: Áp dụng mã và kiểm tra thông báo lỗi
+      await checkoutPage.btnApplyVoucher.click();
       const errMsg = await checkoutPage.getErrorMessage();
       expect(errMsg).toMatch(/hết hạn sử dụng/i);
 
-      await captureEvidence(page, 'VCHR-006', true);
+      // Ảnh kết quả cuối cùng có hậu tố _result
+      await evidence.result(true);
     });
 
     test('VCHR-007: Từ chối áp dụng mã voucher không tồn tại trên hệ thống', async ({ page }) => {
