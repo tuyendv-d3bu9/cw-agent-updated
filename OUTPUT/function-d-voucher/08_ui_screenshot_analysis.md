@@ -1,7 +1,10 @@
 # UI SCREENSHOT ANALYSIS — MÀN THANH TOÁN & ÁP MÃ VOUCHER (ShopGo)
 Owner: qa-system/qa-ui-review/ui-screenshot-review · Nguồn: Ảnh chụp màn hình đính kèm · Verdict: PASS
+Chuẩn mực đối chiếu: `INPUT/function-d-voucher/04_design/design_spec_checkout_voucher.md` (v2.0)
 
 > **Phạm vi**: 4 ảnh tĩnh chụp từ `runs/RUN-01_voucher-regression/evidence/`, độ phân giải 1280×800.
+> Mỗi phát hiện đều trỏ về mã mục trong bản giao thiết kế, nên Dev/Designer verify lại được
+> sau khi sửa — xem bảng truy vết ở cuối.
 > Mọi nhận định dưới đây chỉ dựa trên thứ **nhìn thấy được trong ảnh**. Hành vi động
 > (hover, animation, chuyển màn, phản hồi sau click) nằm ngoài phạm vi skill này.
 
@@ -111,3 +114,35 @@ Owner: qa-system/qa-ui-review/ui-screenshot-review · Nguồn: Ảnh chụp màn
 > về tỉ lệ tương phản, thuộc tính `aria-label` và kích thước đích chạm. Ảnh tĩnh không đo được
 > những thứ này. Cần cross-check bằng công cụ (trình kiểm tra tương phản, DevTools) hoặc bằng mắt
 > trên thiết bị thật trước khi đưa vào bug report.
+
+---
+
+## Truy vết về bản giao thiết kế
+
+Mỗi phát hiện ở trên vi phạm một mục cụ thể trong
+`INPUT/function-d-voucher/04_design/design_spec_checkout_voucher.md`. Đây là thứ phân biệt
+*"lệch chuẩn"* với *"tôi thấy hơi xấu"* — bên thứ hai thì Dev cãi được, bên thứ nhất thì không.
+
+| Phát hiện | Mục bị vi phạm | Bản vẽ quy định gì |
+|---|---|---|
+| **UX-05** (High) | `MSG-01` · `MSG-02` | Hai thông báo **không được gộp**: sai khuôn dạng ≠ không tồn tại |
+| **UX-02** (High) | `CP-06` | Mã hết hạn phải vô hiệu hoá và xếp cuối, không được mời bấm nhanh |
+| **UI-01** (High) | `CP-12` · `CP-13` | Chỉ một cách đếm; huy hiệu nav và thẻ giỏ hàng phải khớp |
+| UI-02 | `CP-07` · `CP-08` | Cấm cắt cụt phần chứa mức trần; thứ tự mức giảm → trần → điều kiện |
+| UI-04 | `CP-06` | Chip hết hạn dùng token `--state-disabled`, gạch ngang mã |
+| UI-05 | `CP-03` | Sai khuôn dạng phải báo ngay tại ô nhập, không đợi bấm Áp dụng |
+| UI-03 | `DS-07` · `DS-10` | Một họ chữ cho giao diện; monospace chỉ dành cho số liệu |
+| AC-01 | `DS-03` · `DS-09` · `AX-01` | Nhãn phụ ≥ 4.5:1, không viết hoa toàn bộ quá 3 từ |
+| AC-02 | `DS-14` · `AX-03` | Nút chỉ có biểu tượng bắt buộc có nhãn chữ và `aria-label` |
+| AC-03 | `DS-05` · `AX-01` | Màu success phải đạt tương phản AA |
+| AC-04 | `DS-13` · `AX-04` | Hai nút hậu quả trái ngược cách ≥ 8px; đích chạm ≥ 44×44px |
+| AC-06 | `AX-06` | Cấm nhúng emoji vào nội dung thông báo |
+| UX-03 | `CP-09` | Dòng "Giảm giá voucher" chỉ hiện khi số tiền khác 0 |
+| UX-04 | `MSG-03` | Thông báo lỗi phải kèm một bước làm được ngay |
+
+**Hai mục bản vẽ mà sản phẩm làm ĐÚNG** — ghi lại để lần sửa sau không làm hỏng:
+
+| Phát hiện | Mục đạt chuẩn | Làm đúng ở chỗ nào |
+|---|---|---|
+| UX-01 | `CP-10` | Có hộp ghi chú giải thích phép tính khi chạm mức trần, đúng mẫu bản vẽ |
+| AC-05 | `AX-02` | Thông báo lỗi kèm biểu tượng, không dùng màu làm tín hiệu duy nhất |
