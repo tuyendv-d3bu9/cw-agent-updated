@@ -25,7 +25,20 @@ const path = require('path');
 
 const { PATHS, taskDir, listTaskSlugs } = require('../lib/paths');
 const { loadEnv, jiraConfig } = require('../lib/env');
-const { jiraRequest, jiraAttach } = require('../lib/jira-api');
+const {
+  API,
+  jiraRequest,
+  jiraAttach,
+  adf,
+  adfToText,
+  describeError,
+  rejectedFields,
+  createMeta,
+  pickIssueType,
+} = require('../lib/jira-api');
+
+/** `--dry-run` anywhere on the command line: print what would be sent, write nothing. */
+const DRY_RUN = process.argv.includes('--dry-run');
 
 // ───────────────────────────── PULL ─────────────────────────────
 
@@ -50,7 +63,7 @@ async function pullDefects(slug, cfg) {
   const res = await jiraRequest(
     cfg,
     'GET',
-    `/rest/api/3/search/jql?jql=${jql}&maxResults=50&fields=key,summary,status,priority,components`
+    `${API}/search/jql?jql=${jql}&maxResults=50&fields=key,summary,status,priority,components`
   );
 
   if (res.statusCode !== 200) {
@@ -182,12 +195,39 @@ async function pushTestCases(slug, cfg) {
   const projectKey = cfg.projectKey || 'SG';
   console.log(`Connecting to ${cfg.host} · project [${projectKey}]`);
 
+  // Ask Jira what this project accepts instead of assuming. Issue type 'Task'
+  // does not exist everywhere, and `priority` is missing from many create screens;
+  // both used to surface as an opaque 400 and send us back into the code.
+  const meta = await createMeta(cfg, projectKey);
+  if (!meta.ok) {
+    throw new Error(
+      `Cannot read the create screen of project ${projectKey}: ${meta.error}\n` +
+        `Check JIRA_PROJECT_KEY, or that this account can create issues there.`
+    );
+  }
+
+  const issueType = pickIssueType(meta.issueTypes, cfg.issueType);
+  if (!issueType) {
+    throw new Error(`Project ${projectKey} exposes no issue type this account may create.`);
+  }
+  if (issueType.name.toLowerCase() !== String(cfg.issueType).toLowerCase()) {
+    console.warn(
+      `JIRA_TEST_ISSUE_TYPE="${cfg.issueType}" not offered by ${projectKey} — ` +
+        `falling back to "${issueType.name}". Available: ${meta.issueTypes.map((t) => t.name).join(', ')}`
+    );
+  }
+
+  const canSetPriority = cfg.sendPriority !== 'off' && issueType.fields.includes('priority');
+  console.log(
+    `Issue type [${issueType.name}] · priority ${canSetPriority ? 'enabled' : 'skipped (not on the create screen)'}`
+  );
+
   // Fetch existing issues so we do not create duplicates.
   const jql = encodeURIComponent(`project = "${projectKey}" ORDER BY created ASC`);
   const existingRes = await jiraRequest(
     cfg,
     'GET',
-    `/rest/api/3/search/jql?jql=${jql}&maxResults=1000&fields=key,summary`
+    `${API}/search/jql?jql=${jql}&maxResults=1000&fields=key,summary`
   );
 
   const existing = new Map();
@@ -223,23 +263,42 @@ async function pushTestCases(slug, cfg) {
     const labels = ['test-case', 'qa-agent'];
     if (tc.module) labels.push(tc.module.toLowerCase());
 
+    const fields = {
+      project: { key: projectKey },
+      summary: `[${tc.id}] ${tc.title}`,
+      description: adf(desc), // v3 takes ADF, not wiki markup
+      issuetype: { id: issueType.id },
+      labels,
+    };
+    if (canSetPriority) fields.priority = { name: mapPriority(tc.priority) };
+
+    if (DRY_RUN) {
+      console.log(`   [dry-run] would create [${tc.id}] as ${issueType.name}`);
+      results.push({ ...tc, key: 'DRY-RUN', url: '', status: 'Thử khan' });
+      continue;
+    }
+
     console.log(`Creating [${tc.id}] in Jira...`);
-    const res = await jiraRequest(cfg, 'POST', '/rest/api/2/issue', {
-      fields: {
-        project: { key: projectKey },
-        summary: `[${tc.id}] ${tc.title}`,
-        description: desc,
-        issuetype: { name: 'Task' },
-        priority: { name: mapPriority(tc.priority) },
-        labels,
-      },
-    });
+    let res = await jiraRequest(cfg, 'POST', `${API}/issue`, { fields });
+
+    // A 400 naming specific fields is a configuration mismatch, not a bug in us.
+    // Drop exactly what Jira refused and try once more, so one odd project
+    // setting does not mean editing this file again.
+    if (res.statusCode === 400) {
+      const bad = rejectedFields(res).filter((f) => !['project', 'summary', 'issuetype'].includes(f));
+      if (bad.length) {
+        console.warn(`   ${projectKey} rejected: ${bad.join(', ')} — retrying without them`);
+        const retry = { ...fields };
+        for (const f of bad) delete retry[f];
+        res = await jiraRequest(cfg, 'POST', `${API}/issue`, { fields: retry });
+      }
+    }
 
     if (res.statusCode === 201 && res.data?.key) {
       console.log(`   ✅ ${res.data.key}`);
       results.push({ ...tc, key: res.data.key, url: `${cfg.host}/browse/${res.data.key}`, status: 'Tạo mới' });
     } else {
-      console.error(`   ❌ Lỗi ${tc.id}: HTTP ${res.statusCode} ${res.raw?.slice(0, 200) || ''}`);
+      console.error(`   ❌ Lỗi ${tc.id}: ${describeError(res)}`);
       results.push({ ...tc, key: 'ERROR', url: '', status: `Lỗi ${res.statusCode}` });
     }
 
@@ -253,7 +312,9 @@ function writeMapping(slug, projectKey, host, results) {
   const ok = results.filter((r) => r.key !== 'ERROR').length;
   const lines = [
     `# BẢNG ÁNH XẠ TEST CASE ↔ JIRA · ${projectKey}`,
-    `Đồng bộ lúc: ${new Date().toISOString()} · Jira Host: ${host}`,
+    // No timestamp here on purpose: stamping every run made the file show up as
+    // changed in git even when not one row differed.
+    `Jira Host: ${host}`,
     ``,
     `| TC ID | Tiêu đề | Jira Key | Liên kết | Trạng thái đẩy | Kết quả chạy |`,
     `|---|---|---|---|---|---|`,
@@ -309,11 +370,52 @@ function parseMapping(content) {
 
 /** Looks up a transition by name instead of guessing a numeric id. */
 async function findTransition(cfg, issueKey, wanted) {
-  const res = await jiraRequest(cfg, 'GET', `/rest/api/3/issue/${issueKey}/transitions`);
+  const res = await jiraRequest(cfg, 'GET', `${API}/issue/${issueKey}/transitions`);
   if (res.statusCode !== 200) return null;
   const names = wanted.map((w) => w.toLowerCase());
   const hit = (res.data.transitions || []).find((t) => names.includes(t.name.toLowerCase()));
   return hit ? hit.id : null;
+}
+
+/**
+ * The line every sync comment carries. Reading it back is what makes a second
+ * sync of the same run a no-op instead of another round of noise.
+ * The verdict is part of it on purpose: PASS -> FAIL must still be reported.
+ */
+function syncMarker(runId, status) {
+  return `[qa-agent-sync] ${runId} · ${status}`;
+}
+
+/** Comment markers, attachment names and current status of an issue, in one look. */
+async function issueSyncState(cfg, key) {
+  const empty = { markers: [], attachments: [], status: '', isDone: false };
+
+  const res = await jiraRequest(
+    cfg,
+    'GET',
+    `${API}/issue/${key}?fields=attachment,status,comment`
+  );
+  if (res.statusCode !== 200) {
+    console.warn(`   could not read ${key} (${describeError(res)}) — syncing as if new`);
+    return empty;
+  }
+
+  const f = res.data?.fields || {};
+  const markers = [];
+  for (const c of f.comment?.comments || []) {
+    const text = typeof c.body === 'string' ? c.body : adfToText(c.body);
+    for (const line of text.split('\n')) {
+      if (line.includes('[qa-agent-sync]')) markers.push(line.trim());
+    }
+  }
+
+  const status = f.status?.name || '';
+  return {
+    markers,
+    attachments: (f.attachment || []).map((a) => a.filename),
+    status,
+    isDone: f.status?.statusCategory?.key === 'done',
+  };
 }
 
 async function syncRunResults(slug, runId, cfg) {
@@ -358,41 +460,70 @@ async function syncRunResults(slug, runId, cfg) {
 
     console.log(`\n📌 [${row.tcId}] → ${key} · ${row.status}`);
 
+    // What the issue already carries. Syncing the same run twice used to pile on
+    // a fresh comment and a duplicate attachment every time, which is why all 36
+    // issues looked freshly "updated" after every run.
+    const state = await issueSyncState(cfg, key);
+    const marker = syncMarker(runId, row.status);
+
+    if (state.markers.includes(marker)) {
+      console.log(`   already synced for ${runId} with the same verdict — nothing to do`);
+      synced.push({ tcId: row.tcId, status: row.status });
+      continue;
+    }
+
     // Evidence screenshot
-    if (row.evidence) {
+    const evName = row.evidence ? path.basename(row.evidence) : null;
+    if (evName) {
       const evPath = path.resolve(runDir, row.evidence);
-      if (fs.existsSync(evPath)) {
-        const r = await jiraAttach(cfg, key, path.basename(evPath), fs.readFileSync(evPath));
-        console.log(`   attached ${path.basename(evPath)} (HTTP ${r.statusCode})`);
-      } else {
+      if (!fs.existsSync(evPath)) {
         console.warn(`   evidence file not found: ${row.evidence}`);
+      } else if (state.attachments.includes(evName)) {
+        console.log(`   ${evName} already attached — skipped`);
+      } else if (DRY_RUN) {
+        console.log(`   [dry-run] would attach ${evName}`);
+      } else {
+        const r = await jiraAttach(cfg, key, evName, fs.readFileSync(evPath));
+        console.log(`   attached ${evName} (HTTP ${r.statusCode})`);
       }
     }
 
-    // Result comment
+    // Result comment. The marker line is what the next run reads to stay quiet.
     const comment = [
-      `h3. Kết quả chạy tự động: ${row.status}`,
-      `* *Run session*: ${runId}`,
-      `* *Thời điểm*: ${new Date().toISOString()}`,
-      `* *Thực tế*: ${row.actual}`,
-      row.evidence ? `* *Bằng chứng*: [^${path.basename(row.evidence)}]` : '',
-      `----`,
-      `_Ghi tự động bởi QA Leader Agent_`,
+      `Kết quả chạy tự động: ${row.status}`,
+      `Run session: ${runId}`,
+      `Thời điểm: ${new Date().toISOString()}`,
+      `Thực tế: ${row.actual}`,
+      evName ? `Bằng chứng: ${evName}` : '',
+      marker,
+      `Ghi tự động bởi QA Agent`,
     ].filter(Boolean).join('\n');
 
-    const cr = await jiraRequest(cfg, 'POST', `/rest/api/2/issue/${key}/comment`, { body: comment });
-    console.log(`   comment posted (HTTP ${cr.statusCode})`);
+    if (DRY_RUN) {
+      console.log(`   [dry-run] would comment and ${row.status === 'PASS' ? 'transition' : 'leave status'}`);
+    } else {
+      const cr = await jiraRequest(cfg, 'POST', `${API}/issue/${key}/comment`, { body: adf(comment) });
+      console.log(
+        cr.statusCode === 201 ? '   comment posted' : `   comment FAILED — ${describeError(cr)}`
+      );
 
-    // Transition only on PASS, and look the id up rather than guessing.
-    if (row.status === 'PASS') {
-      const tid = await findTransition(cfg, key, ['Done', 'Closed', 'Hoàn thành']);
-      if (tid) {
-        const tr = await jiraRequest(cfg, 'POST', `/rest/api/3/issue/${key}/transitions`, {
-          transition: { id: tid },
-        });
-        console.log(`   transitioned to Done (HTTP ${tr.statusCode})`);
-      } else {
-        console.warn(`   no Done/Closed transition available for ${key}`);
+      // Transition only on PASS, only when it is not already there.
+      if (row.status === 'PASS') {
+        if (state.isDone) {
+          console.log(`   already in "${state.status}" — no transition`);
+        } else {
+          const tid = await findTransition(cfg, key, cfg.doneTransitions);
+          if (tid) {
+            const tr = await jiraRequest(cfg, 'POST', `${API}/issue/${key}/transitions`, {
+              transition: { id: tid },
+            });
+            console.log(`   transitioned to Done (HTTP ${tr.statusCode})`);
+          } else {
+            console.warn(
+              `   no transition matching JIRA_DONE_TRANSITIONS (${cfg.doneTransitions.join(', ')}) for ${key}`
+            );
+          }
+        }
       }
     }
 
@@ -425,13 +556,86 @@ function resolveSlug(arg) {
   throw new Error('OUTPUT/ has no tasks yet.');
 }
 
+/**
+ * Answers "will a push work here, and with what?" before anything is written.
+ * Run this when a Jira starts refusing calls: it names the mismatch instead of
+ * leaving a 400 to be guessed at halfway through a loop of 36 issues.
+ */
+async function preflight(cfg) {
+  console.log('\n[JIRA CHECK] Reading what this Jira accepts...\n');
+
+  if (!cfg.ok) {
+    console.log(`  credentials   ❌ missing in .env: ${cfg.missing.join(', ')}`);
+    console.log('\n  Without credentials push still works in CSV mode (export_jira_xray.csv).');
+    process.exitCode = 1;
+    return;
+  }
+  console.log(`  host          ${cfg.host}`);
+
+  const me = await jiraRequest(cfg, 'GET', `${API}/myself`);
+  if (me.statusCode !== 200) {
+    console.log(`  credentials   ❌ ${describeError(me)}`);
+    console.log('\n  A 401 here means the API token is wrong or revoked:');
+    console.log('  https://id.atlassian.com/manage-profile/security/api-tokens');
+    process.exitCode = 1;
+    return;
+  }
+  console.log(`  credentials   ✅ ${me.data.displayName} <${me.data.emailAddress || cfg.email}>`);
+
+  const projectKey = cfg.projectKey;
+  if (!projectKey) {
+    console.log('  project       ❌ JIRA_PROJECT_KEY is not set in .env');
+    process.exitCode = 1;
+    return;
+  }
+
+  const meta = await createMeta(cfg, projectKey);
+  if (!meta.ok) {
+    console.log(`  project       ❌ [${projectKey}] ${meta.error}`);
+    process.exitCode = 1;
+    return;
+  }
+
+  const issueType = pickIssueType(meta.issueTypes, cfg.issueType);
+  const matched = issueType && issueType.name.toLowerCase() === String(cfg.issueType).toLowerCase();
+  console.log(`  project       ✅ [${projectKey}]`);
+  console.log(`  issue types   ${meta.issueTypes.map((t) => t.name).join(', ') || '(none)'}`);
+  console.log(
+    `  will create   ${matched ? '✅' : '⚠️ '} ${issueType ? issueType.name : '(nothing available)'}` +
+      (matched ? '' : `  — JIRA_TEST_ISSUE_TYPE="${cfg.issueType}" not offered here`)
+  );
+
+  if (issueType) {
+    const hasPriority = issueType.fields.includes('priority');
+    const willSend = cfg.sendPriority !== 'off' && hasPriority;
+    console.log(
+      `  priority      ${willSend ? '✅ sent' : '⏭  skipped'}` +
+        (hasPriority ? '' : ' — not on this create screen') +
+        (cfg.sendPriority === 'off' ? ' — JIRA_SEND_PRIORITY=off' : '')
+    );
+    const unknown = issueType.required.filter(
+      (f) => !['project', 'summary', 'issuetype', 'description', 'reporter'].includes(f)
+    );
+    if (unknown.length) {
+      console.log(`  required      ⚠️  this project also demands: ${unknown.join(', ')}`);
+      console.log('                push will drop what Jira refuses and retry, but these may need a real value');
+    }
+  }
+
+  console.log(`  done states   ${cfg.doneTransitions.join(', ')}  (JIRA_DONE_TRANSITIONS)`);
+  console.log('\n  Nothing was written. Add --dry-run to push/sync to rehearse those too.\n');
+}
+
 function usage() {
   console.log(`
 Usage:
+  jira-client.js check                   Report what this Jira accepts — writes nothing
   jira-client.js pull [slug]             Pull bugs/defects from Jira
   jira-client.js push [slug]             Push test cases (API when .env is set, CSV otherwise)
   jira-client.js sync [slug] [run-id]    Push run results and evidence screenshots
   jira-client.js mcp                     Start the stdio MCP server for AI IDEs
+
+  --dry-run    on push/sync: print what would be sent, change nothing
 `);
 }
 
@@ -449,6 +653,7 @@ async function main() {
 
   const cfg = jiraConfig(loadEnv());
 
+  if (action === 'check') return preflight(cfg);
   if (action === 'pull') return pullDefects(resolveSlug(process.argv[3]), cfg);
   if (action === 'push') return pushTestCases(resolveSlug(process.argv[3]), cfg);
   if (action === 'sync') {
