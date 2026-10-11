@@ -1,7 +1,7 @@
 {
   "system_name": "CW QA Agent Ecosystem",
   "version": "2.0.0",
-  "last_updated": "2026-10-04",
+  "last_updated": "2026-10-11",
   "ssot_policy": "Tri thức trong knowledge/ là tối cao. CẤM đọc dò từng file, tra cứu bảng routing_table để mở đúng file đích.",
   "project_conventions": {
     "project_name": "<Tên Dự Án>",
@@ -119,16 +119,6 @@
     }
   },
   "features_inventory": {
-    "function-a": {
-      "name": "function-a",
-      "input_file": "INPUT/function-a",
-      "knowledge_file": "knowledge/features/function-a.md",
-      "output_dir": "OUTPUT/function-a/",
-      "plan_file": "OUTPUT/function-a/00_plan.md",
-      "status": "COMPLETED (PASS)",
-      "total_testcases": 18,
-      "last_verdict": "PASS"
-    },
     "function-d-voucher": {
       "name": "function-d-voucher",
       "input_file": "INPUT/function-d-voucher",
@@ -138,16 +128,6 @@
       "status": "COMPLETED (PASS)",
       "total_testcases": 36,
       "last_verdict": "PASS"
-    },
-    "reports": {
-      "name": "reports",
-      "input_file": "INPUT/reports.md",
-      "knowledge_file": "knowledge/features/reports.md",
-      "output_dir": "OUTPUT/reports/",
-      "plan_file": "OUTPUT/reports/00_plan.md",
-      "status": "IN-PROGRESS",
-      "total_testcases": 0,
-      "last_verdict": "UNKNOWN"
     },
     "spec-function-d": {
       "name": "spec-function-d",
