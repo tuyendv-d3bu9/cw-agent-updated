@@ -419,24 +419,57 @@ function parseRunResult(content) {
  * thư mục evidence của chính lượt chạy đó.
  */
 function resolveEvidence(runDir, ref) {
-  if (!ref) return null;
-  const direct = path.resolve(runDir, ref);
-  if (!/^(file:|https?:|[a-zA-Z]:)/.test(ref) && fs.existsSync(direct)) return direct;
+  const all = resolveEvidenceFiles(runDir, ref);
+  return all.length ? all[0] : null;
+}
 
-  const name = path.basename(decodeURIComponent(ref.replace(/^file:\/+/, '')));
+/**
+ * Toàn bộ ảnh bằng chứng của một ca.
+ *
+ * Bằng chứng nay ghi THEO TỪNG BƯỚC, mỗi ca một thư mục `evidence/<TC_ID>/` chứa
+ * nhiều ảnh đánh số, chứ không còn một tấm duy nhất. Hàm này nhận cả ba dạng tham
+ * chiếu: thư mục, một file cụ thể, hoặc đường dẫn tuyệt đối của máy khác — dạng
+ * cuối cùng vì run_result.md từng chứa `file:///c:/Users/.../OUTPUT/...`.
+ */
+function resolveEvidenceFiles(runDir, ref) {
+  if (!ref) return [];
+
+  const pngsIn = (dir) =>
+    fs
+      .readdirSync(dir)
+      .filter((f) => /\.(png|jpg|jpeg|webp)$/i.test(f))
+      .sort()
+      .map((f) => path.join(dir, f));
+
+  const cleaned = String(ref).replace(/^<|>$/g, '').replace(/\/+$/, '');
+  const isForeign = /^(file:|https?:|[a-zA-Z]:)/.test(cleaned);
+
+  if (!isForeign) {
+    const direct = path.resolve(runDir, cleaned);
+    if (fs.existsSync(direct)) {
+      return fs.statSync(direct).isDirectory() ? pngsIn(direct) : [direct];
+    }
+  }
+
+  // Còn lại: chỉ tin cái TÊN, rồi dò trong thư mục evidence của chính lượt chạy.
+  const name = path.basename(decodeURIComponent(cleaned.replace(/^file:\/+/, '')));
   const evDir = path.join(runDir, 'evidence');
-  if (!fs.existsSync(evDir)) return null;
+  if (!fs.existsSync(evDir)) return [];
 
   const stack = [evDir];
   while (stack.length) {
     const dir = stack.pop();
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) stack.push(full);
-      else if (entry.name === name) return full;
+      if (entry.isDirectory()) {
+        if (entry.name === name) return pngsIn(full);
+        stack.push(full);
+      } else if (entry.name === name) {
+        return [full];
+      }
     }
   }
-  return null;
+  return [];
 }
 
 /** Reads the TC ID to Jira key mapping produced by `push`. */
@@ -562,19 +595,54 @@ async function syncRunResults(slug, runId, cfg) {
     }
 
     // Evidence screenshot
-    const evPath = resolveEvidence(runDir, row.evidence);
-    const evName = evPath ? path.basename(evPath) : null;
-    if (row.evidence) {
-      if (!evPath) {
-        console.warn(`   không tìm thấy bằng chứng "${path.basename(row.evidence)}" trong ${path.relative(PATHS.ROOT, path.join(runDir, 'evidence'))}`);
-      } else if (state.attachments.includes(evName)) {
-        console.log(`   ${evName} already attached — skipped`);
-      } else if (DRY_RUN) {
-        console.log(`   [dry-run] would attach ${evName}`);
-      } else {
-        const r = await jiraAttach(cfg, key, evName, fs.readFileSync(evPath));
-        console.log(`   attached ${evName} (HTTP ${r.statusCode})`);
+    const evFiles = resolveEvidenceFiles(runDir, row.evidence);
+    const evName = evFiles.length ? path.basename(evFiles[0]) : null;
+
+    if (row.evidence && evFiles.length === 0) {
+      console.warn(
+        `   không tìm thấy bằng chứng "${row.evidence}" trong ` +
+          `${path.relative(PATHS.ROOT, path.join(runDir, 'evidence'))}`
+      );
+    }
+
+    // Tên ảnh gắn tiền tố mã ca: trong Jira mọi tệp nằm chung một chỗ, để nguyên
+    // `01_mo_man_thanh_toan.png` thì 32 ca sẽ đụng tên nhau hết.
+    let daDinh = 0;
+    let boQua = 0;
+    for (const file of evFiles) {
+      const ten = `${row.tcId}_${path.basename(file)}`;
+      if (state.attachments.includes(ten)) {
+        boQua++;
+        continue;
       }
+      if (DRY_RUN) {
+        daDinh++;
+        continue;
+      }
+      // Jira thỉnh thoảng ngốn hơn 60s cho một tệp rồi bỏ cuộc. Một lần timeout
+      // mà làm sập cả lượt 185 ảnh thì quá đắt — thử lại một lần trước khi bỏ qua.
+      let r = null;
+      for (let lan = 1; lan <= 2; lan++) {
+        try {
+          r = await jiraAttach(cfg, key, ten, fs.readFileSync(file));
+          break;
+        } catch (err) {
+          if (lan === 2) {
+            console.warn(`   đính ${ten} thất bại sau 2 lần — ${err.message}`);
+            r = null;
+            break;
+          }
+          console.warn(`   ${ten}: ${err.message} — thử lại`);
+          await sleep(2000);
+        }
+      }
+      if (r && r.statusCode === 200) daDinh++;
+      else if (r) console.warn(`   đính ${ten} thất bại — ${describeError(r)}`);
+      await sleep(120); // giữ dưới ngưỡng rate limit của Jira
+    }
+    if (evFiles.length) {
+      const nhan = DRY_RUN ? '[dry-run] sẽ đính' : 'đã đính';
+      console.log(`   ${nhan} ${daDinh}/${evFiles.length} ảnh${boQua ? ` · ${boQua} ảnh đã có từ trước` : ''}`);
     }
 
     // Result comment. The marker line is what the next run reads to stay quiet.
@@ -583,7 +651,7 @@ async function syncRunResults(slug, runId, cfg) {
       `Run session: ${runId}`,
       `Thời điểm: ${new Date().toISOString()}`,
       `Thực tế: ${row.actual}`,
-      evName ? `Bằng chứng: ${evName}` : '',
+      evFiles.length ? `Bằng chứng: ${evFiles.length} ảnh theo bước, tiền tố ${row.tcId}_` : '',
       marker,
       `Ghi tự động bởi QA Agent`,
     ].filter(Boolean).join('\n');
@@ -770,4 +838,11 @@ if (require.main === module) {
   });
 }
 
-module.exports = { parseRunResult, parseMapping, parseTestCases, resolveEvidence, mapHeader };
+module.exports = {
+  parseRunResult,
+  parseMapping,
+  parseTestCases,
+  resolveEvidence,
+  resolveEvidenceFiles,
+  mapHeader,
+};
