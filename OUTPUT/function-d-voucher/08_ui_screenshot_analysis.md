@@ -55,7 +55,7 @@ Chuẩn mực đối chiếu: `INPUT/function-d-voucher/04_design/design_spec_ch
 
 | # | Vị trí | Mô tả | Lý do | Mức độ | Đề xuất sửa |
 |:---|:---|:---|:---|:---:|:---|
-| AC-04 | Ô nhập mã (ảnh 2) | Nút `×` xoá nội dung nằm sát mép phải ô input, cách nút "Áp dụng" một khoảng hẹp. | Hai đích chạm cạnh nhau với hậu quả trái ngược: một cái xoá sạch, một cái gửi đi. Trên màn cảm ứng dễ bấm nhầm. `[GIẢ ĐỊNH]` kích thước đích chạm thực tế — cần đo trên thiết bị. | Med | Giãn khoảng cách giữa `×` và "Áp dụng" tối thiểu 8px, bảo đảm mỗi đích ≥ 44×44px. |
+| AC-04 | Ô nhập mã (ảnh 2) | Nút `×` xoá nội dung nằm sát mép phải ô input, cách nút "Áp dụng" một khoảng hẹp. | Hai đích chạm cạnh nhau với hậu quả trái ngược: một cái xoá sạch, một cái gửi đi. Trên màn cảm ứng dễ bấm nhầm. `[GIẢ ĐỊNH]` kích thước đích chạm thực tế — cần đo trên thiết bị. | Med | Tách rõ nút `×` khỏi nút "Áp dụng" (DS-13), bảo đảm mỗi đích ≥ 44×44px (DS-12). |
 | AC-05 | Thông báo lỗi (ảnh 3) | Thông báo đỏ **có kèm biểu tượng cảnh báo**, không chỉ dựa vào màu. | **Điểm làm tốt**: người mù màu vẫn nhận ra đây là lỗi. | — | Giữ nguyên. |
 
 ### UX Problem
@@ -135,7 +135,7 @@ Mỗi phát hiện ở trên vi phạm một mục cụ thể trong
 | AC-01 | `DS-03` · `DS-09` · `AX-01` | Nhãn phụ ≥ 4.5:1, không viết hoa toàn bộ quá 3 từ |
 | AC-02 | `DS-14` · `AX-03` | Nút chỉ có biểu tượng bắt buộc có nhãn chữ và `aria-label` |
 | AC-03 | `DS-05` · `AX-01` | Màu success phải đạt tương phản AA |
-| AC-04 | `DS-13` · `AX-04` | Hai nút hậu quả trái ngược cách ≥ 8px; đích chạm ≥ 44×44px |
+| AC-04 | `DS-13` · `DS-12` · `AX-04` | Hai nút hậu quả trái ngược phải tách rõ; đích chạm ≥ 44×44px |
 | AC-06 | `AX-06` | Cấm nhúng emoji vào nội dung thông báo |
 | UX-03 | `CP-09` | Dòng "Giảm giá voucher" chỉ hiện khi số tiền khác 0 |
 | UX-04 | `MSG-03` | Thông báo lỗi phải kèm một bước làm được ngay |

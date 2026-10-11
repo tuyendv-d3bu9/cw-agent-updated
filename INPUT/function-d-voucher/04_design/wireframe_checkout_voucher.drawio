@@ -1,0 +1,140 @@
+<mxfile host="app.diagrams.net" agent="qa-agent" version="24.7.17">
+  <diagram name="1-Trang thai chip" id="chip-states">
+    <mxGraphModel dx="1100" dy="760" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="t1" value="CP-05 / CP-06 — Chip ma khuyen mai: dung duoc vs het han" style="text;html=1;fontSize=16;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="700" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="t1b" value="Khac biet phai NHIN THAY NGAY, truoc khi doc chu." style="text;html=1;fontSize=12;fontColor=#666666;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="48" width="700" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ok-l" value="CP-05 — DUNG DUOC" style="text;html=1;fontSize=12;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="300" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ok-box" value="" style="rounded=1;arcSize=12;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;" vertex="1" parent="1">
+          <mxGeometry x="40" y="115" width="380" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="ok-chip" value="GIAM50K" style="rounded=1;arcSize=30;html=1;fillColor=#FFF7ED;strokeColor=#FDBA74;fontFamily=Courier New;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="56" y="130" width="78" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="ok-txt" value="Giam ngay 50.000 d cho don tu 200.000 d." style="text;html=1;fontSize=11;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="144" y="130" width="266" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="ok-n" value="con tro: pointer · bam duoc" style="text;html=1;fontSize=10;fontColor=#15803D;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="172" width="380" height="18" as="geometry" />
+        </mxCell>
+
+        <mxCell id="no-l" value="CP-06 — HET HAN" style="text;html=1;fontSize=12;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="450" y="90" width="300" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="no-box" value="" style="rounded=1;arcSize=12;html=1;fillColor=#F3F4F6;strokeColor=#E5E7EB;" vertex="1" parent="1">
+          <mxGeometry x="450" y="115" width="380" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="no-chip" value="&lt;s&gt;HETHAN&lt;/s&gt;" style="rounded=1;arcSize=30;html=1;fillColor=#E5E7EB;strokeColor=#D1D5DB;fontColor=#9CA3AF;fontFamily=Courier New;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="466" y="130" width="78" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="no-txt" value="Da het han su dung." style="text;html=1;fontSize=11;fontColor=#9CA3AF;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="554" y="130" width="266" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="no-n" value="con tro: not-allowed · KHONG bam duoc · xep CUOI danh sach" style="text;html=1;fontSize=10;fontColor=#DC2626;align=left;" vertex="1" parent="1">
+          <mxGeometry x="450" y="172" width="380" height="18" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rule" value="LUAT LUONG: danh sach &quot;bam de ap dung nhanh&quot; chi duoc moi nhung ma nguoi dung thuc su dung duoc ngay luc do.&#10;Khong bao gio moi bam mot thu chac chan that bai." style="rounded=1;html=1;fillColor=#FEF2F2;strokeColor=#DC2626;align=left;verticalAlign=middle;spacing=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="215" width="790" height="56" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cnt-t" value="CP-12 / CP-13 — Huy hieu so luong gio hang" style="text;html=1;fontSize=14;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="300" width="500" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="cnt-bad" value="SAI — hai cach dem tren cung mot man&#10;&#10;nav: [Thanh toan] (3)&#10;the gio hang: &quot;1 san pham&quot;" style="rounded=1;html=1;fillColor=#FEF2F2;strokeColor=#DC2626;align=left;verticalAlign=top;spacing=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="330" width="380" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="cnt-ok" value="DUNG — mot ham dem dung chung&#10;&#10;nav: [Thanh toan] (3)       &lt;- tong so mon&#10;the gio hang: &quot;1 loai · 3 mon&quot;" style="rounded=1;html=1;fillColor=#F0FDF4;strokeColor=#15803D;align=left;verticalAlign=top;spacing=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="450" y="330" width="380" height="96" as="geometry" />
+        </mxCell>
+
+        <mxCell id="src" value="Nguon goc: wireframe nay do AI Agent soan lam hoc lieu, CHUA qua Designer duyet.&#10;Mau sac va co chu o day chi de phan biet trang thai, KHONG phai design token chot." style="text;html=1;fontSize=10;fontColor=#92400E;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="450" width="790" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram name="2-Danh muc thong bao" id="msg-catalogue">
+    <mxGraphModel dx="1100" dy="760" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="m-t" value="MSG-01 → MSG-05 — Danh muc thong bao o nhap ma" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="700" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="m-t2" value="Dev KHONG duoc tu che loi thong bao. Moi nhanh mot thong diep rieng." style="text;html=1;fontSize=12;fontColor=#666666;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="48" width="700" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d-in" value="Nguoi dung bam &quot;Ap dung&quot;" style="rounded=1;html=1;fillColor=#FFF7ED;strokeColor=#FDBA74;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="330" y="90" width="190" height="36" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d-fmt" value="Khop ^[A-Z0-9]{3,20}$ ?" style="rhombus;html=1;fillColor=#F9FAFB;strokeColor=#9CA3AF;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="150" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="d-in" target="d-fmt"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="m01" value="MSG-01&#10;&quot;Ma chi gom chu in hoa va so, dai 3-20 ky tu.&quot;" style="rounded=1;html=1;fillColor=#FEF2F2;strokeColor=#DC2626;align=left;spacing=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="160" width="240" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="KHONG" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1" source="d-fmt" target="m01"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="d-ex" value="Ma co trong he thong ?" style="rhombus;html=1;fillColor=#F9FAFB;strokeColor=#9CA3AF;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="250" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="CO" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1" source="d-fmt" target="d-ex"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="m02" value="MSG-02&#10;&quot;Ma giam gia {ma} khong ton tai.&quot;" style="rounded=1;html=1;fillColor=#FEF2F2;strokeColor=#DC2626;align=left;spacing=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="260" width="240" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="KHONG" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1" source="d-ex" target="m02"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="d-exp" value="Con han ?" style="rhombus;html=1;fillColor=#F9FAFB;strokeColor=#9CA3AF;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="350" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="CO" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1" source="d-ex" target="d-exp"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="m03" value="MSG-03&#10;&quot;Ma {ma} da het han su dung.&quot;&#10;+ goi y ma thay the dang dung duoc" style="rounded=1;html=1;fillColor=#FEF2F2;strokeColor=#DC2626;align=left;spacing=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="355" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="KHONG" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1" source="d-exp" target="m03"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="d-min" value="Dat muc san ?" style="rhombus;html=1;fillColor=#F9FAFB;strokeColor=#9CA3AF;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="450" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="CO" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1" source="d-exp" target="d-min"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="m04" value="MSG-04&#10;&quot;Don hang can toi thieu {X} d. Con thieu {Y} d.&quot;" style="rounded=1;html=1;fillColor=#FFFBEB;strokeColor=#D97706;align=left;spacing=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="455" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="KHONG" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1" source="d-min" target="m04"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="m05" value="MSG-05&#10;&quot;Ap dung thanh cong ma {ma}: {mo ta muc giam}.&quot;&#10;+ hop ghi chu CP-10 neu cham muc tran" style="rounded=1;html=1;fillColor=#F0FDF4;strokeColor=#15803D;align=left;spacing=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="455" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="CO" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1" source="d-min" target="m05"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="warn" value="LUAT QUAN TRONG NHAT: MSG-01 va MSG-02 KHONG duoc gop lam mot.&#10;Sai khuon dang = nguoi dung go nham, ho can SUA KY TU.&#10;Khong ton tai = ma sai han, ho can DI XIN MA KHAC.&#10;Bao nham loai la day nguoi dung di sai huong khac phuc." style="rounded=1;html=1;fillColor=#FEF2F2;strokeColor=#DC2626;align=left;verticalAlign=top;spacing=10;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="150" width="250" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cp03" value="CP-03: sai khuon dang phai bao NGAY TAI O NHAP (vien do),&#10;khong doi den luc bam &quot;Ap dung&quot;." style="rounded=1;html=1;fillColor=#FFF7ED;strokeColor=#FDBA74;align=left;verticalAlign=top;spacing=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="280" width="250" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

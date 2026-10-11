@@ -1,10 +1,25 @@
 # BẢN GIAO THIẾT KẾ UI/UX — MÀN THANH TOÁN & ÁP MÃ VOUCHER
 
-- **Dự án**: ShopGo — Hệ thống Thương mại điện tử
+> ## ⚠️ ĐỌC TRƯỚC — NGUỒN GỐC TÀI LIỆU NÀY
+>
+> Đây **KHÔNG phải** bản giao của Designer thật. Dự án mẫu ShopGo không có Designer và
+> không có file Figma nào. Tài liệu này do **AI Agent soạn làm học liệu**, để minh hoạ
+> *một bản giao thiết kế cần có những gì* và *Chặng 08 dùng nó thế nào*.
+>
+> **Phần dùng được ngay**: các **luật** (CP-xx, MSG-xx, AX-xx) — chúng là thực hành chuẩn
+> của ngành, trích dẫn WCAG có thể tra lại được.
+>
+> **Phần phải thay khi dùng cho dự án thật**: mọi giá trị cụ thể — mã màu, cỡ chữ,
+> link bản vẽ. Chúng đang để trống có chủ đích. Lấy từ design system thật của dự án,
+> **đừng để AI đoán hộ**.
+
+- **Dự án**: ShopGo — Hệ thống Thương mại điện tử *(dự án mẫu dùng cho đào tạo)*
 - **Tính năng**: Function D — Áp dụng Mã Giảm Giá (Voucher)
-- **Người giao**: UI/UX Designer → QA
-- **Bản**: v2.0 · Khung màn hình desktop 1280×800
-- **Figma**: `https://figma.com/file/shopgo-checkout-v2` *(link mẫu cho lớp học — không mở được)*
+- **Soạn bởi**: AI Agent (học liệu) · **Chưa qua** Designer duyệt
+- **Khung màn hình**: desktop 1280×800
+- **Link bản vẽ gốc**: *(chưa có — điền link Figma/Sketch/XD thật của dự án vào đây)*
+- **Bản vẽ kèm theo**: `wireframe_checkout_voucher.drawio` — mở bằng app draw.io hoặc
+  extension *Draw.io Integration* trong VS Code
 - **Phân loại**: `04_design` — bản vẽ để `qa-ui-review` đối chiếu với giao diện thật
 
 > **Dùng thế nào**: đây là **chuẩn mực** (baseline). Chặng 08 chụp màn hình thật rồi soi
@@ -15,37 +30,45 @@
 
 ## 1. Design Tokens — Màu
 
-| Mã | Token | Giá trị | Dùng ở đâu |
+> Cột **Giá trị** để trống có chủ đích — điền từ design system thật. Cột **Ràng buộc**
+> mới là thứ Chặng 08 đối chiếu, và nó đúng với mọi bảng màu.
+
+| Mã | Token | Giá trị | Ràng buộc bắt buộc |
 |---|---|---|---|
-| DS-01 | `--brand-primary` | `#F97316` (cam) | Nút chính, mã voucher, giá tiền tổng |
-| DS-02 | `--text-body` | `#1F2937` trên nền `#FFFFFF` | Thân bài — tỉ lệ tương phản 15.3:1 |
-| DS-03 | `--text-muted` | `#6B7280` trên nền `#FFFFFF` | Nhãn phụ — **tối thiểu 4.5:1**, không được nhạt hơn |
-| DS-04 | `--state-error` | `#DC2626`, nền `#FEF2F2` | Thông báo lỗi |
-| DS-05 | `--state-success` | `#15803D`, nền `#F0FDF4` | Thông báo thành công, nhãn Freeship |
-| DS-06 | `--state-disabled` | Chữ `#9CA3AF`, nền `#F3F4F6` | Phần tử đã vô hiệu hoá |
+| DS-01 | `--brand-primary` | `<điền>` | Nút chính, mã voucher, tổng thanh toán. Chữ đặt trên màu này phải đạt ≥ 4.5:1 |
+| DS-02 | `--text-body` | `<điền>` | Thân bài trên nền trắng — ≥ 4.5:1 |
+| DS-03 | `--text-muted` | `<điền>` | Nhãn phụ — ≥ 4.5:1, **không được nhạt hơn ngưỡng này** |
+| DS-04 | `--state-error` | `<điền>` | Thông báo lỗi — ≥ 4.5:1 trên nền của chính nó |
+| DS-05 | `--state-success` | `<điền>` | Thông báo thành công, nhãn Freeship — ≥ 4.5:1 |
+| DS-06 | `--state-disabled` | `<điền>` | Phần tử vô hiệu hoá. WCAG 1.4.3 miễn trừ ngưỡng tương phản cho thành phần đã vô hiệu, nhưng **phải phân biệt được rõ** với trạng thái dùng được |
+
+> **Cách kiểm DS-01 → DS-05 ở Chặng 08**: không ước lượng bằng mắt. Lấy mã màu bằng
+> công cụ lấy màu rồi tính tỉ lệ bằng trình kiểm tra tương phản (WebAIM Contrast Checker,
+> hoặc tab Accessibility trong DevTools). Nhận định về tương phản mà chưa đo thì bắt buộc
+> gắn `[GIẢ ĐỊNH]`.
 
 **Luật màu**: không bao giờ dùng **màu là tín hiệu duy nhất**. Mọi trạng thái lỗi / thành công
 phải kèm biểu tượng hoặc chữ. (Chuẩn WCAG 2.1 — 1.4.1 Use of Color)
 
 ## 2. Design Tokens — Chữ
 
-| Mã | Vai trò | Họ chữ | Cỡ | Ghi chú |
+| Mã | Vai trò | Họ chữ | Cỡ | Ràng buộc bắt buộc |
 |---|---|---|---|---|
-| DS-07 | Tiêu đề thẻ | Sans-serif, 600 | 18px | **Một họ chữ duy nhất cho toàn bộ chữ giao diện** |
-| DS-08 | Thân bài | Sans-serif, 400 | 14px | |
-| DS-09 | Nhãn phụ | Sans-serif, 400 | 13px | **Không viết hoa toàn bộ** quá 3 từ — giảm tốc độ đọc |
-| DS-10 | Số tiền & mã voucher | Monospace, 500 | 14–20px | Monospace là **có chủ đích**: canh cột số thẳng hàng |
+| DS-07 | Tiêu đề thẻ | Sans-serif, đậm | `<điền>` | **Một họ chữ duy nhất cho toàn bộ chữ giao diện** |
+| DS-08 | Thân bài | Sans-serif, thường | `<điền>` | Không nhỏ hơn cỡ chữ mặc định của trình duyệt |
+| DS-09 | Nhãn phụ | Sans-serif, thường | `<điền>` | **Không viết hoa toàn bộ** quá 3 từ — giảm tốc độ đọc |
+| DS-10 | Số tiền & mã voucher | Monospace | `<điền>` | Monospace là **có chủ đích**: canh cột số thẳng hàng |
 
 > Ngoại lệ duy nhất được dùng họ chữ khác là logo "ShopGo" ở header.
 
 ## 3. Khoảng cách & Đích chạm
 
-| Mã | Quy tắc |
-|---|---|
-| DS-11 | Đơn vị khoảng cách là bội số của 4px. Padding trong thẻ: 24px. |
-| DS-12 | Mọi phần tử bấm được có đích chạm **tối thiểu 44×44px**. |
-| DS-13 | Hai phần tử bấm được có hậu quả **trái ngược nhau** (xoá ↔ gửi đi) phải cách nhau **tối thiểu 8px**. |
-| DS-14 | Nút chỉ có biểu tượng bắt buộc có `aria-label` và tooltip chữ khi di chuột. |
+| Mã | Quy tắc | Căn cứ |
+|---|---|---|
+| DS-11 | Khoảng cách theo một lưới nhất quán (thường là bội số của 4px). Padding trong thẻ: `<điền>` | Quy ước nội bộ |
+| DS-12 | Mọi phần tử bấm được có đích chạm **tối thiểu 44×44px** | WCAG 2.1 AAA — 2.5.5 |
+| DS-13 | Hai phần tử bấm được có hậu quả **trái ngược nhau** (xoá ↔ gửi đi) phải tách nhau rõ ràng, không dính sát | Quy ước nội bộ |
+| DS-14 | Nút chỉ có biểu tượng bắt buộc có `aria-label` và tooltip chữ khi di chuột | WCAG 2.1 A — 4.1.2 |
 
 ---
 
@@ -56,7 +79,7 @@ phải kèm biểu tượng hoặc chữ. (Chuẩn WCAG 2.1 — 1.4.1 Use of Col
 │ Nhập mã giảm giá                   × │ │  Áp dụng  │
 └──────────────────────────────────────┘ └───────────┘
    ↑ placeholder DS-09        ↑ nút xoá    ↑ nút chính DS-01
-                              cách nút Áp dụng ≥ 8px (DS-13)
+                              tách rõ khỏi nút Áp dụng (DS-13)
 ```
 
 | Mã | Trạng thái | Thể hiện |
@@ -139,21 +162,30 @@ dừng ở việc nêu nguyên nhân.
 | AX-02 | Không dùng màu làm tín hiệu duy nhất | WCAG 2.1 A — 1.4.1 |
 | AX-03 | Mọi nút chỉ có biểu tượng đều có nhãn chữ cho trình đọc màn hình | WCAG 2.1 A — 4.1.2 |
 | AX-04 | Đích chạm ≥ 44×44px | WCAG 2.1 AAA — 2.5.5 |
-| AX-05 | Thông báo lỗi phải được trình đọc màn hình công bố (`role="alert"`) | WCAG 2.1 A — 4.1.3 |
-| AX-06 | Không nhúng emoji hoặc ký tự trang trí vào nội dung thông báo | Trình đọc sẽ đọc to tên emoji |
+| AX-05 | Thông báo lỗi phải được trình đọc màn hình công bố (`role="alert"`) | WCAG 2.1 **AA** — 4.1.3 |
+| AX-06 | Không nhúng emoji hoặc ký tự trang trí vào nội dung thông báo | Không thuộc điều khoản WCAG nào — quy ước nội bộ, vì trình đọc sẽ đọc to tên emoji |
 
 ---
 
-## 11. Ảnh bản vẽ kèm theo
+## 11. Bản vẽ kèm theo
 
-> **Ghi chú cho lớp học**: bản giao này cố ý **chỉ có chữ, không có ảnh mockup**.
-> Dự án thật sẽ có thêm `.png` / `.jpg` export từ Figma đặt cạnh file này. Chặng 08 đối
-> chiếu được cả hai dạng — nhưng bảng token và danh mục thông báo ở trên mới là thứ cho
+| File | Mở bằng | Nội dung |
+|---|---|---|
+| `wireframe_checkout_voucher.drawio` | App [draw.io](https://app.diagrams.net), hoặc extension **Draw.io Integration** trong VS Code | Trang 1: chip `CP-05` vs `CP-06`, và luật đếm `CP-12`/`CP-13`. Trang 2: cây quyết định `MSG-01` → `MSG-05` |
+
+**Vì sao drawio chứ không phải link Figma**: file `.drawio` là XML, **nằm ngay trong repo**,
+đi theo commit, diff được, ai clone về cũng mở được, không cần tài khoản và không bao giờ
+chết link. Figma hợp với Designer; còn tài liệu QA đem đi dạy và đem đi review thì file
+nằm trong repo an toàn hơn hẳn.
+
+**Dự án thật thì làm sao**: Designer vẫn dùng Figma. QA export màn hình ra `.png` rồi đặt
+cạnh file này — Chặng 08 đọc được ảnh để so bằng mắt. Phần `.drawio` giữ lại để vẽ những
+thứ Figma không diễn đạt gọn: cây quyết định thông báo, ma trận trạng thái, luồng rẽ nhánh.
+
+**Muốn có ảnh cho Chặng 08 soi bằng Vision**: mở file `.drawio`, chọn *File → Export as →
+PNG*, lưu cạnh file này. Agent không tự render `.drawio` thành ảnh được — đó là thao tác
+cần app, không phải thứ tôi làm hộ được.
+
+> Nếu `04_design/` chưa có ảnh nào, Chặng 08 vẫn chạy trên ảnh chụp màn hình thật ở
+> `runs/<RUN-ID>/evidence/`, đối chiếu với **các bảng luật ở trên** — đó mới là thứ cho
 > phép kết luận *"lệch chuẩn"* thay vì *"nhìn hơi xấu"*.
-
-| Tên ảnh dự kiến | Màn hình |
-|---|---|
-| `mockup_checkout_default.png` | Thanh toán — chưa áp mã |
-| `mockup_voucher_success.png` | Đã áp mã thành công, có hộp ghi chú maxCap |
-| `mockup_voucher_error.png` | Trạng thái lỗi, đủ 5 biến thể MSG-01 → MSG-05 |
-| `mockup_chip_states.png` | Chip mã: dùng được (CP-05) vs hết hạn (CP-06) |
