@@ -80,7 +80,7 @@ Nhánh `F` chạy độc lập hoàn toàn, không cần deliverable nào của 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
 | 7 | `qa-automation` | `exploratory-charter` | Risk area ở `03` | `07_exploratory_charter.md` |
-| 8 | `qa-ui-review` | `ui-screenshot-review` | Ảnh đính kèm | `08_ui_screenshot_analysis.md` |
+| 8 | `qa-ui-review` | `ui-screenshot-review` | Ảnh đính kèm **+** `INPUT/<slug>/04_design/` | `08_ui_screenshot_analysis.md` |
 
 ### Nhánh D — Báo cáo lỗi & Tổng kết Sprint (Defect Reporting & Summary)
 
@@ -119,12 +119,12 @@ Kết quả chạy đẩy lên Jira bằng `npm run jira:sync <slug> <run-id>`.
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
 | — | `qa-lead` | `workflow-authoring` | Mô tả quy trình bằng lời (TẠO) hoặc câu ngắn khớp cụm kích hoạt (CHẠY) + `knowledge/_system_map.json` + `qa-system/templates/workflows/` | `qa-system/workflows/run-<tên>.md` · checklist trong `OUTPUT/<slug>/00_plan.md` |
-| — | `qa-lead` | `system-upgrade-governance` | Yêu cầu nâng cấp của người dùng (hoặc file `.md` họ đưa) + `knowledge/_system_map.json` + `qa-system/templates/` | `OUTPUT/_upgrades/<ngày>_<tên>.md`<br>**và** thay đổi thật trong `agents/`, `WORKFLOW.md`, `_system_map.json` |
+| — | `qa-lead` | `system-upgrade-governance` | Yêu cầu nâng cấp của người dùng (hoặc file `.md` họ đưa) + `knowledge/_system_map.json` + `qa-system/templates/` | `qa-system/_upgrades/<ngày>_<tên>.md`<br>**và** thay đổi thật trong `agents/`, `WORKFLOW.md`, `_system_map.json` |
 
 > Nhánh F **không mang số `NN`** vì nó không sinh deliverable trong pipeline kiểm thử của một `task-slug`.
 > Hai skill này, cùng sở hữu bởi `qa-lead`, là những skill duy nhất được phép ghi vào `qa-system/` và `knowledge/_system_map.json`.
 
-Mọi output nhánh A-C nằm trong `OUTPUT/<task-slug>/`, kèm `_index.md`. Nhánh D & E ghi tại `OUTPUT/reports/`. Nhánh G ghi code vào `automation/` và kết quả chạy vào `OUTPUT/<task-slug>/runs/`. Nhánh F ghi tại `OUTPUT/_upgrades/`.
+Mọi output nhánh A-C nằm trong `OUTPUT/<task-slug>/`, kèm `_index.md`. Nhánh D & E ghi tại `OUTPUT/reports/`. Nhánh G ghi code vào `automation/` và kết quả chạy vào `OUTPUT/<task-slug>/runs/`. Nhánh F ghi tại `qa-system/_upgrades/`.
 
 ---
 

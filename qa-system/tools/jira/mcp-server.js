@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const { PATHS } = require('../lib/paths');
 const { loadEnv: loadEnvFile } = require('../lib/env');
+const { adf } = require('../lib/jira-api');
 const https = require('https');
 const http = require('http');
 const readline = require('readline');
@@ -186,7 +187,7 @@ async function handleCheckConnection(env) {
     };
   }
 
-  const res = await makeRequest(host, email, token, '/rest/api/2/myself');
+  const res = await makeRequest(host, email, token, '/rest/api/3/myself');
   if (res.statusCode === 200 && res.data) {
     return {
       success: true,
@@ -267,7 +268,7 @@ async function handleGetIssue(args, env) {
     return { error: 'Missing parameter "issueKey".' };
   }
 
-  const res = await makeRequest(host, email, token, `/rest/api/2/issue/${encodeURIComponent(issueKey)}`);
+  const res = await makeRequest(host, email, token, `/rest/api/3/issue/${encodeURIComponent(issueKey)}`);
   if (res.statusCode !== 200) {
     return {
       error: `Failed to fetch issue ${issueKey}: HTTP ${res.statusCode}`,
@@ -305,7 +306,7 @@ async function handleCreateBug(args, env) {
     fields: {
       project: { key: projectKey },
       summary: args.summary,
-      description: args.description,
+      description: adf(args.description),
       issuetype: { name: 'Bug' }
     }
   };
@@ -318,7 +319,7 @@ async function handleCreateBug(args, env) {
     payload.fields.components = args.components.map(c => ({ name: c }));
   }
 
-  const res = await makeRequest(host, email, token, '/rest/api/2/issue', 'POST', payload);
+  const res = await makeRequest(host, email, token, '/rest/api/3/issue', 'POST', payload);
   if (res.statusCode === 201 && res.data) {
     return {
       success: true,
@@ -371,7 +372,7 @@ async function handlePullDefectsToFile(args, env) {
   }
 
   const jql = `project = "${projectKey}" AND issuetype in (Bug, Defect) ORDER BY created DESC`;
-  const reqPath = `/rest/api/2/search?jql=${encodeURIComponent(jql)}&maxResults=50&fields=key,summary,status,priority,components`;
+  const reqPath = `/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=50&fields=key,summary,status,priority,components`;
   const res = await makeRequest(host, email, token, reqPath);
 
   if (res.statusCode !== 200) {

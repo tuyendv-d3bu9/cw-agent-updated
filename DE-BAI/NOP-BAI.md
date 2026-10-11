@@ -41,7 +41,7 @@ Bảng tra theo đề:
 | | DE-01 | DE-02 |
 |---|---|---|
 | `task-slug` | `shopgo-voucher` | `shopgo-cart-qty` |
-| Biên bản Phần A | `OUTPUT/_upgrades/*_boundary-profile.md` | `OUTPUT/_upgrades/*_regression-suite-selection.md` |
+| Biên bản Phần A | `qa-system/_upgrades/*_boundary-profile.md` | `qa-system/_upgrades/*_regression-suite-selection.md` |
 | File automation | `automation/tests/voucher.spec.ts` | `automation/tests/cart-quantity.spec.ts` |
 
 ## Bước 1 — Kiểm tra toàn vẹn & đồng bộ bản đồ lần cuối
@@ -59,7 +59,7 @@ Kiểm **đủ** các dòng sau. Mỗi dòng ghi `ĐẠT` hoặc `CẢNH BÁO` k
 
 | # | Kiểm tra | Đạt khi |
 |---|---|---|
-| K1 | Thư mục bắt buộc | Có `qa-system/` · `OUTPUT/<task-slug>/` · `OUTPUT/_upgrades/` · `knowledge/` · `automation/pages/` · `automation/tests/` |
+| K1 | Thư mục bắt buộc | Có `qa-system/` · `OUTPUT/<task-slug>/` · `qa-system/_upgrades/` · `knowledge/` · `automation/pages/` · `automation/tests/` |
 | K2 | File pipeline | `OUTPUT/<task-slug>/` có `00_plan.md`, `_index.md`, và đủ 6 file bắt đầu bằng `01_` … `06_` |
 | K3 | Knowledge của đề | Có `knowledge/features/<task-slug>.md`, mục 8 có **ít nhất 3** giả định đã chốt kèm người phê duyệt và ngày |
 | K4 | Biên bản Phần A | Có đúng file biên bản của đề (bảng Bước 0) |
@@ -141,7 +141,7 @@ Liệt kê nội dung zip (`unzip -l` trên macOS/Linux, `tar -tf` trên Windows
 | # | Kiểm tra | Đạt khi |
 |---|---|---|
 | Z1 | Tên file | Khớp `^NOP-BAI_[A-Za-z]+_De-0[12]\.zip$` và trùng tên trong `OUTPUT/_session.md` |
-| Z2 | Có đủ | `qa-system/` · `OUTPUT/<task-slug>/` · `OUTPUT/_upgrades/` · `OUTPUT/_session.md` · `knowledge/` · `automation/pages/` · `automation/tests/` · `BAO-CAO.md` |
+| Z2 | Có đủ | `qa-system/` · `OUTPUT/<task-slug>/` · `qa-system/_upgrades/` · `OUTPUT/_session.md` · `knowledge/` · `automation/pages/` · `automation/tests/` · `BAO-CAO.md` |
 | Z3 | Không có | Không có đường dẫn nào chứa `node_modules/`, `.git/`, `test-results/`, `playwright-report/` |
 | Z4 | Dung lượng | Ghi lại dung lượng. Trên 50 MB thì gần như chắc chắn đã lẫn thư mục cấm, quay lại Bước 5 |
 

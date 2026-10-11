@@ -126,7 +126,7 @@ Bên trong **bắt buộc** có:
 ```
 qa-system/                   toàn bộ — để thấy phần nâng cấp của bạn
 OUTPUT/<task-slug>/          00_plan.md · 01_ → 06_ · _index.md · runs/
-OUTPUT/_upgrades/            biên bản nâng cấp hệ thống (Phần A)
+qa-system/_upgrades/            biên bản nâng cấp hệ thống (Phần A)
 knowledge/                   _system_map.json đã đồng bộ · features/<task-slug>.md
 automation/pages/            POM
 automation/tests/            kịch bản test của bạn

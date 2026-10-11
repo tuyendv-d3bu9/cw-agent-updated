@@ -20,7 +20,7 @@ TODO.md
 PLAN.md
 VIDEO_RECORDING_SCRIPT.md
 
-OUTPUT/_scratch/
+.scratch/
 
 **/index.html
 .DS_Store
@@ -30,3 +30,11 @@ GIANG-VIEN/
 GIANG-VIEN.md
 THONG-TIN.md
 # Tài liệu riêng của giảng viên — không bao giờ phát cho học viên
+
+# Artifact nội bộ của Playwright — KHÔNG phải bằng chứng nộp cho khách.
+# Bằng chứng thật nằm ở OUTPUT/<slug>/runs/<RUN-ID>/evidence/<TC_ID>/
+test-results/
+**/runs/*/_playwright/
+**/runs/*/report/
+**/runs/*/results.json
+**/evidence/.last-run.json

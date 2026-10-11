@@ -17,8 +17,9 @@ import fs from 'fs';
  *   QA_TASK_SLUG  — task đang chạy, ví dụ `cart-quantity`
  *   QA_RUN_ID     — mã lượt chạy, ví dụ `RUN-01_smoke`
  *
- * Không truyền gì thì rơi về `OUTPUT/_scratch/` — vẫn nằm trong OUTPUT/, vẫn
- * thấy được, và tên `_scratch` nói rõ đây là chạy nháp chưa gắn vào task nào.
+ * Không truyền gì thì rơi về `.scratch/` ở gốc repo — đã gitignore. Tên nói rõ
+ * đây là chạy nháp chưa gắn vào task nào, và nó KHÔNG nằm trong OUTPUT/ vì
+ * OUTPUT/ là sản phẩm bàn giao, chỉ chứa thư mục task.
  */
 const ROOT = path.resolve(__dirname, '..');
 
@@ -48,12 +49,42 @@ function resolveBaseURL(): string | undefined {
   }
   return undefined;
 }
+
+/** Đọc .env ở root repo nếu có */
+function loadEnvFile(): void {
+  const envPath = path.join(ROOT, '.env');
+  if (fs.existsSync(envPath)) {
+    try {
+      const lines = fs.readFileSync(envPath, 'utf-8').split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const idx = trimmed.indexOf('=');
+        if (idx > 0) {
+          const key = trimmed.slice(0, idx).trim();
+          const value = trimmed.slice(idx + 1).trim();
+          if (process.env[key] === undefined) {
+            process.env[key] = value;
+          }
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+}
+loadEnvFile();
+
+const isVideoMode = ['on', 'true', '1', 'yes'].includes(
+  (process.env.evidence_video || process.env.EVIDENCE_VIDEO || '').trim().toLowerCase()
+);
+
 const slug = process.env.QA_TASK_SLUG?.trim();
 const runId = process.env.QA_RUN_ID?.trim() || 'RUN-local';
 
 const runDir = slug
   ? path.join(ROOT, 'OUTPUT', slug, 'runs', runId)
-  : path.join(ROOT, 'OUTPUT', '_scratch', runId);
+  : path.join(ROOT, '.scratch', runId);
 
 export default defineConfig({
   testDir: './tests',
@@ -75,13 +106,20 @@ export default defineConfig({
     timezoneId: 'Asia/Ho_Chi_Minh',
     actionTimeout: 10000,
     trace: 'retain-on-failure',
-    // Chụp mọi ca, không chỉ ca lỗi: ca PASS cũng cần ảnh để nộp bài và log Jira.
-    screenshot: 'on',
-    video: 'off',
+    // Cấu hình bằng chứng qua biến `evidence_video` trong .env:
+    // - ON : quay video toàn bộ phiên chạy làm evidence (video: 'on')
+    // - OFF: chụp ảnh từng bước và ảnh kết quả có hậu tố "_result" (screenshot: 'on', video: 'off')
+    screenshot: isVideoMode ? 'off' : 'on',
+    video: isVideoMode ? 'on' : 'off',
     viewport: { width: 1280, height: 800 },
   },
-  // Ảnh chụp, trace, file đính kèm của từng ca test.
-  outputDir: path.join(runDir, 'evidence'),
+  // Artifact nội bộ của Playwright (trace, ảnh test-finished, file đính kèm).
+  //
+  // CẤM trỏ vào `evidence/`: trước mỗi lượt chạy Playwright XOÁ SẠCH `outputDir`.
+  // Trỏ vào evidence/ nghĩa là chạy lại một ca sẽ thổi bay bằng chứng của cả
+  // đợt trước — đã xảy ra thật và mất 2 thư mục evidence chưa commit.
+  // Bằng chứng nộp cho khách do `utils/evidence.ts` tự ghi vào `evidence/<TC_ID>/`.
+  outputDir: path.join(runDir, '_playwright'),
   projects: [
     {
       name: 'chromium',

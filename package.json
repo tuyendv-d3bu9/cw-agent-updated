@@ -8,6 +8,7 @@
     "test": "node --test \"qa-system/tools/__tests__/*.test.js\"",
     "start": "node qa-system/tools/system/start.js",
     "intake": "node qa-system/tools/intake/intake.js",
+    "intake:bulk": "node qa-system/tools/intake/bulk-intake.js",
     "convert": "node qa-system/tools/intake/convert.js",
     "knowledge:new": "node qa-system/tools/knowledge/new-knowledge.js",
     "knowledge:init": "node qa-system/tools/knowledge/bootstrap-knowledge.js",
@@ -16,6 +17,7 @@
     "testcases:merge": "node qa-system/tools/testcase/merge-testcases.js",
     "testcases:export": "node qa-system/tools/testcase/export-testcases.js",
     "data:gen": "node qa-system/tools/testdata/generate-dataset.js",
+    "jira:check": "node qa-system/tools/jira/jira-client.js check",
     "jira:pull": "node qa-system/tools/jira/jira-client.js pull",
     "jira:push": "node qa-system/tools/jira/jira-client.js push",
     "jira:sync": "node qa-system/tools/jira/jira-client.js sync",
@@ -36,7 +38,9 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@faker-js/faker": "^10.6.0",
     "js-yaml": "^5.4.2",
+    "libphonenumber-js": "^1.13.14",
     "mammoth": "^1.12.1",
     "pdf-parse": "^2.4.5",
     "xlsx": "^0.18.5"

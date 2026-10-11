@@ -14,8 +14,16 @@ description: >
 Quét ảnh chụp màn hình, phát hiện và đặc tả vấn đề UI / Accessibility / UX nhìn thấy được.
 
 ## Đầu vào
-- 1..n ảnh chụp màn hình đính kèm trực tiếp.
+- 1..n ảnh chụp màn hình đính kèm trực tiếp. **Bắt buộc** — không có ảnh thì dừng.
+- `INPUT/<task-slug>/04_design/` — bản giao thiết kế của UI/UX Designer: design token
+  (màu, chữ, khoảng cách), trạng thái từng thành phần, danh mục thông báo, chuẩn
+  accessibility, và ảnh mockup export từ Figma nếu có. **Đọc trước khi soi ảnh.**
 - (Tuỳ chọn) mô tả ngắn từng màn hình / bối cảnh tính năng.
+
+> **Vì sao phải có bản vẽ**: không có chuẩn mực thì nhận xét giao diện chỉ là khẩu vị, Dev
+> cãi lại được và nên cãi. Có bản vẽ thì mỗi phát hiện trỏ về một mã mục cụ thể, verify
+> lại được sau khi sửa. Thư mục `04_design/` trống → vẫn soi được nhưng phải nói rõ trong
+> báo cáo là đang chấm **không có chuẩn mực**, và hạ mức tin cậy của các nhận định thẩm mỹ.
 
 ## KHÔNG được (riêng skill này)
 - Suy đoán hành vi động: hover, animation, chuyển màn, phản hồi sau click — ảnh tĩnh không chứa
@@ -35,6 +43,9 @@ Quét ảnh chụp màn hình, phát hiện và đặc tả vấn đề UI / Acc
 2. **Quét & phân loại** — với mỗi ảnh, liệt kê vấn đề nhìn thấy được, phân vào đúng 1 trong 3 nhóm.
 3. **Đặc tả từng vấn đề** — **Vị trí** (chỗ nào trên màn hình) · **Mô tả** (nhìn thấy gì) ·
    **Lý do** (vì sao là vấn đề) · **Mức độ** (Low/Med/High) · **Đề xuất sửa**.
+3b. **Truy vết về bản vẽ** — mỗi phát hiện trỏ về mã mục bị vi phạm trong `04_design/`
+   (ví dụ `vi phạm MSG-01`). Ghi lại cả những mục sản phẩm **làm đúng**, để lần sửa sau
+   không vô tình làm hỏng.
 4. **Gắn cờ độ tin cậy** — ảnh mờ hoặc không đủ rõ → gắn `[GIẢ ĐỊNH]` + đề nghị người dùng
    cross-check bằng mắt.
 
@@ -70,3 +81,5 @@ Owner: qa-system/qa-ui-review/ui-screenshot-review · Nguồn: Ảnh chụp màn
 - [ ] Đã quét đủ 3 nhóm (UI Inconsistency, Accessibility, UX Problem) cho từng ảnh, không bỏ nhóm nào.
 - [ ] Mọi nhận định dựa trên ảnh mờ hoặc phỏng đoán bắt buộc gắn nhãn `[GIẢ ĐỊNH]`.
 - [ ] Mỗi đề xuất sửa đủ cụ thể để Dev/Designer có thể verify lại sau khi sửa.
+- [ ] Đã đọc `INPUT/<task-slug>/04_design/`; mỗi phát hiện trỏ về mã mục bị vi phạm. Thư mục
+      trống thì phải nói rõ trong báo cáo là đang chấm không có chuẩn mực.

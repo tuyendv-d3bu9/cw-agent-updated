@@ -72,7 +72,19 @@ SQL dùng `NULL`, JSON dùng `null` · tên cột/khoá đúng Field Map ở ski
   ```bash
   npm run data:gen -- --slug <task-slug> --schema <schema.json> --count 50 --output OUTPUT/<slug>/10_dataset.md
   ```
-- Schema JSON hỗ trợ các generator: `vietnamese_name`, `phone_vn`, `email`, `voucher_code`, `currency_vnd`, `date_vn`, `boundary`, `enum`, `negative`.
+- Schema JSON hỗ trợ các generator:
+  + `vietnamese_name` / `person`: Họ tên tiếng Việt chuẩn Unicode có dấu (`has_accents: true/false`, giới tính `gender: male/female`, `part: full/first_name/last_name`).
+  + `phone` / `phone_vn`: Số điện thoại đa định dạng (`country: VN/US/SG...`, `format: e164/national/international`, `carrier: viettel/vinaphone/mobifone`). Hỗ trợ chuẩn `+84`, `09x`.
+  + `address_vn` / `location`: Đơn vị hành chính Việt Nam (`part: full/city/district/street/postal_code`).
+  + `cccd_vn`: CCCD 12 số chuẩn cấu trúc Bộ Công An (mã tỉnh, thế kỷ/giới tính, năm sinh).
+  + `bank_vn`: Ngân hàng thương mại Việt Nam và số tài khoản (`field: full/bank_name/account_number`).
+  + `email`: Hỗ trợ sinh email thực tế theo tên (`realistic: true`) hoặc theo template.
+  + `voucher_code`: Mã khuyến mại theo prefix và giá trị.
+  + `currency_vnd`: Tiền VND (định dạng hoặc số nguyên).
+  + `date_vn` / `date`: Ngày tháng theo format `DD/MM/YYYY` hoặc `YYYY-MM-DD`.
+  + `boundary`: Sinh đủ chuỗi 7 điểm biên theo chuẩn QA_STANDARD §6.
+  + `enum`: Chọn ngẫu nhiên từ danh sách giá trị.
+  + `negative`: Các trường hợp dữ liệu xấu (rỗng, null, space, sql injection, xss).
 
 ## Các bước
 1. Đọc Field Map (`09_data_class_map.md`), xác định field nào cần sinh và khoảng giá trị hợp lệ.

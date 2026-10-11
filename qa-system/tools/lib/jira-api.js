@@ -15,6 +15,16 @@ const http = require('http');
 const DEFAULT_TIMEOUT_MS = 15000;
 
 /**
+ * ONE api version for the whole toolchain.
+ *
+ * The tools used to mix v2 and v3 — sometimes inside a single function — and
+ * `/rest/api/2/search` has since been withdrawn by Atlassian, so that path now
+ * fails outright. Every call goes through this constant; v3 takes ADF for any
+ * rich-text field, which is what `adf()` below is for.
+ */
+const API = '/rest/api/3';
+
+/**
  * Resolves even on 4xx/5xx so callers decide what counts as failure.
  * Rejects only on network error or timeout.
  */
@@ -91,7 +101,7 @@ function jiraAttach(cfg, issueKey, fileName, fileBuffer) {
       protocol: url.protocol,
       hostname: url.hostname,
       port: url.port || 443,
-      path: `/rest/api/3/issue/${issueKey}/attachments`,
+      path: `${API}/issue/${issueKey}/attachments`,
       method: 'POST',
       headers: {
         Authorization: 'Basic ' + Buffer.from(`${cfg.email}:${cfg.token}`).toString('base64'),
@@ -118,4 +128,103 @@ function adf(text) {
   };
 }
 
-module.exports = { request, jiraRequest, jiraAttach, adf };
+/** Flatten ADF back to plain text, so we can read our own comments on a later run. */
+function adfToText(node) {
+  if (!node) return '';
+  if (typeof node === 'string') return node;
+  if (node.type === 'text') return node.text || '';
+  const inner = (node.content || []).map(adfToText).join('');
+  return node.type === 'paragraph' ? inner + '\n' : inner;
+}
+
+/**
+ * Jira's error shape is two different fields depending on what went wrong.
+ * Surfacing both is the difference between "HTTP 400" and knowing which field
+ * the project rejected — the gap that used to send us back into the code.
+ */
+function describeError(res) {
+  const d = res?.data;
+  const parts = [];
+  if (Array.isArray(d?.errorMessages)) parts.push(...d.errorMessages);
+  if (d?.errors && typeof d.errors === 'object') {
+    for (const [field, msg] of Object.entries(d.errors)) parts.push(`${field}: ${msg}`);
+  }
+  if (!parts.length && res?.raw) parts.push(String(res.raw).slice(0, 200));
+  return `HTTP ${res?.statusCode ?? '??'} — ${parts.join(' · ') || 'no detail returned'}`;
+}
+
+/** Field names a 400 blamed, so the caller can drop them and retry. */
+function rejectedFields(res) {
+  const errors = res?.data?.errors;
+  return errors && typeof errors === 'object' ? Object.keys(errors) : [];
+}
+
+/**
+ * Which issue types and create-screen fields this project actually has.
+ * Asking Jira beats assuming: 'Task' does not exist in every project, and
+ * `priority` is absent from plenty of create screens.
+ */
+async function createMeta(cfg, projectKey) {
+  const res = await jiraRequest(
+    cfg,
+    'GET',
+    `${API}/issue/createmeta?projectKeys=${encodeURIComponent(projectKey)}` +
+      `&expand=projects.issuetypes.fields`
+  );
+  if (res.statusCode !== 200) return { ok: false, error: describeError(res), issueTypes: [] };
+
+  const project = res.data?.projects?.find((p) => p.key === projectKey) || res.data?.projects?.[0];
+  const issueTypes = (project?.issuetypes || []).map((it) => ({
+    id: it.id,
+    name: it.name,
+    // Loại subtask BẮT BUỘC có `parent`. Tự chọn phải nó là mỗi issue tạo ra đều lỗi.
+    subtask: Boolean(it.subtask),
+    fields: Object.keys(it.fields || {}),
+    required: Object.entries(it.fields || {})
+      .filter(([, f]) => f.required)
+      .map(([k]) => k),
+  }));
+  return { ok: true, issueTypes };
+}
+
+/**
+ * Pick the configured issue type, else anything sensible the project does offer.
+ *
+ * Hai cái bẫy ở đây, cả hai đều đã sập thật trên project SG:
+ *   1. `/task/i` khớp cả "Subtask", mà "Subtask" đứng trước "Task" trong danh sách
+ *      createmeta trả về — nên fallback chọn phải Subtask.
+ *   2. Subtask bắt buộc có trường `parent`. Tạo subtask không parent thì issue nào
+ *      cũng lỗi, và lỗi chỉ lộ ra giữa vòng lặp 36 test case.
+ * Vì vậy fallback KHÔNG BAO GIỜ tự chọn loại subtask. Muốn dùng subtask thì phải
+ * gọi đích danh qua JIRA_TEST_ISSUE_TYPE, và người gọi tự lo trường `parent`.
+ */
+function pickIssueType(issueTypes, wanted) {
+  if (!issueTypes.length) return null;
+
+  const want = String(wanted || '').trim().toLowerCase();
+  const named = issueTypes.find((it) => it.name.toLowerCase() === want);
+  if (named) return named;
+
+  const standalone = issueTypes.filter((it) => !it.subtask);
+  if (!standalone.length) return null;
+
+  // Thứ tự ưu tiên rõ ràng, không dựa vào thứ tự Jira trả về.
+  for (const preferred of ['test', 'test case', 'task', 'story']) {
+    const hit = standalone.find((it) => it.name.toLowerCase() === preferred);
+    if (hit) return hit;
+  }
+  return standalone[0];
+}
+
+module.exports = {
+  API,
+  request,
+  jiraRequest,
+  jiraAttach,
+  adf,
+  adfToText,
+  describeError,
+  rejectedFields,
+  createMeta,
+  pickIssueType,
+};

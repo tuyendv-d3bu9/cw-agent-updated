@@ -6,9 +6,12 @@
     "Chạy: npm run data:gen -- --slug <slug> --schema OUTPUT/<slug>/dataset_schema.json --count 50"
   ],
 
-  "ho_ten": { "type": "vietnamese_name" },
-  "so_dien_thoai": { "type": "phone_vn" },
-  "email": { "type": "email" },
+  "ho_ten": { "type": "vietnamese_name", "has_accents": true, "_comment": "Tên tiếng Việt có dấu/không dấu, giới tính: male/female" },
+  "so_dien_thoai": { "type": "phone", "country": "VN", "format": "e164", "carrier": "viettel", "_comment": "Định dạng e164 (+84...), national (09...), international (+84 9...), đa quốc gia" },
+  "dia_chi": { "type": "address_vn", "part": "full", "_comment": "Địa chỉ hành chính: full, city, district, street, postal_code" },
+  "cccd": { "type": "cccd_vn", "_comment": "CCCD 12 số chuẩn Bộ Công An" },
+  "tai_khoan_nh": { "type": "bank_vn", "field": "full", "_comment": "Tên ngân hàng và STK" },
+  "email": { "type": "email", "realistic": true },
   "ngay_tao": { "type": "date_vn" },
 
   "ma_giam_gia": { "type": "voucher_code" },

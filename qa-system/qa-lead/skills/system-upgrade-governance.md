@@ -185,7 +185,7 @@ Skill này **đề xuất**, người dùng **quyết**:
 
 ## Format output
 
-Ghi ra `OUTPUT/_upgrades/<YYYY-MM-DD>_<ten-nang-cap>.md`:
+Ghi ra `qa-system/_upgrades/<YYYY-MM-DD>_<ten-nang-cap>.md`:
 
 ````markdown
 # BIÊN BẢN NÂNG CẤP HỆ THỐNG · <ten-nang-cap>
@@ -238,5 +238,5 @@ Owner: qa-system/qa-lead/skills/system-upgrade-governance.md · Ngày: <YYYY-MM-
 - [ ] Mọi điểm neo trong bảng §4 áp dụng cho nhánh đã chọn đều ở trạng thái `ĐÃ XONG` hoặc `KHÔNG ÁP DỤNG` **kèm lý do**; còn dòng nào trống → `Verdict: FIX`.
 - [ ] 4 cổng `G1`–`G4` có **kết quả thật** đã chạy, không phải dự đoán; cổng nào đỏ → `Verdict: FIX`.
 - [ ] Tên skill trong `## Skill sở hữu` khớp chính xác tên file trên đĩa.
-- [ ] Biên bản xuất đúng đường dẫn `OUTPUT/_upgrades/<YYYY-MM-DD>_<ten-nang-cap>.md`.
+- [ ] Biên bản xuất đúng đường dẫn `qa-system/_upgrades/<YYYY-MM-DD>_<ten-nang-cap>.md`.
 - [ ] Không có nội dung nào đặt sai tầng theo bảng tự kiểm §2.

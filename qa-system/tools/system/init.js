@@ -104,8 +104,15 @@ Mỗi tính năng một thư mục \`OUTPUT/<tên-task>/\`:
 
 Muốn biết đang ở đâu, nói: *"Tiến độ thế nào rồi?"*
 
-> ⚠️ \`OUTPUT/\` là **kết quả một lần chạy, có thể xoá và chạy lại**.
-> Thứ cần giữ lâu dài (quy tắc BA đã chốt) nằm ở \`knowledge/\`.
+> ⚠️ \`OUTPUT/\` là **sản phẩm bàn giao, giữ lâu dài**: bằng chứng chạy test, test case,
+> bảng ánh xạ Jira. Nhiều công cụ đọc lại nó — \`jira:sync\` đính ảnh evidence lên Jira,
+> \`lint\` và \`readiness\` chấm điểm trên chính các file này. Xoá là mất, không chạy lại được.
+>
+> Chỉ chứa thư mục task, mỗi tính năng một thư mục. Không có thư mục nào bắt đầu bằng \`_\`:
+> khuôn mẫu ở \`qa-system/templates/\`, biên bản nâng cấp ở \`qa-system/_upgrades/\`,
+> bản chạy nháp ở \`.scratch/\`.
+>
+> Quy tắc nghiệp vụ BA đã chốt thì nằm ở \`knowledge/\`, không nằm đây.
 `;
 
 const KNOWLEDGE_README = `# knowledge/ — Bộ nhớ dự án · **DÙNG CHUNG**
@@ -157,18 +164,10 @@ function stepOutput() {
   ensureDir(PATHS.OUTPUT, 'nơi agent ghi kết quả');
   writeFile(path.join(PATHS.OUTPUT, 'README.md'), OUTPUT_README, 'biển chỉ dẫn');
 
-  // `routing_table.template_run_dir` points here, so it must exist — otherwise
-  // `agent:check` reports a broken routing path right after initialisation.
-  const tplRun = path.join(PATHS.OUTPUT, '_template_run');
-  if (ensureDir(tplRun, 'khuôn một lượt chạy test')) {
-    for (const [f, title] of [
-      ['run_plan.md', 'KẾ HOẠCH ĐỢT CHẠY'],
-      ['run_result.md', 'KẾT QUẢ ĐỢT CHẠY'],
-      ['run_defects.md', 'LỖI PHÁT HIỆN TRONG ĐỢT CHẠY'],
-    ]) {
-      writeFile(path.join(tplRun, f), `# ${title} — [RUN-ID]\n\n> Khuôn mẫu. Chép sang \`OUTPUT/<task>/runs/<RUN-ID>/\` khi chạy test.\n`);
-    }
-  }
+  // Khuôn một lượt chạy nằm ở `qa-system/templates/run/`, không dựng vào đây nữa.
+  // Trước kia nó ở `OUTPUT/_template_run/` và init TỰ SINH bản rút gọn 2 dòng,
+  // nghèo hơn hẳn bản thật trong repo — dự án mới vì thế nhận khuôn thiếu.
+  // OUTPUT/ giờ chỉ chứa thư mục task, không chứa gì bắt đầu bằng `_`.
 }
 
 function stepKnowledge() {

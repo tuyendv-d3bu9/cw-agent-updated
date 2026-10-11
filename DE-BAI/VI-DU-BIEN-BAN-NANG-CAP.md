@@ -3,7 +3,7 @@
 > Đây là **bản mẫu tham khảo**, không phải bài của học viên nào.
 > Nội dung là lần nâng cấp có thật đã thực hiện trên chính repo này: thêm skill `system-upgrade-governance` cho QA Leader — tức là thêm cho hệ thống năng lực tự nâng cấp chính nó.
 >
-> Đọc file này để biết một biên bản đạt yêu cầu trông như thế nào. Biên bản của bạn đặt tại `OUTPUT/_upgrades/<ngày>_<tên>.md`.
+> Đọc file này để biết một biên bản đạt yêu cầu trông như thế nào. Biên bản của bạn đặt tại `qa-system/_upgrades/<ngày>_<tên>.md`.
 
 ---
 
@@ -45,9 +45,9 @@ Owner: qa-system/qa-lead/skills/system-upgrade-governance.md · Ngày: 2026-09-2
 | **N3** | `WORKFLOW.md` | `qa-system/workflows/WORKFLOW.md` | Mở **nhánh E — Quản trị hệ thống** ở bảng §1; thêm bảng điều phối riêng cho nhánh E ở §2; khai runbook mới vào §6 | **ĐÃ XONG** |
 | **N4** | `_system_map.json` | `knowledge/_system_map.json` | Thêm 8 lối tắt vào `routing_table`; bổ sung `skills_path` cho `qa_lead`; thêm khối `sut` mô tả ShopGo | **ĐÃ XONG** |
 | **N5** | `qa-lead/AGENT.md` | `qa-system/qa-lead/AGENT.md` | Thêm 1 dòng vào Ma trận Điều phối §2; thêm **4 dòng** vào Bảng ánh xạ ngôn ngữ tự nhiên §5 (4 kiểu câu người dùng sẽ nói) | **ĐÃ XONG** |
-| **N6** | `agent-doctor.js` | — | **KHÔNG ÁP DỤNG.** `PIPELINE_DEPENDENCIES` mô tả quan hệ giữa các deliverable **đánh số** của pipeline kiểm thử (`01`–`14`). Skill này không sinh deliverable đánh số — nó ghi vào `OUTPUT/_upgrades/` và tác động lên chính `qa-system/`. Không có bước nào tiêu thụ đầu ra của nó | **KHÔNG ÁP DỤNG** |
+| **N6** | `agent-doctor.js` | — | **KHÔNG ÁP DỤNG.** `PIPELINE_DEPENDENCIES` mô tả quan hệ giữa các deliverable **đánh số** của pipeline kiểm thử (`01`–`14`). Skill này không sinh deliverable đánh số — nó ghi vào `qa-system/_upgrades/` và tác động lên chính `qa-system/`. Không có bước nào tiêu thụ đầu ra của nó | **KHÔNG ÁP DỤNG** |
 
-| **N7** | `lint-deliverables.js` | — | **KHÔNG ÁP DỤNG.** Linter kiểm định dạng **deliverable của pipeline kiểm thử**: số trường test case (`FIELDS`, đọc động từ skill `test-case-generation`) và dòng meta của các file đánh số (`NEEDS_META`). Skill này không đổi định dạng test case, cũng không sinh deliverable đánh số nào — nó ghi biên bản vào `OUTPUT/_upgrades/` | **KHÔNG ÁP DỤNG** |
+| **N7** | `lint-deliverables.js` | — | **KHÔNG ÁP DỤNG.** Linter kiểm định dạng **deliverable của pipeline kiểm thử**: số trường test case (`FIELDS`, đọc động từ skill `test-case-generation`) và dòng meta của các file đánh số (`NEEDS_META`). Skill này không đổi định dạng test case, cũng không sinh deliverable đánh số nào — nó ghi biên bản vào `qa-system/_upgrades/` | **KHÔNG ÁP DỤNG** |
 
 > **Chú ý cách viết N6 và N7.** Ghi "KHÔNG ÁP DỤNG" suông sẽ bị trừ điểm. Phải nêu được **lý do kỹ thuật** vì sao không áp dụng.
 >
