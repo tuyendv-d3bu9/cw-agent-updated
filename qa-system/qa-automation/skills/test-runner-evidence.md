@@ -20,9 +20,16 @@ Thực thi kiểm thử tự động cho một đợt chạy cụ thể (Run Ses
 1. **Sinh file Test Spec**:
    - Ghi vào `automation/tests/<task-slug>_<run-id>.spec.ts`.
    - Mỗi test case được viết trong một block `test('TC_ID: Title', async ({ page }) => { ... })`.
-2. **Cấu hình chụp Evidence**:
-   - Ở cuối mỗi test case thành công: Chụp ảnh `await page.screenshot({ path: '.../evidence/TC-xxx_pass.png' })`.
-   - Khi có lỗi / assertion failure: Tự động bắt ảnh `await page.screenshot({ path: '.../evidence/TC-xxx_fail.png' })` và lưu Playwright Trace.
+2. **Cấu hình thu thập Evidence (Điều khiển qua biến `evidence_video` trong `.env`)**:
+   - **Chế độ Ảnh (`evidence_video=OFF`)**:
+     + Mỗi testcase có một folder riêng biệt: `evidence/<TC_ID>/`.
+     + Chụp ảnh từng bước với số thứ tự: `01_load_web.png`, `02_dien_thong_tin.png`, v.v. bằng `await evidence.step(...)`.
+     + Ảnh kết quả cuối cùng có hậu tố `_result`: `XX_PASS_result.png` hoặc `XX_FAIL_result.png` bằng `await evidence.result(...)`.
+   - **Chế độ Video (`evidence_video=ON`)**:
+     + Playwright cấu hình `video: 'on'`.
+     + Video ghi nhận toàn bộ quá trình chạy và tự động lưu vào folder testcase: `evidence/<TC_ID>/<TC_ID>_PASS_result.webm`.
+     + Không chụp ảnh từng bước để tối ưu tài nguyên.
+   - Khi có lỗi / assertion failure: Tự động ghi nhận ảnh kết quả lỗi có hậu tố `_result` và lưu Playwright Trace.
 3. **Thực thi ngầm**:
    - Chạy test headless: `npx playwright test automation/tests/<task-slug>_<run-id>.spec.ts`.
 4. **Tổng hợp kết quả ra Run Result**:
@@ -32,10 +39,13 @@ Thực thi kiểm thử tự động cho một đợt chạy cụ thể (Run Ses
 ## Format output
 Ghi ra `OUTPUT/<task-slug>/runs/<run-id>/run_result.md` theo mẫu chuẩn:
 - Bảng tổng kết số lượng PASS, FAIL, BLOCKED.
-- Chi tiết từng test case kèm Actual Result và đường dẫn file ảnh trong `evidence/`.
+- Chi tiết từng test case kèm Actual Result và đường dẫn thư mục/file bằng chứng trong `evidence/<TC_ID>/`.
 
 ## Chốt chặn nghiệm thu (Quality Gates)
 - [ ] Mọi test case đều có trạng thái nhị phân rõ ràng (PASS / FAIL).
-- [ ] Toàn bộ các test case FAIL bắt buộc có ảnh chụp màn hình ghi nhận lỗi giao diện trong thư mục `evidence/`.
+- [ ] Mỗi test case có một folder riêng trong `evidence/<TC_ID>/`.
+- [ ] Nếu `evidence_video=OFF`: có đầy đủ ảnh các bước (đánh số 01, 02...) và ảnh kết quả có hậu tố `_result`.
+- [ ] Nếu `evidence_video=ON`: có file video ghi lại luồng test case trong folder `evidence/<TC_ID>/`.
+- [ ] Toàn bộ các test case FAIL bắt buộc có bằng chứng ghi nhận lỗi giao diện trong thư mục `evidence/<TC_ID>/`.
 - [ ] Không ghi đè hoặc làm bẩn file `05_test_case_spec.md` gốc.
 - [ ] File kết quả xuất đúng tại `OUTPUT/<task-slug>/runs/<run-id>/run_result.md`.

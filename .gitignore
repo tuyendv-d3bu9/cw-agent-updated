@@ -27,3 +27,11 @@ OUTPUT/_scratch/
 
 # Tài liệu riêng của giảng viên — không bao giờ phát cho học viên
 GIANG-VIEN/
+
+# Artifact nội bộ của Playwright — KHÔNG phải bằng chứng nộp cho khách.
+# Bằng chứng thật nằm ở OUTPUT/<slug>/runs/<RUN-ID>/evidence/<TC_ID>/
+test-results/
+**/runs/*/_playwright/
+**/runs/*/report/
+**/runs/*/results.json
+**/evidence/.last-run.json
