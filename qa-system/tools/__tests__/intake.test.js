@@ -71,3 +71,132 @@ test('pickSlug — names the task after the BA document, not the strategy docume
 test('pickSlug — falls back to the first file when no BA document exists', () => {
   assert.strictEqual(pickSlug(['/x/ghi chu.md', '/x/khac.md']), 'ghi-chu');
 });
+
+// ───────────────────── Chống đẻ task trùng ─────────────────────
+//
+// Chuyện có thật: cùng đặc tả "Function D: Áp dụng Mã Giảm Giá (Voucher)" của
+// ShopGo được nhận vào hai lần dưới hai tên file khác nhau, đẻ ra hai task
+// `function-d-voucher` và `spec-function-d` cho đúng một tính năng. Tên task lấy
+// từ tên file, nên BA gửi lại spec với tên khác là OUTPUT/ phình thêm một thư
+// mục ma. Các ca dưới đây khoá đường đó lại.
+
+const fs = require('fs');
+const path = require('path');
+const { useTempProject, write, PATHS } = require('./helpers');
+const {
+  docTitle,
+  normalizeTitle,
+  docFingerprint,
+  findDuplicate,
+  duplicateNotice,
+} = require('../intake/intake');
+
+const SPEC_D = '# **Function D: Áp dụng Mã Giảm Giá (Voucher)**\n\nMức hoá đơn tối thiểu 200k.\n';
+
+/** Đặt sẵn một tài liệu đã được nhận vào task `slug`. */
+function ingested(slug, file, content) {
+  write(path.join('INPUT', slug, '02_ba', file), content);
+}
+
+test('docTitle — lấy đúng H1 đầu tiên làm tên tính năng', () => {
+  assert.strictEqual(docTitle(SPEC_D), '**Function D: Áp dụng Mã Giảm Giá (Voucher)**');
+  assert.strictEqual(docTitle('không có heading nào'), '');
+});
+
+test('normalizeTitle — bỏ dấu và ký hiệu markdown để so được với nhau', () => {
+  assert.strictEqual(
+    normalizeTitle('# **Function D: Áp dụng Mã Giảm Giá (Voucher)**'),
+    normalizeTitle('Function D  Ap dung Ma Giam Gia Voucher')
+  );
+});
+
+test('docFingerprint — khác khoảng trắng và hoa thường vẫn là một tài liệu', () => {
+  assert.strictEqual(docFingerprint('# A\n\nxin  chào'), docFingerprint('# a\nXIN chào'));
+});
+
+test('docFingerprint — nội dung khác thì vân tay khác', () => {
+  assert.notStrictEqual(docFingerprint('# A\nmột'), docFingerprint('# A\nhai'));
+});
+
+test('bắt được tài liệu y hệt đã nhận vào task khác', () => {
+  const t = useTempProject();
+  try {
+    ingested('function-d-voucher', 'spec_function_d.md', SPEC_D);
+    const dup = findDuplicate(SPEC_D, 'spec-function-d');
+    assert.ok(dup, 'tài liệu trùng khít mà không bị bắt');
+    assert.strictEqual(dup.kind, 'same-document');
+    assert.strictEqual(dup.slug, 'function-d-voucher');
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('bắt được cùng tính năng dù nội dung đã sửa đổi', () => {
+  const t = useTempProject();
+  try {
+    ingested('function-d-voucher', 'spec_function_d.md', SPEC_D);
+    // Bản BA gửi lại: cùng tiêu đề, thêm một luật mới.
+    const revised = SPEC_D + '\nBổ sung: mã HETHAN bị từ chối.\n';
+    const dup = findDuplicate(revised, 'spec-function-d');
+    assert.ok(dup, 'cùng tên tính năng mà vẫn lọt');
+    assert.strictEqual(dup.kind, 'same-feature');
+    assert.strictEqual(dup.slug, 'function-d-voucher');
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('nhận lại vào CHÍNH task đó là cập nhật, không phải trùng', () => {
+  const t = useTempProject();
+  try {
+    ingested('function-d-voucher', 'spec_function_d.md', SPEC_D);
+    assert.strictEqual(findDuplicate(SPEC_D, 'function-d-voucher'), null);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('tính năng khác thì không bị chặn oan', () => {
+  const t = useTempProject();
+  try {
+    ingested('function-d-voucher', 'spec_function_d.md', SPEC_D);
+    const other = '# **Function A: Đăng nhập & Phân quyền**\n\nTài khoản VIP.\n';
+    assert.strictEqual(findDuplicate(other, 'function-a'), null);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('INPUT rỗng thì không có gì để trùng', () => {
+  const t = useTempProject();
+  try {
+    fs.mkdirSync(PATHS.INPUT, { recursive: true });
+    assert.strictEqual(findDuplicate(SPEC_D, 'bat-ky'), null);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('tài liệu không có H1 thì chỉ so vân tay, không so tiêu đề rỗng', () => {
+  const t = useTempProject();
+  try {
+    ingested('task-mot', 'ghi-chu.md', 'không heading, nội dung A');
+    // Khác nội dung, cả hai cùng không có H1 — tiêu đề rỗng KHÔNG được coi là trùng.
+    assert.strictEqual(findDuplicate('không heading, nội dung B', 'task-hai'), null);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('thông điệp dừng nêu đủ: trùng ở đâu, task nào, và hai lối đi', () => {
+  const notice = duplicateNotice(
+    { kind: 'same-feature', slug: 'function-d-voucher', file: 'INPUT/function-d-voucher/02_ba/spec_function_d.md' },
+    'spec-function-d',
+    'spec-function-d.md'
+  );
+  assert.match(notice, /DỪNG/);
+  assert.match(notice, /function-d-voucher/);
+  assert.match(notice, /spec-function-d/);
+  assert.match(notice, /--into function-d-voucher/);
+  assert.match(notice, /--force/);
+});

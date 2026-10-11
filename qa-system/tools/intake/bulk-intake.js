@@ -23,11 +23,13 @@ const fs = require('fs');
 const path = require('path');
 const { PATHS } = require('../lib/paths');
 const { convertDocumentToMarkdown, getFileMetadata } = require('../lib/doc-converter');
-const { classifyDocument, slugify, pickSlug } = require('./intake');
+const { classifyDocument, slugify, pickSlug, findDuplicate, duplicateNotice } = require('./intake');
 
 // Parse CLI arguments
 const args = process.argv.slice(2);
 const isDryRun = args.includes('--dry-run');
+// Cố ý chấp nhận tạo bản thứ hai cho cùng một tính năng.
+const FORCE = args.includes('--force');
 
 function getArgValue(flag, defaultValue) {
   const idx = args.indexOf(flag);
@@ -258,10 +260,24 @@ async function main() {
     const startTime = Date.now();
     const baseName = path.basename(item.filename, item.ext);
     const slug = customSlug || slugify(baseName);
-    affectedSlugs.add(slug);
 
     try {
       const markdownContent = await convertDocumentToMarkdown(item.originalPath, { withStamp: true });
+
+      // Cổng chống trùng — giống intake đơn lẻ, chặn trước khi ghi.
+      const dup = FORCE ? null : findDuplicate(markdownContent, slug);
+      if (dup) {
+        console.error(duplicateNotice(dup, slug, item.filename));
+        affectedSlugs.delete(slug);
+        return {
+          filename: item.filename,
+          hash: item.hash,
+          slug,
+          status: 'SKIPPED_DUPLICATE',
+          duplicateOf: dup.slug,
+        };
+      }
+
       const category = classifyDocument(markdownContent, item.filename);
 
       // Create destination
@@ -276,6 +292,7 @@ async function main() {
       const destPath = path.join(targetDir, `${slugify(baseName)}.md`);
       fs.writeFileSync(destPath, markdownContent, 'utf8');
 
+      affectedSlugs.add(slug);
       const elapsed = Date.now() - startTime;
       console.log(`   [${idx + 1}/${total}] ✅ Converted: "${item.filename}" -> INPUT/${slug}/${category}/ (${elapsed}ms)`);
 

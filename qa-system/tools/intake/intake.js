@@ -21,13 +21,19 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { PATHS } = require('../lib/paths');
 const { convertDocumentToMarkdown } = require('../lib/doc-converter');
 
 const args = process.argv.slice(2);
 const slugIndex = args.indexOf('--slug');
-let targetSlug = slugIndex !== -1 ? args[slugIndex + 1] : null;
-const positional = args.filter((a, idx) => !a.startsWith('--') && idx !== slugIndex + 1);
+const intoIndex = args.indexOf('--into');
+// `--into` = cố ý gộp vào task đã có. `--force` = cố ý chấp nhận tạo bản thứ hai.
+const intoSlug = intoIndex !== -1 ? args[intoIndex + 1] : null;
+let targetSlug = intoSlug || (slugIndex !== -1 ? args[slugIndex + 1] : null);
+const FORCE = args.includes('--force');
+const valueArgs = new Set([slugIndex + 1, intoIndex + 1].filter((i) => i > 0));
+const positional = args.filter((a, idx) => !a.startsWith('--') && !valueArgs.has(idx));
 const targetInput = positional[0];
 
 /**
@@ -162,6 +168,15 @@ async function processFile(filePath, userSlug) {
     return;
   }
 
+  // Cổng chống trùng — chặn TRƯỚC khi ghi bất cứ thứ gì xuống đĩa.
+  if (!FORCE) {
+    const dup = findDuplicate(markdownContent, slug);
+    if (dup) {
+      console.error(duplicateNotice(dup, slug, path.basename(filePath)));
+      return false;
+    }
+  }
+
   // Classify into 5 categories
   const category = classifyDocument(markdownContent, path.basename(filePath));
   console.log(`   -> Categorized into: [ ${category} ]`);
@@ -242,6 +257,123 @@ cho khuyến nghị GO **và** người dùng yêu cầu rõ kèm URL môi trư�
  * Prefers a PRD/SRS-style document because it describes the feature itself;
  * a business document usually spans a whole quarter and would overstate scope.
  */
+// ────────────────── Chống đẻ trùng task ──────────────────
+//
+// Tên task vốn lấy từ TÊN FILE. Cùng một đặc tả mà BA gửi lại dưới tên khác là
+// sinh ra một task thứ hai cho đúng tính năng đó — `spec-function-d` và
+// `function-d-voucher` đã trùng nhau đúng kiểu này, cùng là "Function D: Áp dụng
+// Mã Giảm Giá (Voucher)" của ShopGo. Ba hàm dưới đây nhận diện trước khi ghi.
+
+/** Tên tính năng mà tài liệu tự khai, lấy ở heading H1 đầu tiên. */
+function docTitle(markdown) {
+  for (const line of String(markdown).split('\n')) {
+    const m = line.match(/^#\s+(.+?)\s*$/);
+    if (m) return m[1];
+  }
+  return '';
+}
+
+/** Chuẩn hoá tiêu đề để so sánh: bỏ dấu, bỏ ký hiệu markdown, gộp khoảng trắng. */
+function normalizeTitle(title) {
+  return String(title)
+    .replace(/[*_`#]/g, '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+/** Vân tay nội dung — bỏ qua khác biệt về khoảng trắng và hoa thường. */
+function docFingerprint(markdown) {
+  const normalized = String(markdown).replace(/\s+/g, ' ').trim().toLowerCase();
+  return crypto.createHash('sha1').update(normalized).digest('hex');
+}
+
+/** Mọi tài liệu đã nằm trong INPUT/<task>/, kèm task sở hữu nó. */
+function ingestedDocs() {
+  if (!fs.existsSync(PATHS.INPUT)) return [];
+  const out = [];
+
+  for (const slug of fs.readdirSync(PATHS.INPUT)) {
+    const taskDir = path.join(PATHS.INPUT, slug);
+    if (slug.startsWith('.') || slug.startsWith('_')) continue;
+    if (!fs.statSync(taskDir).isDirectory()) continue;
+
+    for (const category of fs.readdirSync(taskDir)) {
+      const catDir = path.join(taskDir, category);
+      if (!fs.existsSync(catDir) || !fs.statSync(catDir).isDirectory()) continue;
+
+      for (const file of fs.readdirSync(catDir)) {
+        if (!file.endsWith('.md')) continue;
+        const full = path.join(catDir, file);
+        let content = '';
+        try {
+          content = fs.readFileSync(full, 'utf-8');
+        } catch {
+          continue;
+        }
+        out.push({
+          slug,
+          file: path.relative(PATHS.ROOT, full),
+          title: docTitle(content),
+          hash: docFingerprint(content),
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Tài liệu này đã thuộc về task nào chưa?
+ *
+ * @returns null, hoặc
+ *   { kind: 'same-document', slug, file }  — y nguyên nội dung, đã nhận rồi
+ *   { kind: 'same-feature',  slug, file }  — khác nội dung nhưng cùng tên tính năng
+ */
+function findDuplicate(markdown, targetSlug) {
+  const hash = docFingerprint(markdown);
+  const title = normalizeTitle(docTitle(markdown));
+
+  for (const doc of ingestedDocs()) {
+    if (doc.slug === targetSlug) continue; // cùng task thì là cập nhật, không phải trùng
+    if (doc.hash === hash) return { kind: 'same-document', ...doc };
+  }
+
+  if (!title) return null;
+  for (const doc of ingestedDocs()) {
+    if (doc.slug === targetSlug) continue;
+    if (normalizeTitle(doc.title) === title) return { kind: 'same-feature', ...doc };
+  }
+  return null;
+}
+
+/** Thông điệp dừng — nêu rõ trùng ở đâu và hai lối đi, thay vì lặng lẽ tạo task mới. */
+function duplicateNotice(dup, proposedSlug, fileName) {
+  const what =
+    dup.kind === 'same-document'
+      ? `Tài liệu này đã được nhận vào rồi, nội dung y hệt.`
+      : `Tính năng này đã có task rồi — cùng tiêu đề với tài liệu đã nhận.`;
+
+  return [
+    ``,
+    `⛔ DỪNG — không đẻ thêm task trùng.`,
+    ``,
+    `   ${what}`,
+    `   Tài liệu đến : ${fileName}`,
+    `   Đã có ở      : ${dup.file}`,
+    `   Thuộc task   : [ ${dup.slug} ]`,
+    `   Định tạo mới : [ ${proposedSlug} ]   <- sẽ thành bản trùng thứ hai`,
+    ``,
+    `   Chọn một trong hai:`,
+    `     • Gộp vào task đã có:  npm run intake -- "${fileName}" --into ${dup.slug}`,
+    `     • Vẫn tạo task riêng:  npm run intake -- "${fileName}" --slug <tên-khác> --force`,
+    ``,
+  ].join('\n');
+}
+
 function pickSlug(files) {
   const isBA = (f) => /prd|srs|spec|user.?stor|requirement|use.?case|yeu.?cau|dac.?ta/i.test(path.basename(f));
   const pick = files.find(isBA) || files[0];
@@ -292,10 +424,19 @@ async function main() {
       console.log('   If these belong to different features, re-run each group with --slug <task>.');
     }
 
-    const slugs = new Set([slug]);
+    const slugs = new Set();
     for (const f of loose) {
-      await processFile(f, slug);
+      const ok = await processFile(f, slug);
+      // Chỉ xoá bản rời SAU KHI đã nhận thành công. Cổng chống trùng từ chối mà
+      // vẫn xoá thì người dùng mất trắng tài liệu vừa thả vào.
+      if (ok === false) continue;
+      slugs.add(slug);
       fs.unlinkSync(f); // filed into its bin; leaving a loose copy would confuse
+    }
+
+    if (slugs.size === 0) {
+      process.exitCode = 1;
+      return;
     }
 
     for (const slug of slugs) {
@@ -310,16 +451,22 @@ async function main() {
   }
 
   const stat = fs.statSync(targetInput);
+  let ingested = 0;
   if (stat.isFile()) {
-    await processFile(targetInput, targetSlug);
+    if ((await processFile(targetInput, targetSlug)) !== false) ingested++;
   } else if (stat.isDirectory()) {
     const files = fs.readdirSync(targetInput);
     for (const file of files) {
       const full = path.join(targetInput, file);
       if (fs.statSync(full).isFile() && !file.startsWith('~$') && !file.startsWith('.')) {
-        await processFile(full, targetSlug);
+        if ((await processFile(full, targetSlug)) !== false) ingested++;
       }
     }
+  }
+
+  if (ingested === 0) {
+    process.exitCode = 1; // cổng chống trùng đã chặn — đừng dựng khung task rỗng
+    return;
   }
 
   if (targetSlug) {
@@ -339,4 +486,15 @@ if (require.main === module) {
   });
 }
 
-module.exports = { classifyDocument, slugify, pickSlug, looseFiles };
+module.exports = {
+  classifyDocument,
+  slugify,
+  pickSlug,
+  looseFiles,
+  docTitle,
+  normalizeTitle,
+  docFingerprint,
+  ingestedDocs,
+  findDuplicate,
+  duplicateNotice,
+};
