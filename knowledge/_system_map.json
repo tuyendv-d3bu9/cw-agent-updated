@@ -128,16 +128,6 @@
       "status": "COMPLETED (PASS)",
       "total_testcases": 36,
       "last_verdict": "PASS"
-    },
-    "spec-function-d": {
-      "name": "spec-function-d",
-      "input_file": "INPUT/spec-function-d",
-      "knowledge_file": "knowledge/features/spec-function-d.md",
-      "output_dir": "OUTPUT/spec-function-d/",
-      "plan_file": "OUTPUT/spec-function-d/00_plan.md",
-      "status": "IN-PROGRESS",
-      "total_testcases": 0,
-      "last_verdict": "UNKNOWN"
     }
   },
   "tools_layout": {
