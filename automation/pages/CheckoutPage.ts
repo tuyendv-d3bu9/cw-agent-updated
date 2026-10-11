@@ -52,6 +52,7 @@ export class CheckoutPage extends BasePage {
 
   async goto(): Promise<void> {
     await this.gotoCheckout();
+    await this.step('mo_man_thanh_toan');
   }
 
   qtyInput(productId: string): Locator {
@@ -74,6 +75,7 @@ export class CheckoutPage extends BasePage {
   async setQuantity(productId: string, value: string): Promise<void> {
     await this.qtyInput(productId).fill(value);
     await this.qtyInput(productId).blur();
+    await this.step(`doi_so_luong_${productId}_thanh_${value || 'rong'}`);
   }
 
   async setProductQuantity(prodId: string, quantity: number): Promise<void> {
@@ -82,17 +84,21 @@ export class CheckoutPage extends BasePage {
 
   async applyVoucher(code: string): Promise<void> {
     await this.voucherInput.fill(code);
+    await this.step(`nhap_ma_${code.trim() || 'rong'}`);
     await this.btnApplyVoucher.click();
+    await this.step(`sau_khi_bam_ap_dung`);
   }
 
   async clickBadge(code: 'GIAM50K' | 'SALE20' | 'HETHAN'): Promise<void> {
     const badge = this.page.locator(`#badge-voucher-${code}`);
     await badge.waitFor({ state: 'visible', timeout: 5000 });
     await badge.click();
+    await this.step(`bam_chip_${code}`);
   }
 
   async removeVoucher(): Promise<void> {
     await this.btnRemoveVoucher.click();
+    await this.step('sau_khi_go_ma');
   }
 
   async removeProduct(prodId: string): Promise<void> {

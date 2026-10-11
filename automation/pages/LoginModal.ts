@@ -40,6 +40,7 @@ export class LoginModal extends BasePage {
     await this.openFromHeader();
     await this.submitCredentials(email, password);
     await this.btnUserProfile.waitFor({ state: 'visible' });
+    await this.step('dang_nhap_thanh_cong');
   }
 
   /**

@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import { LoginModal } from '../pages/LoginModal';
 import { ShopPage } from '../pages/ShopPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
-import { TestEvidence, captureEvidence as captureEvidenceUtil } from '../utils/evidence';
+import { TestEvidence } from '../utils/evidence';
 
 const EVIDENCE_DIR = path.resolve(process.cwd(), 'OUTPUT/function-d-voucher/runs/RUN-01_voucher-regression/evidence');
 
@@ -12,24 +12,44 @@ if (!fs.existsSync(EVIDENCE_DIR)) {
   fs.mkdirSync(EVIDENCE_DIR, { recursive: true });
 }
 
-async function captureEvidence(page: any, tcId: string, isPass: boolean) {
-  return captureEvidenceUtil(page, tcId, isPass, { baseDir: EVIDENCE_DIR });
-}
-
 test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
   let loginPage: LoginModal;
   let shopPage: ShopPage;
   let checkoutPage: CheckoutPage;
+  let evidence: TestEvidence;
 
-  test.beforeEach(async ({ page }) => {
+  /**
+   * Bằng chứng gắn ở POM, không rải trong từng test.
+   *
+   * Trước đây mỗi ca chỉ có đúng một tấm ảnh chụp lúc kết thúc — nhìn vào không
+   * biết hệ thống đã đi qua những trạng thái nào. Nay mỗi hành động trong page
+   * object tự chụp một bước, nên 32 ca đều có ảnh từng bước mà không phải sửa
+   * thân bài của ca nào.
+   */
+  test.beforeEach(async ({ page }, testInfo) => {
     loginPage = new LoginModal(page);
     shopPage = new ShopPage(page);
     checkoutPage = new CheckoutPage(page);
+
+    // Tên ca có dạng "VCHR-003: ..." nên TestEvidence tự bóc được mã TC.
+    evidence = new TestEvidence(page, testInfo.title, { baseDir: EVIDENCE_DIR });
+    loginPage.setEvidence(evidence);
+    shopPage.setEvidence(evidence);
+    checkoutPage.setEvidence(evidence);
 
     await loginPage.open();
     await loginPage.login('khachhang@shopgo.vn', '123456');
     await checkoutPage.goto();
     await checkoutPage.clearCart();
+  });
+
+  /** Ảnh kết quả cuối, lấy trạng thái thật từ Playwright nên ca FAIL cũng có bằng chứng. */
+  test.afterEach(async ({ page }, testInfo) => {
+    if (!evidence) return;
+    const passed = testInfo.status === testInfo.expectedStatus;
+    await evidence.result(passed).catch(() => {
+      /* trang có thể đã đóng khi test sập giữa chừng — đừng để nó che lỗi thật */
+    });
   });
 
   // =========================================================================
@@ -49,7 +69,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const total = await checkoutPage.getTotalPayable();
       expect(total).toBe(150_000);
 
-      await captureEvidence(page, 'VCHR-001', true);
     });
 
     test('VCHR-002: Áp dụng thành công SALE20 cho đơn hàng 350.000 VNĐ giảm 20%', async ({ page }) => {
@@ -65,7 +84,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const total = await checkoutPage.getTotalPayable();
       expect(total).toBe(280_000);
 
-      await captureEvidence(page, 'VCHR-002', true);
     });
 
     test('VCHR-003: Áp dụng SALE20 cho đơn 600.000 VNĐ kích hoạt mức trần maxCap 100.000 VNĐ', async ({ page }) => {
@@ -81,7 +99,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const total = await checkoutPage.getTotalPayable();
       expect(total).toBe(500_000);
 
-      await captureEvidence(page, 'VCHR-003', true);
     });
 
     test('VCHR-004: Tự động trim khoảng trắng và uppercase khi nhập mã thường giam50k', async ({ page }) => {
@@ -95,7 +112,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const total = await checkoutPage.getTotalPayable();
       expect(total).toBe(300_000);
 
-      await captureEvidence(page, 'VCHR-004', true);
     });
 
     test('VCHR-005: Bấm trực tiếp vào badge gợi ý GIAM50K tự động điền và áp dụng', async ({ page }) => {
@@ -111,7 +127,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const msg = await checkoutPage.getSuccessMessage();
       expect(msg).toContain('GIAM50K');
 
-      await captureEvidence(page, 'VCHR-005', true);
     });
   });
 
@@ -120,17 +135,9 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
   // =========================================================================
   test.describe('Cụm 2: Mã không hợp lệ & Lỗi nhập', () => {
     test('VCHR-006: Từ chối áp dụng mã voucher đã hết hạn HETHAN', async ({ page }) => {
-      const evidence = new TestEvidence(page, 'VCHR-006', { baseDir: EVIDENCE_DIR });
-
-      // Bước 1: Load web & setup giỏ hàng
-      await evidence.step('load_xong_web');
       await shopPage.setupCartForSubtotal(200000);
       await checkoutPage.goto();
-      await evidence.step('chuyen_sang_man_checkout');
-
-      // Bước 2: Nhập mã voucher hết hạn
       await checkoutPage.voucherInput.fill('HETHAN');
-      await evidence.step('dien_ma_voucher_hethan');
 
       // Bước 3: Áp dụng mã và kiểm tra thông báo lỗi
       await checkoutPage.btnApplyVoucher.click();
@@ -149,7 +156,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const errMsg = await checkoutPage.getErrorMessage();
       expect(errMsg).toMatch(/không tồn tại/i);
 
-      await captureEvidence(page, 'VCHR-007', true);
     });
 
     test('VCHR-010: Báo lỗi yêu cầu nhập mã khi bỏ trống hoặc chỉ nhập khoảng trắng', async ({ page }) => {
@@ -160,7 +166,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const errMsg = await checkoutPage.getErrorMessage();
       expect(errMsg).toMatch(/vui lòng nhập mã/i);
 
-      await captureEvidence(page, 'VCHR-010', true);
     });
   });
 
@@ -177,7 +182,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const errMsg = await checkoutPage.getErrorMessage();
       expect(errMsg).toMatch(/chưa đạt mức tối thiểu/i);
 
-      await captureEvidence(page, 'VCHR-008', true);
     });
 
     test('VCHR-009: Từ chối mã SALE20 cho đơn 200.000 VNĐ do chưa đạt điều kiện tối thiểu 300.000 VNĐ', async ({ page }) => {
@@ -188,7 +192,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const errMsg = await checkoutPage.getErrorMessage();
       expect(errMsg).toMatch(/chưa đạt mức tối thiểu/i);
 
-      await captureEvidence(page, 'VCHR-009', true);
     });
 
     test('VCHR-011: Cảnh báo chưa đủ điều kiện khi giảm giỏ hàng từ 350k xuống dưới 200k', async ({ page }) => {
@@ -210,7 +213,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const combined = warnMsg + errMsg;
       expect(combined.length).toBeGreaterThan(0);
 
-      await captureEvidence(page, 'VCHR-011', true);
     });
 
     test('VCHR-014: Từ chối áp dụng mã GIAM50K cho đơn ở giá trị cận biên dưới 190.000 VNĐ', async ({ page }) => {
@@ -222,7 +224,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const errMsg = await checkoutPage.getErrorMessage();
       expect(errMsg).toMatch(/chưa đạt mức tối thiểu/i);
 
-      await captureEvidence(page, 'VCHR-014', true);
     });
 
     test('VCHR-015: Chấp nhận áp dụng mã GIAM50K cho đơn ở đúng biên chuẩn 200.000 VNĐ', async ({ page }) => {
@@ -234,7 +235,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       expect(msg).toContain('GIAM50K');
       expect(await checkoutPage.getTotalPayable()).toBe(150_000);
 
-      await captureEvidence(page, 'VCHR-015', true);
     });
 
     test('VCHR-016: Từ chối áp dụng SALE20 cho đơn hàng ở cận biên dưới 280.000 VNĐ', async ({ page }) => {
@@ -250,7 +250,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const total = await checkoutPage.getTotalPayable();
       expect(total).toBe(280_000);
 
-      await captureEvidence(page, 'VCHR-016', true);
     });
 
     test('VCHR-017: Chấp nhận áp dụng SALE20 cho đơn ở đúng biên chuẩn 300.000 VNĐ giảm 60.000 VNĐ', async ({ page }) => {
@@ -264,7 +263,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       // 300.000 - 60.000 = 240.000 ₫
       expect(await checkoutPage.getTotalPayable()).toBe(240_000);
 
-      await captureEvidence(page, 'VCHR-017', true);
     });
 
     test('VCHR-018: Chiết khấu mã SALE20 tại 490.000 VNĐ và 500.000 VNĐ đạt đúng trần 100.000 VNĐ', async ({ page }) => {
@@ -278,7 +276,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       // 500.000 - 100.000 = 400.000 ₫
       expect(await checkoutPage.getTotalPayable()).toBe(400_000);
 
-      await captureEvidence(page, 'VCHR-018', true);
     });
   });
 
@@ -296,7 +293,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       await checkoutPage.removeVoucher();
       expect(await checkoutPage.getTotalPayable()).toBe(350_000);
 
-      await captureEvidence(page, 'VCHR-012', true);
     });
 
     test('VCHR-013: Chỉ ghi nhận mã mới nhất khi áp dụng liên tiếp 2 voucher khác nhau', async ({ page }) => {
@@ -311,7 +307,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       // SALE20 20% của 350k = 70k -> còn 280k
       expect(await checkoutPage.getTotalPayable()).toBe(280_000);
 
-      await captureEvidence(page, 'VCHR-013', true);
     });
 
     test('VCHR-028: Bấm nút Áp dụng liên tiếp nhiều lần chỉ giảm giá đúng một lần', async ({ page }) => {
@@ -325,7 +320,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
 
       expect(await checkoutPage.getTotalPayable()).toBe(300_000);
 
-      await captureEvidence(page, 'VCHR-028', true);
     });
 
     test('VCHR-029: Hiển thị tiền giảm với màu xanh lá, tiền tố dấu trừ và badge tên mã', async ({ page }) => {
@@ -336,7 +330,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const discountText = page.getByText('-50.000 ₫');
       await expect(discountText).toBeVisible();
 
-      await captureEvidence(page, 'VCHR-029', true);
     });
 
     test('VCHR-031: Voucher chỉ giảm trên tiền hàng, không khấu trừ vào phí vận chuyển', async ({ page }) => {
@@ -348,7 +341,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       await checkoutPage.applyVoucher('GIAM50K');
       expect(await checkoutPage.getTotalPayable()).toBe(150_000);
 
-      await captureEvidence(page, 'VCHR-031', true);
     });
   });
 
@@ -365,9 +357,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       // Phụ lục 01 quy định: Báo lỗi định dạng. Nếu web báo "không tồn tại" thay vì "không đúng định dạng", bắt defect!
       try {
         expect(errMsg).toMatch(/không đúng định dạng/i);
-        await captureEvidence(page, 'VCHR-020', true);
       } catch (e) {
-        await captureEvidence(page, 'VCHR-020', false);
         throw e;
       }
     });
@@ -382,7 +372,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       // Hệ thống tiếp nhận và thông báo không tồn tại (hợp lệ về format)
       expect(errMsg).toMatch(/không tồn tại/i);
 
-      await captureEvidence(page, 'VCHR-021', true);
     });
 
     test('VCHR-022: Ô input chặn không cho nhập ký tự thứ 21 (vượt quá 20 ký tự)', async ({ page }) => {
@@ -395,9 +384,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
 
       try {
         expect(val.length).toBeLessThanOrEqual(20);
-        await captureEvidence(page, 'VCHR-022', true);
       } catch (e) {
-        await captureEvidence(page, 'VCHR-022', false);
         throw e;
       }
     });
@@ -410,9 +397,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const errMsg = await checkoutPage.getErrorMessage();
       try {
         expect(errMsg).toMatch(/không đúng định dạng/i);
-        await captureEvidence(page, 'VCHR-023', true);
       } catch (e) {
-        await captureEvidence(page, 'VCHR-023', false);
         throw e;
       }
     });
@@ -425,9 +410,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const errMsg = await checkoutPage.getErrorMessage();
       try {
         expect(errMsg).toMatch(/không đúng định dạng/i);
-        await captureEvidence(page, 'VCHR-024', true);
       } catch (e) {
-        await captureEvidence(page, 'VCHR-024', false);
         throw e;
       }
     });
@@ -448,9 +431,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const errMsg = await checkoutPage.getErrorMessage();
       try {
         expect(errMsg).toMatch(/không đúng định dạng/i);
-        await captureEvidence(page, 'VCHR-025', true);
       } catch (e) {
-        await captureEvidence(page, 'VCHR-025', false);
         throw e;
       }
     });
@@ -463,9 +444,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       const errMsg = await checkoutPage.getErrorMessage();
       try {
         expect(errMsg).toMatch(/không đúng định dạng/i);
-        await captureEvidence(page, 'VCHR-026', true);
       } catch (e) {
-        await captureEvidence(page, 'VCHR-026', false);
         throw e;
       }
     });
@@ -488,7 +467,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       await expect(checkoutPage.voucherInput).toBeVisible();
       await expect(checkoutPage.applyVoucherBtn).toBeVisible();
 
-      await captureEvidence(page, 'VCHR-030', true);
     });
 
     test('VCHR-034: Bản ghi đơn hàng lưu đầy đủ subtotal, discount, appliedCode, total trong localStorage', async ({ page }) => {
@@ -507,7 +485,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       expect(latest.appliedCode).toBe('GIAM50K');
       expect(latest.discount).toBe(50000);
 
-      await captureEvidence(page, 'VCHR-034', true);
     });
 
     test('VCHR-035: Tải lại trang (F5) sau khi áp voucher thì giỏ hàng được làm mới nhưng giữ đăng nhập', async ({ page }) => {
@@ -520,7 +497,6 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
 
       expect(await loginPage.isLoggedIn()).toBe(true);
 
-      await captureEvidence(page, 'VCHR-035', true);
     });
 
     test('VCHR-036: Đặt hàng có voucher ở 2 tab trình duyệt thì cả 2 đơn đều được lưu', async ({ context }) => {
@@ -556,9 +532,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
       try {
         // BA/QA Lead assumption: both orders exist
         expect(orders.length).toBeGreaterThanOrEqual(2);
-        await captureEvidence(page1, 'VCHR-036', true);
       } catch (e) {
-        await captureEvidence(page1, 'VCHR-036', false);
         throw e;
       } finally {
         await page1.close();

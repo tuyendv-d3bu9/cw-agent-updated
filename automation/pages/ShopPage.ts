@@ -33,13 +33,18 @@ export class ShopPage extends BasePage {
   }
 
   /** Thêm sản phẩm vào giỏ hàng `times` lần */
-  async addToCart(productId: string, times = 1): Promise<void> {
+  /**
+   * `silent` dùng khi setupCartForSubtotal gọi nhiều lần liên tiếp — không thì
+   * mỗi cú bấm lại một tấm ảnh màn Cửa hàng y hệt nhau, làm loãng bộ bằng chứng.
+   */
+  async addToCart(productId: string, times = 1, opts: { silent?: boolean } = {}): Promise<void> {
     for (let i = 0; i < times; i++) {
       await this.addToCartButton(productId).click();
       if (times > 1) {
         await this.page.waitForTimeout(100);
       }
     }
+    if (!opts.silent) await this.step(`them_${productId}_x${times}`);
   }
 
   /** Alias cho addToCart */
@@ -70,31 +75,34 @@ export class ShopPage extends BasePage {
   async setupCartForSubtotal(targetAmount: number): Promise<void> {
     await this.goto();
     if (targetAmount === 150000) {
-      await this.addToCart('prod-001', 1);
+      await this.addToCart('prod-001', 1, { silent: true });
     } else if (targetAmount === 190000) {
-      await this.addToCart('prod-005', 1);
+      await this.addToCart('prod-005', 1, { silent: true });
     } else if (targetAmount === 200000) {
-      await this.addToCart('prod-003', 1);
+      await this.addToCart('prod-003', 1, { silent: true });
     } else if (targetAmount === 280000) {
-      await this.addToCart('prod-004', 1);
+      await this.addToCart('prod-004', 1, { silent: true });
     } else if (targetAmount === 300000) {
-      await this.addToCart('prod-001', 2);
+      await this.addToCart('prod-001', 2, { silent: true });
     } else if (targetAmount === 350000) {
-      await this.addToCart('prod-002', 1);
+      await this.addToCart('prod-002', 1, { silent: true });
     } else if (targetAmount === 490000) {
-      await this.addToCart('prod-005', 1);
-      await this.addToCart('prod-001', 2);
+      await this.addToCart('prod-005', 1, { silent: true });
+      await this.addToCart('prod-001', 2, { silent: true });
     } else if (targetAmount === 500000) {
-      await this.addToCart('prod-001', 2);
-      await this.addToCart('prod-003', 1);
+      await this.addToCart('prod-001', 2, { silent: true });
+      await this.addToCart('prod-003', 1, { silent: true });
     } else if (targetAmount === 600000) {
       // Theo đúng precondition của VCHR-003: 4 x "Áo thun Trendy Unisex" 150.000 đ.
       // Trước đây dựng bằng prod-003 x 3 — cùng ra 600.000 nhưng lệch với test case
       // viết ra, nên ảnh bằng chứng không khớp thứ người đọc mong thấy.
-      await this.addToCart('prod-001', 4);
+      await this.addToCart('prod-001', 4, { silent: true });
     } else {
-      await this.addToCart('prod-002', 1);
+      await this.addToCart('prod-002', 1, { silent: true });
     }
     await this.scrollToTop();
+    // Node trong CI có thể thiếu dữ liệu ICU nên toLocaleString ra '600000'. Tự chấm điểm.
+    const dinhDang = String(targetAmount).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    await this.step(`gio_hang_${dinhDang}d`);
   }
 }
