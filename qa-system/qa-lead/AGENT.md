@@ -35,7 +35,7 @@ Khi nhận yêu cầu từ User, QA Leader tự động đọc `knowledge/_syste
 | **Chuẩn hóa Bug Report 7 trường** | `qa-reporter` | `gen-bug-report.md` | `OUTPUT/reports/bug-report-<slug>.md` |
 | **Tạo Daily QA Summary 4 section** | `qa-reporter` | `gen-daily-summary.md` | `OUTPUT/reports/daily-summary-<audience>.md` |
 | **Tạo workflow từ mô tả**<br>**Chạy workflow bằng câu ngắn** | `qa-lead` (tự làm) | `skills/workflow-authoring.md`<br>+ `npm run workflow` | `qa-system/workflows/run-<tên>.md`<br>checklist trong `OUTPUT/<slug>/00_plan.md` |
-| **Nâng cấp chính hệ thống Agent**<br>(thêm skill · dựng agent mới · tinh chỉnh) | `qa-lead` (tự làm) | `skills/system-upgrade-governance.md` | `OUTPUT/_upgrades/<ngày>_<tên>.md`<br>+ sửa `agents/`, `WORKFLOW.md`, `_system_map.json` |
+| **Nâng cấp chính hệ thống Agent**<br>(thêm skill · dựng agent mới · tinh chỉnh) | `qa-lead` (tự làm) | `skills/system-upgrade-governance.md` | `qa-system/_upgrades/<ngày>_<tên>.md`<br>+ sửa `agents/`, `WORKFLOW.md`, `_system_map.json` |
 
 ---
 

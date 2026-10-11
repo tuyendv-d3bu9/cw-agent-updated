@@ -33,7 +33,7 @@
     "jira_mcp_server": "qa-system/tools/jira/mcp-server.js",
     "jira_mcp_guide": "qa-system/integrations/jira-mcp-guide.md",
     "template_input_dir": "INPUT/_template/",
-    "template_run_dir": "OUTPUT/_template_run/",
+    "template_run_dir": "qa-system/templates/run/",
     "system_upgrade_governance": "qa-system/qa-lead/skills/system-upgrade-governance.md",
     "agent_extension_guide": "qa-system/templates/README.md",
     "agent_template": "qa-system/templates/AGENT.md",

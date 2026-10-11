@@ -46,7 +46,9 @@ function classify(filePath) {
   if (parts.length < 2) return null;
 
   const [slug, ...rest] = parts;
-  if (slug.startsWith('_')) return null; // OUTPUT/_template_run, OUTPUT/_upgrades, ...
+  // OUTPUT/ chỉ chứa thư mục task. Giữ chốt này làm lưới an toàn phòng khi có
+  // công cụ nào lỡ ghi thư mục `_` vào đây lần nữa.
+  if (slug.startsWith('_')) return null;
 
   const fileName = rest[rest.length - 1];
   if (!LOCKED_DELIVERABLES.includes(fileName)) return null;

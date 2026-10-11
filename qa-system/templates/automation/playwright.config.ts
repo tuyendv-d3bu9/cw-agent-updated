@@ -17,8 +17,9 @@ import fs from 'fs';
  *   QA_TASK_SLUG  — task đang chạy, ví dụ `cart-quantity`
  *   QA_RUN_ID     — mã lượt chạy, ví dụ `RUN-01_smoke`
  *
- * Không truyền gì thì rơi về `OUTPUT/_scratch/` — vẫn nằm trong OUTPUT/, vẫn
- * thấy được, và tên `_scratch` nói rõ đây là chạy nháp chưa gắn vào task nào.
+ * Không truyền gì thì rơi về `.scratch/` ở gốc repo — đã gitignore. Tên nói rõ
+ * đây là chạy nháp chưa gắn vào task nào, và nó KHÔNG nằm trong OUTPUT/ vì
+ * OUTPUT/ là sản phẩm bàn giao, chỉ chứa thư mục task.
  */
 const ROOT = path.resolve(__dirname, '..');
 
@@ -83,7 +84,7 @@ const runId = process.env.QA_RUN_ID?.trim() || 'RUN-local';
 
 const runDir = slug
   ? path.join(ROOT, 'OUTPUT', slug, 'runs', runId)
-  : path.join(ROOT, 'OUTPUT', '_scratch', runId);
+  : path.join(ROOT, '.scratch', runId);
 
 export default defineConfig({
   testDir: './tests',
