@@ -35,7 +35,7 @@ OUTPUT/<task>/runs/RUN-XX/       KẾT QUẢ — xoá và chạy lại được
 ```
 
 Agent truyền `QA_TASK_SLUG` và `QA_RUN_ID` để config biết ghi vào đâu.
-Không truyền thì rơi về `OUTPUT/_scratch/`.
+Không truyền thì rơi về `.scratch/`.
 
 > Cổng biên giới (`AGENTS.md` §1.5): **không** tự chạy tầng này sau Chặng 6.
 > Cần `npm run readiness` cho khuyến nghị GO **và** người dùng yêu cầu rõ kèm URL môi trường.
