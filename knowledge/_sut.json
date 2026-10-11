@@ -1,7 +1,8 @@
 {
   "_comment": [
     "Hệ thống đang kiểm thử của nhánh này.",
-    "Tách khỏi _system_map.json để nhánh khung không bao giờ chạm vào — hết xung đột merge."
+    "Tách khỏi _system_map.json để nhánh khung không bao giờ chạm vào — hết xung đột merge.",
+    "Đo thật 2026-10-11: sau khi đặt hàng thành công, shopgo_orders và shopgo_sqlite_orders_v1 đều NULL. Chủ hệ thống xác nhận ShopGo là demo tĩnh, không có DB, không lưu đơn. Đã gỡ 2 key đó khỏi danh sách."
   ],
   "name": "ShopGo",
   "url": "https://cwshopgo.github.io",
@@ -10,8 +11,6 @@
   "ui_map": "knowledge/features/shopgo-ui-map.md",
   "storage_keys": [
     "shopgo_user",
-    "shopgo_orders",
-    "shopgo_sqlite_orders_v1",
     "shopgo_sqlite_queries_log"
   ]
 }
