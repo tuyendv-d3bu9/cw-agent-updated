@@ -42,7 +42,7 @@ Cấu hình Evidence qua file `.env`:
 - `evidence_video=ON` : Quay video toàn bộ quá trình chạy làm evidence cho từng testcase.
 
 Agent truyền `QA_TASK_SLUG` và `QA_RUN_ID` để config biết ghi vào đâu.
-Không truyền thì rơi về `OUTPUT/_scratch/` — vẫn thấy được, tên nói rõ là chạy nháp.
+Không truyền thì rơi về `.scratch/` — vẫn thấy được, tên nói rõ là chạy nháp.
 
 ## Chạy
 

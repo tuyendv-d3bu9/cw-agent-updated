@@ -73,7 +73,7 @@ export interface EvidenceOptions {
 
 /**
  * Xác định thư mục root chứa evidence của đợt chạy:
- * OUTPUT/<task-slug>/runs/<run-id>/evidence/ (mặc định fallback về OUTPUT/_scratch/...)
+ * OUTPUT/<task-slug>/runs/<run-id>/evidence/ (mặc định fallback về .scratch/...)
  */
 export function resolveEvidenceBaseDir(options?: EvidenceOptions): string {
   if (options?.baseDir) {
@@ -84,7 +84,7 @@ export function resolveEvidenceBaseDir(options?: EvidenceOptions): string {
 
   return slug
     ? path.join(ROOT, 'OUTPUT', slug, 'runs', runId, 'evidence')
-    : path.join(ROOT, 'OUTPUT', '_scratch', runId, 'evidence');
+    : path.join(ROOT, '.scratch', runId, 'evidence');
 }
 
 /**
