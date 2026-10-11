@@ -305,6 +305,10 @@ async function pushTestCases(slug, cfg) {
     await sleep(200); // stay under Jira rate limits
   }
 
+  if (DRY_RUN) {
+    console.log('\n[dry-run] bảng ánh xạ KHÔNG được ghi — chạy lại không kèm --dry-run để ghi thật.');
+    return;
+  }
   writeMapping(slug, projectKey, cfg.host, results);
 }
 
@@ -336,22 +340,103 @@ function writeMapping(slug, projectKey, host, results) {
  * Reads execution results from the `run_result.md` table.
  * Columns: # | TC ID | Title | Status | Actual Result | Evidence | Defect ID
  */
+/**
+ * Đọc bảng kết quả trong run_result.md THEO TÊN CỘT, không theo vị trí cột.
+ *
+ * Bản cũ đếm cột cứng (cells[1] là TC ID, cells[3] là trạng thái...) theo đúng khuôn
+ * `templates/run/run_result.md`. Nhưng file thật mà agent sinh ra có bảy cột và thứ tự
+ * khác hẳn — thêm cột "Jira Key" và "Dữ liệu Kiểm Thử". Hậu quả: parser không khớp được
+ * dòng nào, `jira:sync` báo "No result rows to sync" rồi thoát êm, không ai biết là hỏng.
+ * Dò theo tên cột thì cả hai khuôn đều đọc được, và khuôn mới mai này cũng vậy.
+ */
+const COLUMN_ALIASES = {
+  tcId: [/^tc[\s_-]*id$/i, /^test\s*case\s*id$/i, /^m[aã]\s*ca/i],
+  title: [/ti[eê]u\s*[dđ][eề]/i, /^title$/i],
+  status: [/tr[aạ]ng\s*th[aá]i/i, /^status$/i, /k[eế]t\s*qu[aả]$/i],
+  actual: [/th[uự]c\s*t[eế]/i, /^actual/i],
+  evidence: [/b[aằ]ng\s*ch[uứ]ng/i, /^evidence/i],
+};
+
+function mapHeader(cells) {
+  const idx = {};
+  cells.forEach((raw, i) => {
+    const name = raw.replace(/[*`]/g, '').trim();
+    for (const [key, patterns] of Object.entries(COLUMN_ALIASES)) {
+      if (idx[key] === undefined && patterns.some((re) => re.test(name))) idx[key] = i;
+    }
+  });
+  return idx;
+}
+
+function splitRow(line) {
+  return line.split('|').slice(1, -1).map((c) => c.trim());
+}
+
 function parseRunResult(content) {
   const rows = [];
+  let idx = null;
+
   for (const line of content.split('\n')) {
     if (!line.trim().startsWith('|')) continue;
-    const cells = line.split('|').slice(1, -1).map((c) => c.trim());
-    if (cells.length < 6) continue;
+    const cells = splitRow(line);
+    if (cells.length < 3) continue;
 
-    const tcId = cells[1].replace(/`/g, '').trim();
-    if (!/^[A-Z][A-Z0-9_]*-\d+$/i.test(tcId)) continue; // skip header and separator rows
+    // Dòng kẻ ngăn cách (|---|:--:|) đóng luôn bảng trước đó.
+    if (cells.every((c) => /^:?-{2,}:?$/.test(c))) continue;
 
-    const status = cells[3].replace(/\*/g, '').trim().toUpperCase();
-    const evidence = (cells[5].match(/\(([^)]+)\)/) || [])[1] || '';
+    const looksLikeHeader = mapHeader(cells);
+    if (looksLikeHeader.tcId !== undefined && looksLikeHeader.status !== undefined) {
+      idx = looksLikeHeader;
+      continue;
+    }
+    if (!idx) continue;
 
-    rows.push({ tcId, title: cells[2], status, actual: cells[4], evidence });
+    const tcId = (cells[idx.tcId] || '').replace(/`/g, '').trim();
+    if (!/^[A-Z][A-Z0-9_]*-\d+$/i.test(tcId)) continue;
+
+    const cell = (k) => (idx[k] !== undefined ? cells[idx[k]] || '' : '');
+    // Ô bằng chứng có thể là [tên](đường dẫn), hoặc chỉ mỗi tên file.
+    const ev = cell('evidence');
+    const evidence = (ev.match(/\(([^)]+)\)/) || [])[1] || ev.replace(/[[\]]/g, '').trim();
+
+    rows.push({
+      tcId,
+      title: cell('title'),
+      status: cell('status').replace(/\*/g, '').trim().toUpperCase(),
+      actual: cell('actual'),
+      evidence,
+    });
   }
   return rows;
+}
+
+/**
+ * Tìm file bằng chứng thật trên đĩa.
+ *
+ * run_result.md hiện đang chứa đường dẫn tuyệt đối kiểu
+ * `file:///c:/Users/.../cw-agent-antigravity/OUTPUT/...` — máy khác, thư mục khác, repo
+ * khác. Bám theo đó thì không bao giờ tìm ra file. Nên chỉ lấy TÊN FILE rồi dò trong
+ * thư mục evidence của chính lượt chạy đó.
+ */
+function resolveEvidence(runDir, ref) {
+  if (!ref) return null;
+  const direct = path.resolve(runDir, ref);
+  if (!/^(file:|https?:|[a-zA-Z]:)/.test(ref) && fs.existsSync(direct)) return direct;
+
+  const name = path.basename(decodeURIComponent(ref.replace(/^file:\/+/, '')));
+  const evDir = path.join(runDir, 'evidence');
+  if (!fs.existsSync(evDir)) return null;
+
+  const stack = [evDir];
+  while (stack.length) {
+    const dir = stack.pop();
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) stack.push(full);
+      else if (entry.name === name) return full;
+    }
+  }
+  return null;
 }
 
 /** Reads the TC ID to Jira key mapping produced by `push`. */
@@ -440,7 +525,11 @@ async function syncRunResults(slug, runId, cfg) {
   const rows = parseRunResult(fs.readFileSync(resultPath, 'utf-8'));
   const mapping = parseMapping(fs.readFileSync(mappingPath, 'utf-8'));
 
-  const onlyTc = process.argv[5];
+  // Đối số thứ 5 là MỘT test case cần sync riêng, ví dụ `sync <slug> <run> VCHR-003`.
+  // Cờ đứng ở đúng vị trí đó (`--dry-run`) từng bị hiểu là tên test case, lọc sạch
+  // mọi dòng rồi báo "No result rows to sync" — im lặng và sai.
+  const argAt5 = process.argv[5];
+  const onlyTc = argAt5 && !argAt5.startsWith('--') ? argAt5 : null;
   const targets = onlyTc ? rows.filter((r) => r.tcId === onlyTc) : rows;
 
   if (targets.length === 0) {
@@ -473,11 +562,11 @@ async function syncRunResults(slug, runId, cfg) {
     }
 
     // Evidence screenshot
-    const evName = row.evidence ? path.basename(row.evidence) : null;
-    if (evName) {
-      const evPath = path.resolve(runDir, row.evidence);
-      if (!fs.existsSync(evPath)) {
-        console.warn(`   evidence file not found: ${row.evidence}`);
+    const evPath = resolveEvidence(runDir, row.evidence);
+    const evName = evPath ? path.basename(evPath) : null;
+    if (row.evidence) {
+      if (!evPath) {
+        console.warn(`   không tìm thấy bằng chứng "${path.basename(row.evidence)}" trong ${path.relative(PATHS.ROOT, path.join(runDir, 'evidence'))}`);
       } else if (state.attachments.includes(evName)) {
         console.log(`   ${evName} already attached — skipped`);
       } else if (DRY_RUN) {
@@ -529,6 +618,11 @@ async function syncRunResults(slug, runId, cfg) {
 
     synced.push({ tcId: row.tcId, status: row.status });
     await sleep(200);
+  }
+
+  if (DRY_RUN) {
+    console.log(`\n[dry-run] ${path.relative(PATHS.ROOT, mappingPath)} KHÔNG được ghi — bỏ --dry-run để ghi thật.`);
+    return;
   }
 
   // Update the run-result column in the mapping table.
@@ -668,7 +762,12 @@ async function main() {
   process.exitCode = 1;
 }
 
-main().catch((err) => {
-  console.error(err.message);
-  process.exitCode = 1;
-});
+// Chỉ chạy khi gọi trực tiếp, để test nạp được các hàm thuần bên dưới.
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(err.message);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = { parseRunResult, parseMapping, parseTestCases, resolveEvidence, mapHeader };

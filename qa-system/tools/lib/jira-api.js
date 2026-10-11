@@ -177,6 +177,8 @@ async function createMeta(cfg, projectKey) {
   const issueTypes = (project?.issuetypes || []).map((it) => ({
     id: it.id,
     name: it.name,
+    // Loại subtask BẮT BUỘC có `parent`. Tự chọn phải nó là mỗi issue tạo ra đều lỗi.
+    subtask: Boolean(it.subtask),
     fields: Object.keys(it.fields || {}),
     required: Object.entries(it.fields || {})
       .filter(([, f]) => f.required)
@@ -185,15 +187,33 @@ async function createMeta(cfg, projectKey) {
   return { ok: true, issueTypes };
 }
 
-/** Pick the configured issue type, else anything the project does offer. */
+/**
+ * Pick the configured issue type, else anything sensible the project does offer.
+ *
+ * Hai cái bẫy ở đây, cả hai đều đã sập thật trên project SG:
+ *   1. `/task/i` khớp cả "Subtask", mà "Subtask" đứng trước "Task" trong danh sách
+ *      createmeta trả về — nên fallback chọn phải Subtask.
+ *   2. Subtask bắt buộc có trường `parent`. Tạo subtask không parent thì issue nào
+ *      cũng lỗi, và lỗi chỉ lộ ra giữa vòng lặp 36 test case.
+ * Vì vậy fallback KHÔNG BAO GIỜ tự chọn loại subtask. Muốn dùng subtask thì phải
+ * gọi đích danh qua JIRA_TEST_ISSUE_TYPE, và người gọi tự lo trường `parent`.
+ */
 function pickIssueType(issueTypes, wanted) {
   if (!issueTypes.length) return null;
-  const want = String(wanted || '').toLowerCase();
-  return (
-    issueTypes.find((it) => it.name.toLowerCase() === want) ||
-    issueTypes.find((it) => /task|test/i.test(it.name)) ||
-    issueTypes[0]
-  );
+
+  const want = String(wanted || '').trim().toLowerCase();
+  const named = issueTypes.find((it) => it.name.toLowerCase() === want);
+  if (named) return named;
+
+  const standalone = issueTypes.filter((it) => !it.subtask);
+  if (!standalone.length) return null;
+
+  // Thứ tự ưu tiên rõ ràng, không dựa vào thứ tự Jira trả về.
+  for (const preferred of ['test', 'test case', 'task', 'story']) {
+    const hit = standalone.find((it) => it.name.toLowerCase() === preferred);
+    if (hit) return hit;
+  }
+  return standalone[0];
 }
 
 module.exports = {
