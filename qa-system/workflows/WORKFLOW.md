@@ -80,7 +80,7 @@ Nhánh `F` chạy độc lập hoàn toàn, không cần deliverable nào của 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
 | 7 | `qa-automation` | `exploratory-charter` | Risk area ở `03` | `07_exploratory_charter.md` |
-| 8 | `qa-ui-review` | `ui-screenshot-review` | Ảnh đính kèm | `08_ui_screenshot_analysis.md` |
+| 8 | `qa-ui-review` | `ui-screenshot-review` | Ảnh đính kèm **+** `INPUT/<slug>/04_design/` | `08_ui_screenshot_analysis.md` |
 
 ### Nhánh D — Báo cáo lỗi & Tổng kết Sprint (Defect Reporting & Summary)
 
