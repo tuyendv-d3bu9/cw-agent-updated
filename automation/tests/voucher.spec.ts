@@ -69,7 +69,7 @@ test.describe('CW ShopGo Voucher Regression Suite (RUN-01)', () => {
     });
 
     test('VCHR-003: Áp dụng SALE20 cho đơn 600.000 VNĐ kích hoạt mức trần maxCap 100.000 VNĐ', async ({ page }) => {
-      // Setup: 600.000 ₫ (prod-003 x 3)
+      // Setup: 600.000 ₫ (prod-001 x 4) — khớp precondition của VCHR-003
       await shopPage.setupCartForSubtotal(600000);
       await checkoutPage.goto();
 

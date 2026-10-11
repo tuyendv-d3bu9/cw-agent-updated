@@ -88,7 +88,10 @@ export class ShopPage extends BasePage {
       await this.addToCart('prod-001', 2);
       await this.addToCart('prod-003', 1);
     } else if (targetAmount === 600000) {
-      await this.addToCart('prod-003', 3);
+      // Theo đúng precondition của VCHR-003: 4 x "Áo thun Trendy Unisex" 150.000 đ.
+      // Trước đây dựng bằng prod-003 x 3 — cùng ra 600.000 nhưng lệch với test case
+      // viết ra, nên ảnh bằng chứng không khớp thứ người đọc mong thấy.
+      await this.addToCart('prod-001', 4);
     } else {
       await this.addToCart('prod-002', 1);
     }
