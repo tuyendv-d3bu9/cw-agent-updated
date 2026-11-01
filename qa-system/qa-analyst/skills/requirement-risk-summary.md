@@ -18,6 +18,9 @@ Analysis 3 phần**. Là cửa ngõ đầu tiên của pipeline — mọi bướ
 
 ## Đầu vào
 - Tài liệu yêu cầu thô: BRD / SRS / User Story / Wireframe + mô tả UI / email-chat từ BA.
+- **Hoặc** `OUTPUT/<task-slug>/00_knowledge_digest.md` nếu có — bản chưng cất của skill `knowledge-digest`
+  khi task có quá nhiều tài liệu để đọc một lượt. Có digest thì đọc digest **thay cho** tài liệu thô,
+  giữ nguyên cột nguồn của từng dòng; chỉ mở lại tài liệu gốc khi cần kiểm một dòng cụ thể.
 - `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` nếu đã có (xem `qa-system/core/QA_STANDARD.md` §8).
 
 > **Knowledge thắng giả định**: Bước 8/9 dưới đây chỉ gắn `[CONTEXT_MISSING]` cho khía cạnh mà

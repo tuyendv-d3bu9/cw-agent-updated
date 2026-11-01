@@ -30,6 +30,7 @@ system/       ← tự kiểm, tiến độ, bản đồ, cổng ASK
 | Tạo file tri thức cho tính năng mới | `npm run knowledge:new <slug>` | `knowledge/new-knowledge.js` |
 | Dựng `knowledge/` cho repo trắng | `npm run knowledge:init` | `knowledge/bootstrap-knowledge.js` |
 | Soát mâu thuẫn rule giữa các tính năng | `npm run knowledge:conflicts [slug]` | `knowledge/conflict-detector.js` |
+| **Chia tài liệu thành lô để chưng cất tri thức** (chỉ lấy file mới/đã đổi) | `npm run knowledge:digest <slug> [--budget 60000]` | `knowledge/digest-plan.js` |
 | **Chuyển câu trả lời BA từ OUTPUT sang knowledge** | `npm run knowledge:sync -- <slug> --write` | `knowledge/sync-answers.js` |
 | Gộp `batch_*.md` thành spec tổng | `npm run testcases:merge <slug>` | `testcase/merge-testcases.js` |
 | Xuất CSV Jira Xray / Redmine | `npm run testcases:export <slug>` | `testcase/export-testcases.js` |

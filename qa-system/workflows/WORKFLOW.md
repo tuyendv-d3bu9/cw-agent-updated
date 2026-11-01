@@ -55,7 +55,8 @@ Nhánh `F` chạy độc lập hoàn toàn, không cần deliverable nào của 
 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
-| 1 | `qa-analyst` | `requirement-risk-summary` | `INPUT/*.md` | `01_requirement_risk_summary.md` |
+| 0 | `qa-analyst` | `knowledge-digest` *(chỉ khi tài liệu quá nhiều để đọc một lượt)* | `00_digest_plan.md` (do `npm run knowledge:digest` chia lô) + tài liệu trong lô | `knowledge_digest/batch_*.md` · `00_knowledge_digest.md` |
+| 1 | `qa-analyst` | `requirement-risk-summary` | `INPUT/*.md` hoặc `00_knowledge_digest.md` | `01_requirement_risk_summary.md` |
 | 2 | `qa-analyst` | `missing-rule-06w` | `01` + `knowledge/features/<slug>.md` | `02_missing_rule_report.md` |
 | 3 | `qa-analyst` | `viewpoint-selection` | `01` + `02` | `03_viewpoint_report.md` |
 | 4 | `qa-analyst` | `test-idea-design` | `01` + `03` | `04_test_idea_report.md` |

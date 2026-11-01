@@ -23,6 +23,7 @@ Khi nhận yêu cầu từ User, QA Leader tự động đọc `knowledge/_syste
 | **Sinh Test Cases (Blueprint & Batch)** | `qa-test-design` | `test-case-generation.md` | `05_test_blueprint.json`<br>`testcases/batch_*.md`<br>`05_test_case_spec.md` |
 | **Xuất CSV Jira Xray & Redmine** | `qa-test-design` | `qa-system/tools/testcase/export-testcases.js` | `export_jira_xray.csv`<br>`export_redmine.csv` |
 | **Đồng bộ Jira/Redmine (Kéo Bug)** | `qa-reporter` | `qa-system/tools/jira/jira-client.js` | `jira_defects_summary.md` |
+| **Chưng cất tri thức từ khối tài liệu lớn** | `qa-analyst` | `knowledge-digest.md`<br>+ `npm run knowledge:digest <slug>` | `00_digest_plan.md`<br>`knowledge_digest/batch_*.md`<br>`00_knowledge_digest.md` |
 | **Quét xung đột tri thức chéo** | `qa-analyst` | `qa-system/tools/knowledge/conflict-detector.js` | `01_conflict_warning.md` |
 | **Rà soát độ phủ 3 góc nhìn** | `qa-test-design` | `coverage-review.md` | `06_coverage_review.md` |
 | **Sinh Dataset thực tế & biên** | `qa-test-data` | `data-class-map.md`<br>`dataset-generation.md`<br>`boundary-negative-dataset.md` | `09_*` đến `11_*` |
@@ -117,6 +118,7 @@ QA Leader chủ yếu **điều phối**, nhưng có một việc không uỷ qu
 | *"Lấy danh sách lỗi về"*<br>*"Kéo bug từ Jira/Redmine"* | Ủy quyền cho `qa-reporter` chạy ngầm `qa-system/tools/jira/jira-client.js pull` lưu vào `OUTPUT/<slug>/jira_defects_summary.md`. |
 | *"Kiểm tra test case có đạt chuẩn không"*<br>*"Soát lỗi format giúp tôi"* | Tự chạy ngầm `npm run lint -- <slug>`, báo cáo danh sách lỗi kèm vị trí cụ thể. Chạy tự động trước khi nghiệm thu Chặng 5/6. |
 | *"Đã viết test case xong chưa, sẵn sàng làm automation chưa?"*<br>*"Kiểm tra độ sẵn sàng giúp tôi"* | Tự chạy ngầm `npm run readiness -- <slug> --write`, ủy quyền `qa-readiness-evaluator` diễn giải, rồi báo cáo khuyến nghị GO / CONDITIONAL GO / NO-GO kèm số liệu thật. |
+| *"Phân tích và cập nhật tri thức cho cả trăm tài liệu này"*<br>*"BA gửi thêm tài liệu, cập nhật tri thức giúp tôi"* | Tự chạy workflow `run-bulk-doc-intake`: `npm run knowledge:digest <slug>` chia lô (chỉ lấy tài liệu mới hoặc đã đổi), ủy quyền `qa-analyst` chạy `knowledge-digest.md` từng lô rồi gộp, sau đó `01` → `02` → soát xung đột (cổng ASK) → `knowledge:sync`. Báo số lô, số tài liệu bỏ qua vì không đổi, và các mâu thuẫn phải hỏi BA. |
 | *"Kiểm tra xem tính năng mới có đá logic với tính năng cũ không"* | Tự chạy ngầm `qa-system/tools/knowledge/conflict-detector.js` và báo cáo ngay nếu phát hiện mâu thuẫn rule. |
 | *"BA đã chốt: [nội dung câu trả lời]"* | Tự nạp vào `knowledge/features/<slug>.md` Mục 8 (`GIẢ ĐỊNH ĐÃ CHỐT`), chạy `npm run knowledge:sync -- <slug> --write` để không sót câu nào còn kẹt trong `OUTPUT/`, rồi sync bản đồ. |
 | *"Tôi có ghi chép bug thô, chuẩn hóa để log Jira"*<br>*"Chuyển bug notes thành bug report"* | Ủy quyền cho `qa-reporter` chạy `gen-bug-report.md` và xuất ra `OUTPUT/reports/bug-report-<slug>.md`. |
