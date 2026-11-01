@@ -9,7 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { PATHS } = require('../lib/paths');
+const { PATHS, listTaskSlugs } = require('../lib/paths');
 
 const outputDir = PATHS.OUTPUT;
 const targetSlug = process.argv[2];
@@ -19,10 +19,7 @@ if (!fs.existsSync(outputDir)) {
   process.exit(0);
 }
 
-const tasks = fs.readdirSync(outputDir).filter(f => {
-  const fullPath = path.join(outputDir, f);
-  return fs.statSync(fullPath).isDirectory() && !f.endsWith('.bak') && !f.startsWith('_');
-});
+const tasks = listTaskSlugs();
 
 if (tasks.length === 0) {
   console.log('No active tasks found in OUTPUT/.');

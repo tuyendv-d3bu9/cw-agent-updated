@@ -8,7 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { PATHS } = require('../lib/paths');
+const { PATHS, listTaskSlugs } = require('../lib/paths');
 
 const mapPath = PATHS.SYSTEM_MAP;
 const outputDir = PATHS.OUTPUT;
@@ -26,10 +26,7 @@ mapData.features_inventory = {};
 
 // Scan existing features in OUTPUT/
 if (fs.existsSync(outputDir)) {
-  const tasks = fs.readdirSync(outputDir).filter(f => {
-    const fullPath = path.join(outputDir, f);
-    return fs.statSync(fullPath).isDirectory() && !f.endsWith('.bak') && !f.startsWith('_');
-  });
+  const tasks = listTaskSlugs();
 
   tasks.forEach(slug => {
     const taskDir = path.join(outputDir, slug);

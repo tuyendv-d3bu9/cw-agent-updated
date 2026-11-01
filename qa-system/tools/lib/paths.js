@@ -39,11 +39,14 @@ function featureKnowledge(slug) {
   return path.join(PATHS.FEATURES, `${slug}.md`);
 }
 
-/** Skips system folders (leading `_`) and backups (`.bak`). */
+/** Folders in OUTPUT/ that are not tasks: `reports/` holds Nhánh D & E reports (WORKFLOW.md §2). */
+const NOT_TASKS = new Set(['reports']);
+
+/** Skips system folders (leading `_` or `.`), backups (`.bak`) and NOT_TASKS. */
 function listTaskSlugs() {
   if (!fs.existsSync(PATHS.OUTPUT)) return [];
   return fs.readdirSync(PATHS.OUTPUT).filter((name) => {
-    if (name.startsWith('_') || name.endsWith('.bak')) return false;
+    if (/^[_.]/.test(name) || name.endsWith('.bak') || NOT_TASKS.has(name)) return false;
     return fs.statSync(path.join(PATHS.OUTPUT, name)).isDirectory();
   });
 }
