@@ -14,6 +14,7 @@ triggers:
 
 steps:
   - tool: "intake:bulk"
+    args: "--slug {slug}"
     output: 00_intake_manifest.md
     note: "Chuyển đổi hàng loạt tài liệu (.docx, .doc, .xlsx, .pdf, .pptx, .txt) sang .md, lọc trùng, xếp vào 5 ngăn. Truyền --slug để cả khối về một tính năng."
 
@@ -42,6 +43,7 @@ steps:
     note: "Soát xung đột tri thức chéo giữa các tính năng. Cổng ASK dừng lại nếu có mâu thuẫn."
 
   - tool: "knowledge:sync"
+    args: "{slug} --write"
     output: 00_knowledge_sync_log.md
     note: "Đồng bộ các quy tắc đã được BA/PO xác nhận vào knowledge/."
 ---

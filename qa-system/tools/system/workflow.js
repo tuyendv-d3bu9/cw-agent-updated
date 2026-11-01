@@ -189,6 +189,10 @@ function validate(wf, all = [wf]) {
       if (!GATES.has(g)) err(`${at}: unknown gate "${g}" (use ${[...GATES].join(' / ')})`);
     }
 
+    if (s.args != null && (!s.tool || typeof s.args !== 'string')) {
+      err(`${at}: \`args\` must be a string, and only on a \`tool\` step`);
+    }
+
     if (s.tool) {
       if (!scripts.includes(s.tool)) err(`${at}: tool "${s.tool}" is not an npm script in package.json`);
       if (s.tool === 'gate') askSeen = true;
@@ -279,7 +283,14 @@ function buildPlan(wf, slug = '<slug>') {
     const gates = asList(s.gate).map((g) => ({ gate: g, command: GATE_COMMAND[g](slug) }));
     const base = { n: i + 1, gates, note: s.note || '' };
 
-    if (s.tool) return { ...base, kind: 'tool', run: `npm run ${s.tool} ${slug}`.trim() };
+    // `args` khi tool không nhận slug ở vị trí đầu, hoặc cần cờ: `{slug}` được thay bằng slug thật.
+    // Cờ phải đứng sau `--`, không thì npm nuốt mất (`npm run x --write` không tới được script).
+    if (s.tool) {
+      const run = typeof s.args === 'string'
+        ? `npm run ${s.tool} -- ${s.args.replace(/\{slug\}/g, slug)}`
+        : `npm run ${s.tool} ${slug}`;
+      return { ...base, kind: 'tool', run: run.trim() };
+    }
     return {
       ...base,
       kind: 'skill',

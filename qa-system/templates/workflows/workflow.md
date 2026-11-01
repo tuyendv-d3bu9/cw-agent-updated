@@ -19,6 +19,8 @@ triggers:
 #   tool            -> một lệnh npm (phải có trong package.json), ví dụ: gate, lint
 # Trường tuỳ chọn:
 #   output          -> tên file kết quả, ghi vào OUTPUT/<slug>/
+#   args            -> (chỉ cho tool) tham số thay cho slug mặc định; {slug} được thay bằng slug thật.
+#                      Ví dụ: args: "{slug} --write"  ->  npm run knowledge:sync -- <slug> --write
 #   gate            -> cổng phải qua TRƯỚC bước này: ask | lint | readiness | confirm
 #   note            -> ghi chú cho người chạy
 steps:
