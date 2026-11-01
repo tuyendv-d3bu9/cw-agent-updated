@@ -289,6 +289,30 @@ test('start — appends a checklist to 00_plan.md, including the gates', () => {
   } finally { t.cleanup(); }
 });
 
+test('plan — tool step uses `args` with {slug} after `--`, or the slug alone without it', () => {
+  const t = project();
+  try {
+    addWorkflow('run-ok', { steps: [
+      { tool: 'lint' },
+      { tool: 'lint', args: '{slug} --write' },
+    ] });
+    const runs = wf.buildPlan(wf.loadAll().find((w) => w.fileName === 'run-ok'), 't').steps.map((s) => s.run);
+    assert.deepStrictEqual(runs, ['npm run lint t', 'npm run lint -- t --write']);
+  } finally { t.cleanup(); }
+});
+
+test('validate — `args` on an agent step is rejected', () => {
+  const t = project();
+  try {
+    addWorkflow('run-bad', { steps: [
+      { agent: 'qa-analyst', skill: 'requirement-risk-summary', args: '--x' },
+    ] });
+    const all = wf.loadAll();
+    const issues = wf.validate(all.find((w) => w.fileName === 'run-bad'), all);
+    assert.ok(issues.some((i) => i.level === 'ERROR' && /args/.test(i.msg)));
+  } finally { t.cleanup(); }
+});
+
 test('start — running twice does not duplicate the checklist', () => {
   const t = project();
   try {
