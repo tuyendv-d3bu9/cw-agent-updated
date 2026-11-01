@@ -17,8 +17,10 @@ trên output của agent này.
 - `missing-rule-06w` — truy vấn 06W tìm quy tắc nghiệp vụ còn thiếu
 - `viewpoint-selection` — chọn & đặc tả viewpoint theo rủi ro, kiểm chéo zero-overlap
 - `test-idea-design` — sinh Test Idea từ viewpoint + sàng lọc Giữ/Bỏ
+- `knowledge-digest` — chưng cất hàng trăm tài liệu theo lô thành `00_knowledge_digest.md` có trích nguồn
 
 Chuỗi chạy: `01 → 02 → 03 → 04`. Mỗi skill chỉ chạy khi output của skill trước đã có.
+Task có quá nhiều tài liệu để đọc một lượt thì chạy `knowledge-digest` trước `01`.
 
 ## Knowledge
 - **Đọc**: `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (nếu có)
@@ -54,8 +56,10 @@ Theo `qa-system/core/QA_STANDARD.md` §1.
 ## Đầu vào / Đầu ra
 - **Vào**: `INPUT/*.md` (tài liệu yêu cầu thô) · `jira_defects_summary.md` (nếu có)
 - **Ra**: `OUTPUT/<task-slug>/01_*.md` → `04_*.md` · `01_conflict_warning.md` + cập nhật `_index.md`
+  · `00_knowledge_digest.md` + `knowledge_digest/batch_*.md` (khi chạy `knowledge-digest`)
 
 ## Bàn giao
+- `00` (Knowledge Digest) → `01` đọc thay tài liệu thô · §4 điểm mơ hồ → `02`
 - `01` (Business Rules, Risk Matrix) → `02`, `03`, và `qa-system/qa-test-design/coverage-review`
 - `02` (Missing Rules) → `03`
 - `03` (Risk Area + Viewpoints) → `04`, `qa-system/qa-automation` (exploratory-charter), `qa-system/qa-test-design/coverage-review`

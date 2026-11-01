@@ -14,6 +14,7 @@
     "knowledge:init": "node qa-system/tools/knowledge/bootstrap-knowledge.js",
     "knowledge:conflicts": "node qa-system/tools/knowledge/conflict-detector.js",
     "knowledge:sync": "node qa-system/tools/knowledge/sync-answers.js",
+    "knowledge:digest": "node qa-system/tools/knowledge/digest-plan.js",
     "testcases:merge": "node qa-system/tools/testcase/merge-testcases.js",
     "testcases:export": "node qa-system/tools/testcase/export-testcases.js",
     "data:gen": "node qa-system/tools/testdata/generate-dataset.js",

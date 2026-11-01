@@ -23,6 +23,14 @@ const targetImpact = impactIndex !== -1 ? args[impactIndex + 1] : null;
 
 // Dependency Graph between Deliverables and Skills
 const PIPELINE_DEPENDENCIES = {
+  'digest': {
+    skill: 'agents/qa-analyst/skills/knowledge-digest.md',
+    produces: '00_knowledge_digest.md & knowledge_digest/batch_*.md',
+    consumed_by: [
+      { step: '01', name: 'qa-analyst/requirement-risk-summary', reason: 'Reads the digest instead of hundreds of raw documents, keeping its source column' },
+      { step: '02', name: 'qa-analyst/missing-rule-06w', reason: 'Takes the ambiguity list (§4) as extra 06W input' }
+    ]
+  },
   '01': {
     skill: 'agents/qa-analyst/skills/requirement-risk-summary.md',
     produces: '01_requirement_risk_summary.md',
