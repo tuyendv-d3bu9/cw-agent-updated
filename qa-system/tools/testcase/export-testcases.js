@@ -9,7 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { PATHS } = require('../lib/paths');
+const { PATHS, listTaskSlugs } = require('../lib/paths');
 
 const ROOT_DIR = PATHS.ROOT;
 const OUTPUT_DIR = path.join(ROOT_DIR, 'OUTPUT');
@@ -178,9 +178,7 @@ function exportRedmineCSV(testCases, outputPath) {
 function exportTestCases(taskSlug) {
   if (!taskSlug) {
     if (fs.existsSync(OUTPUT_DIR)) {
-      const dirs = fs.readdirSync(OUTPUT_DIR).filter(f => {
-        return fs.statSync(path.join(OUTPUT_DIR, f)).isDirectory() && !f.startsWith('.') && !f.startsWith('_');
-      });
+      const dirs = listTaskSlugs();
       if (dirs.length > 0) {
         taskSlug = dirs[0];
       }
