@@ -331,6 +331,11 @@ test('hook chặn agent tự chốt câu hỏi ở knowledge §7 / thêm quyết
     assert.notStrictEqual(self, row);
     assert.ok(denied(edit(row, self)), 'tự chốt §7 phải bị chặn');
 
+    // Tự chốt với người trả lời là AI: cổng vốn không tính, nhưng dòng "Confirmed · Claude" vẫn làm bẩn knowledge ⇒ chặn.
+    const asAi = row.replace(/\|\s*\|\s*\|\s*\|\s*New\s*\|$/, '| 200k | Claude | 2026-11-01 | Confirmed |');
+    assert.notStrictEqual(asAi, row);
+    assert.ok(denied(edit(row, asAi)), 'tự chốt §7 với người trả lời là AI cũng phải bị chặn');
+
     // Write cả file với §7 đã chốt.
     assert.ok(denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: kp, content: k.replace(row, self) } })));
 
@@ -356,5 +361,17 @@ test('hook chặn xoá câu hỏi chưa chốt khỏi 02; chốt qua 02 §3 (đ�
     assert.ok(denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: p, content: without } })));
     const answered = report02({ verdict: 'ASK', cells: { 'BR-01:W1': 'MR-01' }, questions: [{ id: 'MR-01', question: 'Mức sàn?', answer: '200k', by: 'BA An', date: '2026-11-01', status: 'Confirmed' }] });
     assert.ok(!denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: p, content: answered } })));
+  } finally { t.cleanup(); }
+});
+
+test('cổng nói rõ câu TREO: ai đã trả lời, ngày nào, trả lời gì — và vẫn đóng', () => {
+  const t = useTempProject();
+  try {
+    write('knowledge/features/t.md', knowledgeDoc({ q7: [{ id: 'MR-07', question: 'Quá hạn thì sao?', answer: 'Tuỳ trường hợp, sẽ báo sau.', by: 'BA Lan', date: '2026-11-04', status: 'TREO' }] }));
+    write('OUTPUT/t/02_missing_rule_report.md', report02({ verdict: 'PASS' }));
+    const r = evaluate('t');
+    assert.strictEqual(r.blocked, true);
+    const p = r.pending.find((x) => x.id === 'MR-07');
+    assert.match(p.state, /BA Lan đã trả lời ngày 2026-11-04 nhưng chưa đủ để chốt: "Tuỳ trường hợp, sẽ báo sau\."/);
   } finally { t.cleanup(); }
 });

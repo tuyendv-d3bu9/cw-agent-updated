@@ -79,6 +79,9 @@ function evaluate(slug) {
       why = S.isAiName(q.answeredBy) ? ' — người trả lời là AI/agent, phải là BA/PO' : ' — thiếu Người trả lời hoặc Ngày (hỏi người dùng: ai trả lời, hôm nào)';
     } else if (q.status === 'Confirmed' && !q.answer) why = ' — Confirmed nhưng ô Phản hồi chính thức trống';
     else if (q.status === 'Rejected' && !q.resolved) why = ' — Rejected phải có lý do hoặc người quyết định';
+    else if (q.status === 'TREO' && q.answer && !S.isBlank(q.answer)) {
+      why = ` — ${q.answeredBy || 'BA/PO'} đã trả lời${q.date ? ` ngày ${q.date}` : ''} nhưng chưa đủ để chốt: "${String(q.answer).slice(0, 80)}" — hỏi lại đúng giá trị còn thiếu`;
+    }
     pending.push({ id: q.id, question: q.question || '(no question recorded)', risk: q.w || '', state: (q.statusRaw || '(blank)') + why, source });
   };
 

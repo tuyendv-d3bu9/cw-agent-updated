@@ -59,12 +59,34 @@ function shape(dir) {
       if (S.hasLabel(v)) labels += 1;
     }
   }
+  // Ma trận 06W: câu hỏi là văn tự do nên hai lần viết không bao giờ trùng chữ — so theo Ô (đối tượng × W).
+  // `ô có kẽ hở` = các ô mang MR; `phán quyết ô` = loại kết quả của từng ô (MR · Nguồn · Không áp dụng).
+  const gapCells = new Set();
+  const cellVerdicts = new Set();
+  const m02 = t02 ? S.sectionAt(t02, '1') : null;
+  if (m02) {
+    for (const t of S.parseTables(m02.body, m02.offset)) {
+      if (t.headers.length < 7) continue;
+      for (const r of t.rows) {
+        const obj = S.stripMd(r.cells[0] || '');
+        if (!/^(BR|FD|AF)-\d+$/.test(obj)) continue;
+        for (let w = 1; w <= 6; w++) {
+          const v = S.stripMd(r.cells[w] || '');
+          const kind = /MR-\d+/.test(v) ? 'MR' : /^nguồn/i.test(v) ? 'Nguồn' : /không áp dụng/i.test(v) ? 'KAD' : '?';
+          if (kind === 'MR') gapCells.add(`${obj}×W${w}`);
+          cellVerdicts.add(`${obj}×W${w}=${kind}`);
+        }
+      }
+    }
+  }
   const verdict = (n) => { const t = read(dir, n); return t === null ? '—' : S.readVerdict(t) || '?'; };
   return {
     ids: { BR: d01.BR, FD: d01.FD, AF: d01.AF, OQ: d01.OQ, RK: d01.RK, MR: mr.map((q) => q.id), TI: ideas.map((i) => i.id), TC: cases.map((c) => c.id) },
     sets: {
       'câu trích 01': quotes,
-      'câu hỏi MR': new Set(mr.map((q) => S.questionKey(q.question))),
+      'câu hỏi MR (đúng chữ)': new Set(mr.map((q) => S.questionKey(q.question))),
+      'ô 06W có kẽ hở': gapCells,
+      'phán quyết ô 06W': cellVerdicts,
       'con số trong TC': numbers,
       'chuỗi trích trong TC': strings,
     },

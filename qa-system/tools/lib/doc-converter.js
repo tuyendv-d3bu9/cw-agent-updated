@@ -400,7 +400,7 @@ function bodyMetadata(body) {
   const text = String(body).replace(/<!--[\s\S]*?-->/g, '');
   const head = text.split('\n').slice(0, 80).map((l) => l.replace(/[*_`]/g, '')).join('\n');
   const SEP = '\\s*(?:[:：]|\\|)\\s*';
-  const field = (labels) => new RegExp(`(?:^|\\|\\s*|\\n)\\s*(?:${labels})${SEP}([^\\n|]+)`, 'imu');
+  const field = (labels) => new RegExp(`(?:^|\\|\\s*|\\n|·\\s*)\\s*(?:${labels})${SEP}([^\\n|·]+)`, 'imu');
   const out = {};
   const h1 = text.match(/^#\s+(.+?)\s*$/m);
   // H1 do chính converter tự đặt (Data Sheet:, Document:, Presentation:) không phải tiêu đề của tác giả.
@@ -679,7 +679,10 @@ function sheetToParts(sheet, name, { hidden = 0, raw = false } = {}) {
     annotations.push({
       type: 'Dòng/cột ẩn',
       location: `Sheet "${name}"${hiddenRows.length ? ` — dòng ${hiddenRows.slice(0, 20).join(', ')}` : ''}${hiddenCols.length ? ` — cột ${hiddenCols.join(', ')}` : ''}`,
-      content: 'Nội dung này VẪN nằm trong bảng ở trên nhưng bị ẩn trong file gốc; cần xác nhận còn hiệu lực không.',
+      content: `${hiddenRows.slice(0, 20).map((n) => {
+        const r = rows[n - 1 - range.s.r];
+        return r && nonEmpty(r) ? `Dòng ${n}: "${oneLine(r.filter((c) => String(c).trim()).join(' / '), 160)}". ` : '';
+      }).join('')}Nội dung này VẪN nằm trong bảng ở trên nhưng bị ẩn trong file gốc; cần xác nhận còn hiệu lực không.`,
     });
   }
   for (const k of Object.keys(sheet)) {

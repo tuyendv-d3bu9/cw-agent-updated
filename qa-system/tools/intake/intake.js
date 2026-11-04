@@ -562,9 +562,18 @@ function featureSlug(name) {
   return tokens.join('-') || slugify(name) || `task-${crypto.createHash('sha1').update(String(name)).digest('hex').slice(0, 6)}`;
 }
 
+// Tên file mang tín hiệu BA mạnh (SRS, PRD, user story…) thắng chữ chung chung "spec": "API_Refund_spec" là tài
+// liệu dev, đặt tên task theo nó ra `api-refund-request` thay vì tên tính năng.
+const BA_STRONG = /(?<![a-z])(?:prd|srs|brd|frd|urd|user.?stor(?:y|ies)|use.?case|requirements?|yeu.?cau|dac.?ta)(?![a-z])/i;
+const BA_WEAK = /(?<![a-z])(?:spec|specs|specification)(?![a-z])/i;
+const DEV_NAME = /(?<![a-z])(?:api|swagger|openapi|schema|db|postman)(?![a-z])/i;
+
 function pickSlug(files) {
-  const isBA = (f) => /prd|srs|spec|user.?stor|requirement|use.?case|yeu.?cau|dac.?ta/i.test(path.basename(f));
-  const pick = files.find(isBA) || files[0];
+  const plain = (f) => deaccent(path.basename(f, path.extname(f))).replace(/[_.\s-]+/g, ' ');
+  const pick = files.find((f) => BA_STRONG.test(plain(f)) && !DEV_NAME.test(plain(f)))
+    || files.find((f) => BA_STRONG.test(plain(f)))
+    || files.find((f) => BA_WEAK.test(plain(f)) && !DEV_NAME.test(plain(f)))
+    || files[0];
   return featureSlug(path.basename(pick, path.extname(pick)));
 }
 
@@ -610,8 +619,9 @@ async function main() {
     if (!targetSlug && loose.length > 1) {
       console.log('   If these belong to different features, re-run each group with --slug <task>.');
     }
-    if (!CONFIRMED && versioning.taskHasDocs(slug)) {
-      console.log(versioning.confirmNotice(slug, loose));
+    const ask = CONFIRMED ? null : versioning.needsConfirmation(slug);
+    if (ask) {
+      console.log(versioning.confirmNotice(ask.slug, loose, { proposed: ask.related ? slug : null }));
       report.pending.push(...loose);
       process.exitCode = 2;
       return;
@@ -635,13 +645,17 @@ async function main() {
       bySlug.get(slug).push(f);
     }
     for (const [slug, group] of bySlug) {
-      if (!CONFIRMED && versioning.taskHasDocs(slug)) {
-        console.log(versioning.confirmNotice(slug, group));
+      const ask = CONFIRMED ? null : versioning.needsConfirmation(slug);
+      if (ask) {
+        console.log(versioning.confirmNotice(ask.slug, group, { proposed: ask.related ? slug : null }));
         report.pending.push(...group);
         continue;
       }
       for (const f of group) {
-        if ((await processFile(f, slug, report)) === true) slugs.add(slug);
+        // File rời nằm ngay INPUT/ (người dùng chỉ đích danh sau khi xác nhận --into) được dọn như khi quét,
+        // nếu không lần intake sau gặp lại nó và hỏi lại. File ở nơi khác thì để nguyên.
+        const consume = path.resolve(path.dirname(f)) === path.resolve(PATHS.INPUT);
+        if ((await processFile(f, slug, report, { consume })) === true) slugs.add(slug);
       }
     }
   }

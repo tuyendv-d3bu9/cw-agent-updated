@@ -140,8 +140,9 @@ async function main() {
   if (!customSlug) {
     console.log(`🏷️ Gom tất cả vào một task: [ ${groupSlug} ] — khác tính năng thì chạy lại từng nhóm với --slug <task>.\n`);
   }
-  if (!customSlug && versioning.taskHasDocs(groupSlug)) {
-    console.log(versioning.confirmNotice(groupSlug, allFiles, { intakeCmd: 'npm run intake:bulk --' }));
+  const ask = customSlug ? null : versioning.needsConfirmation(groupSlug);
+  if (ask) {
+    console.log(versioning.confirmNotice(ask.slug, allFiles, { intakeCmd: 'npm run intake:bulk --', proposed: ask.related ? groupSlug : null }));
     if (!isDryRun) {
       process.exitCode = 2;
       return;

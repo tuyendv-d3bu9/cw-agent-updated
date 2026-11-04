@@ -112,13 +112,46 @@ function taskHasDocs(slug) {
   });
 }
 
+/**
+ * Task ĐÃ CÓ tài liệu mà tên gần với `slug` (bộ từ của tên này nằm trọn trong tên kia).
+ * Tài liệu gửi bổ sung thường mang thêm chữ ("QA_BA_tra_loi_hoan_tien" → `qa-ba-tra-loi-hoan-tien`): so trùng khít
+ * thì bỏ lọt và lặng lẽ tạo task mới, câu trả lời của BA không bao giờ tới task `hoan-tien`.
+ */
+function relatedTasks(slug) {
+  if (!fs.existsSync(PATHS.INPUT)) return [];
+  const mine = new Set(String(slug).split('-').filter(Boolean));
+  if (mine.size === 0) return [];
+  return fs.readdirSync(PATHS.INPUT, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && !e.name.startsWith('_') && !e.name.startsWith('.') && e.name !== slug)
+    .map((e) => e.name)
+    .filter((name) => {
+      const theirs = name.split('-').filter(Boolean);
+      if (theirs.length === 0) return false;
+      const contained = (a, b) => a.every((t) => b.has(t));
+      return (contained(theirs, mine) || contained([...mine], new Set(theirs))) && taskHasDocs(name);
+    })
+    .sort();
+}
+
+/**
+ * Tài liệu sắp vào đâu cần người dùng xác nhận: chính task `slug` đã có tài liệu, hoặc một task tên gần.
+ * @returns {{slug: string, related: boolean} | null}
+ */
+function needsConfirmation(slug) {
+  if (taskHasDocs(slug)) return { slug, related: false };
+  const rel = relatedTasks(slug);
+  return rel.length ? { slug: rel[0], related: true, proposed: slug, others: rel.slice(1) } : null;
+}
+
 /** Thông điệp dừng khi tài liệu sắp vào một task đã có. */
-function confirmNotice(slug, files, { intakeCmd = 'npm run intake --' } = {}) {
+function confirmNotice(slug, files, { intakeCmd = 'npm run intake --', proposed = null } = {}) {
   const names = files.map((f) => path.basename(f));
   const quoted = names.length === 1 ? ` "${names[0]}"` : '';
   return [
     '',
-    `⏸️  CẦN XÁC NHẬN — task [ ${slug} ] đã có tài liệu. Chưa nhận, file vẫn nằm nguyên chỗ cũ.`,
+    proposed
+      ? `⏸️  CẦN XÁC NHẬN — tên tài liệu gần với task đã có [ ${slug} ] (tên đề xuất mới: ${proposed}). Chưa nhận, file vẫn nằm nguyên chỗ cũ.`
+      : `⏸️  CẦN XÁC NHẬN — task [ ${slug} ] đã có tài liệu. Chưa nhận, file vẫn nằm nguyên chỗ cũ.`,
     '',
     '   Tài liệu đến:',
     ...names.map((n) => `     • ${n}`),
@@ -228,6 +261,8 @@ module.exports = {
   versionInfo,
   compareDocs,
   taskHasDocs,
+  relatedTasks,
+  needsConfirmation,
   confirmNotice,
   applySupersede,
   printVersioning,

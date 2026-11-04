@@ -11,7 +11,8 @@
  * Write rules (QA_STANDARD §8):
  *   - §7: a row whose ID + question text is new is appended with the full §9.4
  *     schema. An existing unsettled row for the same ID + question gets its
- *     answer columns and status filled (status change, never deletion). Settled
+ *     answer columns and status filled (status change, never deletion) — also when
+ *     the answer is not enough to settle (TREO), so the next run knows it was asked. Settled
  *     rows are never touched. An old MR-04 with different wording is a different
  *     question: the new one is appended, the old one kept.
  *   - §8: a decision row only when the answer has "Người trả lời" AND "Ngày".
@@ -73,9 +74,15 @@ function plan(report, knowledgeText) {
   const out = { append: [], update: [], decide: [], skip: [] };
   for (const q of extractQuestions(report)) {
     const existing = k.questions.find((r) => r.id === q.id && S.questionKey(r.question) === S.questionKey(q.question));
+    // BA đã trả lời nhưng chưa đủ để chốt (TREO): vẫn chép sang knowledge, nếu không lần chạy sau tưởng câu này chưa ai hỏi.
+    // Chỉ TREO, và người trả lời là người thật: dòng "Confirmed" thiếu người/ngày hay do AI ghi thì KHÔNG chép (audit #6).
+    const partial = !q.resolved && q.status === 'TREO' && q.answer && !S.isBlank(q.answer) &&
+      q.answeredBy && !S.isBlank(q.answeredBy) && !S.isAiName(q.answeredBy) &&
+      (S.normText(q.answer) !== S.normText(existing ? existing.answer || '' : '') || (q.status || '') !== (existing ? existing.status || '' : ''));
     if (!existing) out.append.push(q);
-    else if (existing.resolved || !q.resolved) out.skip.push({ ...q, why: existing.resolved ? 'already settled in knowledge' : 'already in knowledge, still open' });
-    else out.update.push({ q, line: existing.line });
+    else if (existing.resolved) out.skip.push({ ...q, why: 'already settled in knowledge' });
+    else if (q.resolved || partial) out.update.push({ q, line: existing.line });
+    else out.skip.push({ ...q, why: 'already in knowledge, still open' });
 
     if (q.resolved && q.answeredBy && q.date) {
       const hasDecision = k.decisions.some((d) => d.related.includes(q.id) &&
@@ -137,7 +144,7 @@ function apply(knowledgeText, p) {
     for (const key of ['answer', 'answeredBy', 'date', 'status']) {
       const i = S.col(q7.table, key);
       if (i === -1) continue;
-      cells[i] = key === 'status' ? q.status : esc(q[key]);
+      cells[i] = key === 'status' ? (q.status || q.statusRaw || cells[i]) : esc(q[key]);
     }
     lines[idx] = `| ${cells.join(' | ')} |`;
   }

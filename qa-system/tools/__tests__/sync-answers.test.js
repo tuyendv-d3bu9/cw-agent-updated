@@ -125,3 +125,20 @@ test('the synced knowledge opens the gate end to end', () => {
     assert.ok(!evaluate('t').blocked, evaluate('t').reasons.join(' · '));
   } finally { t.cleanup(); }
 });
+
+test('câu trả lời chưa đủ để chốt (TREO) vẫn được chép sang knowledge, cổng vẫn đóng', () => {
+  const k = knowledgeDoc({ q7: [{ id: 'MR-07', question: 'Quá hạn thì sao?' }] });
+  const r = report02({ questions: [{ id: 'MR-07', question: 'Quá hạn thì sao?', answer: 'Tuỳ trường hợp, sẽ báo sau.', by: 'BA Lan', date: '2026-11-04', status: 'TREO' }] });
+  const p = plan(r, k);
+  assert.deepStrictEqual([p.update.length, p.decide.length], [1, 0]);
+  const out = apply(k, p);
+  const row = S.readQuestionRows(S.sectionBody(out, '7'))[0];
+  assert.strictEqual(row.status, 'TREO');
+  assert.strictEqual(row.answer, 'Tuỳ trường hợp, sẽ báo sau.');
+  assert.strictEqual(row.answeredBy, 'BA Lan');
+  assert.strictEqual(row.resolved, false, 'TREO không mở cổng');
+  assert.deepStrictEqual(plan(r, out).update.length, 0, 'chạy lại không đổi gì');
+  // TREO do AI ghi thì không chép.
+  const ai = report02({ questions: [{ id: 'MR-07', question: 'Quá hạn thì sao?', answer: 'Tuỳ', by: 'Claude', date: '2026-11-04', status: 'TREO' }] });
+  assert.strictEqual(plan(ai, k).update.length, 0);
+});
