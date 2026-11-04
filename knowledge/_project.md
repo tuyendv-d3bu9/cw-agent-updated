@@ -4,14 +4,14 @@
 > Ô còn `<điền>` = **chưa khai báo**: agent coi như không có (`[CONTEXT_MISSING]` / `[CHƯA CÓ TRONG TÀI LIỆU]`),
 > **không** tự lấy giá trị "thường gặp" thay vào. Xem `qa-system/core/QA_STANDARD.md` §8, §10.
 
-Dự án: `<điền>` · Cập nhật lần cuối: `<điền>`
+Dự án: `CW-ShopGo (demo lớp học — nhánh test/full-run-2026-11-04)` · Cập nhật lần cuối: `2026-11-04`
 
 ---
 
 ## 1. Quy ước định danh
 | Đối tượng | Format | Ví dụ |
 |---|---|---|
-| Module prefix cho `TC_ID` (2–6 ký tự hoa) | `<điền>` | `<điền>` |
+| Module prefix cho `TC_ID` (2–6 ký tự hoa) | `REFUND` | `REFUND-001` |
 | Mã nghiệp vụ (mã đơn, mã giao dịch…) | `<điền>` | `<điền>` |
 
 ## 2. Định dạng dữ liệu

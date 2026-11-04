@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nâng cấp qa-system</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Bố cục: một cột ~1000px; hero có dải số; sơ đồ luồng SVG; thẻ so sánh 2 cột; bảng dài gói trong <details>. */
+:root {
+  --bg: #f4f6f5;
+  --surface: #ffffff;
+  --sunk: #ebefed;
+  --fg: #15201d;
+  --muted: #5a6a65;
+  --line: #d9e0dd;
+  --accent: #0e7a68;
+  --accent-soft: #dcf0eb;
+  --old: #b5641a;
+  --old-soft: #f8ead9;
+  --bad: #b8342e;
+  --bad-soft: #f9e3e1;
+  --good: #1c7d48;
+  --good-soft: #e0f2e7;
+  --font: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101614; --surface: #18201d; --sunk: #1f2925; --fg: #e3ebe8; --muted: #98a8a2; --line: #2b3632;
+    --accent: #5fd1b9; --accent-soft: #173a33; --old: #f0a95e; --old-soft: #3a2a18; --bad: #f2877f; --bad-soft: #3b1f1d;
+    --good: #72d69c; --good-soft: #183323; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101614; --surface: #18201d; --sunk: #1f2925; --fg: #e3ebe8; --muted: #98a8a2; --line: #2b3632;
+  --accent: #5fd1b9; --accent-soft: #173a33; --old: #f0a95e; --old-soft: #3a2a18; --bad: #f2877f; --bad-soft: #3b1f1d;
+  --good: #72d69c; --good-soft: #183323; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 16px; line-height: 1.7; }
+.wrap { max-width: 1000px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 36px 80px; display: grid; gap: 56px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -.012em; }
+h1 { font-size: clamp(32px, 5.4vw, 50px); line-height: 1.08; font-weight: 800; }
+h2 { font-size: clamp(22px, 3vw, 28px); line-height: 1.25; font-weight: 700; }
+h3 { font-size: 17px; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+code { font-family: var(--mono); font-size: .86em; background: var(--sunk); padding: 1px 6px; border-radius: 5px; }
+section { display: grid; gap: 18px; }
+.kicker { font-size: 12.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 18px; color: var(--muted); max-width: 62ch; }
+.muted { color: var(--muted); }
+
+/* Hero */
+.hero { display: grid; gap: 18px; padding: 28px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.stat { background: var(--sunk); border-radius: 12px; padding: 14px 16px; display: grid; gap: 2px; }
+.stat b { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stat span { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+.stat.hi b { color: var(--accent); }
+
+/* Part divider */
+.part { display: flex; align-items: center; gap: 14px; }
+.part .tag { flex: none; font-weight: 800; font-size: 13px; color: var(--surface); background: var(--accent); border-radius: 8px; padding: 4px 10px; letter-spacing: .04em; }
+.part h2 { font-size: clamp(24px, 3.4vw, 32px); }
+
+/* Diagram */
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; overflow-x: auto; }
+.diagram svg { display: block; min-width: 760px; width: 100%; height: auto; }
+.diagram .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 13.5px; color: var(--muted); }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: 0; }
+
+/* Before / after rows */
+.vs { display: grid; gap: 10px; }
+.vs-row { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.vs-row > div { padding: 12px 14px; min-width: 0; }
+.vs-row .trap { font-weight: 600; }
+.vs-row .old { background: var(--old-soft); border-left: 1px solid var(--line); }
+.vs-row .new { background: var(--good-soft); border-left: 1px solid var(--line); }
+.vs-row .old.worse { background: var(--bad-soft); }
+.vs-head { display: grid; grid-template-columns: 1.1fr 1fr 1fr; padding: 0 14px; font-size: 12.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.mark { font-weight: 800; margin-right: 6px; }
+.old .mark { color: var(--bad); }
+.new .mark { color: var(--good); }
+@media (max-width: 680px) {
+  .vs-row, .vs-head { grid-template-columns: 1fr; }
+  .vs-head { display: none; }
+  .vs-row .old, .vs-row .new { border-left: 0; border-top: 1px solid var(--line); }
+  .vs-row .old::before { content: "Bản cũ: "; font-weight: 700; }
+  .vs-row .new::before { content: "Bản mới: "; font-weight: 700; }
+}
+
+/* Cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.card .num { font-size: 12.5px; font-weight: 800; color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; font-size: 15px; }
+.card li b { font-weight: 600; }
+.arrow { color: var(--accent); font-weight: 700; }
+
+/* Terminal compare */
+.term { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.term .box { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); min-width: 0; }
+.term .bar { padding: 8px 14px; font-size: 13.5px; font-weight: 700; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.term .box.o .bar { background: var(--bad-soft); color: var(--bad); }
+.term .box.n .bar { background: var(--good-soft); color: var(--good); }
+pre { margin: 0; padding: 14px; font-family: var(--mono); font-size: 12.5px; line-height: 1.6; overflow-x: auto; white-space: pre; background: var(--sunk); color: var(--fg); }
+.sample { border-radius: 12px; border: 1px dashed var(--line); }
+
+/* Bars */
+.bars { display: grid; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+.bar-row { display: grid; grid-template-columns: minmax(150px, 1.2fr) 2fr 52px; gap: 12px; align-items: center; font-size: 14.5px; }
+.track { height: 12px; background: var(--sunk); border-radius: 99px; overflow: hidden; }
+.fill { height: 100%; background: var(--accent); border-radius: 99px; }
+.fill.mid { background: var(--old); }
+.bar-row .v { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
+@media (max-width: 560px) { .bar-row { grid-template-columns: 1fr 52px; } .bar-row .track { grid-column: 1 / -1; order: 3; } }
+
+/* Tables */
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+summary { cursor: pointer; padding: 13px 16px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 10px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "Mở"; font-size: 13px; color: var(--accent); font-weight: 700; }
+details[open] summary::after { content: "Thu gọn"; }
+summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 12px; }
+.tbl { overflow-x: auto; border-top: 1px solid var(--line); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.55; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: var(--sunk); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.s { color: var(--muted); font-size: 13.5px; }
+.pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 9px; border-radius: 99px; white-space: nowrap; }
+.pill.ok { background: var(--good-soft); color: var(--good); }
+.pill.rj { background: var(--old-soft); color: var(--old); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 14px; max-width: 100%; }
+.chip b { color: var(--accent); margin-right: 6px; font-family: var(--mono); font-size: 13px; }
+
+.note { background: var(--old-soft); border-radius: 12px; padding: 14px 16px; }
+.plain { margin: 0; padding-left: 20px; display: grid; gap: 7px; max-width: 74ch; }
+
+/* Summary */
+.summary { background: var(--accent); color: var(--surface); border-radius: 18px; padding: 28px; display: grid; gap: 18px; }
+.summary h2 { color: var(--surface); }
+.summary .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+.summary .item { background: color-mix(in srgb, var(--surface) 12%, transparent); border-radius: 12px; padding: 14px; display: grid; gap: 4px; }
+.summary .item b { font-size: 16.5px; }
+.summary .item span { font-size: 14.5px; line-height: 1.55; opacity: .92; }
+.summary p { max-width: 70ch; }
+@media (prefers-reduced-motion: no-preference) { .fill { transition: width .6s ease; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">qa-system · kiểm chứng ngày 2026-11-04</div>
+  <h1>Nâng cấp qa-system</h1>
+  <p class="lede">Chúng tôi chạy hệ thống mới trên một bài toán hoàn toàn mới (hoàn tiền đơn hàng) và chạy luôn bản cũ trên cùng tài liệu đó để so sánh. Kết quả là AI không còn tự bịa được nữa, thiếu thì hỏi, và mọi bước đều có máy kiểm.</p>
+  <div class="stats">
+    <div class="stat hi"><b>51</b><span>test case, mỗi cái truy được về nguồn</span></div>
+    <div class="stat hi"><b>0</b><span>lỗi khi máy kiểm (lint)</span></div>
+    <div class="stat"><b>17</b><span>câu hỏi AI gửi BA thay vì tự đoán</span></div>
+    <div class="stat"><b>9/9</b><span>bẫy trong tài liệu được xử lý đúng (bản cũ: 0/9)</span></div>
+  </div>
+</header>
+
+<!-- ───────────── PHẦN A ───────────── -->
+<div class="part"><span class="tag">PHẦN A</span><h2>Lần chạy thử: AI tìm ra gì, bản cũ thì sao</h2></div>
+
+<section>
+  <h2>Đầu bài</h2>
+  <p>Chín tài liệu giống ngoài đời: SRS hai phiên bản (Word, có comment và chỉnh sửa chưa duyệt), bảng mã lỗi Excel có một dòng bị ẩn, API, wireframe, BRD, một Change Request đổi thời hạn từ 7 lên 10 ngày, và biên bản họp còn một việc bỏ ngỏ. Câu trả lời của BA/PO là đóng vai cho bản demo.</p>
+  <div class="diagram">
+    <svg viewBox="0 0 960 250" role="img" aria-label="Luồng chạy: tài liệu, intake, chặng 01, chặng 02, cổng hỏi BA, chặng 03 đến 05, lint, chặng 06">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--muted)"/></marker>
+      </defs>
+      <g style="font-family: var(--font); font-size: 13px;">
+        <!-- main row -->
+        <g>
+          <rect x="10" y="70" width="92" height="56" rx="10" style="fill: var(--sunk); stroke: var(--line)"/>
+          <text x="56" y="95" text-anchor="middle" style="fill: var(--fg); font-weight: 700">9 tài liệu</text>
+          <text x="56" y="113" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">docx · xlsx · md</text>
+
+          <rect x="128" y="70" width="92" height="56" rx="10" style="fill: var(--surface); stroke: var(--accent)"/>
+          <text x="174" y="95" text-anchor="middle" style="fill: var(--fg); font-weight: 700">Intake</text>
+          <text x="174" y="113" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">giữ comment, ẩn</text>
+
+          <rect x="246" y="70" width="92" height="56" rx="10" style="fill: var(--surface); stroke: var(--accent)"/>
+          <text x="292" y="95" text-anchor="middle" style="fill: var(--fg); font-weight: 700">01 · Bóc rule</text>
+          <text x="292" y="113" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">có trích dẫn</text>
+
+          <rect x="364" y="70" width="92" height="56" rx="10" style="fill: var(--surface); stroke: var(--accent)"/>
+          <text x="410" y="95" text-anchor="middle" style="fill: var(--fg); font-weight: 700">02 · Tìm kẽ hở</text>
+          <text x="410" y="113" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">ma trận 06W</text>
+
+          <polygon points="530,68 570,98 530,128 490,98" style="fill: var(--old-soft); stroke: var(--old)"/>
+          <text x="530" y="95" text-anchor="middle" style="fill: var(--fg); font-weight: 700; font-size: 12px">Cổng</text>
+          <text x="530" y="110" text-anchor="middle" style="fill: var(--fg); font-weight: 700; font-size: 12px">hỏi BA</text>
+
+          <rect x="600" y="70" width="104" height="56" rx="10" style="fill: var(--surface); stroke: var(--accent)"/>
+          <text x="652" y="95" text-anchor="middle" style="fill: var(--fg); font-weight: 700">03–05</text>
+          <text x="652" y="113" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">ý tưởng → test case</text>
+
+          <polygon points="770,68 810,98 770,128 730,98" style="fill: var(--old-soft); stroke: var(--old)"/>
+          <text x="770" y="102" text-anchor="middle" style="fill: var(--fg); font-weight: 700; font-size: 12px">Lint</text>
+
+          <rect x="836" y="70" width="112" height="56" rx="10" style="fill: var(--accent-soft); stroke: var(--accent)"/>
+          <text x="892" y="95" text-anchor="middle" style="fill: var(--fg); font-weight: 700">06 · PASS</text>
+          <text x="892" y="113" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">51 TC · GO</text>
+        </g>
+        <g style="stroke: var(--muted); stroke-width: 1.5; fill: none">
+          <line x1="102" y1="98" x2="124" y2="98" marker-end="url(#ah)"/>
+          <line x1="220" y1="98" x2="242" y2="98" marker-end="url(#ah)"/>
+          <line x1="338" y1="98" x2="360" y2="98" marker-end="url(#ah)"/>
+          <line x1="456" y1="98" x2="486" y2="98" marker-end="url(#ah)"/>
+          <line x1="570" y1="98" x2="596" y2="98" marker-end="url(#ah)"/>
+          <line x1="704" y1="98" x2="726" y2="98" marker-end="url(#ah)"/>
+          <line x1="810" y1="98" x2="832" y2="98" marker-end="url(#ah)"/>
+          <!-- BA loop -->
+          <path d="M530 128 C 530 190, 410 200, 410 132" marker-end="url(#ah)"/>
+        </g>
+        <rect x="402" y="186" width="136" height="44" rx="10" style="fill: var(--surface); stroke: var(--line)"/>
+        <text x="470" y="205" text-anchor="middle" style="fill: var(--fg); font-weight: 600; font-size: 12px">BA trả lời 2 vòng</text>
+        <text x="470" y="221" text-anchor="middle" style="fill: var(--muted); font-size: 11px">16 câu → 1 câu</text>
+        <!-- block badges -->
+        <g style="font-size: 11.5px; font-weight: 700">
+          <rect x="470" y="14" width="128" height="40" rx="8" style="fill: var(--bad-soft)"/>
+          <text x="534" y="30" text-anchor="middle" style="fill: var(--bad)">Chặn 3 lần</text>
+          <text x="534" y="45" text-anchor="middle" style="fill: var(--bad); font-weight: 500">làm tiếp khi chưa hỏi</text>
+          <rect x="712" y="14" width="116" height="40" rx="8" style="fill: var(--bad-soft)"/>
+          <text x="770" y="30" text-anchor="middle" style="fill: var(--bad)">Chặn 4 lỗi</text>
+          <text x="770" y="45" text-anchor="middle" style="fill: var(--bad); font-weight: 500">test case bịa</text>
+        </g>
+      </g>
+    </svg>
+    <div class="legend">
+      <span><i class="dot" style="background: var(--accent)"></i>chặng do AI làm</span>
+      <span><i class="dot" style="background: var(--old)"></i>cổng do máy kiểm</span>
+      <span><i class="dot" style="background: var(--bad)"></i>chỗ hệ thống đã chặn trong lần chạy</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Cùng một bộ tài liệu, bản cũ và bản mới xử lý khác nhau thế nào</h2>
+  <p class="muted">Cột "bản cũ" là kết quả chạy thật commit <code>456c43c</code> (trước nâng cấp) trên đúng bộ tài liệu này.</p>
+  <div class="vs">
+    <div class="vs-head"><div>Tình huống</div><div>Bản cũ</div><div>Bản mới</div></div>
+    <div class="vs-row"><div class="trap">Gửi cả SRS bản 1 (5 ngày) và bản 2 (7 ngày)</div><div class="old worse"><span class="mark">✕</span>Để hai bản nằm cạnh nhau, AI đọc cả hai</div><div class="new"><span class="mark">✓</span>Tự cất bản 1 đi, chỉ đọc bản mới</div></div>
+    <div class="vs-row"><div class="trap">Chỉnh sửa chưa duyệt: &quot;Ảnh minh chứng là bắt buộc…&quot;</div><div class="old worse"><span class="mark">✕</span>Coi như quy tắc thật</div><div class="new"><span class="mark">✓</span>Đánh dấu &quot;chưa chốt&quot; và hỏi BA (BA đồng ý)</div></div>
+    <div class="vs-row"><div class="trap">Comment của PO: &quot;Giao sai hàng có được tự duyệt?&quot;</div><div class="old worse"><span class="mark">✕</span>Mất hẳn</div><div class="new"><span class="mark">✓</span>Thành câu hỏi; PO trả lời &quot;chỉ Hàng lỗi&quot;</div></div>
+    <div class="vs-row"><div class="trap">Một dòng mã lỗi bị ẩn trong Excel</div><div class="old worse"><span class="mark">✕</span>Đọc như dòng thường</div><div class="new"><span class="mark">✓</span>Báo dòng ẩn kèm nội dung, hỏi BA còn dùng không</div></div>
+    <div class="vs-row"><div class="trap">Change Request đổi 7 → 10 ngày</div><div class="old worse"><span class="mark">✕</span>Xếp chung với đặc tả; 5, 7, 10 ngày cùng có mặt</div><div class="new"><span class="mark">✓</span>Dùng 10 ngày, ghi rõ nguồn là CR (mới hơn, đã duyệt)</div></div>
+    <div class="vs-row"><div class="trap">Tri thức của tính năng mới</div><div class="old worse"><span class="mark">✕</span>Có sẵn số liệu voucher (&quot;trần 500.000&quot;, &quot;khoá 15 phút&quot;)</div><div class="new"><span class="mark">✓</span>Bắt đầu trống, chỉ chứa thông tin của hoàn tiền</div></div>
+    <div class="vs-row"><div class="trap">Tên task</div><div class="old"><span class="mark">✕</span>api-refund-request-spec (theo file API)</div><div class="new"><span class="mark">✓</span>hoan-tien (theo tính năng)</div></div>
+    <div class="vs-row"><div class="trap">BA trả lời &quot;Tuỳ trường hợp&quot;, người chốt là &quot;Claude&quot;</div><div class="old worse"><span class="mark">✕</span>Cổng mở, cho làm tiếp</div><div class="new"><span class="mark">✓</span>Cổng đóng: &quot;người trả lời là AI, phải là BA/PO&quot;</div></div>
+    <div class="vs-row"><div class="trap">Test case có chữ và số tự chế</div><div class="old worse"><span class="mark">✕</span>Máy kiểm cho qua</div><div class="new"><span class="mark">✓</span>Máy kiểm chặn 4 lỗi</div></div>
+    
+  </div>
+  <div class="note"><p><b>Chỗ nguy hiểm nhất của bản cũ:</b> tính năng hoàn tiền mới tạo đã có sẵn số liệu của voucher trong phần tri thức, trong đó có "trần 500.000". Con số này trùng đúng ngưỡng tự động duyệt của tài liệu hoàn tiền, nên AI rất dễ gán nhầm. Đây chính là kiểu "tự bịa" mà học viên gặp.</p></div>
+</section>
+
+<section>
+  <h2>AI tìm ra gì trong tài liệu</h2>
+  <p>AI bóc được 15 quy tắc, 4 trường nhập liệu và 7 luồng lỗi, mỗi dòng đều chép nguyên văn từ tài liệu. Chỗ nào chưa rõ, AI không đoán mà ghi lại thành câu hỏi. Có 5 chỗ chưa rõ đọc được ngay từ tài liệu:</p>
+  <div class="chips"><span class="chip"><b>OQ-01</b>Chỉnh sửa chưa duyệt về ảnh minh chứng</span><span class="chip"><b>OQ-02</b>Comment của PO về tự động duyệt</span><span class="chip"><b>OQ-03</b>Dòng mã lỗi bị ẩn</span><span class="chip"><b>OQ-04</b>Luồng hoàn tiền thất bại ghi &quot;đang cập nhật&quot;</span><span class="chip"><b>OQ-05</b>Thời gian xử lý tối đa còn để ngỏ</span></div>
+  <p>Sau đó AI quét kẽ hở có hệ thống và gửi BA <b>16 câu hỏi</b>. BA trả lời xong, AI cập nhật thêm 18 quy tắc và luồng mới, rồi quét lại phần mới và hỏi thêm <b>1 câu</b>. Đến lúc này cổng mới mở cho làm test case.</p>
+  <details>
+    <summary>Xem 17 câu hỏi và câu trả lời của BA/PO</summary>
+    <div class="tbl"><table>
+      <thead><tr><th>Mã</th><th>Kẽ hở AI tìm ra</th><th>BA/PO trả lời</th><th></th></tr></thead>
+      <tbody><tr><td><code>MR-16</code></td><td>R9 đang là tracked change chưa duyệt; nguồn hiện hành ghi Ảnh minh chứng &quot;Không&quot; bắt buộc</td><td>A) Chấp nhận R9; thiếu ảnh khi lý do là Hàng lỗi dùng thông báo &quot;Vui lòng nhập thông tin này.&quot; <span class="s">— Nguyễn Minh Đức</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-05</code></td><td>R5 chỉ nêu lý do Hàng lỗi; PO hỏi lý do Giao sai hàng chưa có câu trả lời</td><td>B) Chỉ lý do Hàng lỗi được tự động duyệt. <span class="s">— Nguyễn Minh Đức</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-13</code></td><td>BR-13 giới hạn 2 lần nhưng không nêu hệ thống phản hồi gì; dòng mã lỗi duy nhất liên quan đang bị ẩn</td><td>A) Dùng mã REFUND_LIMIT_REACHED với thông báo &quot;Đơn hàng đã hết số lần yêu cầu hoàn tiền.&quot;; dòng này sẽ được hiện lại trong bảng mã lỗi. <span class="s">— Trần Thị Lan</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-09</code></td><td>Nguồn không mô tả trạng thái và xử lý khi cổng thanh toán không hoàn được tiền</td><td>A) Giữ trạng thái Đã duyệt; CSKH thử lại hoàn tiền thủ công. <span class="s">— Nguyễn Minh Đức</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-07</code></td><td>Thời gian tối đa CSKH xử lý một yêu cầu chưa chốt; không rõ hệ thống có hành động khi quá hạn</td><td>Không xử lý trong phiên bản này: không có hành động tự động khi yêu cầu Chờ duyệt quá hạn; CSKH theo dõi thủ công trên danh sách. <span class="s">— Nguyễn Minh Đức</span></td><td><span class="pill rj">Không làm</span></td></tr><tr><td><code>MR-01</code></td><td>Đơn COD ở trạng thái Đã giao thoả R1; nguồn không nói chức năng bị ẩn hay bị chặn</td><td>A) Ẩn nút Yêu cầu hoàn tiền với đơn COD. <span class="s">— Trần Thị Lan</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-02</code></td><td>Gọi API với orderId không thuộc tài khoản: mã HTTP và mã lỗi không có trong 03_dev/api-refund-request-spec.md §Phản hồi</td><td>B) HTTP 404 với mã lỗi ORDER_NOT_FOUND, giống đơn hàng không tồn tại. <span class="s">— Trần Thị Lan</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-03</code></td><td>Không rõ ngày giao là ngày 0 hay ngày 1, hạn cuối là cuối ngày hay theo giờ, theo múi giờ nào</td><td>A) Ngày giao hàng thành công là ngày 0; hạn cuối là 23:59 ngày thứ 10, theo giờ Việt Nam (UTC+7). <span class="s">— Nguyễn Minh Đức</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-04</code></td><td>Yêu cầu thứ nhất đã được hoàn một phần; nguồn không nói trần của yêu cầu thứ hai</td><td>A) Trần của yêu cầu thứ hai bằng số tiền đã thanh toán trừ phần đã hoàn. <span class="s">— Nguyễn Minh Đức</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-06</code></td><td>Không rõ Nhân viên CSKH có thấy và thao tác được yêu cầu trên 5.000.000đ không</td><td>B) Nhân viên CSKH thấy yêu cầu trên 5.000.000đ trong danh sách nhưng không có nút Duyệt và Từ chối. <span class="s">— Trần Thị Lan</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-08</code></td><td>Phân quyền của Trưởng nhóm với yêu cầu từ 5.000.000đ trở xuống chưa rõ</td><td>A) Có, Trưởng nhóm CSKH được duyệt và từ chối mọi yêu cầu. <span class="s">— Nguyễn Minh Đức</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-10</code></td><td>Không có min/max, xử lý chuỗi toàn khoảng trắng, chữ thông báo khi bỏ trống</td><td>Lý do từ chối tối đa 255 ký tự; chuỗi chỉ có khoảng trắng bị chặn; thông báo khi bỏ trống: &quot;Vui lòng nhập lý do từ chối.&quot; <span class="s">— Trần Thị Lan</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-11</code></td><td>Không có mẫu email; không rõ khách có thấy lý do từ chối không</td><td>B) Chưa có mẫu email; QA chỉ kiểm có gửi email. Email từ chối có kèm lý do từ chối. <span class="s">— Trần Thị Lan</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-12</code></td><td>Khách huỷ trong khi người duyệt đang duyệt (hoặc hộp xác nhận huỷ mở khi yêu cầu vừa được duyệt)</td><td>A) Thao tác đến trước được ghi nhận; bên sau thấy thông báo &quot;Yêu cầu đã được cập nhật bởi người khác. Vui lòng tải lại trang.&quot; <span class="s">— Trần Thị Lan</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-14</code></td><td>Không có chữ thông báo cho: số tiền dưới 10.000, mô tả quá 500 ký tự, quá 3 ảnh, ảnh quá 5 MB, ảnh không phải JPG/PNG, lý do không hợp lệ</td><td>Số tiền dưới 10.000: &quot;Số tiền yêu cầu tối thiểu là 10.000đ.&quot; · Mô tả quá 500 ký tự: &quot;Mô tả tối đa 500 ký tự.&quot; · Quá 3 ảnh: &quot;Chỉ được đính kèm tối đa 3 ảnh.&quot; · Ảnh quá 5 MB: &quot;Mỗi ảnh tối đa 5 MB.&quot; · Ảnh sai định dạng: &quot;Chỉ chấp nhận ảnh JPG hoặc PNG.&quot; · Lý do không hợp lệ chỉ xảy ra khi gọi API: HTTP 400 VALIDATION_ERROR, không có chữ hiển thị. <span class="s">— Trần Thị Lan</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-15</code></td><td>Không rõ paidAmount gồm phí vận chuyển và đã trừ giảm giá voucher hay chưa</td><td>A) paidAmount gồm phí vận chuyển và đã trừ giảm giá voucher. <span class="s">— Nguyễn Minh Đức</span></td><td><span class="pill ok">Đã chốt</span></td></tr><tr><td><code>MR-17</code></td><td>Gọi thẳng API tạo yêu cầu cho đơn COD ở trạng thái Đã giao — phản hồi không có trong nguồn</td><td>B) API chặn đơn COD bằng HTTP 403 với mã lỗi ORDER_NOT_DELIVERED. <span class="s">— Trần Thị Lan</span></td><td><span class="pill ok">Đã chốt</span></td></tr></tbody>
+    </table></div>
+  </details>
+  <p>Kết quả cuối: 25 quy tắc, 5 trường, 15 luồng lỗi, 36 ý tưởng test (giữ 33, bỏ 3 có lý do) và <b>51 test case</b>. Có 18 chỗ thiếu thông tin được ghi rõ là <code>[CHƯA CÓ TRONG TÀI LIỆU]</code> chứ không bị bịa cho đủ.</p>
+</section>
+
+<section>
+  <h2>Thử cài một test case bịa vào</h2>
+  <p>Chúng tôi viết một test case "trông rất thật" nhưng toàn chi tiết tự chế, rồi đưa cho máy kiểm của cả hai bản chấm.</p>
+<pre class="sample">Test Data:    Số tiền 15.000.000đ · Thời gian khoá 30 phút
+Expected:     "Bạn đã gửi quá nhiều yêu cầu, vui lòng thử lại sau 30 phút."
+Precondition: [GIẢ ĐỊNH] Khách đã gửi 5 yêu cầu trong ngày</pre>
+  <div class="term">
+    <div class="box o"><div class="bar"><span>Bản cũ</span><span>cho qua</span></div>
+<pre>1 warning(s):
+  01_requirement_risk_summary.md
+  - 18 table row(s) have blank cells</pre></div>
+    <div class="box n"><div class="bar"><span>Bản mới</span><span>chặn 4 lỗi</span></div>
+<pre>Precondition carries [GIẢ ĐỊNH]
+Expected quotes "Bạn đã gửi quá nhiều yêu cầu…"
+  which appears in no source
+Test Data states 15.000.000 … in no source
+Test Data states 30 … in no source</pre></div>
+  </div>
+</section>
+
+<section>
+  <h2>Chạy hai lần có ra giống nhau không</h2>
+  <p>Một AI khác chạy lại từ đầu, không nhìn kết quả lần trước. So hai lần bằng công cụ <code>diff-runs</code>:</p>
+  <div class="bars">
+    <div class="bar-row"><span>Câu hỏi từ comment, chữ ẩn, chỗ "đang cập nhật"</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="v">100%</span></div>
+    <div class="bar-row"><span>Số quy tắc và trường nhập liệu</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="v">100%</span></div>
+    <div class="bar-row"><span>Chủ đề câu hỏi gửi BA</span><div class="track"><div class="fill" style="width:71%"></div></div><span class="v">71%</span></div>
+    <div class="bar-row"><span>Câu trích dẫn từ tài liệu</span><div class="track"><div class="fill mid" style="width:58%"></div></div><span class="v">58%</span></div>
+    <div class="bar-row"><span>Vị trí kẽ hở trong ma trận</span><div class="track"><div class="fill mid" style="width:34%"></div></div><span class="v">34%</span></div>
+  </div>
+  <p>Những gì có thật trong tài liệu thì hai lần ra giống hệt nhau. Phần còn lệch là chỗ AI phải tự phán đoán: lần chạy thứ hai bỏ sót 4 câu hỏi mà lần đầu có hỏi (đơn COD, đơn của người khác, quyền của nhân viên CSKH, số tiền có gồm phí ship không). Đây là việc cần nâng cấp tiếp.</p>
+</section>
+
+<!-- ───────────── PHẦN B ───────────── -->
+<div class="part"><span class="tag">PHẦN B</span><h2>Đã thay đổi những gì</h2></div>
+
+<section>
+  <h2>Vì sao phải sửa</h2>
+  <p>Học viên gặp ba chuyện: test case tự bịa thêm, mỗi lần chạy lại hỏi một kiểu, và skill tự tạo chạy không ổn. Nguyên nhân nằm ở chính hệ thống:</p>
+  <ul class="plain">
+    <li>Phần tri thức mẫu có sẵn dữ liệu voucher, bị chép sang mọi tính năng mới.</li>
+    <li>Luật cũ chỉ cho "đạt" khi điền đủ mọi ô, nên AI phải lấp chỗ trống.</li>
+    <li>Bước tìm kẽ hở không có điểm dừng và còn bắt tối thiểu 5 câu hỏi.</li>
+    <li>Máy kiểm chỉ xem đủ ô hay chưa, không xem nội dung từ đâu ra.</li>
+    <li>Khâu nhận tài liệu làm rơi comment và bảng biểu, có lúc xoá luôn file gốc.</li>
+    <li>Chỉ Claude Code có lớp chặn; Antigravity, Codex, Cursor thì không có gì.</li>
+  </ul>
+</section>
+
+<section class="cards">
+  <div class="card">
+    <div class="num">1 · Không cho bịa</div>
+    <ul>
+      <li><b>Thiếu thì nói thiếu.</b> Ghi <code>[CHƯA CÓ TRONG TÀI LIỆU]</code> là đạt <span class="arrow">→</span> 18 chỗ được ghi rõ thay vì bịa.</li>
+      <li><b>Mỗi quy tắc phải kèm câu trích nguyên văn</b>, và máy dò lại trong đúng file <span class="arrow">→</span> 45/45 dòng dò thấy.</li>
+      <li><b>Chữ thông báo và con số trong test case phải có nguồn</b> <span class="arrow">→</span> test case bịa bị chặn 4 lỗi.</li>
+      <li><b>Cấm <code>[GIẢ ĐỊNH]</code> trong ô giá trị.</b></li>
+      <li><b>Tri thức mẫu được làm sạch</b>, tính năng mới bắt đầu trống.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="num">2 · Chạy lần nào cũng giống</div>
+    <ul>
+      <li><b>Tìm kẽ hở theo bảng cố định</b>, quét xong là dừng, bỏ chỉ tiêu "≥5 câu hỏi".</li>
+      <li><b>Máy dựng khung, đánh mã số, tính điểm biên</b> (<code>scaffold</code>, <code>ids</code>, <code>boundary</code>) <span class="arrow">→</span> mã nối tiếp, không đánh lại.</li>
+      <li><b>Đo được độ lệch</b> giữa hai lần chạy bằng <code>diff-runs</code>.</li>
+      <li><b>Chặng cuối có điểm kết thúc rõ</b> (PASS khi mọi mục đã có test case).</li>
+      <li><b>Mọi luật nằm ở một file</b> <code>QA_STANDARD.md</code>.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="num">3 · Không mất thông tin</div>
+    <ul>
+      <li><b>Giữ comment, chỉnh sửa chưa duyệt, header, dòng ẩn</b>, tách riêng thành "chưa chốt" <span class="arrow">→</span> thành câu hỏi cho BA.</li>
+      <li><b>Bản cũ tự cất</b> vào <code>_superseded/</code>, AI không đọc nữa.</li>
+      <li><b>Tên task theo tính năng</b>, bỏ version và ngày.</li>
+      <li><b>Tài liệu mới vào task đã có thì dừng lại hỏi</b> trước khi gộp.</li>
+      <li><b>File lỗi không bị xoá</b>, được giữ nguyên và báo lại.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="num">4 · Cổng chặn bằng máy</div>
+    <ul>
+      <li><b>Câu trả lời phải có người và ngày</b>; câu mơ hồ không tính.</li>
+      <li><b>AI không được tự chốt thay BA</b> <span class="arrow">→</span> "Claude" chốt thì cổng vẫn đóng.</li>
+      <li><b>Chặn ghi file chặng sau</b> khi chưa hỏi xong, ghi qua cách nào cũng chặn.</li>
+      <li><b>Kiểm lại trước mỗi lần commit</b>, áp dụng cho mọi IDE.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="num">5 · Tiết kiệm token</div>
+    <ul>
+      <li><b>Đọc JSON theo từng nhánh</b> (<code>npm run json</code>), không mở cả file.</li>
+      <li><b>Tra bản đồ hệ thống theo từ khoá</b> (<code>npm run map</code>).</li>
+      <li><b>Hướng dẫn nạp mỗi chặng giảm từ ~62 KB xuống ~30 KB.</b></li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="num">6 · Tạo skill</div>
+    <ul>
+      <li><b>Có bước nghiệm thu:</b> chạy skill hai lần trên cùng đầu vào rồi so bằng <code>diff-runs</code>.</li>
+      <li><b>Sửa đường dẫn sai</b> khiến skill mới bị tạo vào thư mục không tồn tại.</li>
+      <li><b>Bỏ file cài skill có sẵn</b>; học viên tự cài.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Sửa thêm sau lần chạy thử</h2>
+  <p>Chạy trên tài liệu thật làm lộ ra 7 lỗi mà các bài test sẵn có không bắt được. Cả 7 đều đã sửa, mỗi lỗi có test mới đi kèm. Bộ test hiện có 336 bài, xanh hết.</p>
+  <details open>
+    <summary>7 lỗi đã sửa</summary>
+    <div class="tbl"><table>
+      <thead><tr><th>Lỗi</th><th>Nếu không sửa</th><th>File</th></tr></thead>
+      <tbody>
+        <tr><td>File trả lời của BA gửi sau bị tạo thành task mới</td><td class="s">Câu trả lời không tới đúng tính năng, cổng không bao giờ mở</td><td><code>intake/versioning.js</code></td></tr>
+        <tr><td>AI ghi được dòng "đã chốt" giả vào tri thức</td><td class="s">Người đọc sau tưởng BA đã trả lời</td><td><code>gate-hook.js</code></td></tr>
+        <tr><td>Hai luật mâu thuẫn khi BA trả lời xong (skill bảo không quét lại, máy kiểm lại đòi quét)</td><td class="s">Quy tắc mới từ câu trả lời của BA không được kiểm kẽ hở</td><td><code>missing-rule-06w.md</code></td></tr>
+        <tr><td>Task bị đặt tên theo file API</td><td class="s">Tên task sai tính năng</td><td><code>intake.js</code></td></tr>
+        <tr><td>File đã nhận vẫn nằm lại trong INPUT/</td><td class="s">Lần sau bị hỏi lại</td><td><code>intake.js</code></td></tr>
+        <tr><td>Đọc sai version và ngày khi chúng nằm chung một dòng</td><td class="s">So bản mới/cũ sai</td><td><code>doc-converter.js</code></td></tr>
+        <tr><td>Cảnh báo dòng ẩn không nói dòng đó chứa gì</td><td class="s">Phải mở file gốc mới biết</td><td><code>doc-converter.js</code></td></tr>
+      </tbody>
+    </table></div>
+  </details>
+</section>
+
+<section>
+  <h2>Hai điểm còn yếu, và cách xử lý</h2>
+  <div class="cards">
+    <div class="card">
+      <div class="num">Vấn đề 1</div>
+      <h3>AI hiểu sai một câu có thật</h3>
+      <p class="muted">Máy kiểm được "chữ này có trong tài liệu không", nhưng không kiểm được "AI hiểu câu đó đúng chưa". Ví dụ: tài liệu ghi "từ 500.000đ trở xuống", AI lại viết thành "dưới 500.000đ". Câu trích vẫn đúng, nhưng điều kiện đã lệch.</p>
+      <ul>
+        <li><b>Người duyệt đối chiếu hai cột đặt cạnh nhau.</b> Mỗi quy tắc ở Chặng 01 đã có cột "Điều kiện" (AI viết) nằm ngay cạnh "Trích nguyên văn" (tài liệu gốc). QA đọc lướt từng cặp, chú ý dấu so sánh, chữ "và / hoặc", chữ "trừ khi". Mỗi dòng mất khoảng 10 giây.</li>
+        <li><b>Duyệt ở Chặng 01 trước khi đi tiếp.</b> Sai ở đây sẽ lan sang mọi test case phía sau, nên đây là chỗ đáng tốn công nhất. Cách làm: thêm một bước "QA/BA xác nhận 01" vào kế hoạch, đặt trước bước tìm kẽ hở.</li>
+        <li><b>Dùng hai lần chạy để chỉ chỗ cần đọc.</b> Chạy Chặng 01 hai lần rồi so bằng <code>diff-runs</code>. Câu trích nào hai lần diễn giải khác nhau thì người đọc lại câu đó trước.</li>
+        <li><b>Viết test case cho biên.</b> Dấu so sánh sai sẽ lộ ra ngay ở các ca 500.000đ / 500.001đ khi chạy thử.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="num">Vấn đề 2</div>
+      <h3>Câu trả lời "chưa chốt" của BA không được lưu vào tri thức</h3>
+      <p class="muted">Khi BA trả lời mơ hồ ("Tuỳ trường hợp, sẽ báo sau"), câu hỏi đúng là vẫn mở. Nhưng câu trả lời đó chỉ nằm trong file kết quả của lần chạy. Phần tri thức vẫn ghi "Mới, chưa ai trả lời", nên lần chạy sau không biết câu này đã hỏi rồi và BA đang hẹn trả lời.</p>
+      <ul>
+        <li><b>Sửa công cụ đồng bộ (<code>knowledge:sync</code>).</b> Câu ở trạng thái TREO cũng được chép sang tri thức: nguyên văn câu trả lời, người trả lời, ngày, trạng thái <code>TREO</code>. Cổng vẫn đóng như hiện tại, vì TREO không mở cổng.</li>
+        <li><b>Cổng nhắc đúng tình trạng.</b> Thay vì "chưa có câu trả lời", cổng ghi "BA đã trả lời ngày …, chưa đủ để chốt: '…'". Nhờ vậy người dùng biết cần hỏi lại BA điều gì.</li>
+        <li><b>Thêm một test</b> cho đúng tình huống của lần chạy này (MR-07 "Tuỳ trường hợp") để lỗi không quay lại.</li>
+        <li><span class="pill ok">Đã sửa</span> trong <code>knowledge/sync-answers.js</code> và <code>system/gate.js</code>, kèm 2 test mới. Cách người dùng làm việc không đổi.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="summary">
+  <h2>Tóm lại, nâng cấp này giúp được gì</h2>
+  <div class="grid">
+    <div class="item"><b>Hết bịa</b><span>Test case chỉ dùng chữ và số có trong tài liệu. Bịa là máy chặn ngay; bản cũ cho qua.</span></div>
+    <div class="item"><b>Thiếu thì hỏi</b><span>AI gửi 17 câu hỏi cho BA thay vì tự đoán. Chỗ chưa có câu trả lời được ghi rõ là thiếu.</span></div>
+    <div class="item"><b>Không mất thông tin</b><span>Comment, chỉnh sửa chưa duyệt, dòng ẩn, bản cũ đều được giữ và tách đúng chỗ. Bản cũ làm rơi hoặc hiểu nhầm cả 4 thứ này.</span></div>
+    <div class="item"><b>Ổn định hơn</b><span>Phần lấy từ tài liệu thì hai lần chạy ra giống hệt nhau. Phần AI tự phán đoán vẫn còn lệch, và giờ đã đo được bằng số.</span></div>
+    <div class="item"><b>Không đi tắt được</b><span>Chưa hỏi BA xong thì không làm test case được, kể cả khi AI "tự trả lời" giúp.</span></div>
+  </div>
+  <p>Nói ngắn gọn: trước đây kết quả đẹp nhưng không biết thật hay bịa. Giờ mỗi dòng đều chỉ ra được nó lấy từ đâu, còn chỗ nào thiếu thì hệ thống nói thẳng là thiếu.</p>
+</section>
+
+</div>
+</body>
+</html>

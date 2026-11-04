@@ -1,0 +1,4 @@
+{"event":"locked","at":"2026-11-04T10:29:00.026Z","reasons":["Stage 2 returned `Verdict: ASK` in OUTPUT/hoan-tien/02_missing_rule_report.md","16 question(s) unsettled in knowledge/features/hoan-tien.md (MR-01, MR-02, MR-03, MR-04, MR-05, MR-06, MR-07, MR-08, MR-09, MR-10, MR-11, MR-12, MR-13, MR-14, MR-15, MR-16)"]}
+{"event":"unlocked","at":"2026-11-04T10:33:03.207Z"}
+{"event":"locked","at":"2026-11-04T10:35:43.743Z","reasons":["Stage 2 returned `Verdict: ASK` in OUTPUT/hoan-tien/02_missing_rule_report.md","1 question(s) unsettled in knowledge/features/hoan-tien.md (MR-17)"]}
+{"event":"unlocked","at":"2026-11-04T10:36:01.124Z"}

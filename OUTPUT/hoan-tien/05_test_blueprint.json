@@ -1,0 +1,461 @@
+[
+ {
+  "tc_id": "REFUND-001",
+  "ti_id": "TI-01",
+  "rule_id": "BR-01",
+  "viewpoint_id": "VP-01",
+  "purpose": "Gửi yêu cầu hợp lệ cho đơn Đã giao",
+  "priority": "Medium",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-002",
+  "ti_id": "TI-02",
+  "rule_id": "BR-01",
+  "viewpoint_id": "VP-02",
+  "purpose": "Gọi API tạo yêu cầu cho đơn chưa Đã giao",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-003",
+  "ti_id": "TI-03",
+  "rule_id": "BR-02",
+  "viewpoint_id": "VP-03",
+  "purpose": "Gửi lúc 23:59 ngày thứ 10 (ngày giao = ngày 0, giờ UTC+7)",
+  "priority": "High",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-004",
+  "ti_id": "TI-03",
+  "rule_id": "BR-02",
+  "viewpoint_id": "VP-03",
+  "purpose": "Gửi lúc 00:00 ngày thứ 11",
+  "priority": "High",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-005",
+  "ti_id": "TI-05",
+  "rule_id": "BR-03",
+  "viewpoint_id": "VP-02",
+  "purpose": "Gửi yêu cầu thứ hai khi đã có yêu cầu Chờ duyệt",
+  "priority": "High",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-006",
+  "ti_id": "TI-06",
+  "rule_id": "BR-04",
+  "viewpoint_id": "VP-02",
+  "purpose": "Số tiền = paidAmount + 1",
+  "priority": "High",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-007",
+  "ti_id": "TI-07",
+  "rule_id": "BR-23",
+  "viewpoint_id": "VP-01",
+  "purpose": "Số tiền = paidAmount (gồm phí vận chuyển, đã trừ voucher)",
+  "priority": "High",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-008",
+  "ti_id": "TI-08",
+  "rule_id": "BR-18",
+  "viewpoint_id": "VP-01",
+  "purpose": "Yêu cầu thứ hai = paidAmount trừ phần đã hoàn",
+  "priority": "High",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-009",
+  "ti_id": "TI-08",
+  "rule_id": "BR-18",
+  "viewpoint_id": "VP-01",
+  "purpose": "Yêu cầu thứ hai = (paidAmount trừ phần đã hoàn) + 1",
+  "priority": "High",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-010",
+  "ti_id": "TI-09",
+  "rule_id": "FD-02",
+  "viewpoint_id": "VP-03",
+  "purpose": "Số tiền 9.999 (min-1, máy tính)",
+  "priority": "High",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-011",
+  "ti_id": "TI-09",
+  "rule_id": "FD-02",
+  "viewpoint_id": "VP-03",
+  "purpose": "Số tiền 10.000 (min)",
+  "priority": "High",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-012",
+  "ti_id": "TI-09",
+  "rule_id": "FD-02",
+  "viewpoint_id": "VP-03",
+  "purpose": "Số tiền 10.001 (min+1)",
+  "priority": "High",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-013",
+  "ti_id": "TI-10",
+  "rule_id": "FD-01",
+  "viewpoint_id": "VP-02",
+  "purpose": "Bỏ trống Lý do",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-014",
+  "ti_id": "TI-10",
+  "rule_id": "FD-02",
+  "viewpoint_id": "VP-02",
+  "purpose": "Bỏ trống Số tiền",
+  "priority": "High",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-015",
+  "ti_id": "TI-11",
+  "rule_id": "FD-01",
+  "viewpoint_id": "VP-02",
+  "purpose": "Gọi API với reason = defective (chữ thường)",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-016",
+  "ti_id": "TI-12",
+  "rule_id": "FD-03",
+  "viewpoint_id": "VP-03",
+  "purpose": "Mô tả 499 ký tự (max-1)",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-017",
+  "ti_id": "TI-12",
+  "rule_id": "FD-03",
+  "viewpoint_id": "VP-03",
+  "purpose": "Mô tả 500 ký tự (max)",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-018",
+  "ti_id": "TI-12",
+  "rule_id": "FD-03",
+  "viewpoint_id": "VP-03",
+  "purpose": "Mô tả 501 ký tự (max+1)",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-019",
+  "ti_id": "TI-13",
+  "rule_id": "FD-04",
+  "viewpoint_id": "VP-03",
+  "purpose": "Đính kèm 2 ảnh (max-1)",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-020",
+  "ti_id": "TI-13",
+  "rule_id": "FD-04",
+  "viewpoint_id": "VP-03",
+  "purpose": "Đính kèm 3 ảnh (max)",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-021",
+  "ti_id": "TI-13",
+  "rule_id": "FD-04",
+  "viewpoint_id": "VP-03",
+  "purpose": "Đính kèm 4 ảnh (max+1)",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-022",
+  "ti_id": "TI-14",
+  "rule_id": "FD-04",
+  "viewpoint_id": "VP-02",
+  "purpose": "Ảnh dung lượng đúng 5 MB",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-023",
+  "ti_id": "TI-14",
+  "rule_id": "FD-04",
+  "viewpoint_id": "VP-02",
+  "purpose": "Ảnh dung lượng lớn hơn 5 MB",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-024",
+  "ti_id": "TI-15",
+  "rule_id": "FD-04",
+  "viewpoint_id": "VP-02",
+  "purpose": "Ảnh định dạng GIF",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-025",
+  "ti_id": "TI-16",
+  "rule_id": "BR-24",
+  "viewpoint_id": "VP-02",
+  "purpose": "Lý do Hàng lỗi, không đính kèm ảnh",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-026",
+  "ti_id": "TI-17",
+  "rule_id": "BR-05",
+  "viewpoint_id": "VP-03",
+  "purpose": "Hàng lỗi, 500.000đ, có ảnh",
+  "priority": "High",
+  "batch": 1
+ },
+ {
+  "tc_id": "REFUND-027",
+  "ti_id": "TI-17",
+  "rule_id": "BR-05",
+  "viewpoint_id": "VP-03",
+  "purpose": "Hàng lỗi, 500.001đ, có ảnh",
+  "priority": "High",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-028",
+  "ti_id": "TI-18",
+  "rule_id": "BR-19",
+  "viewpoint_id": "VP-02",
+  "purpose": "Giao sai hàng, 500.000đ",
+  "priority": "High",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-029",
+  "ti_id": "TI-19",
+  "rule_id": "BR-06",
+  "viewpoint_id": "VP-03",
+  "purpose": "Yêu cầu 5.000.000đ",
+  "priority": "Medium",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-030",
+  "ti_id": "TI-19",
+  "rule_id": "BR-06",
+  "viewpoint_id": "VP-03",
+  "purpose": "Yêu cầu 5.000.001đ",
+  "priority": "Medium",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-031",
+  "ti_id": "TI-20",
+  "rule_id": "BR-20",
+  "viewpoint_id": "VP-04",
+  "purpose": "Nhân viên CSKH mở yêu cầu 5.000.001đ",
+  "priority": "Medium",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-032",
+  "ti_id": "TI-21",
+  "rule_id": "BR-21",
+  "viewpoint_id": "VP-01",
+  "purpose": "Trưởng nhóm duyệt yêu cầu 5.000.000đ",
+  "priority": "Medium",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-033",
+  "ti_id": "TI-22",
+  "rule_id": "BR-07",
+  "viewpoint_id": "VP-01",
+  "purpose": "Duyệt → cổng xác nhận → Đã hoàn tiền về phương thức gốc",
+  "priority": "High",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-034",
+  "ti_id": "TI-23",
+  "rule_id": "AF-09",
+  "viewpoint_id": "VP-08",
+  "purpose": "Cổng thanh toán hoàn tiền thất bại",
+  "priority": "High",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-035",
+  "ti_id": "TI-24",
+  "rule_id": "BR-08",
+  "viewpoint_id": "VP-01",
+  "purpose": "Từ chối có nhập lý do",
+  "priority": "High",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-036",
+  "ti_id": "TI-25",
+  "rule_id": "FD-05",
+  "viewpoint_id": "VP-03",
+  "purpose": "Lý do từ chối 254 ký tự",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-037",
+  "ti_id": "TI-25",
+  "rule_id": "FD-05",
+  "viewpoint_id": "VP-03",
+  "purpose": "Lý do từ chối 255 ký tự",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-038",
+  "ti_id": "TI-25",
+  "rule_id": "FD-05",
+  "viewpoint_id": "VP-03",
+  "purpose": "Lý do từ chối 256 ký tự",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-039",
+  "ti_id": "TI-26",
+  "rule_id": "FD-05",
+  "viewpoint_id": "VP-02",
+  "purpose": "Lý do từ chối để trống",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-040",
+  "ti_id": "TI-26",
+  "rule_id": "FD-05",
+  "viewpoint_id": "VP-02",
+  "purpose": "Lý do từ chối chỉ có khoảng trắng",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-041",
+  "ti_id": "TI-27",
+  "rule_id": "BR-14",
+  "viewpoint_id": "VP-08",
+  "purpose": "Email khi yêu cầu được duyệt",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-042",
+  "ti_id": "TI-27",
+  "rule_id": "BR-14",
+  "viewpoint_id": "VP-08",
+  "purpose": "Email từ chối có kèm lý do từ chối",
+  "priority": "Medium [ĐỀ XUẤT]",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-043",
+  "ti_id": "TI-28",
+  "rule_id": "BR-11",
+  "viewpoint_id": "VP-01",
+  "purpose": "Khách huỷ yêu cầu Chờ duyệt, xác nhận",
+  "priority": "Medium",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-044",
+  "ti_id": "TI-30",
+  "rule_id": "BR-15",
+  "viewpoint_id": "VP-05",
+  "purpose": "Nút Huỷ yêu cầu ở trạng thái Đã duyệt",
+  "priority": "Medium",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-045",
+  "ti_id": "TI-31",
+  "rule_id": "AF-10",
+  "viewpoint_id": "VP-05",
+  "purpose": "Huỷ và duyệt cùng lúc",
+  "priority": "Medium",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-046",
+  "ti_id": "TI-32",
+  "rule_id": "BR-12",
+  "viewpoint_id": "VP-02",
+  "purpose": "Sửa yêu cầu đã gửi",
+  "priority": "Medium",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-047",
+  "ti_id": "TI-33",
+  "rule_id": "BR-13",
+  "viewpoint_id": "VP-03",
+  "purpose": "Lần gửi thứ 2 sau khi lần 1 bị từ chối",
+  "priority": "High",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-048",
+  "ti_id": "TI-33",
+  "rule_id": "BR-13",
+  "viewpoint_id": "VP-03",
+  "purpose": "Lần gửi thứ 3",
+  "priority": "High",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-049",
+  "ti_id": "TI-34",
+  "rule_id": "AF-08",
+  "viewpoint_id": "VP-04",
+  "purpose": "API tạo yêu cầu với orderId của tài khoản khác",
+  "priority": "High",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-050",
+  "ti_id": "TI-35",
+  "rule_id": "BR-16",
+  "viewpoint_id": "VP-04",
+  "purpose": "Màn chi tiết đơn COD Đã giao",
+  "priority": "High",
+  "batch": 2
+ },
+ {
+  "tc_id": "REFUND-051",
+  "ti_id": "TI-35",
+  "rule_id": "AF-15",
+  "viewpoint_id": "VP-04",
+  "purpose": "API tạo yêu cầu cho đơn COD Đã giao",
+  "priority": "High",
+  "batch": 2
+ }
+]
