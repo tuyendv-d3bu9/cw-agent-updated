@@ -7,12 +7,13 @@
  * - Deduplication via SHA-256 content hashing.
  * - Multi-format conversion (.docx, .doc, .xlsx, .xls, .csv, .pdf, .pptx, .json, .yaml, .txt).
  * - Automatic 5-category classification (01_business -> 05_communication).
- * - Traceability stamp injection into generated Markdown.
+ * - Source metadata block (file name, sha256, title/version/date) at the top of each Markdown.
+ * - Images/design files kept untouched in 04_design/_assets/; unsupported files reported as FAILED.
  * - Dry-run mode for pre-flight inspection without disk writes.
  * - Intake Manifest generation in JSON & Markdown.
  *
  * Usage:
- *   npm run intake:bulk [-- <source-dir>] [--slug <target-slug>] [--dry-run] [--concurrency 4]
+ *   npm run intake:bulk [-- <source-dir>] [--slug <target-slug> | --into <task-có-sẵn>] [--dry-run] [--concurrency 4]
  * Examples:
  *   node qa-system/tools/intake/bulk-intake.js INPUT/raw_specs/ --dry-run
  *   node qa-system/tools/intake/bulk-intake.js INPUT/raw_specs/ --slug core-system
@@ -22,8 +23,11 @@
 const fs = require('fs');
 const path = require('path');
 const { PATHS } = require('../lib/paths');
-const { convertDocumentToMarkdown, getFileMetadata } = require('../lib/doc-converter');
-const { classifyDocument, slugify, pickSlug, findDuplicate, duplicateNotice } = require('./intake');
+const { convertDocumentToMarkdown, getFileMetadata, fileKind } = require('../lib/doc-converter');
+const {
+  classifyDetailed, slugify, pickSlug, findDuplicate, duplicateNotice, scaffoldTask, fileAsset, BINS,
+} = require('./intake');
+const versioning = require('./versioning');
 
 // Parse CLI arguments
 const args = process.argv.slice(2);
@@ -36,7 +40,8 @@ function getArgValue(flag, defaultValue) {
   return idx !== -1 && args[idx + 1] ? args[idx + 1] : defaultValue;
 }
 
-const customSlug = getArgValue('--slug', null);
+// `--into` = xác nhận gộp vào task đã có; `--slug` = đặt tên task. Cả hai đều là người dùng đã chỉ đích danh.
+const customSlug = getArgValue('--into', null) || getArgValue('--slug', null);
 const concurrency = parseInt(getArgValue('--concurrency', '4'), 10);
 const chunkSize = parseInt(getArgValue('--chunk', '10'), 10);
 const positional = args.filter((a, idx) => !a.startsWith('--') && (idx === 0 || !args[idx - 1].startsWith('--')));
@@ -82,57 +87,6 @@ function scanFiles(srcPath) {
 }
 
 /**
- * Scaffold task folder structure and plan
- */
-function scaffoldTask(slug) {
-  const created = [];
-  const ensureDir = (p) => {
-    if (!fs.existsSync(p)) {
-      fs.mkdirSync(p, { recursive: true });
-      created.push(path.relative(PATHS.ROOT, p) + '/');
-    }
-  };
-
-  ensureDir(path.join(PATHS.OUTPUT, slug));
-
-  const kPath = path.join(PATHS.FEATURES, `${slug}.md`);
-  if (!fs.existsSync(kPath)) {
-    const tpl = path.join(PATHS.KNOWLEDGE, '_template.md');
-    if (fs.existsSync(tpl)) {
-      ensureDir(PATHS.FEATURES);
-      fs.writeFileSync(kPath, fs.readFileSync(tpl, 'utf-8'), 'utf-8');
-      created.push(path.relative(PATHS.ROOT, kPath));
-    }
-  }
-
-  const planPath = path.join(PATHS.OUTPUT, slug, '00_plan.md');
-  if (!fs.existsSync(planPath)) {
-    const today = new Date().toISOString().slice(0, 10);
-    fs.writeFileSync(planPath, `# Kế Hoạch Phân Tích & Kiểm Thử · ${slug}
-Ngày tạo: ${today} · Người lập: bulk-intake.js · Trạng thái: IN-PROGRESS
-
-## 1. Phạm Vi & Tài Liệu Nguồn
-- Tài liệu yêu cầu: \`INPUT/${slug}/\` (5 ngăn 01_business → 05_communication)
-- Tri thức dự án: \`knowledge/_project.md\` · \`knowledge/_glossary.md\`
-- Tri thức tính năng: \`knowledge/features/${slug}.md\`
-
-## 2. Lộ Trình Từng Chặng
-- [ ] **Chặng 1**: Đọc yêu cầu thô & Phân tích rủi ro [qa-analyst/skills/requirement-risk-summary.md] ➔ \`01_requirement_risk_summary.md\`
-- [ ] **Chặng 2**: Quét kẽ hở 06W & Câu hỏi cho BA [qa-analyst/skills/missing-rule-06w.md] ➔ \`02_missing_rule_report.md\`
-      *(Verdict ASK ⇒ DỪNG. \`npm run gate ${slug}\` quyết định, không phải lời nói.)*
-- [ ] **Chặng 3**: Chọn Risk Area & Viewpoints [qa-analyst/skills/viewpoint-selection.md] ➔ \`03_viewpoint_report.md\`
-- [ ] **Chặng 4**: Thiết kế Test Idea & Lọc Giữ/Bỏ [qa-analyst/skills/test-idea-design.md] ➔ \`04_test_idea_report.md\`
-- [ ] **Chặng 5**: Sinh Test Case 8 trường [qa-test-design/skills/test-case-generation.md] ➔ \`05_test_case_spec.md\`
-      *(Trước khi báo xong: \`npm run lint -- ${slug}\`)*
-- [ ] **Chặng 6**: Rà soát độ phủ 3 góc nhìn [qa-test-design/skills/coverage-review.md] ➔ \`06_coverage_review.md\`
-`, 'utf-8');
-    created.push(path.relative(PATHS.ROOT, planPath));
-  }
-
-  return created;
-}
-
-/**
  * Worker pool to process items with limited concurrency
  */
 async function runWorkerQueue(items, workerFn, limit) {
@@ -172,11 +126,25 @@ async function main() {
 
   if (allFiles.length === 0) {
     console.log(`\n⚠️ No eligible documents found in: ${targetSource}`);
-    console.log(`   Supported formats: .docx, .doc, .xlsx, .xls, .csv, .pdf, .pptx, .json, .yaml, .txt\n`);
+    console.log(`   Supported formats: .docx .xlsx .xls .csv .pdf .pptx .html .md .txt .json .yaml; images → 04_design/_assets\n`);
     return;
   }
 
   console.log(`\n📊 Found ${allFiles.length} file(s) to process. Starting batch analysis...\n`);
+
+  // Cùng cách gom của intake.js: mặc định MỘT task cho cả lượt, đặt tên theo tài liệu BA.
+  // Tách mỗi file một task thì CR/biên bản rời khỏi spec mà nó sửa.
+  const groupSlug = customSlug || pickSlug(allFiles);
+  if (!customSlug) {
+    console.log(`🏷️ Gom tất cả vào một task: [ ${groupSlug} ] — khác tính năng thì chạy lại từng nhóm với --slug <task>.\n`);
+  }
+  if (!customSlug && versioning.taskHasDocs(groupSlug)) {
+    console.log(versioning.confirmNotice(groupSlug, allFiles, { intakeCmd: 'npm run intake:bulk --' }));
+    if (!isDryRun) {
+      process.exitCode = 2;
+      return;
+    }
+  }
 
   // Step 1: Compute hashes and detect duplicates
   const seenHashes = new Map();
@@ -234,10 +202,20 @@ async function main() {
 
     for (let i = 0; i < Math.min(uniqueFiles.length, 30); i++) {
       const f = uniqueFiles[i];
-      const baseName = path.basename(f.filename, f.ext);
-      const slug = customSlug || slugify(baseName);
-      // Rough preview classification
-      const category = classifyDocument('', f.filename);
+      const slug = groupSlug;
+      // Cùng bộ phân ngăn với lần chạy thật: chuyển đổi trong bộ nhớ (không ghi đĩa) rồi chấm điểm nội dung.
+      let category;
+      const kind = fileKind(f.originalPath);
+      if (kind.kind === 'asset') category = '04_design/_assets';
+      else if (kind.kind !== 'convert') category = 'LỖI: không hỗ trợ';
+      else {
+        try {
+          const cls = classifyDetailed(await convertDocumentToMarkdown(f.originalPath), f.filename);
+          category = cls.bin + (cls.unsure ? ' ?' : '');
+        } catch (err) {
+          category = 'LỖI: chuyển đổi';
+        }
+      }
       console.log(`| ${(i + 1).toString().padEnd(3)} | ${f.filename.slice(0, 30).padEnd(30)} | ${f.sizeKb.padEnd(7)} | ${slug.slice(0, 16).padEnd(16)} | ${category.padEnd(17)} |`);
     }
 
@@ -245,6 +223,7 @@ async function main() {
       console.log(`| ... and ${uniqueFiles.length - 30} more file(s)`);
     }
     console.log(`-----------------------------------------------------------------------------------------`);
+    console.log(`   (\`?\` = xếp ngăn chưa chắc, cần người dùng xác nhận)`);
     console.log(`\n💡 To execute conversion and intake, run WITHOUT --dry-run:`);
     console.log(`   npm run intake:bulk -- "${path.relative(PATHS.ROOT, targetSource)}"${customSlug ? ' --slug ' + customSlug : ''}\n`);
     return;
@@ -255,20 +234,29 @@ async function main() {
 
   const manifestItems = [];
   const affectedSlugs = new Set();
+  const writtenPaths = new Set();
 
   async function processOneDocument(item, idx, total) {
     const startTime = Date.now();
     const baseName = path.basename(item.filename, item.ext);
-    const slug = customSlug || slugify(baseName);
+    const slug = groupSlug;
 
     try {
-      const markdownContent = await convertDocumentToMarkdown(item.originalPath, { withStamp: true });
+      const kind = fileKind(item.originalPath);
+      if (kind.kind === 'asset') {
+        const dest = fileAsset(item.originalPath, slug); // chép, không xoá bản gốc
+        affectedSlugs.add(slug);
+        console.log(`   [${idx + 1}/${total}] 🖼️ Asset: "${item.filename}" -> ${path.relative(PATHS.ROOT, dest)}`);
+        return { filename: item.filename, hash: item.hash, slug, category: '04_design/_assets', destPath: path.relative(PATHS.ROOT, dest), sizeKb: item.sizeKb, status: 'SUCCESS' };
+      }
+      if (kind.kind !== 'convert' && item.ext !== '.doc') throw new Error(kind.reason);
+
+      const markdownContent = await convertDocumentToMarkdown(item.originalPath);
 
       // Cổng chống trùng — giống intake đơn lẻ, chặn trước khi ghi.
       const dup = FORCE ? null : findDuplicate(markdownContent, slug);
       if (dup) {
         console.error(duplicateNotice(dup, slug, item.filename));
-        affectedSlugs.delete(slug);
         return {
           filename: item.filename,
           hash: item.hash,
@@ -278,18 +266,15 @@ async function main() {
         };
       }
 
-      const category = classifyDocument(markdownContent, item.filename);
+      const cls = classifyDetailed(markdownContent, item.filename);
+      const category = cls.bin;
 
-      // Create destination
       const targetDir = path.join(PATHS.INPUT, slug, category);
-      fs.mkdirSync(targetDir, { recursive: true });
+      BINS.forEach((cat) => fs.mkdirSync(path.join(PATHS.INPUT, slug, cat), { recursive: true }));
 
-      // Ensure all 5 categories exist for structure consistency
-      ['01_business', '02_ba', '03_dev', '04_design', '05_communication'].forEach(cat => {
-        fs.mkdirSync(path.join(PATHS.INPUT, slug, cat), { recursive: true });
-      });
-
-      const destPath = path.join(targetDir, `${slugify(baseName)}.md`);
+      let destPath = path.join(targetDir, `${slugify(baseName)}.md`);
+      if (writtenPaths.has(destPath)) destPath = path.join(targetDir, `${slugify(baseName)}-${item.ext.slice(1)}.md`);
+      writtenPaths.add(destPath);
       fs.writeFileSync(destPath, markdownContent, 'utf8');
 
       affectedSlugs.add(slug);
@@ -301,6 +286,8 @@ async function main() {
         hash: item.hash,
         slug,
         category,
+        unsure: cls.unsure,
+        classifyReason: cls.reason,
         destPath: path.relative(PATHS.ROOT, destPath),
         sizeKb: item.sizeKb,
         status: 'SUCCESS',
@@ -320,6 +307,14 @@ async function main() {
 
   const results = await runWorkerQueue(uniqueFiles, processOneDocument, concurrency);
   manifestItems.push(...results);
+
+  // Bản cũ của cùng tài liệu → _superseded/. Chạy tuần tự SAU hàng đợi song song để không tranh chấp file.
+  const versions = versioning.applySupersede(
+    manifestItems
+      .filter((m) => m.status === 'SUCCESS' && m.destPath && m.destPath.endsWith('.md'))
+      .map((m) => path.join(PATHS.ROOT, m.destPath))
+  );
+  versioning.printVersioning(versions);
 
   // Step 4: Scaffold tasks for all affected slugs
   console.log(`\n🏗️ Scaffolding task structures and 00_plan.md for ${affectedSlugs.size} feature(s)...`);
@@ -341,6 +336,8 @@ async function main() {
     failedCount: manifestItems.filter(m => m.status === 'FAILED').length,
     affectedSlugs: Array.from(affectedSlugs),
     items: manifestItems,
+    superseded: versions.superseded,
+    versionUnclear: versions.unclear,
     duplicates: duplicates.map(d => ({
       filename: d.filename,
       duplicateOf: path.basename(d.duplicateOf),
@@ -373,8 +370,14 @@ async function main() {
   mdReport += `|---|---|---|---|---|---|---|\n`;
 
   manifestItems.forEach((it, idx) => {
-    mdReport += `| ${idx + 1} | \`${it.filename}\` | ${it.sizeKb || '-'} | \`${it.slug}\` | \`${it.category || '-'}\` | \`${it.destPath || '-'}\` | **${it.status}** |\n`;
+    mdReport += `| ${idx + 1} | \`${it.filename}\` | ${it.sizeKb || '-'} | \`${it.slug}\` | \`${it.category || '-'}\`${it.unsure ? ' ⚠️ chưa chắc' : ''} | \`${it.destPath || '-'}\` | **${it.status}**${it.error ? ' — ' + String(it.error).replace(/\|/g, '/') : ''} |\n`;
   });
+
+  const unsure = manifestItems.filter((m) => m.unsure);
+  if (unsure.length) {
+    mdReport += `\n## Xếp ngăn CHƯA CHẮC — cần người dùng xác nhận\n\n`;
+    unsure.forEach((u) => { mdReport += `- \`${u.filename}\` → \`${u.category}\` (${u.classifyReason})\n`; });
+  }
 
   if (duplicates.length > 0) {
     mdReport += `\n## 3. Danh Sách File Trùng Lặp Bị Bỏ Qua (Deduplicated)\n\n`;
@@ -391,7 +394,15 @@ async function main() {
   console.log(`\n📄 Manifest exported:`);
   console.log(`   - JSON: ${path.relative(PATHS.ROOT, manifestJsonPath)}`);
   console.log(`   - MD:   ${path.relative(PATHS.ROOT, manifestMdPath)}`);
-  console.log(`\n🎉 [BULK INTAKE COMPLETED] All documents are standardized to clean Markdown in INPUT/.\n`);
+  if (manifest.failedCount > 0) {
+    console.error(`\n❌ ${manifest.failedCount} file KHÔNG nhận được (bản gốc giữ nguyên chỗ cũ):`);
+    manifestItems.filter((m) => m.status === 'FAILED').forEach((m) => console.error(`   - ${m.filename}: ${m.error}`));
+    process.exitCode = 1;
+  }
+  if (unsure.length) {
+    console.log(`\n⚠️ ${unsure.length} tài liệu xếp ngăn chưa chắc — xem manifest, nhờ người dùng xác nhận.`);
+  }
+  console.log(`\n${manifest.failedCount ? '⚠️ [BULK INTAKE XONG, CÓ LỖI]' : '🎉 [BULK INTAKE COMPLETED]'} ${manifest.successCount}/${uniqueFiles.length} file đã vào INPUT/.\n`);
 }
 
 if (require.main === module) {

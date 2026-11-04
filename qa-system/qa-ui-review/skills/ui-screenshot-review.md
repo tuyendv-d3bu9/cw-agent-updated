@@ -7,7 +7,7 @@ description: >
 
 # Skill: ui-screenshot-review
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT).
+> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · nhãn §2.1 · FACT §3 · thang Severity §11).
 > **Cần ảnh đính kèm (Vision). Không có ảnh → DỪNG, yêu cầu cung cấp ảnh.**
 
 ## Mục đích
@@ -42,7 +42,7 @@ Quét ảnh chụp màn hình, phát hiện và đặc tả vấn đề UI / Acc
 1. **Kiểm tra tiền đề** — không có ảnh → DỪNG và yêu cầu cung cấp ảnh.
 2. **Quét & phân loại** — với mỗi ảnh, liệt kê vấn đề nhìn thấy được, phân vào đúng 1 trong 3 nhóm.
 3. **Đặc tả từng vấn đề** — **Vị trí** (chỗ nào trên màn hình) · **Mô tả** (nhìn thấy gì) ·
-   **Lý do** (vì sao là vấn đề) · **Mức độ** (Low/Med/High) · **Đề xuất sửa**.
+   **Lý do** (vì sao là vấn đề) · **Severity** `[ĐỀ XUẤT]` theo thang QA_STANDARD §11 (`Critical`/`Major`/`Minor`/`Trivial`) · **Đề xuất sửa**.
 3b. **Truy vết về bản vẽ** — mỗi phát hiện trỏ về mã mục bị vi phạm trong `04_design/`
    (ví dụ `vi phạm MSG-01`). Ghi lại cả những mục sản phẩm **làm đúng**, để lần sửa sau
    không vô tình làm hỏng.
@@ -53,25 +53,25 @@ Quét ảnh chụp màn hình, phát hiện và đặc tả vấn đề UI / Acc
 Ghi ra `OUTPUT/<task-slug>/08_ui_screenshot_analysis.md`:
 
 ```markdown
-# UI SCREENSHOT ANALYSIS — [TÊN MÀN HÌNH]
-Owner: qa-system/qa-ui-review/ui-screenshot-review · Nguồn: Ảnh chụp màn hình đính kèm · Verdict: <PASS/ASK>
+# UI Screenshot Analysis · <task-slug>
+Owner: qa-system/qa-ui-review/skills/ui-screenshot-review.md · Nguồn: <ảnh đính kèm>, INPUT/<task-slug>/04_design/ · Verdict: PASS
 
 ## Ảnh [n]: [mô tả ngắn màn hình]
 
 ### UI Inconsistency
-| # | Vị trí | Mô tả (nhìn thấy) | Lý do | Mức độ | Đề xuất sửa |
-|:---|:---|:---|:---|:---:|:---|
-| UI-01 | [vị trí] | [mô tả] | [lý do] | [Low/Med/High] | [đề xuất] |
+| # | Vị trí | Mô tả (nhìn thấy) | Lý do | Vi phạm mục (04_design) | Severity | Đề xuất sửa |
+|---|---|---|---|---|---|---|
+| UI-01 | [vị trí] | [mô tả] | [lý do] | [mã mục, hoặc Không có chuẩn mực] | [ĐỀ XUẤT] Minor | [đề xuất] |
 
 ### Accessibility
-| # | Vị trí | Mô tả | Lý do | Mức độ | Đề xuất sửa |
-|:---|:---|:---|:---|:---:|:---|
-| AC-01 | … | … | … | … | … |
+| # | Vị trí | Mô tả | Lý do | Vi phạm mục (04_design) | Severity | Đề xuất sửa |
+|---|---|---|---|---|---|---|
+| AC-01 | … | … | … | … | … | … |
 
 ### UX Problem
-| # | Vị trí | Mô tả | Lý do | Mức độ | Đề xuất sửa |
-|:---|:---|:---|:---|:---:|:---|
-| UX-01 | … | … | … | … | … |
+| # | Vị trí | Mô tả | Lý do | Vi phạm mục (04_design) | Severity | Đề xuất sửa |
+|---|---|---|---|---|---|---|
+| UX-01 | … | … | … | … | … | … |
 
 > **Ghi chú độ tin cậy**: [các nhận định gắn [GIẢ ĐỊNH] cần cross-check bằng mắt, nếu có]
 ```

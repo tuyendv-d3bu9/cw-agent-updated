@@ -24,11 +24,11 @@ Một nhánh việc **tách rời khỏi pipeline tự động hóa**: dựng `E
 |---|---|
 | `OUTPUT/<slug>/03_viewpoint_report.md` | **Chỉ ĐỌC** — nguồn Risk Area để dựng Exploratory Charter. |
 | `OUTPUT/<slug>/05_test_case_spec.md` | **Chỉ ĐỌC** — nguồn Test Cases 8 trường cần tự động hóa. |
-| `OUTPUT/<slug>/07_web_journey_discovery.md` | **GHI** — bản đồ luồng thật + Gherkin BDD + ánh xạ Step ➔ Locator. |
+| `OUTPUT/<slug>/G1_web_journey_discovery.md` | **GHI** — bản đồ luồng thật + Gherkin BDD + ánh xạ Step ➔ Locator. |
 | `OUTPUT/<slug>/07_exploratory_charter.md` | **GHI** — bộ Charter 5 trường cho phiên thăm dò của con người. |
 | `OUTPUT/<slug>/runs/<run-id>/` | **GHI KẾT QUẢ** — xuất `run_result.md` và lưu ảnh vào `evidence/`. |
 | `automation/` | **GHI CODE** — nơi lưu trữ cấu trúc mã nguồn POM (`pages/`) và kịch bản (`tests/`). |
-| `knowledge/` | **Chỉ ĐỌC** (`_sut.json`, `_project.md`, `features/<slug>.md`). Ghi tri thức là độc quyền của `qa-analyst` — `QA_STANDARD.md` §8. |
+| `knowledge/` | **Chỉ ĐỌC** `_sut.json`, `_project.md`, `features/<slug>.md`, `features/<sut>-ui-map.md` (ai ghi mục nào: QA_STANDARD §8). |
 | Thư mục gốc / `INPUT/` | **KHÔNG ĐƯỢC PHÉP GHI TÙY TIỆN**. |
 
 ---
@@ -42,8 +42,8 @@ Một nhánh việc **tách rời khỏi pipeline tự động hóa**: dựng `E
 
 | Kỹ năng | Tên file skill | Nhiệm vụ chính | Đầu ra |
 |---|---|---|---|
-| **1. Khám phá web** | `skills/web-journey-discovery.md` | Mò web thật, quét DOM & Accessibility Tree | `07_web_journey_discovery.md` |
-| **2. Gom cụm luồng** | `skills/flow-clustering.md` | Nhóm các test case có chung User Journey | Cụm hành trình luồng |
+| **1. Khám phá web** | `skills/web-journey-discovery.md` | Mò web thật, quét DOM & Accessibility Tree | `G1_web_journey_discovery.md` |
+| **2. Gom cụm luồng** | `skills/flow-clustering.md` | Nhóm các test case có chung User Journey | `G2_flow_clusters.md` |
 | **3. Sinh POM** | `skills/pom-generator.md` | Xây dựng Page Object Model chuẩn TypeScript | `automation/pages/*.ts` |
 | **4. Runner & Evidence** | `skills/test-runner-evidence.md` | Thực thi Playwright, chụp ảnh kết quả | `run_result.md` & `evidence/*.png` |
 | **5. Charter thăm dò** | `skills/exploratory-charter.md` | Risk Area → Charter cho phiên của con người | `07_exploratory_charter.md` |
@@ -60,8 +60,9 @@ Một nhánh việc **tách rời khỏi pipeline tự động hóa**: dựng `E
    - **TUYỆT ĐỐI CẤM** dùng XPath tuyệt đối (`/html/body/div[2]/...`) hoặc class CSS ngẫu nhiên (hash classes).
 2. **Không Bao Giờ Làm Bẩn Kho Test Gốc**:
    - Mọi bằng chứng screenshot (`.png`) và kết quả Pass/Fail phải nằm trong `OUTPUT/<slug>/runs/<run-id>/evidence/`, không ghi đè làm bẩn `05_test_case_spec.md`.
-3. **Chuẩn Nghiệm Thu Nhị Phân (FACT)**:
-   - Kết quả Actual Result phải ghi rõ ràng, kèm link dẫn chứng ảnh để kiểm chứng đối chiếu.
+3. **Chỉ trích, không sáng tác** (QA_STANDARD §2, §10):
+   - Locator, URL, chữ trên màn hình lấy từ app thật hoặc `knowledge/features/<sut>-ui-map.md`; ví dụ trong skill không phải nguồn.
+   - Actual Result ghi rõ, kèm đường dẫn ảnh bằng chứng.
 4. **Không Kịch Bản Hóa Charter Thăm Dò**:
    - `exploratory-charter` **CẤM** viết Steps / Precondition / Expected chi tiết như Test Case — đó là việc của `qa-test-design`.
    - Một Charter nhắm **đúng một** rủi ro, time-box thực tế 30–90 phút cho một phiên của con người.
@@ -84,4 +85,4 @@ Một nhánh việc **tách rời khỏi pipeline tự động hóa**: dựng `E
 - [ ] Toàn bộ các ca `FAIL` bắt buộc có ảnh chụp màn hình bằng chứng ghi nhận lỗi UI/State.
 - [ ] Báo cáo kết quả đợt chạy được xuất đúng mẫu tại `OUTPUT/<slug>/runs/<run-id>/run_result.md`.
 - [ ] Mỗi Charter tập trung duy nhất một rủi ro, Mission theo cú pháp `Khám phá [đối tượng] để phát hiện [vấn đề]`.
-- [ ] Hành trình khám phá được chuẩn hóa thành Gherkin BDD (`AGENTS.md` §181), kèm bảng ánh xạ Step ➔ Locator.
+- [ ] Hành trình khám phá được chuẩn hóa thành Gherkin BDD (`AGENTS.md` §3), kèm bảng ánh xạ Step ➔ Locator.

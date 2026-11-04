@@ -19,10 +19,9 @@ Chuỗi chạy: `<skill-1> → <skill-2>`. Mỗi skill chỉ chạy khi output c
 
 ## Knowledge
 - **Đọc**: `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (nếu có)
-- **Ghi**: <`knowledge/features/<feature-slug>.md` mục nào — HOẶC "không">
+- **Ghi**: <mục nào theo bảng luật ghi QA_STANDARD §8 — HOẶC "không">
 
-> Hiện chỉ `qa-analyst` được ghi knowledge. Agent mới mặc định là **không ghi**, trừ khi có lý do
-> rõ ràng. Xem `qa-system/core/QA_STANDARD.md` §8.
+> Agent mới mặc định **không ghi**. Ai ghi mục nào chỉ định nghĩa ở `qa-system/core/QA_STANDARD.md` §8.
 
 ## Được làm
 - <Việc được phép>
@@ -30,8 +29,7 @@ Chuỗi chạy: `<skill-1> → <skill-2>`. Mỗi skill chỉ chạy khi output c
 - <Loại output được tạo>
 
 ## KHÔNG được
-> Chỉ ghi ranh giới **riêng** của agent này. Các guard chung (không tự chế rule, không ghi đè
-> nguồn, không quota cứng, `[GIẢ ĐỊNH]`, traceability) đã ở `qa-system/core/QA_STANDARD.md` §2 — không lặp lại.
+> Chỉ ghi ranh giới **riêng** của agent này. Guard chung ở `qa-system/core/QA_STANDARD.md` §2 — không lặp lại.
 
 - Không làm việc của `<agent/skill bước sau>` — <ranh giới cụ thể>.
 - <Ranh giới riêng khác>
@@ -45,12 +43,12 @@ Theo `qa-system/core/QA_STANDARD.md` §1.
 - <…>
 
 ## Đầu vào / Đầu ra
-- **Vào**: <artifact agent được đọc>
-- **Ra**: `OUTPUT/<task-slug>/<NN>_*.md` + cập nhật `_index.md`
+- **Vào**: <artifact agent được đọc> + `knowledge/_project.md` + `knowledge/features/<slug>.md` (QA_STANDARD §7)
+- **Ra**: `OUTPUT/<task-slug>/<NN>_*.md` (một file mỗi skill) + tick `00_plan.md`
 
 ## Bàn giao
 - `<NN>` (<tên deliverable>) → `<agent/skill nhận>`
 
 ## Cách gọi
 - Theo agent: "<Tên agent>, <hành động cụ thể>."
-- Theo skill: "Chạy `<NN>-<ten-skill>` với <input>."
+- Theo skill: "Chạy `<ten-skill>` với <input>."

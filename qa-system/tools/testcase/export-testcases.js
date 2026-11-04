@@ -1,18 +1,23 @@
 /**
- * export-testcases.js
- * Utility to convert 05_test_case_spec.md to standard CSV for Jira Xray & Redmine.
- * Includes UTF-8 BOM so Excel opens files correctly without font corruption.
- * 
- * Usage (Internal Agent Tool):
- *   node agents/tools/export-testcases.js [task-slug]
+ * export-testcases.js — Converts 05_test_case_spec.md to CSV for Jira Xray & Redmine
+ * (UTF-8 BOM so Excel keeps Vietnamese text intact).
+ *
+ *   parseTestCasesFromMarkdown(text)  Fields by NAME via lib/schema (order-independent).
+ *   runExport(slug)                   { ok, errors, warnings, count, files }.
+ *   exportTestCases(slug)             CLI wrapper: prints, exits 1 on refusal.
+ *
+ * Refuses while the ASK gate is closed or `npm run lint` reports errors: an
+ * export is what reaches the test management tool, so it must be the checked set.
+ * A missing Priority stays EMPTY and is reported — never defaulted to Medium.
+ *
+ * Usage (internal tool):
+ *   node qa-system/tools/testcase/export-testcases.js <task-slug>
  */
 
 const fs = require('fs');
 const path = require('path');
-const { PATHS, listTaskSlugs } = require('../lib/paths');
-
-const ROOT_DIR = PATHS.ROOT;
-const OUTPUT_DIR = path.join(ROOT_DIR, 'OUTPUT');
+const { PATHS, taskDir, listTaskSlugs } = require('../lib/paths');
+const S = require('../lib/schema');
 
 function escapeCSV(val) {
   if (val === undefined || val === null) return '""';
@@ -23,64 +28,26 @@ function escapeCSV(val) {
   return `"${str}"`;
 }
 
+/** Bullet markers inside multi-line values become "• " for CSV readability. */
+const bullets = (v) => String(v || '').trim().replace(/^\s*[-*]\s+/gm, '• ');
+
 function parseTestCasesFromMarkdown(content) {
-  const testCases = [];
-  const rawSections = content.split(/\n(?=###\s+TC_ID:)/g);
-
-  for (const sec of rawSections) {
-    if (!sec.includes('### TC_ID:')) continue;
-
-    const tc = {
-      id: '',
-      title: '',
-      precondition: '',
-      steps: '',
-      data: '',
-      expected: '',
-      priority: 'Medium',
-      tags: '',
-      module: ''
+  return S.parseTestCases(content).cases.map((c) => {
+    const f = (name) => S.tcField(c, name);
+    const tags = S.tcTags(c);
+    const priority = S.stripMd(f('Priority') || '');
+    return {
+      id: c.id,
+      title: S.stripMd(f('Title') || ''),
+      precondition: bullets(f('Precondition')),
+      steps: String(f('Test Steps') || '').trim(),
+      data: bullets(f('Test Data')),
+      expected: bullets(f('Expected Result')),
+      priority: S.isBlank(priority) ? '' : priority,
+      tags: S.stripMd(f('Tags') || ''),
+      module: tags.module || (c.id.includes('-') ? c.id.split('-')[0] : ''),
     };
-
-    const idMatch = sec.match(/###\s+TC_ID:\s*([A-Za-z0-9_-]+)/);
-    if (idMatch) tc.id = idMatch[1].trim();
-
-    const titleMatch = sec.match(/-\s+\*\*Title\*\*:\s*([^\n]+)/);
-    if (titleMatch) tc.title = titleMatch[1].trim();
-
-    const preMatch = sec.match(/-\s+\*\*Precondition\*\*:\s*([\s\S]*?)(?=-\s+\*\*Test Steps\*\*)/);
-    if (preMatch) tc.precondition = preMatch[1].trim().replace(/^\s*-\s+/gm, '• ');
-
-    const stepsMatch = sec.match(/-\s+\*\*Test Steps\*\*:\s*([\s\S]*?)(?=-\s+\*\*Test Data\*\*)/);
-    if (stepsMatch) tc.steps = stepsMatch[1].trim();
-
-    const dataMatch = sec.match(/-\s+\*\*Test Data\*\*:\s*([\s\S]*?)(?=-\s+\*\*Expected Result\*\*)/);
-    if (dataMatch) tc.data = dataMatch[1].trim().replace(/^\s*-\s+/gm, '• ');
-
-    const expMatch = sec.match(/-\s+\*\*Expected Result\*\*:\s*([\s\S]*?)(?=-\s+\*\*Priority\*\*)/);
-    if (expMatch) tc.expected = expMatch[1].trim().replace(/^\s*-\s+/gm, '• ');
-
-    const priMatch = sec.match(/-\s+\*\*Priority\*\*:\s*([^\n]+)/);
-    if (priMatch) tc.priority = priMatch[1].trim();
-
-    const tagsMatch = sec.match(/-\s+\*\*Tags\*\*:\s*([^\n]+)/);
-    if (tagsMatch) {
-      tc.tags = tagsMatch[1].trim();
-      const modMatch = tc.tags.match(/Module#([A-Za-z0-9_-]+)/);
-      if (modMatch) tc.module = modMatch[1];
-    }
-
-    if (!tc.module && tc.id) {
-      const parts = tc.id.split('-');
-      if (parts.length > 1) tc.module = parts[0];
-    }
-
-    if (tc.id) {
-      testCases.push(tc);
-    }
-  }
-
-  return testCases;
+  });
 }
 
 function exportJiraXrayCSV(testCases, outputPath) {
@@ -136,11 +103,12 @@ function exportRedmineCSV(testCases, outputPath) {
   const rows = [headers.map(h => `"${h}"`).join(',')];
 
   for (const tc of testCases) {
-    let redminePriority = 'Normal';
-    const p = tc.priority.toLowerCase();
-    if (p.includes('critical') || p.includes('urgent')) redminePriority = 'Urgent';
-    else if (p.includes('high')) redminePriority = 'High';
-    else if (p.includes('low')) redminePriority = 'Low';
+    // Missing priority stays empty: Human-Final (QA_STANDARD §11), never guessed.
+    const p = (tc.priority || '').toLowerCase();
+    let redminePriority = '';
+    if (/^high/.test(p)) redminePriority = 'High';
+    else if (/^medium/.test(p)) redminePriority = 'Normal';
+    else if (/^low/.test(p)) redminePriority = 'Low';
 
     const description = [
       `*Objective*: ${tc.title}`,
@@ -175,51 +143,52 @@ function exportRedmineCSV(testCases, outputPath) {
   fs.writeFileSync(outputPath, csvContent, 'utf-8');
 }
 
-function exportTestCases(taskSlug) {
-  if (!taskSlug) {
-    if (fs.existsSync(OUTPUT_DIR)) {
-      const dirs = listTaskSlugs();
-      if (dirs.length > 0) {
-        taskSlug = dirs[0];
-      }
-    }
+function runExport(taskSlug) {
+  const errors = [];
+  const warnings = [];
+  const out = { ok: false, errors, warnings, count: 0, files: [], slug: taskSlug };
+  if (!taskSlug) taskSlug = out.slug = listTaskSlugs()[0];
+  if (!taskSlug) { errors.push('No tasks in OUTPUT/ — specify a slug.'); return out; }
+
+  const dir = taskDir(taskSlug);
+  const specPath = path.join(dir, '05_test_case_spec.md');
+  if (!fs.existsSync(specPath)) { errors.push(`${path.relative(PATHS.ROOT, specPath)} not found — run stage 5 / testcases:merge first.`); return out; }
+
+  const gate = require('../system/gate').evaluate(taskSlug);
+  if (gate.blocked) errors.push(`ASK gate is CLOSED: ${gate.reasons.join(' · ')}`);
+  const lint = require('../system/lint-deliverables').lint(taskSlug);
+  if (!lint.clean) {
+    errors.push(`npm run lint -- ${taskSlug} reports ${lint.errors.length} error(s): ` +
+      lint.errors.slice(0, 5).map((e) => `${e.file} [${e.where}] ${e.msg}`).join(' | '));
   }
+  if (errors.length) return out;
 
-  if (!taskSlug) {
-    console.error('❌ Error: No tasks found in OUTPUT/. Please specify slug: node export-testcases.js <task-slug>');
-    process.exit(1);
-  }
+  const testCases = parseTestCasesFromMarkdown(fs.readFileSync(specPath, 'utf-8'));
+  if (testCases.length === 0) { errors.push('No test cases parsed from 05_test_case_spec.md.'); return out; }
+  const noPriority = testCases.filter((t) => !t.priority).map((t) => t.id);
+  if (noPriority.length) warnings.push(`Priority empty (left empty, not defaulted): ${noPriority.join(', ')}`);
 
-  const taskDir = path.join(OUTPUT_DIR, taskSlug);
-  const specPath = path.join(taskDir, '05_test_case_spec.md');
-
-  if (!fs.existsSync(specPath)) {
-    console.error(`❌ Error: File not found: ${specPath}. Ensure test case generation step has run.`);
-    process.exit(1);
-  }
-
-  console.log(`📦 Reading test cases from: ${specPath}`);
-  const content = fs.readFileSync(specPath, 'utf-8');
-  const testCases = parseTestCasesFromMarkdown(content);
-
-  if (testCases.length === 0) {
-    console.warn('⚠️ Warning: No valid test cases parsed matching standard format.');
-    process.exit(1);
-  }
-
-  console.log(`✅ Successfully parsed: ${testCases.length} Test Cases.`);
-
-  // 1. Export Jira Xray CSV
-  const jiraPath = path.join(taskDir, 'export_jira_xray.csv');
+  const jiraPath = path.join(dir, 'export_jira_xray.csv');
+  const redminePath = path.join(dir, 'export_redmine.csv');
   exportJiraXrayCSV(testCases, jiraPath);
-  console.log(`🚀 [JIRA XRAY] Exported CSV: ${jiraPath}`);
-
-  // 2. Export Redmine CSV
-  const redminePath = path.join(taskDir, 'export_redmine.csv');
   exportRedmineCSV(testCases, redminePath);
-  console.log(`🚀 [REDMINE] Exported CSV: ${redminePath}`);
+  out.ok = true;
+  out.count = testCases.length;
+  out.files = [jiraPath, redminePath];
+  return out;
+}
 
-  console.log(`\n🎉 Data export complete for task [${taskSlug}]!`);
+function exportTestCases(taskSlug) {
+  const r = runExport(taskSlug);
+  r.warnings.forEach((w) => console.warn(`WARN ${w}`));
+  if (!r.ok) {
+    r.errors.forEach((e) => console.error(`ERROR ${e}`));
+    console.error('Export refused — nothing written.');
+    process.exit(1);
+  }
+  console.log(`Parsed ${r.count} test case(s) for [${r.slug}].`);
+  r.files.forEach((f) => console.log(`  -> ${path.relative(PATHS.ROOT, f)}`));
+  return r;
 }
 
 if (require.main === module) {
@@ -227,6 +196,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  runExport,
   exportTestCases,
   parseTestCasesFromMarkdown,
   exportJiraXrayCSV,

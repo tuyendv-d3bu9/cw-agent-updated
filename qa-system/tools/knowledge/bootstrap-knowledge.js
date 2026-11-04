@@ -3,12 +3,13 @@
  * bootstrap-knowledge.js — Automatically seeds initial knowledge base for a new project
  *
  * Usage:
- *   node agents/tools/bootstrap-knowledge.js
+ *   node qa-system/tools/knowledge/bootstrap-knowledge.js
  *   npm run knowledge:init
  *
  * Rule:
  *   When starting a clean repository without knowledge/, this script copies
- *   seed templates from agents/templates/knowledge/ to knowledge/.
+ *   seed templates from qa-system/templates/knowledge/ to knowledge/ (never overwrites;
+ *   _template.md is copied verbatim — it is the empty feature template itself).
  */
 
 const fs = require('fs');

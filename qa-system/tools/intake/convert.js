@@ -7,7 +7,8 @@
  *   - Excel (.xlsx, .xls, .csv) with table conversion
  *   - PDF (.pdf)
  *   - OpenAPI / Swagger / Postman / Config (.json, .yaml, .yml)
- *   - Plain text (.txt, .log)
+ *   - PowerPoint (.pptx), HTML (.html), Markdown/plain text (.md, .txt, .log)
+ *   (.ppt/.doc cũ bị từ chối kèm hướng dẫn "Save As"; ảnh không chuyển được thành chữ)
  *
  * Usage:
  *   convert.js <file>                One document -> INPUT/
@@ -24,9 +25,8 @@
 
 const fs = require("fs");
 const path = require("path");
-const { convertDocumentToMarkdown } = require("../lib/doc-converter");
+const { convertDocumentToMarkdown, SUPPORTED_EXTENSIONS } = require("../lib/doc-converter");
 
-const SUPPORTED_EXTENSIONS = ['.docx', '.xlsx', '.xls', '.csv', '.pdf', '.json', '.yaml', '.yml', '.txt'];
 const DEFAULT_OUT = "INPUT";
 
 const args = process.argv.slice(2);
@@ -83,7 +83,7 @@ async function convertOne(file) {
 
   if (files === null) {
     console.error(`Source not found: ${src}`);
-    console.error(`Create directory ./${DEFAULT_SRC}/ and add documents, or pass a file path:`);
+    console.error(`Pass an existing file or directory:`);
     console.error(`  npm run convert -- path/to/document.docx`);
     process.exit(1);
   }
@@ -100,16 +100,19 @@ async function convertOne(file) {
 
   let ok = 0;
   let skipped = 0;
+  let failed = 0;
   for (const f of files) {
     try {
       const r = await convertOne(f);
       r.skipped ? skipped++ : ok++;
     } catch (err) {
+      failed++;
       console.error(`  ERROR    ${f} — ${err.message}`);
     }
   }
 
-  console.log(`\nFinished: ${ok} converted, ${skipped} skipped.`);
+  console.log(`\nFinished: ${ok} converted, ${skipped} skipped, ${failed} failed.`);
+  if (failed > 0) process.exitCode = 1;
   if (ok > 0) {
     console.log(`Next step: Verify markdown in ${outDir}/ and run QA test design pipelines.`);
   }

@@ -1,7 +1,7 @@
 {
   "system_name": "CW QA Agent Ecosystem",
   "version": "2.0.0",
-  "last_updated": "2026-10-04",
+  "last_updated": "2026-11-04",
   "ssot_policy": "Tri thức trong knowledge/ là tối cao. CẤM đọc dò từng file, tra cứu bảng routing_table để mở đúng file đích.",
   "project_conventions": {
     "project_name": "<Tên Dự Án>",
@@ -76,7 +76,10 @@
     "workflow_command": "npm run workflow -- <list|find|show|start|new|validate>",
     "workflow_authoring_skill": "qa-system/qa-lead/skills/workflow-authoring.md",
     "workflow_template": "qa-system/templates/workflows/workflow.md",
-    "workflows_dir": "qa-system/workflows/"
+    "workflows_dir": "qa-system/workflows/",
+    "ids_tool": "qa-system/tools/system/ids.js",
+    "ids_command": "npm run ids -- <slug>",
+    "shared_schema_module": "qa-system/tools/lib/schema.js"
   },
   "specialized_agents": {
     "qa_lead": {
@@ -120,7 +123,18 @@
       "role": "Cổng Go/No-Go trước Automation: số liệu do npm run readiness đo bằng máy, agent diễn giải thành 15_readiness_report.md"
     }
   },
-  "features_inventory": {},
+  "features_inventory": {
+    "function-d-voucher": {
+      "name": "function-d-voucher",
+      "input_file": "INPUT/function-d-voucher.md",
+      "knowledge_file": "knowledge/features/function-d-voucher.md",
+      "output_dir": "OUTPUT/function-d-voucher/",
+      "plan_file": "OUTPUT/function-d-voucher/00_plan.md",
+      "status": "IN-PROGRESS",
+      "total_testcases": 0,
+      "last_verdict": "UNKNOWN"
+    }
+  },
   "tools_layout": {
     "policy": "Tool gom theo nhóm chức năng. Mở đúng thư mục, không quét cả qa-system/tools/.",
     "index": "qa-system/tools/README.md",

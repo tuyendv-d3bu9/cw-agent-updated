@@ -18,7 +18,6 @@ steps:
   - agent: qa-analyst
     skill: missing-rule-06w
     output: 02_missing_rule_report.md
-    note: "Nếu có kẽ hở ra Verdict ASK thì bắt buộc dừng lại để BA phản hồi hoặc chốt giả định."
 
   - agent: qa-analyst
     skill: viewpoint-selection
@@ -48,15 +47,15 @@ steps:
       - readiness
       - confirm
     output: runs/RUN-01/run_result.md
-    note: "Yêu cầu kết quả readiness GO và người dùng xác nhận kèm URL môi trường trước khi thực thi Playwright."
+    note: "Cần readiness GO và người dùng xác nhận kèm URL môi trường (AGENTS.md §1.5)."
 
   - tool: jira:sync
+    args: "{slug} RUN-01"
     note: "Đồng bộ kết quả test, đính kèm screenshot bằng chứng và cập nhật trạng thái các issue trên Jira."
 
   - agent: qa-reporter
     skill: gen-daily-summary
-    output: 13_daily_summary.md
-    note: "Tổng hợp kết quả kiểm thử thành báo cáo 4 section (Tiến độ hôm nay, Outstanding Issues, Blocker, Next Action)."
+    note: "Báo cáo 4 section, ghi vào OUTPUT/reports/ (theo skill gen-daily-summary)."
 ---
 
 # Quy Trình Kiểm Thử Trọn Gói: Từ Tài Liệu Đến Automation Và Jira
@@ -71,7 +70,8 @@ Khi bạn có tài liệu yêu cầu ban đầu (PRD/SRS/User Story) và muốn 
 6. Gửi kết quả chạy test và cập nhật trạng thái (Transition) trên Jira.
 7. Xuất báo cáo tổng kết chất lượng (Daily/Run Summary).
 
-## Các điểm dừng bắt buộc (Quality Gates)
-- **Sau Bước 2 (Cổng ASK)**: Nếu phân tích 06W phát hiện kẽ hở ra Verdict `ASK`, quy trình bắt buộc dừng lại. Cổng do máy kiểm (`npm run gate <slug>`), tuyệt đối không nhảy cóc sang Chặng 3 nếu còn câu hỏi treo.
-- **Trước Bước 6 (Cổng LINT)**: Chạy `npm run lint -- <slug>` kiểm tra cơ học 8 trường FACT trước khi rà soát độ phủ 3 góc nhìn.
-- **Trước Bước 8 (Cổng READINESS & CONFIRM)**: Bắt buộc chạy `npm run readiness -- <slug>` đạt `GO` (hoặc `CONDITIONAL GO`) **VÀ** có sự xác nhận rõ ràng của người dùng kèm URL môi trường thử nghiệm cụ thể mới kích hoạt Playwright Automation.
+## Điểm dừng
+- Trước bước 3: cổng `ask` (`npm run gate <slug>`). Luật cổng: `qa-system/core/QA_STANDARD.md` §1.
+- Trước bước 6: cổng `lint`.
+- Trước bước 8: `npm run readiness -- <slug>` phải ra `GO` **và** người dùng xác nhận kèm URL môi trường
+  (`AGENTS.md` §1.5). `CONDITIONAL GO` chưa đủ.

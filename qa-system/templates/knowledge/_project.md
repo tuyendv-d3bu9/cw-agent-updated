@@ -1,43 +1,44 @@
 # Project Knowledge — quy ước dùng cho MỌI feature
 
-> Tri thức nền cấp **dự án**, không đổi theo từng tính năng. Mọi skill đọc file này.
-> Trống mục nào thì agent phải gắn `[GIẢ ĐỊNH]` khi cần tới — điền dần để giảm giả định.
+> Tri thức nền cấp **dự án**, do con người khai. Mọi skill đọc file này.
+> Ô còn `<điền>` = **chưa khai báo**: agent coi như không có (`[CONTEXT_MISSING]` / `[CHƯA CÓ TRONG TÀI LIỆU]`),
+> **không** tự lấy giá trị "thường gặp" thay vào. Xem `qa-system/core/QA_STANDARD.md` §8, §10.
 
-Dự án: `<Tên Dự Án>` · Cập nhật lần cuối: `<YYYY-MM-DD>`
+Dự án: `<điền>` · Cập nhật lần cuối: `<điền>`
 
 ---
 
 ## 1. Quy ước định danh
 | Đối tượng | Format | Ví dụ |
 |---|---|---|
-| Module prefix cho `TC_ID` | `<3–4 ký tự hoa>` | `AUTH`, `CART`, `PAY`, `PROD` |
-| Mã nghiệp vụ (mã đơn, mã giao dịch…) | `[A-Z0-9]{3,20}` | `ORD123456`, `TXN-9876` |
+| Module prefix cho `TC_ID` (2–6 ký tự hoa) | `<điền>` | `<điền>` |
+| Mã nghiệp vụ (mã đơn, mã giao dịch…) | `<điền>` | `<điền>` |
 
 ## 2. Định dạng dữ liệu
 | Loại | Quy ước | Ghi chú |
 |---|---|---|
-| Ngày / Giờ | `YYYY-MM-DD` / `YYYY-MM-DD HH:mm:ss` | Chuẩn ISO 8601, không mix định dạng khác |
-| Tiền tệ | `VNĐ`, dấu chấm `.` phân cách hàng nghìn | Ví dụ `100.000 VNĐ`. Không có phần thập phân (hoặc tùy dự án) |
-| Timezone | `Asia/Ho_Chi_Minh (GMT+7)` | Múi giờ chuẩn của hệ thống |
-| NULL vs rỗng | Hệ thống phân biệt tường minh | Input rỗng `""` báo lỗi nhập liệu; Backend xử lý `NULL` an toàn |
+| Ngày / Giờ | `<điền>` | Chưa khai thì agent dùng `YYYY-MM-DD` cho **tài liệu QA**, không suy ra định dạng hiển thị của hệ thống |
+| Tiền tệ | `<điền>` | |
+| Timezone | `<điền>` | |
+| NULL vs rỗng | `<điền>` | |
 
 ## 3. Bối cảnh nghiệp vụ dùng chung
-> Các mục mà skill `01` hay phải gắn `[CONTEXT_MISSING]`. Điền được thì báo cáo rủi ro chính xác hơn.
+> Dùng cho Risk Analysis (skill `01`). Ô chưa khai ⇒ `[CONTEXT_MISSING]`.
 
-| Khía cạnh | Hướng dẫn / Nội dung mẫu |
+| Khía cạnh | Nội dung |
 |---|---|
-| User Context | Khách hàng cá nhân / doanh nghiệp; người dùng vãng lai (Guest) vs người dùng định danh (Registered) |
-| Usage Context | Web responsive (Desktop & Mobile Web) hoặc Mobile App / API backend |
-| Financial / Business Context | Quy trình thanh toán, xử lý hóa đơn, chính sách giá, chiết khấu hoặc hạch toán |
-| Operational Context | SLA phản hồi API, luồng background job, cơ chế retry khi timeout |
-| Criticality Context | Các luồng sống còn (Core Flow) của hệ thống cần độ tin cậy tuyệt đối |
+| User Context | `<điền>` |
+| Usage Context | `<điền>` |
+| Financial / Business Context | `<điền>` |
+| Operational Context | `<điền>` |
+| Criticality Context | `<điền>` |
 
 ## 4. Môi trường test
 | Thuộc tính | Nội dung |
 |---|---|
-| Môi trường | `Staging / Test / UAT` |
-| Cách seed data | `SQL script trực tiếp`, `API Fixtures`, hoặc qua UI Admin |
-| Có được dùng dữ liệu giống production? | Sử dụng dữ liệu đã ẩn danh hóa (anonymized data) tuân thủ bảo mật |
+| Môi trường | `<điền>` |
+| Cách seed data | `<điền>` |
+| Có được dùng dữ liệu giống production? | `<điền>` |
 
 ## 5. Test Management Tool & ALM Integration
 ### 5.1. Jira Xray (Khuyến nghị)
@@ -47,7 +48,7 @@ Dự án: `<Tên Dự Án>` · Cập nhật lần cuối: `<YYYY-MM-DD>`
 | Summary Format | `[<TC_ID>] <Title>` | Ví dụ: `[AUTH-001] Verify đăng nhập thành công...` |
 | Manual Steps | `Action`, `Data`, `Expected Result` | 3 cột chuẩn của bảng Manual Test Step trong Xray |
 | Preconditions | `Preconditions` (Text/Wiki) | Tiền điều kiện trước khi thực hiện test |
-| Priority | `Blocker`, `Critical`, `High`, `Medium`, `Low` | Mức độ ưu tiên thực thi |
+| Priority | `High`, `Medium`, `Low` | Theo thang Priority của `QA_STANDARD.md` §11 |
 | Labels | `Rule#BR-xx`, `Viewpoint#VP-xx`, `Module#<MOD>` | Phục vụ truy xuất nguồn gốc (Traceability) |
 | File xuất | `OUTPUT/<slug>/export_jira_xray.csv` | Mã hóa UTF-8 BOM, sẵn sàng cho Xray Test Importer |
 
@@ -63,6 +64,7 @@ Dự án: `<Tên Dự Án>` · Cập nhật lần cuối: `<YYYY-MM-DD>`
 | File xuất | `OUTPUT/<slug>/export_redmine.csv` | Mã hóa UTF-8 BOM |
 
 ## 6. Ràng buộc riêng của dự án
-> Ghi chú các quy tắc nghiệp vụ đặc thù áp dụng xuyên suốt toàn bộ hệ thống (nếu có).
-- _[Quy tắc 1: Ví dụ - Ô nhập text tự động trim() khoảng trắng đầu và cuối chuỗi]_
-- _[Quy tắc 2: Ví dụ - Cơ chế phòng thủ brute-force hoặc rate-limit cho các luồng nhạy cảm]_
+> Quy tắc áp dụng xuyên suốt hệ thống, **có nguồn**. Chưa có thì để trống bảng.
+
+| Quy tắc | Nguồn |
+|---|---|

@@ -15,8 +15,8 @@ chuyển màn, phản hồi sau khi bấm) vì ảnh tĩnh không thể hiện �
 - `ui-screenshot-review` — quét ảnh → 3 nhóm vấn đề (UI Inconsistency / Accessibility / UX Problem)
 
 ## Knowledge
-- **Đọc**: `knowledge/features/<feature-slug>.md` (nếu có) — để biết màn hình đang review thuộc luồng nào.
-- **Ghi**: không.
+- **Đọc**: `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (nếu có) — biết màn hình thuộc luồng nào, chữ hiển thị đã chốt.
+- **Ghi**: không (QA_STANDARD §8).
 
 ## Được làm
 - Đọc 1..n ảnh chụp màn hình đính kèm trực tiếp.
@@ -32,12 +32,12 @@ chuyển màn, phản hồi sau khi bấm) vì ảnh tĩnh không thể hiện �
 Theo `qa-system/core/QA_STANDARD.md` §1. Không có ảnh → `ASK`.
 
 ## Human-Final — không tự quyết
-- **Mức độ nghiêm trọng thực tế** của từng vấn đề.
+- **Severity thực tế** của từng vấn đề (agent chỉ `[ĐỀ XUẤT]` theo thang QA_STANDARD §11).
 - **Phương án sửa cuối cùng** thuộc về người review.
 - Cross-check bằng mắt các nhận định gắn `[GIẢ ĐỊNH]`.
 
 ## Đầu vào / Đầu ra
-- **Vào**: 1..n ảnh chụp màn hình (+ mô tả ngắn tuỳ chọn)
+- **Vào**: 1..n ảnh chụp màn hình · `INPUT/<task-slug>/04_design/` · mô tả ngắn (tuỳ chọn)
 - **Ra**: `OUTPUT/<task-slug>/08_ui_screenshot_analysis.md`
 
 ## Bàn giao

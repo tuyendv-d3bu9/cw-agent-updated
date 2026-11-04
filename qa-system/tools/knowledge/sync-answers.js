@@ -1,15 +1,21 @@
 #!/usr/bin/env node
 /**
- * sync-answers.js — Moves BA/PO answers from `OUTPUT/` into `knowledge/`.
+ * sync-answers.js — Moves questions and BA/PO answers from the stage-2 report
+ * (OUTPUT/, disposable) into knowledge/features/<slug>.md (accumulates).
  *
- *   extractAnswers(report)  Settled rows from the stage-2 clarification table.
+ *   extractQuestions(report)  Every MR row of the 02 question table (§9.4), header-mapped.
+ *   extractAnswers(report)    Only the settled rows (Confirmed with an answer, or Rejected).
+ *   plan(report, knowledge)   What a sync would do: append / update / decide / skip.
+ *   apply(knowledge, plan)    The new knowledge text.
  *
- * Found on a real run: seven BA answers lived only in the stage-2 report. Per
- * QA_STANDARD §8, OUTPUT/ is a disposable single-run artifact while knowledge/
- * is what accumulates, so the next run would ask the BA those same questions.
- *
- * Write rules (QA_STANDARD §8): only ever append; never edit or delete an
- * existing row; skip any code already present, even if the wording differs.
+ * Write rules (QA_STANDARD §8):
+ *   - §7: a row whose ID + question text is new is appended with the full §9.4
+ *     schema. An existing unsettled row for the same ID + question gets its
+ *     answer columns and status filled (status change, never deletion). Settled
+ *     rows are never touched. An old MR-04 with different wording is a different
+ *     question: the new one is appended, the old one kept.
+ *   - §8: a decision row only when the answer has "Người trả lời" AND "Ngày".
+ *   - Only rows inside the §7/§8 tables count as "already in knowledge".
  *
  * Usage:
  *   sync-answers.js <slug>           Preview only
@@ -19,146 +25,149 @@
 const fs = require('fs');
 const path = require('path');
 const { PATHS, taskDir, featureKnowledge } = require('../lib/paths');
+const S = require('../lib/schema');
 
-const RESOLVED = /^(confirmed|rejected)$/i;
+const Q_HEADERS = ['ID', 'Kẽ hở', 'Nhóm 06W', 'Nguồn phát hiện', 'Phương án gợi ý (chưa phải rule)', 'Câu hỏi cho BA/PO', 'Phản hồi chính thức', 'Người trả lời', 'Ngày', 'Trạng thái'];
+const Q_KEYS = ['id', 'gap', 'w', 'foundAt', 'suggestion', 'question', 'answer', 'answeredBy', 'date', 'status'];
+const D_HEADERS = ['#', 'Mã liên quan', 'Câu hỏi', 'Quyết định chính thức', 'Người phê duyệt', 'Ngày chốt'];
 
-// ───────────────────── Table parsing ─────────────────────
+// ───────────────────── Reading ─────────────────────
 
-/** Every markdown table in a document as { header[], rows[][] }. */
-function tables(content) {
-  const out = [];
-  const lines = content.split('\n');
-  let cur = null;
-
-  const cells = (l) => l.trim().split('|').slice(1, -1).map((c) => c.trim());
-
-  for (const line of lines) {
-    const t = line.trim();
-    if (!t.startsWith('|')) { if (cur) { out.push(cur); cur = null; } continue; }
-    if (/^\|[\s:|-]+\|$/.test(t)) continue;          // separator row
-    if (!cur) cur = { header: cells(line), rows: [] };
-    else cur.rows.push(cells(line));
+function extractQuestions(report) {
+  const rows = S.read02Questions(report);
+  // A code may appear in several tables; keep the most complete row per ID + question.
+  const best = new Map();
+  for (const r of rows) {
+    const key = `${r.id}|${S.questionKey(r.question)}`;
+    const score = (x) => [x.question, x.answer, x.answeredBy, x.date, x.gap].filter(Boolean).length + (x.resolved ? 5 : 0);
+    if (!best.has(key) || score(r) > score(best.get(key))) best.set(key, r);
   }
-  if (cur) out.push(cur);
+  return [...best.values()].map((r) => ({ ...r, state: r.status || r.statusRaw }))
+    .sort((a, b) => S.compareIds(a.id, b.id));
+}
+
+/** Settled rows only. Kept for callers and tests of the previous API. */
+function extractAnswers(report) {
+  return extractQuestions(report)
+    .filter((r) => r.resolved)
+    .map((r) => {
+      // Legacy reports carried a separate "Quyết định đã chốt" column.
+      const legacy = S.parseTables(report).find((t) => S.col(t, 'decision') !== -1 && S.col(t, 'id') !== -1);
+      let decision = '';
+      if (legacy) {
+        const row = legacy.rows.find((x) => S.canonicalId(x.cells[S.col(legacy, 'id')], 'MR') === r.id);
+        if (row) decision = S.stripMd(S.cell(legacy, row, 'decision'));
+      }
+      return { ...r, decision: decision || r.answer };
+    });
+}
+
+// ───────────────────── Planning ─────────────────────
+
+function plan(report, knowledgeText) {
+  const k = { questions: [], decisions: [] };
+  if (knowledgeText) {
+    k.questions = S.readQuestionRows(S.sectionBody(knowledgeText, '7', /câu hỏi|open questions/));
+    k.decisions = S.readDecisions(S.sectionBody(knowledgeText, '8', /quyết định|giả định|decision/));
+  }
+  const out = { append: [], update: [], decide: [], skip: [] };
+  for (const q of extractQuestions(report)) {
+    const existing = k.questions.find((r) => r.id === q.id && S.questionKey(r.question) === S.questionKey(q.question));
+    if (!existing) out.append.push(q);
+    else if (existing.resolved || !q.resolved) out.skip.push({ ...q, why: existing.resolved ? 'already settled in knowledge' : 'already in knowledge, still open' });
+    else out.update.push({ q, line: existing.line });
+
+    if (q.resolved && q.answeredBy && q.date) {
+      const hasDecision = k.decisions.some((d) => d.related.includes(q.id) &&
+        (!d.question || S.questionKey(d.question) === S.questionKey(q.question)));
+      if (!hasDecision) out.decide.push(q);
+    }
+  }
   return out;
 }
 
-/** Strips markdown decoration for comparison and clean re-writing. */
-const plain = (s) => (s || '').replace(/\*\*/g, '').replace(/`/g, '').trim();
+// ───────────────────── Writing ─────────────────────
 
-/**
- * Finds the clarification table: any table with an `MR-xx` column and a status
- * column. Columns are matched by *header text* rather than position, because the
- * headings vary between runs.
- */
-function extractAnswers(content) {
-  const found = [];
+const esc = (v) => String(v || '').replace(/\|/g, '/').replace(/\n+/g, ' ').trim();
 
-  for (const tb of tables(content)) {
-    const idCol = tb.header.findIndex((h) => /mã rule|rule id|^id$/i.test(plain(h)));
-    const stateCol = tb.header.findIndex((h) => /trạng thái|status/i.test(plain(h)));
-    if (idCol === -1 || stateCol === -1) continue;
+/** Row for the §7 table, mapped onto ITS headers (an older 8-column table still works). */
+function questionRow(table, q) {
+  const cells = table.headers.map((h, i) => {
+    const key = Q_KEYS.find((name) => S.col(table, name) === i);
+    if (key === 'id') return q.id;
+    if (key === 'status') return q.status || q.statusRaw || 'New';
+    return key ? esc(q[key]) : '';
+  });
+  return `| ${cells.join(' | ')} |`;
+}
 
-    const qCol = tb.header.findIndex((h) => /câu hỏi/i.test(plain(h)));
-    const aCol = tb.header.findIndex((h) => /phản hồi/i.test(plain(h)));
-    const dCol = tb.header.findIndex((h) => /quyết định|đã chốt/i.test(plain(h)));
-    const gCol = tb.header.findIndex((h) => /phân loại|nhóm/i.test(plain(h)));
+function decisionRow(table, num, q) {
+  const vals = { num: String(num), related: q.id, question: esc(q.question), decision: esc(q.answer || q.status), approver: esc(q.answeredBy), decidedOn: esc(q.date) };
+  const cells = table.headers.map((h, i) => {
+    const key = Object.keys(vals).find((name) => S.col(table, name) === i);
+    return key ? vals[key] : '';
+  });
+  return `| ${cells.join(' | ')} |`;
+}
 
-    for (const r of tb.rows) {
-      const id = plain(r[idCol]).toUpperCase();
-      if (!/^MR-\d+$/.test(id)) continue;
-      if (!RESOLVED.test(plain(r[stateCol]))) continue;
+/** Locates the table inside a section: header line, last row line, parsed table. */
+function locate(lines, num, titleRe, need) {
+  const text = lines.join('\n');
+  const sec = S.findSection(text, num) || S.findSection(text, titleRe);
+  if (!sec) return null;
+  const tables = S.parseTables(sec.body);
+  const t = tables.find((x) => need.every((n) => S.col(x, n) !== -1));
+  if (!t) return null;
+  const headerIdx = sec.startLine + t.line - 1; // 0-based index in `lines`
+  let last = headerIdx + 1; // separator
+  while (last + 1 < lines.length && lines[last + 1].trim().startsWith('|')) last++;
+  return { table: t, headerIdx, lastIdx: last };
+}
 
-      found.push({
-        id,
-        group: gCol !== -1 ? plain(r[gCol]) : '',
-        question: qCol !== -1 ? plain(r[qCol]) : '',
-        answer: aCol !== -1 ? plain(r[aCol]) : '',
-        decision: dCol !== -1 ? plain(r[dCol]) : '',
-        state: plain(r[stateCol]),
-      });
+function apply(knowledgeText, p) {
+  let lines = knowledgeText.split('\n');
+
+  const q7 = locate(lines, '7', /câu hỏi|open questions/, ['id', 'status']);
+  if (!q7) throw new Error('No §7 question table (| ID | … | Trạng thái |) in the knowledge file');
+
+  // Update unsettled rows in place: answer columns + status only.
+  for (const { q, line } of p.update) {
+    const idx = q7.headerIdx + (line - q7.table.line);
+    const cells = lines[idx].trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((c) => c.trim());
+    for (const key of ['answer', 'answeredBy', 'date', 'status']) {
+      const i = S.col(q7.table, key);
+      if (i === -1) continue;
+      cells[i] = key === 'status' ? q.status : esc(q[key]);
     }
+    lines[idx] = `| ${cells.join(' | ')} |`;
   }
+  const appended = p.append.map((q) => questionRow(q7.table, q));
+  lines = [...lines.slice(0, q7.lastIdx + 1), ...appended, ...lines.slice(q7.lastIdx + 1)];
 
-  // A code may appear in several tables; keep the most complete row.
-  const best = new Map();
-  for (const a of found) {
-    const score = (x) => [x.question, x.answer, x.decision].filter(Boolean).length;
-    if (!best.has(a.id) || score(a) > score(best.get(a.id))) best.set(a.id, a);
+  if (p.decide.length) {
+    const d8 = locate(lines, '8', /quyết định|giả định|decision/, ['related', 'decision']);
+    if (!d8) throw new Error('No §8 decision table (| # | Mã liên quan | … |) in the knowledge file');
+    const existing = d8.table.rows.length;
+    const rows = p.decide.map((q, i) => decisionRow(d8.table, existing + i + 1, q));
+    lines = [...lines.slice(0, d8.lastIdx + 1), ...rows, ...lines.slice(d8.lastIdx + 1)];
   }
-  return [...best.values()].sort((x, y) => x.id.localeCompare(y.id));
+  return lines.join('\n');
 }
 
-/** Gap descriptions from the `### [MR-xx] <text>` headings, which are far more
- * accurate than reusing the decision text. */
-function gapDescriptions(content) {
-  const m = new Map();
-  for (const h of content.matchAll(/^###\s*\[(MR-\d+)\]\s*(.+)$/gm)) {
-    m.set(h[1].toUpperCase(), plain(h[2]));
-  }
-  return m;
-}
-
-/**
- * Maps MR-xx to its 06W group using the W1-W6 scan table at the top of stage 2.
- * The clarification table's "category" column holds a technical grouping
- * (Authorization, Boundary & Edge, …), not a W code, so it cannot substitute.
- */
-function wGroups(content) {
-  const m = new Map();
-  for (const line of content.split('\n')) {
-    const t = line.trim();
-    if (!t.startsWith('|')) continue;
-    const w = t.match(/\bW([1-6])\b/);
-    if (!w) continue;
-    const name = t.match(/What if [^|*]+|Who else[^|*]+|What when[^|*]+|What happens[^|*]+/i);
-    for (const id of t.matchAll(/\bMR-\d+\b/g)) {
-      m.set(id[0].toUpperCase(), `W${w[1]}${name ? ` (${plain(name[0])})` : ''}`);
-    }
-  }
-  return m;
-}
-
-/** MR codes already recorded in the knowledge file, in section 7 or 8. */
-function alreadyInKnowledge(content) {
-  return new Set((content.match(/\bMR-\d+\b/g) || []).map((s) => s.toUpperCase()));
-}
-
-// ───────────────────── Writing section 7 ─────────────────────
-
-function buildRow(a) {
-  // A column with no data gets an explicit label (QA_STANDARD §2.7); never pad
-  // it with another column's content.
-  const cell = (v, fallback) => (v ? String(v).replace(/\|/g, '/') : fallback);
-  return [
-    '',
-    a.id,
-    cell(a.gap, cell(a.question, '—')),      // gap description, from the ### [MR-xx] heading
-    cell(a.w, 'CHƯA XÁC ĐỊNH'),              // 06W group, from the W1-W6 scan table
-    'CHƯA XÁC ĐỊNH',                         // risk level: stage 2 does not record it, so do not invent one
-    cell(a.decision, '—'),                   // default proposal <- the settled decision
-    cell(a.question, '—'),                   // question put to the BA/PO
-    cell(a.answer, '—'),                     // official answer
-    a.state,
-    '',
-  ].join(' | ').trim();
-}
-
-/** Appends rows to the section 7 table, leaving everything else untouched. */
-function insertIntoSection7(content, rows) {
-  const lines = content.split('\n');
-  const start = lines.findIndex((l) => /^##\s*7\./.test(l));
-  if (start === -1) return null;
-
-  let end = lines.slice(start + 1).findIndex((l) => /^##\s/.test(l));
-  end = end === -1 ? lines.length : start + 1 + end;
-
-  // Last table row inside section 7.
-  let lastRow = -1;
-  for (let i = start; i < end; i++) if (lines[i].trim().startsWith('|')) lastRow = i;
-  if (lastRow === -1) return null;
-
-  return [...lines.slice(0, lastRow + 1), ...rows, ...lines.slice(lastRow + 1)].join('\n');
+/** A fresh knowledge file from the template. Template rows (if an old template has any) are dropped. */
+function fromTemplate(slug) {
+  const tpl = path.join(PATHS.KNOWLEDGE, '_template.md');
+  if (!fs.existsSync(tpl)) return null;
+  return fs.readFileSync(tpl, 'utf-8')
+    .replace(/<feature-slug>/g, slug)
+    .split('\n')
+    .filter((l) => {
+      const t = l.trim();
+      if (!t.startsWith('|') || /^\|[\s:|-]+\|$/.test(t)) return true;
+      // Harmless on the new empty template; strips sample rows from an old one.
+      return !/\b(MR|BR|FD|AF)-\d+\b/.test(t) || /^\|\s*(ID|#)\s*\|/i.test(t);
+    })
+    .join('\n');
 }
 
 // ───────────────────── Run ─────────────────────
@@ -178,73 +187,50 @@ function main() {
     console.error(`No ${path.relative(PATHS.ROOT, reportPath)} — stage 2 has not run yet.`);
     process.exit(1);
   }
-
   const report = fs.readFileSync(reportPath, 'utf-8');
-  const gaps = gapDescriptions(report);
-  const ws = wGroups(report);
-  const answers = extractAnswers(report).map((a) => ({ ...a, gap: gaps.get(a.id) || '', w: ws.get(a.id) || '' }));
-  if (answers.length === 0) {
-    console.log('Stage 2 has no Confirmed/Rejected answers yet — nothing to sync.');
+  if (extractQuestions(report).length === 0) {
+    console.log('Stage 2 has no MR rows in its question table (§3, QA_STANDARD §9.4) — nothing to sync.');
     process.exit(0);
   }
 
   const kPath = featureKnowledge(slug);
   let knowledge = fs.existsSync(kPath) ? fs.readFileSync(kPath, 'utf-8') : null;
-  let created = false;
-
-  if (knowledge === null) {
-    const tpl = path.join(PATHS.KNOWLEDGE, '_template.md');
-    if (!fs.existsSync(tpl)) { console.error(`No ${path.relative(PATHS.ROOT, tpl)} to build the knowledge file from.`); process.exit(1); }
-    // Strip EVERY sample row from the template (BR-xx, MR-xx, any section).
-    // An earlier version only filtered `New` rows in section 7, so the MR-03/MR-04
-    // samples in section 8 slipped through, counted as "already in knowledge", and
-    // two real answers were dropped. A real feature file must carry no fake rules.
-    knowledge = fs.readFileSync(tpl, 'utf-8')
-      .split('\n')
-      .filter((l) => {
-        const t = l.trim();
-        if (!t.startsWith('|')) return true;
-        if (/^\|[\s:|-]+\|$/.test(t)) return true;        // separator row
-        return !/\b(MR|BR)-\d+\b/.test(t) || /^\|\s*ID\s*\|/i.test(t); // keep the header row
-      })
-      .join('\n');
-    created = true;
+  const created = knowledge === null;
+  if (created) {
+    knowledge = fromTemplate(slug);
+    if (knowledge === null) { console.error('No knowledge/_template.md to build the knowledge file from.'); process.exit(1); }
   }
 
-  const existing = alreadyInKnowledge(knowledge);
-  const toAdd = answers.filter((a) => !existing.has(a.id));
-  const skipped = answers.filter((a) => existing.has(a.id));
+  const p = plan(report, knowledge);
+  console.log(`\nStage 2 of [${slug}]: ${p.append.length} to append, ${p.update.length} to answer, ${p.decide.length} decision(s) for §8, ${p.skip.length} unchanged.`);
+  for (const q of p.append) console.log(`   + ${q.id} [${q.status || q.statusRaw || 'New'}] ${q.question.slice(0, 60)}`);
+  for (const { q } of p.update) console.log(`   ~ ${q.id} -> ${q.status}: ${q.answer.slice(0, 60)}`);
+  for (const q of p.decide) console.log(`   §8 ${q.id} approved by ${q.answeredBy} on ${q.date}`);
+  for (const q of p.skip) console.log(`   = ${q.id} (${q.why})`);
+  const noDecision = [...p.append, ...p.update.map((u) => u.q)].filter((q) => q.resolved && !(q.answeredBy && q.date));
+  if (noDecision.length) console.log(`   note: ${noDecision.map((q) => q.id).join(', ')} settled without "Người trả lời" + "Ngày" — not written to §8.`);
 
-  console.log(`\nStage 2 of [${slug}] has ${answers.length} settled answer(s).`);
-  if (skipped.length) console.log(`   ${skipped.length} already in knowledge, skipped: ${skipped.map((a) => a.id).join(', ')}`);
-
-  if (toAdd.length === 0) {
+  if (!p.append.length && !p.update.length && !p.decide.length) {
     console.log('   Nothing new — knowledge is already in sync.\n');
     process.exit(0);
   }
-
-  console.log(`   ${toAdd.length} code(s) will be appended to section 7:\n`);
-  for (const a of toAdd) {
-    console.log(`      ${a.id}  ${a.question.slice(0, 58)}`);
-    console.log(`              ↳ ${a.decision.slice(0, 58)}`);
-  }
-
   if (!write) {
     console.log(`\n   Preview only. Add \`--write\` to apply to ${path.relative(PATHS.ROOT, kPath)}\n`);
     process.exit(0);
   }
 
-  const updated = insertIntoSection7(knowledge, toAdd.map(buildRow));
-  if (updated === null) {
-    console.error(`\nNo section 7 table found in ${path.relative(PATHS.ROOT, kPath)} — nothing written.`);
+  let updated;
+  try {
+    updated = apply(knowledge, p);
+  } catch (e) {
+    console.error(`\n${e.message} — nothing written to ${path.relative(PATHS.ROOT, kPath)}.`);
     process.exit(1);
   }
-
   fs.mkdirSync(path.dirname(kPath), { recursive: true });
   fs.writeFileSync(kPath, updated, 'utf-8');
-  console.log(`\n   ${created ? 'Created' : 'Updated'} ${path.relative(PATHS.ROOT, kPath)} — ${toAdd.length} row(s) appended, none modified.\n`);
+  console.log(`\n   ${created ? 'Created' : 'Updated'} ${path.relative(PATHS.ROOT, kPath)}. No row deleted.\n`);
 }
 
 if (require.main === module) main();
 
-module.exports = { extractAnswers };
+module.exports = { extractAnswers, extractQuestions, plan, apply, fromTemplate, Q_HEADERS, D_HEADERS };

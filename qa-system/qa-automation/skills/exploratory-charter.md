@@ -16,6 +16,7 @@ phiên thăm dò do con người thực hiện.
 ## Đầu vào
 - Danh sách Risk Area + mức Likelihood/Impact (từ `03_viewpoint_report.md` §1), và/hoặc
 - Requirement Summary (`01_*.md`), và/hoặc mô tả tính năng.
+- `knowledge/_project.md` · `knowledge/features/<task-slug>.md` (luôn nạp, QA_STANDARD §7)
 
 ## KHÔNG được (riêng skill này)
 - Kịch bản hoá: viết Steps / Precondition / Expected chi tiết như Test Case.
@@ -43,12 +44,12 @@ Ghi ra `OUTPUT/<task-slug>/07_exploratory_charter.md`:
 
 ```markdown
 # EXPLORATORY CHARTER SET — [TÊN TÍNH NĂNG]
-Owner: qa-system/qa-automation/exploratory-charter · Nguồn: OUTPUT/<task-slug>/03_viewpoint_report.md · Verdict: <PASS/ASK>
+Owner: qa-automation/exploratory-charter · Nguồn: OUTPUT/<task-slug>/03_viewpoint_report.md · Verdict: PASS
 
 ## 1. Bảng tổng hợp Charter theo rủi ro
 | # | Charter (tóm tắt Mission) | Risk nhắm tới | Mức rủi ro | Time-box |
 |:---|:---|:---|:---|:---|
-| CH-01 | [tóm tắt] | [risk] | [Cao/TB/Thấp] | [vd 60'] |
+| CH-01 | [tóm tắt] | [RK-xx] | [Risk Level theo QA_STANDARD §11] | [vd 60'] |
 
 ## 2. Chi tiết từng Charter
 ### CH-01

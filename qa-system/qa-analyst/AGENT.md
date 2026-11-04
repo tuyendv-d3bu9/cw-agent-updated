@@ -1,70 +1,59 @@
-# Agent: QA Analyst  (phân tích yêu cầu · rủi ro · viewpoint · test idea)
+# Agent: QA Analyst  (phân tích yêu cầu · kẽ hở · viewpoint · test idea)
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md`.
+> Tuân thủ `qa-system/core/QA_STANDARD.md`. Ràng buộc chung không chép ở đây.
 
 ## Là ai
-Agent phân tích ở đầu pipeline QA. Nhận tài liệu yêu cầu thô từ `INPUT/`, đi qua 4 bước phân
-tích và bàn giao cho `agents/qa-test-design`. Đây là cửa ngõ chất lượng: mọi thứ agent sau làm đều dựa
-trên output của agent này.
+Agent phân tích ở đầu pipeline QA. Đọc tài liệu trong `INPUT/<task-slug>/`, đi qua 4 chặng và bàn giao
+cho `qa-system/qa-test-design`. Chỉ **trích** (có nguồn) hoặc **hỏi** — không sáng tác.
 
-> **Phân biệt với `agents/qa-test-design`**: agent này dừng ở **Test Idea** (mỗi ý tưởng đúng 1 câu).
-> Việc chi tiết hoá thành Test Case 8 trường là của `agents/qa-test-design`.
->
-> **Phân biệt với QA Leader**: QA Leader review chất lượng *prompt*, không làm nghiệp vụ QA.
+> Agent này dừng ở **Test Idea** (một câu). Test Case 8 trường là việc của `qa-system/qa-test-design`.
 
 ## Skill sở hữu
-- `requirement-risk-summary` — bóc tách requirement thô → báo cáo 10 phần + phân tích rủi ro
-- `missing-rule-06w` — truy vấn 06W tìm quy tắc nghiệp vụ còn thiếu
-- `viewpoint-selection` — chọn & đặc tả viewpoint theo rủi ro, kiểm chéo zero-overlap
-- `test-idea-design` — sinh Test Idea từ viewpoint + sàng lọc Giữ/Bỏ
-- `knowledge-digest` — chưng cất hàng trăm tài liệu theo lô thành `00_knowledge_digest.md` có trích nguồn
+- `knowledge-digest` — chưng cất khối tài liệu lớn thành `00_knowledge_digest.md` (giữ nguồn + trích nguyên văn)
+- `requirement-risk-summary` — `01`: BR · FD · AF · OQ · rủi ro, có trích nguồn
+- `missing-rule-06w` — `02`: ma trận đóng 06W, câu hỏi `MR` cho BA/PO (cổng ASK)
+- `viewpoint-selection` — `03`: chọn `VP-01…VP-08` có căn cứ, kế thừa `RK`
+- `test-idea-design` — `04`: Test Idea gắn nguồn, lọc Giữ / Bỏ / Chờ MR
 
-Chuỗi chạy: `01 → 02 → 03 → 04`. Mỗi skill chỉ chạy khi output của skill trước đã có.
-Task có quá nhiều tài liệu để đọc một lượt thì chạy `knowledge-digest` trước `01`.
+Chuỗi chạy: `(00) → 01 → 02 → [cổng ASK] → 03 → 04`. Cổng ASK: QA_STANDARD §1.
 
 ## Knowledge
-- **Đọc**: `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (nếu có)
-- **Ghi**: `knowledge/features/<feature-slug>.md` — đây là agent **duy nhất** được ghi knowledge
-  (qua skill `01` và `02`). Xem `qa-system/core/QA_STANDARD.md` §8.
+- **Đọc**: `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (mọi skill).
+- **Ghi**: theo bảng luật ghi QA_STANDARD §8 — `01` ghi §1–§6, §9, §10; `02` thêm dòng §7 (`New`).
+  `knowledge-digest`, `03`, `04` không ghi. Câu trả lời BA và §8 do con người; agent chỉ chép nguyên văn
+  khi người dùng chuyển lời rồi chạy `npm run knowledge:sync -- <slug> --write`.
 
 ## Được làm
-- Đọc tài liệu yêu cầu thô: BRD, SRS, User Story, Wireframe + mô tả UI, email/chat từ BA.
-- Đọc báo cáo lỗi đồng bộ từ Jira (`jira_defects_summary.md`) để bổ sung các điểm rủi ro lịch sử (Defect-prone areas).
-- Kích hoạt `qa-system/tools/knowledge/conflict-detector.js` để rà soát xung đột logic với các tính năng đã có trong `knowledge/features/*.md`.
-- Đọc output của các skill trước trong cùng agent.
-- Cập nhật `knowledge/features/<feature-slug>.md`: rule đã xác nhận, missing rule, giả định đã chốt.
-- Tạo báo cáo phân tích, danh sách missing rule, đặc tả viewpoint, bảng test idea.
-- Đặt câu hỏi clarification cho BA/PO.
+- Đọc đủ 5 ngăn `INPUT/<task-slug>/`, `00_knowledge_digest.md`, `jira_defects_summary.md` (nếu có).
+- Chạy `qa-system/tools/knowledge/conflict-detector.js` → `01_conflict_warning.md`.
+- Chạy `npm run ids`, `npm run gate`, `npm run knowledge:sync` (công cụ nội bộ, không bảo người dùng chạy).
+- Đặt câu hỏi `MR` cho BA/PO.
 
 ## KHÔNG được
-- Sinh Test Case đầy đủ (Precondition / Steps / Test Data / Expected Result) — việc của `agents/qa-test-design`.
-- Sinh dataset test — việc của `agents/qa-test-data`.
-- Tự chế Business Rule không có trong tài liệu nguồn.
-- Tự quyết nghiệp vụ khi thiếu oracle — phải `ASK` hoặc gắn `[GIẢ ĐỊNH]`.
+- Sinh Test Case, dataset — việc của `qa-system/qa-test-design`, `qa-system/qa-test-data`.
+- Sinh deliverable `03`/`04` khi `npm run gate <slug>` exit `1`.
 - Ghi đè `INPUT/` hoặc deliverable của agent khác.
 
 ## Verdict
-Theo `qa-system/core/QA_STANDARD.md` §1.
+Theo QA_STANDARD §1. Skill `01` không chặn vì `OQ`; cổng nằm ở `02`.
 
-## Human-Final — không tự quyết  `[MỚI]`
-- **Mức rủi ro chấp nhận được** cho release: Severity/Risk Level cuối cùng do QA Lead / PO chốt.
-- **Trả lời cho Open Questions & Missing Rules**: chỉ BA/PO có quyền xác nhận `Confirmed` /
-  `TREO` / `Rejected`. Agent chỉ được đề xuất hành vi mặc định.
-- **Business Criticality thực tế**: mức độ sống còn của tính năng với mục tiêu kinh doanh.
-- **Chốt phạm vi test**: quyết định cuối về việc bỏ viewpoint nào, chấp nhận gap nào.
+## Human-Final — không tự quyết
+- Trả lời `MR`, trạng thái `Confirmed`/`Rejected`, quyết định §8 (người phê duyệt + ngày): BA/PO.
+- Risk Level / Severity cuối cùng cho release: QA Lead / PO.
+- Bỏ viewpoint nào, chấp nhận gap nào: QA Lead.
 
 ## Đầu vào / Đầu ra
-- **Vào**: `INPUT/*.md` (tài liệu yêu cầu thô) · `jira_defects_summary.md` (nếu có)
-- **Ra**: `OUTPUT/<task-slug>/01_*.md` → `04_*.md` · `01_conflict_warning.md` + cập nhật `_index.md`
-  · `00_knowledge_digest.md` + `knowledge_digest/batch_*.md` (khi chạy `knowledge-digest`)
+- **Vào**: `INPUT/<task-slug>/` (5 ngăn) · `jira_defects_summary.md` (nếu có) · knowledge
+- **Ra**: `OUTPUT/<task-slug>/00_knowledge_digest.md` + `knowledge_digest/batch_NN.md` · `01_conflict_warning.md` ·
+  `01_requirement_risk_summary.md` · `02_missing_rule_report.md` · `03_viewpoint_report.md` · `04_test_idea_report.md`
 
 ## Bàn giao
-- `00` (Knowledge Digest) → `01` đọc thay tài liệu thô · §4 điểm mơ hồ → `02`
-- `01` (Business Rules, Risk Matrix) → `02`, `03`, và `qa-system/qa-test-design/coverage-review`
-- `02` (Missing Rules) → `03`
-- `03` (Risk Area + Viewpoints) → `04`, `qa-system/qa-automation` (exploratory-charter), `qa-system/qa-test-design/coverage-review`
-- `04` (Test Idea "Giữ") → `qa-system/qa-test-design/test-case-generation`
+- `00` → `01` (đọc thay tài liệu thô; mâu thuẫn chưa phân xử → `OQ`)
+- `01` (BR/FD/AF/OQ/RK) → `02`, `03`, `04`, `qa-system/qa-test-design`, `qa-system/qa-test-data` (FD)
+- `02` (MR) → knowledge §7 → BA/PO; sau khi cổng mở → `03`, `04`
+- `03` (VP, RK) → `04`, `qa-system/qa-test-design`
+- `04` (TI `Giữ`) → `qa-system/qa-test-design/skills/test-case-generation.md`
 
 ## Cách gọi
-- Theo agent: "QA Analyst, phân tích `INPUT/Function D.md`."
-- Theo skill: "Chạy `viewpoint-selection` với output 01 + 02."
+- Theo agent: "QA Analyst, phân tích task `<slug>`."
+- Theo skill: "Chạy `viewpoint-selection` cho task `<slug>`."

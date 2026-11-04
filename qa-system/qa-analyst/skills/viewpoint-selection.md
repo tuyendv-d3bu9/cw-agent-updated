@@ -1,107 +1,84 @@
 ---
 name: viewpoint-selection
 description: >
-  Phân rã tính năng thành các Viewpoint (góc nhìn kiểm thử) độc lập theo rủi ro dựa trên registry 8 viewpoint chuẩn.
-  Thiết lập ranh giới In/Out scope và kiểm chéo ma trận Zero-Overlap.
+  Chọn viewpoint kiểm thử từ registry cố định VP-01…VP-08 dựa trên rủi ro kế thừa từ Chặng 1, mỗi
+  viewpoint gắn mã nguồn BR/FD/AF/MR, phân ranh giới theo quy ước sở hữu cố định.
 ---
 
 # Skill: viewpoint-selection
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT · risk matrix 3x3).
+> Tuân thủ `qa-system/core/QA_STANDARD.md` (cổng ASK §1 · guard §2 · FACT §3 · risk §5 · chuỗi biên §6 ·
+> knowledge §8 · registry viewpoint §9.2 · nguồn §10).
 
 ## Mục đích
-Phân rã tính năng thành các **viewpoint** (góc nhìn kiểm thử) độc lập theo rủi ro, thiết lập
-ranh giới In/Out scope chuẩn xác trước khi thiết kế kịch bản chi tiết.
+Chọn các viewpoint **có căn cứ trong nguồn** và chỉ rõ mỗi viewpoint phủ những mã nào, để Chặng 4 sinh
+test idea không sót và không chồng chéo.
 
 ## Đầu vào
-- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — tổng quan nghiệp vụ, luồng, dữ liệu, risk matrix.
-- `OUTPUT/<task-slug>/02_missing_rule_report.md` — quy tắc tiềm ẩn, trường hợp biên, lỗ hổng logic.
+- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `BR`, `FD`, `AF`, `RK`.
+- `OUTPUT/<task-slug>/02_missing_rule_report.md` — `MR` và trạng thái.
+- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` — §7/§8 (MR đã chốt).
+
+> Trước khi chạy: `npm run gate <task-slug>` phải exit `0` (QA_STANDARD §1). Exit `1` ⇒ dừng.
+> Chỉ `MR` trạng thái `Confirmed` là nguồn; `Rejected` không sinh viewpoint.
 
 ## KHÔNG được (riêng skill này)
-- Sinh test idea chi tiết, test step hay test case — chỉ dừng ở ranh giới & định hướng góc nhìn.
-- Âm thầm đổi tên viewpoint chuẩn trong registry.
-- Viết In/Out scope trừu tượng, chung chung — mọi mục phải ánh xạ trực tiếp từ requirement thực tế.
+- Sinh test idea, step, test case.
+- Chọn viewpoint không gắn được ít nhất một mã nguồn.
+- Chọn `VP-04`…`VP-08` khi nguồn không nhắc tới (bảo mật, giao diện, hiệu năng, a11y, tích hợp).
+  Loại sản phẩm ("B2C", "có API") không phải nguồn.
+- Đánh lại mã `RK` của 01. Rủi ro mới chỉ sinh từ `MR` đã chốt, cấp số kế tiếp (`npm run ids -- <slug>`).
+- Đổi tên viewpoint trong registry.
 
-## Registry 8 viewpoint (CỐ ĐỊNH)
-Không tự thêm/bớt. Cần góc nhìn đặc thù ngoài registry → gắn `[GIẢ ĐỊNH]` + nêu lý do kỹ thuật/nghiệp vụ.
+## Quy ước sở hữu (cố định — thay cho kiểm "zero-overlap")
+Một tình huống thuộc **đúng một** viewpoint theo bảng này. Chặng 4 và 6 dùng cùng quy ước.
 
-| Viewpoint | Câu hỏi chủ đạo | Khi nào ưu tiên cao |
-|---|---|---|
-| Happy Path | Luồng đúng chuẩn xảy ra thế nào? | Mọi tính năng — luôn kiểm tra trước tiên |
-| Negative | Input sai / flow gián đoạn thì sao? | Form có input, flow nhiều bước |
-| Boundary | Giới hạn hệ thống ở đâu? | Bất kỳ field số / text / date |
-| Security | Có thể bị tấn công / bypass không? | Auth, payment, admin |
-| UX/Usability | User hiểu và dùng được không? | Tính năng mới, form phức tạp |
-| Performance | Chịu tải thực tế không? | API, search, real-time |
-| Accessibility | User đặc biệt dùng được không? | Public-facing, B2C |
-| Integration | Tương tác hệ thống khác thế nào? | Có call API bên ngoài |
+| VP | Tên | Sở hữu | Chọn khi |
+|---|---|---|---|
+| VP-01 | Happy Path | Luồng chính (01 §4), hành vi đúng của từng `BR` | Luôn chọn nếu 01 có luồng chính |
+| VP-02 | Negative | Sai định dạng, sai kiểu, rỗng/thiếu field bắt buộc, ký tự đặc biệt, sai trạng thái, các `AF` lỗi | Có `FD` hoặc `AF` lỗi |
+| VP-03 | Boundary | Mọi điểm của chuỗi biên QA_STANDARD §6, **kể cả** điểm ngoài biên (`min-1`, `max+1`, quá độ dài) | Có `FD` mang min/max/độ dài trong nguồn |
+| VP-04 | Security | Phân quyền, xác thực, lộ dữ liệu | Nguồn nhắc quyền/bảo mật, hoặc MR đã chốt về W5 |
+| VP-05 | UX/Usability | Chữ thông báo, nhãn, bố cục có trong `04_design/` | Có `04_design/` hoặc chữ hiển thị trong nguồn |
+| VP-06 | Performance | Thời gian phản hồi, tải | Nguồn có ngưỡng NFR |
+| VP-07 | Accessibility | Yêu cầu tiếp cận | Nguồn có yêu cầu a11y |
+| VP-08 | Integration | Gọi hệ thống/API/module khác, side-effect chéo | Nguồn nhắc hệ thống ngoài |
 
-Ưu tiên hoá theo risk: **Business Impact** → Happy Path, Negative, Security ·
-**Likelihood** → Boundary, Integration, Negative · **Detectability** → Security, Integration, Performance.
+Ngoài registry ⇒ `VP-9x` + `[GIẢ ĐỊNH]` + mã nguồn. Không có mã nguồn ⇒ không chọn.
 
 ## Các bước
-1. **Chiến lược độ phủ theo rủi ro** — liệt kê các **Risk Area** trọng yếu từ output 01 + 02;
-   chấm Likelihood × Impact (§5); xếp hạng theo nguyên tắc *"test đúng chỗ, không phải test nhiều"*;
-   với rủi ro ưu tiên cao nhất, nêu **loại test cần làm** (vd BVA cho tính tiền giảm, Decision
-   Table cho tổ hợp điều kiện áp mã, Negative cho mã hết hạn).
-2. **Tuyển chọn viewpoint** — chọn **toàn bộ viewpoint áp dụng được** cho tính năng, đối chiếu
-   registry ở trên. Mọi Risk Area ưu tiên cao phải được ánh xạ tới ít nhất một viewpoint.
-3. **Đặc tả từng viewpoint** đủ **6 trường** (xem format).
-4. **Kiểm chéo Zero-Overlap** — In-scope của viewpoint này không được xuất hiện trong In-scope
-   của viewpoint khác; mọi điểm giao thoa tiềm ẩn phải có quy ước bàn giao ghi ở Out-of-scope.
+1. **Rủi ro** — chép nguyên `RK` của 01 (giữ mã, Likelihood, Impact). Thêm `RK` mới cho rủi ro sinh từ `MR` `Confirmed`.
+2. **Chọn viewpoint** — đi qua bảng quy ước, chọn VP có điều kiện "Chọn khi" đúng, ghi mã nguồn và lý do.
+3. **Đặc tả** từng VP: mục tiêu, danh sách mã trong phạm vi, `RK` liên quan, phần giao thoa chuyển cho VP nào.
+4. **Kiểm** — mọi `BR`/`FD`/`AF`/`MR Confirmed` nằm trong ít nhất một VP; mọi `RK` mức `CRITICAL`/`HIGH` có VP phủ.
 
 ## Format output
 Ghi ra `OUTPUT/<task-slug>/03_viewpoint_report.md`:
 
-```markdown
-# BÁO CÁO PHÂN TÍCH VIEWPOINT KIỂM THỬ — [TÊN TÍNH NĂNG]
+````markdown
+# Viewpoint Report · <task-slug>
+Owner: qa-system/qa-analyst/skills/viewpoint-selection.md · Nguồn: 01_requirement_risk_summary.md, 02_missing_rule_report.md, knowledge/features/<feature-slug>.md · Verdict: PASS
 
-## 1. CHIẾN LƯỢC ĐỘ PHỦ THEO RỦI RO
-### 1.1 Ma trận Ưu tiên Rủi ro (Likelihood × Impact)
-| # | Risk Area | Likelihood | Impact | Mức ưu tiên | Nguồn (Rule/Missing Rule) |
-|:---|:---|:---:|:---:|:---:|:---|
-| RK-01 | [mô tả khu vực rủi ro] | [Thấp/TB/Cao] | [Thấp/TB/Cao] | [Ưu tiên 1] | [BR-xx / MR-xx] |
+## 1. RỦI RO
+| ID | Rủi ro | Likelihood | Impact | Risk Level | Nguồn |
+|---|---|---|---|---|---|
+| RK-01 | <chép từ 01> | HIGH | MEDIUM | HIGH | BR-01 |
 
-### 1.2 Xếp hạng ưu tiên & loại test cần làm
-- [Risk Area theo ưu tiên giảm dần, kèm loại test cần làm cho từng rủi ro cao]
+## 2. VIEWPOINT ĐƯỢC CHỌN
+| VP | Tên | Nguồn (BR/FD/AF/MR) | Lý do |
+|---|---|---|---|
+| VP-01 | Happy Path | BR-01, BR-02 | <lý do bám nguồn> |
 
-### 1.3 Liên kết Risk → Viewpoint
-- [Mỗi Risk Area ưu tiên cao được phủ bởi viewpoint nào — không để rủi ro cao nào "mồ côi"]
-
-## 2. TỔNG QUAN LỰA CHỌN VIEWPOINT
-| STT | Tên Viewpoint | Mức rủi ro | Nguồn | Lý do lựa chọn |
-|:---|:---|:---|:---|:---|
-| 1 | [tên chuẩn từ registry] | [High/Med/Low] | Registry | [lý do] |
-| 2 | [GIẢ ĐỊNH] [tên mới] | [High/Med/Low] | [GIẢ ĐỊNH] | [lý do bắt buộc cần bổ sung] |
-
-## 3. ĐẶC TẢ CHI TIẾT CÁC VIEWPOINT
-### Viewpoint [NN]: [Tên]
-- **Tên Viewpoint**: [đúng tên registry, hoặc [GIẢ ĐỊNH] + tên]
-- **Mục tiêu kiểm thử**: [giá trị chất lượng cần đạt + rủi ro chính cần ngăn]
-- **Phạm vi bao phủ (In-scope)**:
-  - [mục in-scope gắn requirement thực tế]
-- **Phạm vi loại trừ (Out-of-scope)**:
-  - [mục out-of-scope — thuộc trách nhiệm của Viewpoint X]
-- **Rủi ro nếu bỏ qua**: [hậu quả cụ thể với user / hệ thống / kinh doanh]
-- **Ước lượng định tính Test Idea**: [Cao/TB/Thấp + luận điểm — KHÔNG đưa quota con số]
-
-*(Lặp lại cho toàn bộ viewpoint được chọn)*
-
-## 4. MA TRẬN ZERO-OVERLAP
-| Viewpoint A | Viewpoint B | Điểm nguy cơ giao thoa | Ranh giới phân định |
-|:---|:---|:---|:---|
-| [VP A] | [VP B] | [mô tả giao thoa tiềm ẩn] | [VP A phụ trách…, VP B phụ trách…] |
-
-## 5. XÁC NHẬN BÀN GIAO
-- [ ] Mọi Risk Area ưu tiên cao đã ánh xạ tới viewpoint.
-- [ ] Chọn đủ mọi viewpoint áp dụng được theo rủi ro.
-- [ ] Tên viewpoint đúng registry; ngoài registry đều có `[GIẢ ĐỊNH]`.
-- [ ] In/Out scope không trùng lặp.
-- [ ] Không sinh test idea/test case chi tiết.
-```
+## 3. ĐẶC TẢ VIEWPOINT
+### VP-01 — Happy Path
+- Mục tiêu: <…>
+- Trong phạm vi: BR-01, BR-02
+- Rủi ro liên quan: RK-01
+- Giao thoa: <tình huống> → VP-0x (theo quy ước sở hữu)
+````
 
 ## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] File output lưu tại `OUTPUT/<task-slug>/03_viewpoint_report.md`.
-- [ ] 100% Risk Area ưu tiên cao từ output 01 và 02 được liên kết với ít nhất một Viewpoint.
-- [ ] Ma trận Zero-Overlap phân định ranh giới rõ ràng, không có sự chồng lấn In-scope giữa các Viewpoint.
-- [ ] Mọi viewpoint ngoài registry 8 chuẩn bắt buộc gắn nhãn `[GIẢ ĐỊNH]` kèm giải trình kỹ thuật.
+- [ ] `npm run gate <slug>` exit `0` trước khi ghi file; dòng meta đúng QA_STANDARD §7.
+- [ ] Mã `RK` của 01 giữ nguyên; `RK` mới có nguồn `MR`.
+- [ ] Mỗi VP có ít nhất một mã nguồn; `VP-04`…`VP-08` chỉ có mặt khi nguồn nhắc tới.
+- [ ] Mọi `BR`/`FD`/`AF`/`MR Confirmed` thuộc ít nhất một VP; rủi ro `CRITICAL`/`HIGH` không mồ côi.

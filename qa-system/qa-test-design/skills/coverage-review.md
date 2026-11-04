@@ -1,101 +1,100 @@
 ---
 name: coverage-review
 description: >
-  Chốt chặn kiểm soát chất lượng: review độc lập test suite theo Coverage Framework 3 góc nhìn
-  (Requirement Matrix, Viewpoint Balance, Boundary Completeness), phát hiện gap và ra Verdict nghiệm thu.
+  Đối soát độ phủ test suite: mọi BR/FD/AF, MR đã chốt và TI "Giữ" có test case; cân bằng theo
+  viewpoint đã chọn ở Chặng 3; đủ chuỗi biên. Ra verdict PASS / FIX / ASK có điểm kết thúc.
 ---
 
 # Skill: coverage-review
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict + **ngoại lệ §1** · guard · FACT · chuỗi biên §6).
+> Tuân thủ `qa-system/core/QA_STANDARD.md` (**verdict Chặng 6 §1** · guard §2 · nhãn §2.1 · FACT §3 ·
+> chuỗi biên §6 · knowledge §8 · ID §9 · nguồn §10).
 
 ## Mục đích
-Chốt chặn kiểm soát chất lượng nội bộ: tự review độc lập test suite trước khi bàn giao — đối
-soát độ phủ, phát hiện test gap, đánh giá rủi ro business từ góc nhìn QA Lead.
-
-## Bước 0 bắt buộc: lint bằng máy trước khi rà bằng mắt
-
-Chạy `npm run lint -- <task-slug>` và dán **kết quả thật** vào báo cáo trước khi
-rà soát 3 góc nhìn.
-
-Lý do: rà soát độ phủ là LLM đánh giá sản phẩm của LLM — dễ bỏ sót đúng những lỗi
-cấu trúc mà máy bắt được trong 0,1 giây (thiếu trường, sai định dạng `TC_ID`, trùng ID,
-Tags không trace được, placeholder còn sót). Để máy loại hết lỗi cơ học trước, skill này
-mới tập trung vào thứ máy không làm được: **độ phủ nghiệp vụ**.
-
-Exit code `1` ⇒ trả về `FIX`, nêu rõ danh sách lỗi, không rà tiếp.
+Chốt chặn cuối của test design: tìm mục chưa có test case và nói rõ vì sao — do chưa viết (sửa được)
+hay do thiếu thông tin (phải hỏi). Không đánh giá thay con người mức rủi ro chấp nhận được.
 
 ## Đầu vào
-- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — danh sách Business Rules.
-- `OUTPUT/<task-slug>/05_test_case_spec.md` — test suite.
-- `OUTPUT/<task-slug>/03_viewpoint_report.md` — ma trận viewpoint.
+- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `BR`, `FD`, `AF`.
+- `OUTPUT/<task-slug>/02_missing_rule_report.md` — `MR` và trạng thái.
+- `OUTPUT/<task-slug>/03_viewpoint_report.md` — VP đã chọn.
+- `OUTPUT/<task-slug>/04_test_idea_report.md` — TI `Giữ` / `Chờ MR`.
+- `OUTPUT/<task-slug>/05_test_case_spec.md` (hoặc `testcases/batch_*.md`).
+- `OUTPUT/<task-slug>/12_data_validation_traceability.md` nếu có.
+- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` — §7 (trạng thái MR), §8.
 
 ## KHÔNG được (riêng skill này)
-- Đánh số lại / gộp mã Business Rule — dùng đúng mã và thứ tự đã đánh ở skill requirement-risk-summary.
-- Để trống ô `Test Case IDs cover` — chưa cover thì điền **`CHƯA COVER`**.
-- Kết luận chung chung ("thiếu test case", "cần bổ sung coverage") — mọi gap phải gắn `Rule#` cụ thể.
-- Tự kết luận `PASS` khi chưa có biên bản chấp nhận rủi ro từ người phụ trách.
-- Tự suy đoán thay con người về mức rủi ro chấp nhận, tác động liên hệ thống, insight thực chiến.
+- Đánh số lại / gộp mã của 01–05.
+- Để trống ô `Test Case IDs cover` — chưa có thì `CHƯA COVER`.
+- Đề xuất bổ sung kèm giá trị, chữ thông báo, expected tự chế. Đề xuất chỉ nêu **kịch bản + mã nguồn**;
+  giá trị dẫn về nguồn hoặc nhãn §2.1.
+- Đối chiếu viewpoint với danh mục nào khác ngoài các VP đã chọn ở 03.
+- Tự viết test case — gap sửa được thì trả `FIX` cho `test-case-generation`.
 
 ## Các bước
-1. **Rà đủ 3 góc nhìn Coverage Framework** (bắt buộc cả 3, không được chọn 1):
+1. **Lint** — chạy `npm run lint -- <task-slug>`, dán kết quả thật. Exit `1` ⇒ verdict `FIX`, liệt kê lỗi, dừng.
+2. **Ma trận** — một dòng cho mỗi `BR`/`FD`/`AF` của 01, mỗi `MR` `Confirmed`, mỗi `TI` `Giữ`. Cột cover lấy
+   các `TC_ID` có tag `Rule#<mã>` hoặc `TI#<mã>` tương ứng.
+3. **Phân loại gap** của mỗi dòng `CHƯA COVER`:
+   - Có TI `Giữ` hoặc nguồn đủ để viết ⇒ `FIX: <kịch bản> — dựa trên <mã>` (chuyển `test-case-generation`; chưa có TI thì chuyển `test-idea-design`).
+   - Chỉ có TI `Chờ MR`, hoặc thiếu thông tin ⇒ `ASK: MR-xx` (MR đã có) hoặc `ASK: cần MR cho <mã> × W<n>` (chuyển Chặng 2).
+4. **Cân bằng viewpoint** — mỗi VP ở 03 §2 có ít nhất một TC `Viewpoint#VP-xx` (một TC được mang nhiều tag `Viewpoint#`); TC mang VP không có trong 03 ⇒ `FIX`.
+5. **Chuỗi biên** — mỗi `FD` có min/max/độ dài trong nguồn: đủ điểm QA_STANDARD §6 có TC. `FD` không có ngưỡng
+   trong nguồn ⇒ không tính gap ở đây (đã là MR).
+6. **Dữ liệu** — có `12_` ⇒ ghi các TC `CHƯA CÓ DATA` (tham khảo, không đổi verdict).
+7. **Verdict** — theo QA_STANDARD §1 (Chặng 6): `PASS` khi lint sạch và không còn `CHƯA COVER`; còn gap
+   loại FIX ⇒ `FIX`; chỉ còn gap loại ASK ⇒ `ASK`. Có cả hai ⇒ `FIX` (sửa phần sửa được trước).
 
-   | Góc nhìn | Nội dung |
-   |---|---|
-   | 1 — Requirement ↔ Test Suite Matrix | Đối soát 2 chiều giữa từng Business Rule và Test Case ID |
-   | 2 — Viewpoint Balance | Cân bằng giữa Functional, Boundary, Exception/Negative, Security/Authorization, State Transition, Data Integrity |
-   | 3 — Boundary Completeness | Tính triệt để của giá trị biên theo `qa-system/core/QA_STANDARD.md` §6 cho từng rule |
-
-2. **Map ma trận Rule ↔ Test Case ID** — liệt kê toàn bộ rule theo đúng mã gốc, ánh xạ TC ID
-   cover từng rule, thiếu thì điền `CHƯA COVER`.
-3. **Phân tích Gap** cho mỗi rule chưa cover / cover chưa đủ: *Gap Analysis* (kịch bản còn thiếu)
-   · *Business Risk* (rủi ro lọt lưới nếu không test) · *Recommendation* (test case bổ sung cụ
-   thể: tên kịch bản, input, expected result).
-4. **Ra verdict** theo luật riêng:
-   - `FIX` — phát hiện có gap coverage (kèm recommendation khắc phục).
-   - `ASK` — rà đủ 3 góc nhìn mà KHÔNG tìm thấy gap nào (bắt buộc nghi ngờ bỏ sót).
-   - `PASS` — CHỈ khi có xác nhận chính thức chấp nhận rủi ro từ người phụ trách kèm lý do kinh doanh.
+Vòng lặp hội tụ: mỗi lần `FIX` giảm số dòng `CHƯA COVER`; không còn gap ⇒ `PASS`. Không nghi ngờ suông khi không có gap.
 
 ## Format output
 Ghi ra `OUTPUT/<task-slug>/06_coverage_review.md`:
 
-```markdown
-# BÁO CÁO COVERAGE REVIEW & TEST SUITE GAP ANALYSIS · <task-slug>
-Owner: qa-system/qa-test-design/coverage-review · Nguồn: OUTPUT/<task-slug>/05_test_case_spec.md · Verdict: <FIX/ASK/PASS>
+````markdown
+# Coverage Review · <task-slug>
+Owner: qa-system/qa-test-design/skills/coverage-review.md · Nguồn: 01–05, knowledge/features/<feature-slug>.md · Verdict: FIX
 
-## 1. Tổng quan 3 Góc nhìn
-- **Góc nhìn 1 (Requirement ↔ Test Suite)**: [hiện trạng bao phủ requirement]
-- **Góc nhìn 2 (Viewpoint Balance)**: [mức cân bằng giữa các khía cạnh]
-- **Góc nhìn 3 (Boundary Completeness)**: [mức bao phủ giá trị biên]
-
-## 2. Ma trận Đối soát Độ phủ
-| Rule# | Rule description | Test Case IDs cover | Gap & Recommendation |
-|:---|:---|:---|:---|
-| BR-01 | [mô tả ngắn] | [TC-01, TC-02…] HOẶC **CHƯA COVER** | ['Đạt' nếu cover đủ; hoặc: gap / rủi ro business / TC bổ sung] |
-
-## 3. Danh mục Lỗ hổng & Đề xuất Bổ sung
-### Rule #[ID]: [tên rule]
-- **Gap phát hiện**: [góc nhìn/biên/kịch bản còn thiếu]
-- **Rủi ro Business**: [hậu quả nếu lỗi xảy ra trên production]
-- **Đề xuất Test Case bổ sung**:
-  - *Tên*: [tên rõ ràng]
-  - *Điều kiện/Dữ liệu*: [input, pre-condition]
-  - *Kết quả mong đợi*: [expected outcome]
-
-## 4. Human-Final Decision Scope
-> AI không tự quyết các nội dung dưới đây — bàn giao QA Lead / PO thẩm định:
-1. **Business Criticality** — mức quan trọng sống còn của rule với mục tiêu kinh doanh.
-2. **Actual Risk Sufficiency** — độ phủ hiện tại đã đủ cho mức rủi ro của release chưa.
-3. **Cross-system Impact** — tác động tích hợp liên hệ thống ngoài phạm vi tài liệu.
-4. **Exploratory Insights** — góc thăm dò sâu theo kinh nghiệm thực chiến.
-
-## 5. Kết luận Kiểm định
-- **Review Verdict**: `[FIX / ASK / PASS]`
-- **Lý do chi tiết**: [căn cứ logic theo kết quả rà 3 góc nhìn]
+## 1. KẾT QUẢ LINT
+```
+<dán nguyên kết quả npm run lint -- <task-slug>>
 ```
 
+## 2. MA TRẬN ĐỘ PHỦ
+| Mã | Loại | Mô tả | Test Case IDs cover | Gap & Đề xuất |
+|---|---|---|---|---|
+| BR-01 | BR | <mô tả ngắn từ 01> | <MODULE>-001, <MODULE>-002 | Đạt |
+| FD-02 | FD | <…> | CHƯA COVER | FIX: kiểm điểm max+1 — dựa trên FD-02 |
+| AF-01 | AF | <…> | CHƯA COVER | ASK: MR-04 |
+| TI-05 | TI | <…> | <MODULE>-007 | Đạt |
+
+## 3. CÂN BẰNG VIEWPOINT
+| VP | Tên | Số TC | Ghi chú |
+|---|---|---|---|
+| VP-01 | Happy Path | <số> | <…> |
+
+## 4. CHUỖI BIÊN
+| FD | min-1 | min | min+1 | Giữa | max-1 | max | max+1 |
+|---|---|---|---|---|---|---|---|
+| FD-02 | <TC_ID> | <TC_ID> | <TC_ID> | <TC_ID> | <TC_ID> | <TC_ID> | CHƯA COVER |
+
+## 5. HUMAN-FINAL
+- Mức rủi ro chấp nhận được, Priority cuối, Automated/Manual: do QA Lead / PO quyết (không chặn verdict).
+
+## FIX
+| # | Vị trí | Vấn đề | Bản sửa đề xuất |
+|---|---|---|---|
+
+## ASK
+| # | Vị trí | Cần gì | Chuyển cho ai |
+|---|---|---|---|
+````
+
+`FD` dạng định dạng/độ dài dùng cột tương ứng của §6 (rỗng · 1 ký tự · đúng độ dài · quá độ dài · sai định dạng · ký tự đặc biệt).
+Mục không có dòng ⇒ không dựng bảng, ghi dòng văn bản `Không có`.
+
 ## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Rà soát đầy đủ cả 3 góc nhìn của Coverage Framework, không bỏ qua góc nhìn nào.
-- [ ] Đối soát 100% các mã Business Rule (`BR-xx`) từ requirement-risk-summary, không tự ý gộp hay bỏ sót rule.
-- [ ] Mọi ô bảng không có test case phải điền rõ nhãn `CHƯA COVER`, không để trống.
-- [ ] Tuân thủ luật ngoại lệ Verdict: Nếu không phát hiện gap nào thì verdict bắt buộc là `ASK` (nghi ngờ bỏ sót), cấm tự ý kết luận `PASS`.
+- [ ] Đã chạy lint và dán kết quả thật.
+- [ ] Ma trận có đủ mọi `BR`/`FD`/`AF` của 01, mọi `MR` `Confirmed`, mọi `TI` `Giữ`; không ô trống.
+- [ ] Mỗi gap mang `FIX:` hoặc `ASK:` kèm mã nguồn; không có giá trị tự chế.
+- [ ] Viewpoint chỉ đối chiếu với VP của 03.
+- [ ] Verdict đúng luật Chặng 6 (QA_STANDARD §1).

@@ -143,7 +143,8 @@ Ghi ra file `OUTPUT/reports/daily-summary-<audience>.md`:
 
 ````markdown
 # DAILY QA SUMMARY · <Tên Sprint / Ngày>
-Owner: qa-system/qa-reporter/gen-daily-summary · Audience: <dev | pm> · Nguồn: <sprint_data_path> · Verdict: <PASS | ASK>
+Owner: qa-system/qa-reporter/skills/gen-daily-summary.md · Nguồn: <sprint_data_path> · Verdict: PASS
+Audience: <dev | pm>
 
 ---
 

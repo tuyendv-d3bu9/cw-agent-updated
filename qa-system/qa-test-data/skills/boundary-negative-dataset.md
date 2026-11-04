@@ -1,70 +1,61 @@
 ---
 name: boundary-negative-dataset
 description: >
-  Sinh dataset kiểm thử biên (Boundary) và âm tính (Negative/Invalid/Null/Special) có chủ đích,
-  đảm bảo mỗi record kiểm đúng một edge case và phủ trọn vẹn chuỗi biên min/max.
+  Sinh dataset biên và âm tính có chủ đích: mỗi record kiểm đúng một điểm của chuỗi biên
+  QA_STANDARD §6 hoặc một lớp Invalid/Null/Special, gắn với test case cụ thể.
 ---
 
 # Skill: boundary-negative-dataset
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT · **chuỗi biên §6**).
+> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · nhãn §2.1 · FACT §3 · **chuỗi biên §6** · nguồn §10).
 
 ## Mục đích
-Sinh dataset biên & âm tính **có chủ đích** — mỗi record kiểm đúng một edge case khác nhau,
-không trùng lặp.
+Mỗi record kiểm đúng một edge case, các field còn lại giữ Valid để cô lập biến số.
 
 ## Đầu vào
-- `OUTPUT/<task-slug>/09_data_class_map.md` — Field Map + mốc biên cần phủ.
-- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — rule để xác định đâu là "vi phạm".
+- `OUTPUT/<task-slug>/09_data_class_map.md` — Field Map, mốc biên.
+- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `FD`, `BR` để xác định "vi phạm".
+- `OUTPUT/<task-slug>/05_test_case_spec.md` — TC kiểm biên/âm tính cần record.
+- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (§9).
 
 ## KHÔNG được (riêng skill này)
-- Để trống cột `Test Purpose` — mọi record boundary/negative bắt buộc nêu rõ nó test gì.
-- Bỏ sót biên ngoài `min-1` và `max+1`.
-- Sinh nhiều record kiểm cùng một edge case (trùng lặp vô ích).
-- Bịa khoảng giá trị cho field chưa rõ rule → `[GIẢ ĐỊNH]` + `ASK`.
-
-## Nguyên tắc "Record có Mục đích"
-- Mỗi record boundary/negative **bắt buộc** có cột `Test Purpose`.
-- Field có **min/max** → phủ đủ `min-1` · `min` · `min+1` · `max-1` · `max` · `max+1`.
-- Field có **format/độ dài** → rỗng · 1 ký tự · đúng độ dài · quá độ dài · sai định dạng ·
-  ký tự đặc biệt.
-- Có **≥1 NULL cho field bắt buộc** và **≥1 NULL cho field giá trị** — để phân biệt hành vi
-  "thiếu định danh" vs "thiếu giá trị".
+- Dựng chuỗi biên cho field không có min/max/độ dài trong nguồn — ô đó ghi `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]`.
+- Sinh nhiều record cho cùng một edge case, hoặc thêm record để đủ số lượng.
+- Để trống `Test Purpose` hay `TC_ID`.
 
 ## Các bước
-1. Với mỗi field trong Field Map, liệt kê các mốc/edge case cần phủ theo nguyên tắc trên.
-2. Sinh **một record cho một edge case**, các field còn lại giữ giá trị Valid để cô lập biến số.
-3. Gán `Loại data` (Boundary / Invalid / Null / Special) và viết `Test Purpose` cho từng record.
-4. Đối chiếu lại: không mốc nào bị bỏ, không edge case nào bị trùng.
+1. Với mỗi field ở 09: field có khoảng ⇒ 7 điểm §6; field có định dạng/độ dài ⇒ chuỗi định dạng §6;
+   Null/Empty chỉ khi `Bắt buộc` có nguồn.
+2. Một record cho một edge case; field khác lấy giá trị Valid từ `10_dataset.md` hoặc từ nguồn.
+3. Gắn `Loại data`, `Test Purpose`, mã `FD`, và `TC_ID` dùng record. Không TC nào dùng ⇒ ghi `Record mồ côi` + lý do.
+4. Xuất CSV/SQL/JSON (quy ước NULL và ngày theo `dataset-generation`).
 
 ## Format output
 Ghi ra `OUTPUT/<task-slug>/11_boundary_negative_dataset.md`:
 
 ````markdown
-# BOUNDARY & NEGATIVE DATASET — [TÊN TÍNH NĂNG]
+# Boundary & Negative Dataset · <task-slug>
+Owner: qa-system/qa-test-data/skills/boundary-negative-dataset.md · Nguồn: 09_data_class_map.md, 01_requirement_risk_summary.md, 05_test_case_spec.md · Verdict: PASS
 
-## 1. Bảng dataset
-| # | [field 1] | [field 2] | … | Loại data | Test Purpose | Trace |
+## 1. DATASET
+| # | TC_ID | <field 1> | <field 2> | Loại data | Test Purpose | FD |
 |---|---|---|---|---|---|---|
-| 1 | [giá trị] | [Valid] | … | Boundary | [vd "field X = min"] | `BR-xx` |
-| 2 | [giá trị] | [Valid] | … | Invalid | [vd "field X dưới min 1 đơn vị"] | `BR-xx` |
-| 3 | NULL | [Valid] | … | Null | [vd "field bắt buộc = NULL"] | `BR-xx` |
+| B-01 | <MODULE>-005 | <max+1 tính từ nguồn> | <Valid> | Boundary | <field 1 = max+1> | FD-01 |
 
-## 2. Đối chiếu độ phủ biên
-| Field | min-1 | min | min+1 | max-1 | max | max+1 | Rỗng | Sai format | Ký tự đặc biệt |
-|---|---|---|---|---|---|---|---|---|---|
-| [field] | #3 | #1 | #4 | #5 | #2 | #6 | #10 | #11 | #12 |
+## 2. ĐỐI CHIẾU CHUỖI BIÊN
+| FD | min-1 | min | min+1 | Giữa | max-1 | max | max+1 |
+|---|---|---|---|---|---|---|---|
+| FD-01 | B-03 | B-01 | … | … | … | … | B-07 |
 
-*(Ô nào không áp dụng → ghi "N/A" kèm lý do. Ô nào chưa phủ → ghi `CHƯA PHỦ`, không để trống.)*
+Ô không áp dụng ⇒ `Không áp dụng`; chưa có ⇒ `CHƯA CÓ DATA`; thiếu ngưỡng ⇒ `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]`.
 
-## 3. Export — [csv | sql | json]
-```[csv|sql|json]
-[nội dung export, đúng cú pháp]
+## 3. EXPORT — <csv | sql | json>
+```<csv|sql|json>
+<nội dung đúng cú pháp>
 ```
 ````
 
 ## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Phủ đủ biên trong/ngoài + null + invalid + special theo bản chất field (FACT — C).
-- [ ] Mỗi record có `Test Purpose` rõ để biết pass/fail (FACT — T).
-- [ ] Bảng đối chiếu độ phủ biên không có ô nào để trống (phải ghi mã record, N/A hoặc CHƯA PHỦ).
-- [ ] File xuất ra tại `OUTPUT/<task-slug>/11_boundary_negative_dataset.md`.
+- [ ] Đủ điểm §6 cho mọi field có ngưỡng trong nguồn; không điểm nào cho field không có ngưỡng.
+- [ ] Mỗi record có `TC_ID`, `Test Purpose`, `FD`; không record trùng edge case.
+- [ ] Bảng đối chiếu không có ô trống.

@@ -8,15 +8,14 @@ Tổng số cases: [X] · **PASS**: [A] · **FAIL**: [B] · **BLOCKED**: [C] · 
 
 | # | TC ID | Tiêu đề | Trạng thái | Actual Result (Thực tế) | Bằng chứng (Evidence) | Defect ID (Nếu có) |
 |---|---|---|:---:|---|---|:---:|
-| 1 | TC-001 | Verify áp mã voucher % hợp lệ | **PASS** | Giảm đúng 10% (trừ 20.000đ), UI hiển thị chính xác | [evidence/TC-001_pass.png](evidence/TC-001_pass.png) | — |
-| 2 | TC-005 | Validate áp mã vượt mức tối đa | **FAIL** | Hệ thống vẫn trừ quá số tiền tối đa quy định trong rule | [evidence/TC-005_fail.png](evidence/TC-005_fail.png) | [BUG-01](#bug-01) |
+| 1 | <TC_ID> | <Title từ 05> | **PASS / FAIL / BLOCKED** | <điều quan sát được thật, không suy diễn> | [evidence/<TC_ID>_<kết quả>.png](evidence/) | <BUG-xx hoặc —> |
 
 ---
 
 ## 2. Nhật Ký Lỗi Nhanh (Failed Issues Summary)
 
-### BUG-01: [Tóm tắt ngắn lỗi phát sinh ở TC-005]
-- **Mức độ**: High
-- **Mô tả**: Khi tổng tiền 500k, áp voucher 20% giảm tối đa 50k, hệ thống thực tế trừ 100k.
-- **Trace**: Vi phạm `BR-02` trong `01_requirement_risk_summary.md`.
-- **Evidence**: `evidence/TC-005_fail.png`
+### BUG-01: <tóm tắt lỗi ở TC_ID>
+- **Mức độ**: `[ĐỀ XUẤT]` Critical / Major / Minor / Trivial (QA_STANDARD §11)
+- **Mô tả**: <Expected (chép từ 05) so với Actual (quan sát thật)>
+- **Trace**: Vi phạm `<BR-xx/FD-xx/AF-xx>` trong `01_requirement_risk_summary.md`.
+- **Evidence**: `evidence/<TC_ID>_fail.png`

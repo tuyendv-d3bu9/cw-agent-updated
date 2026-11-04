@@ -17,7 +17,6 @@ steps:
   - agent: qa-analyst
     skill: missing-rule-06w
     output: 02_missing_rule_report.md
-    note: "Nếu ra ASK thì dừng ở đây, trình bày câu hỏi cho BA và chờ trả lời."
 
   - agent: qa-analyst
     skill: viewpoint-selection
@@ -45,8 +44,7 @@ BA vừa gửi tài liệu yêu cầu mới và bạn muốn đi từ phân tíc
 mà không bao giờ sinh test case trên nền nghiệp vụ còn mơ hồ.
 
 ## Điểm dừng
-- Sau bước 2: nếu Chặng 2 ra `ASK`, dừng lại cho BA trả lời.
-- Trước bước 3: cổng `ask` do máy kiểm. Còn câu hỏi treo thì không đi tiếp, dù được giục.
-- Trước bước 6: cổng `lint` kiểm bộ test case đạt chuẩn 8 trường rồi mới được rà soát độ phủ.
+- Trước bước 3: cổng `ask` (`npm run gate <slug>`). Luật cổng: `qa-system/core/QA_STANDARD.md` §1.
+- Trước bước 6: cổng `lint`.
 
-Workflow này dừng ở Chặng 6. Sang automation là việc khác, cần `readiness` và xác nhận riêng.
+Dừng ở Chặng 6. Sang automation cần `readiness` và xác nhận riêng (`AGENTS.md` §1.5).

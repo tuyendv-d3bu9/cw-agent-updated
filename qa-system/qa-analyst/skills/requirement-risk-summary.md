@@ -1,165 +1,168 @@
 ---
 name: requirement-risk-summary
 description: >
-  Bóc tách tài liệu yêu cầu thô (BRD/SRS/User Story) thành Requirement Summary 7 phần và
-  Business Criticality & Risk Analysis 3 phần. Là cửa ngõ đầu tiên của pipeline QA.
+  Bóc tách tài liệu yêu cầu trong INPUT/<slug>/ (5 ngăn) thành báo cáo 10 phần có trích nguồn:
+  Business Rule, Field & ràng buộc, luồng phụ, điểm chưa rõ (OQ) và ma trận rủi ro. Là cửa ngõ
+  đầu tiên của pipeline QA.
 ---
 
 # Skill: requirement-risk-summary
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT · 06W · risk matrix 3x3).
+> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · FACT §3 · risk §5 · knowledge §8 ·
+> ID & schema §9 · nguồn & ưu tiên §10 · thang đo §11). Skill này **trích**, không sáng tác.
 
 ## Mục đích
-Chuyển requirement thô thành **Requirement Summary 7 phần** + **Business Criticality & Risk
-Analysis 3 phần**. Là cửa ngõ đầu tiên của pipeline — mọi bước sau dựa trên output này.
-
-## Tham số
-- `input-type` ∈ `prose` · `user-story` · `wireframe` · `email-chat` — tự nhận diện ở Bước 0.
+Chuyển tài liệu nguồn thành `01_requirement_risk_summary.md`: mọi rule, field, luồng phụ đều có
+nguồn + trích nguyên văn; điều chưa rõ thành `OQ-xx` để Chặng 2 xử lý. Đây là đầu vào của mọi chặng sau.
 
 ## Đầu vào
-- Tài liệu yêu cầu thô: BRD / SRS / User Story / Wireframe + mô tả UI / email-chat từ BA.
-- **Hoặc** `OUTPUT/<task-slug>/00_knowledge_digest.md` nếu có — bản chưng cất của skill `knowledge-digest`
-  khi task có quá nhiều tài liệu để đọc một lượt. Có digest thì đọc digest **thay cho** tài liệu thô,
-  giữ nguyên cột nguồn của từng dòng; chỉ mở lại tài liệu gốc khi cần kiểm một dòng cụ thể.
-- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` nếu đã có (xem `qa-system/core/QA_STANDARD.md` §8).
+- `INPUT/<task-slug>/` — đủ 5 ngăn (bảng dưới). Ngăn trống thì ghi nhận, không dừng — trừ `02_ba/`.
+  **Không đọc** `<ngăn>/_superseded/` (bản đã bị thay) và không trích dẫn từ đó.
+- **Hoặc** `OUTPUT/<task-slug>/00_knowledge_digest.md` nếu có (skill `knowledge-digest`). Digest giữ
+  nguồn + trích nguyên văn gốc từng dòng; mở lại tài liệu gốc khi cần kiểm một dòng.
+- `OUTPUT/<task-slug>/01_conflict_warning.md` nếu có (`qa-system/tools/knowledge/conflict-detector.js`).
+- `OUTPUT/<task-slug>/jira_defects_summary.md` nếu có — chỉ dùng chấm Likelihood.
+- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (QA_STANDARD §7, §8).
 
-> **Knowledge thắng giả định**: Bước 8/9 dưới đây chỉ gắn `[CONTEXT_MISSING]` cho khía cạnh mà
-> **cả** tài liệu đầu vào **và** `knowledge/_project.md` §3 đều không có. Đã có trong knowledge
-> thì dùng luôn, ghi rõ nguồn là knowledge.
+> Thiếu `02_ba/` và không có digest → DỪNG, báo thiếu tài liệu nghiệp vụ (verdict `ASK`).
+
+### Ngăn → lấy gì
+| Ngăn | Lấy gì | Ghi vào mục |
+|---|---|---|
+| `01_business/` | Mục tiêu, bối cảnh, người dùng, con số kinh doanh **có ghi** | §1, §8, §9 |
+| `02_ba/` | Rule, luồng chính, luồng phụ, actor, loại trừ tường minh | §2–§6 |
+| `03_dev/` | Kiểu, độ dài, định dạng, bắt buộc của field; mã phản hồi API | §3b, §5 |
+| `04_design/` | Field trên màn hình, nhãn, chữ thông báo hiển thị | §3b (`Thông báo khi sai`), §5 |
+| `05_communication/` | CR, Q&A, biên bản có ngày — ghi đè phần nó nói tới nếu mới hơn spec | §3, §3b, §5, §7 |
+
+Khi các ngăn nói khác nhau: áp **QA_STANDARD §10.2**. Không xác định được bản nào thắng ⇒ ghi `OQ`, không tự chọn.
+Phần `## Annotations / Pending changes` (comment, tracked changes, "DRAFT") **chưa phải sự thật** ⇒ mỗi mục một `OQ`.
 
 ## KHÔNG được (riêng skill này)
-- Sinh viewpoint, test idea hay test case — đó là skill 03/04 và `qa-test-design`.
-- Tự suy diễn Business Context. Thiếu dữ liệu bối cảnh → bắt buộc `[CONTEXT_MISSING]`.
-- Đánh Severity chỉ dựa trên tài liệu Requirement đơn thuần (xem Bước 10).
-- Tự ý đi tiếp sang các phân tích tiếp theo / skill tiếp theo khi Open Questions chưa được trả lời và xác nhận.
-- Bỏ qua hoặc tự động cho qua khi người dùng cố tình skip câu hỏi chưa làm rõ.
+- Sinh câu hỏi 06W, viewpoint, test idea, test case — việc của `02`→`05`.
+- Ghi rule/field/thông báo không trích được nguyên văn. Không trích được ⇒ là `OQ`, không phải `BR`.
+- Tách một rule có điều kiện ghép (AND/OR, ngoại lệ "trừ khi…") thành nhiều dòng làm mất điều kiện.
+  Một `BR` = một **tổ hợp điều kiện → hành vi** đầy đủ như nguồn viết.
+- Ghi vào Out of Scope điều tài liệu **không nhắc** (QA_STANDARD §2 luật 8).
+- Ước đoán con số doanh thu, lượt dùng, SLA (QA_STANDARD §5).
+- Dừng pipeline vì có `OQ` — cổng ở Chặng 2, không ở đây.
+
+## Mã định danh
+- Chạy `npm run ids -- <task-slug>` để lấy số kế tiếp của từng họ mã (`BR`, `FD`, `AF`, `OQ`, `RK`).
+- Rule/field đã có trong knowledge §3/§3b (cùng nguồn, cùng nội dung) ⇒ **giữ mã cũ**. Mới ⇒ số kế tiếp.
+- MR đã chốt ở knowledge §8 sinh ra rule mới ⇒ cấp `BR` số kế tiếp, `Nguồn` = `knowledge §8 #n`, `Trích nguyên văn` để trống.
+- `BR` cũ trong knowledge mà đoạn trích không còn tìm thấy trong `INPUT/` hiện tại ⇒ giữ mã, thêm một `OQ`
+  "Rule `BR-xx` không còn trong tài liệu hiện hành — còn hiệu lực không?".
 
 ## Các bước
-
 | # | Bước | Yêu cầu |
 |---|---|---|
-| 0 | Nhận diện dạng input | Xác định 1 trong 4 dạng ở `input-type` |
-| 1 | Feature Overview | 1–2 câu: mục đích + giá trị cốt lõi cho user |
-| 2 | Actor & User Role | Mọi loại user, vai trò phân quyền, system actor có tương tác |
-| 3 | Business Rules | Trích **toàn bộ** rule có trong tài liệu. Đánh số `BR-01`, `BR-02`… mỗi rule 1 dòng |
-| 4 | Happy Path | Luồng chính thành công, step-by-step, dạng kịch bản kiểm thử được |
-| 5 | Alternate Flows | Luồng phụ / rẽ nhánh / ngoại lệ / lỗi được đề cập |
-| 6 | Out of Scope | Ghi rõ những gì tài liệu KHÔNG đề cập |
-| 7 | Open Questions | **Tối thiểu 5 câu**. Dùng 06W (§4) để đào sâu vùng chưa rõ, mâu thuẫn |
-| 8 | Business Criticality Assessment | Thu thập Business Context phục vụ Risk Analysis. Không có dữ liệu → `[CONTEXT_MISSING]` |
-| 9 | Missing Risk Context | Quét đủ 5 khía cạnh (bảng dưới), tổng hợp 3 mục *Available / Missing / Risk Analysis Impact* |
-| 10 | Risk Analysis & Prioritization | Ma trận 3x3 (§5) + 3 đánh giá tác động chiến lược |
+| 0 | Nạp nguồn | Đọc knowledge, rồi từng ngăn theo bảng trên. Ghi danh sách file đã đọc vào dòng meta |
+| 1 | Feature Overview | 1–2 câu, kèm nguồn |
+| 2 | Actor & Role | Chỉ actor có trong nguồn, kèm nguồn |
+| 3 | Business Rules | Bảng §9.6, mỗi dòng có `Trích nguyên văn` đúng từng chữ |
+| 3b | Field & ràng buộc | Bảng §9.6. Ô không có trong nguồn ⇒ `[CHƯA CÓ TRONG TÀI LIỆU]`. `Thông báo khi sai` chỉ ghi khi nguồn có chữ thông báo nguyên văn |
+| 4 | Happy Path | Các bước có trong nguồn, kèm nguồn |
+| 5 | Alternate Flows | Luồng phụ / lỗi **có trong nguồn**, phản hồi nguyên văn nếu có |
+| 6 | Out of Scope | Chỉ loại trừ tường minh, kèm trích. Không có ⇒ không dựng bảng, ghi dòng văn bản `Không có loại trừ tường minh` |
+| 7 | Điểm chưa rõ | `OQ-xx` từ: chỗ mơ hồ, mâu thuẫn §10.2 không phân xử được, Annotations, `01_conflict_warning.md`, BR cũ mất nguồn. Không quota, có thể rỗng |
+| 8 | Business Criticality | Trích từ `01_business/` hoặc `_project.md` (dòng đã khai). Không có ⇒ `[CONTEXT_MISSING]` |
+| 9 | Missing Risk Context | 5 khía cạnh (bảng dưới): có gì / thiếu gì, kèm nguồn |
+| 10 | Risk Analysis | Ma trận QA_STANDARD §5. `Nguồn` = mã `BR`/`FD`/`AF`/`OQ` liên quan |
+| 11 | FACT Self-Audit | QA_STANDARD §3, rồi ghi file + knowledge |
 
-## Cơ chế Hard Stop & Xác nhận (Clarification Gate)
-> **Bắt buộc tuân thủ**: Phân tích yêu cầu là nền móng cho toàn bộ pipeline QA. Bất kỳ sự thiếu sót hoặc hiểu sai nào đều gây sai lệch lan truyền.
+### Bước 9 — 5 khía cạnh
+`User` (nhóm người dùng) · `Usage` (tần suất, tải, cao điểm) · `Financial` (giá trị giao dịch) ·
+`Operational` (vận hành, SLA) · `Criticality` (vai trò của tính năng). Thiếu ⇒ `[CONTEXT_MISSING]`.
 
-1. **Dừng lại yêu cầu trả lời & confirm**:
-   - Khi phát hiện các thông tin chưa rõ, thiếu sót hoặc có câu hỏi cần làm rõ ở **Bước 7 (Open Questions)**: Agent **BẮT BUỘC DỪNG LẠI**, xuất danh sách câu hỏi cần làm rõ/confirm cho người dùng (BA / PO / User).
-   - Tuyệt đối không tự ý tiếp tục các bước phân tích sâu hơn hoặc chuyển sang skill tiếp theo (`02`, `03`...) khi chưa có câu trả lời.
-2. **Cập nhật câu trả lời vào file OUTPUT**:
-   - Khi người dùng phản hồi/xác nhận: Cập nhật ngay câu trả lời vào mục `## 7. OPEN QUESTIONS` (kèm trạng thái `[Đã xác nhận]` và chi tiết câu trả lời) trong file `OUTPUT/<task-slug>/01_requirement_risk_summary.md`.
-   - Nếu câu trả lời bổ sung hoặc làm rõ Business Rule / Luồng xử lý, cập nhật bổ sung tương ứng vào `## 3. BUSINESS RULES` hoặc `## 5. ALTERNATE FLOWS`.
-   - Chỉ khi đã cập nhật hoàn chỉnh vào file OUTPUT mới được phép tiến hành các bước phân tích tiếp theo.
-3. **Quy tắc nghiêm ngặt chống bỏ qua (Strict Anti-Bypass Rule)**:
-   - Nếu người dùng cố tình bỏ qua (yêu cầu đi tiếp, "skip", "tự giả định", hoặc không trả lời các câu hỏi cần làm rõ):
-   - Ở lượt tiếp theo, Agent **TIẾP TỤC DỪNG LẠI**, nhắc lại danh sách câu hỏi còn tồn đọng và yêu cầu trả lời/xác nhận.
-   - **TUYỆT ĐỐI KHÔNG ĐI TIẾP** cho đến khi có phản hồi làm rõ hoặc quyết định xác nhận chính thức.
+### Bước 10 — chấm rủi ro
+- Likelihood: từ số điều kiện ghép, số nhánh, số `OQ` liên quan, lịch sử lỗi trong `jira_defects_summary.md`.
+- Impact: từ tác động **tài liệu mô tả**. Severity theo thang §11 (`Critical`/`Major`/`Minor`/`Trivial`).
+- Bối cảnh §8/§9 thiếu ⇒ vẫn chấm, `Cờ tin cậy` = `SEVERITY_CONFIDENCE_LOW`; đủ ⇒ `SEVERITY_CONFIDENCE_HIGH`.
 
-### Bước 9 — 5 khía cạnh Missing Risk Context
-| Khía cạnh | Thiếu gì |
-|---|---|
-| Missing **User** Context | Phân nhóm, đặc trưng người dùng |
-| Missing **Usage** Context | Tần suất sử dụng, tải hệ thống, thời gian cao điểm |
-| Missing **Financial** Context | Dòng tiền, giá trị giao dịch, tác động doanh thu |
-| Missing **Operational** Context | Quy trình vận hành, SLA, khả năng phục hồi |
-| Missing **Criticality** Context | Mức quan trọng của tính năng với tổng thể sản phẩm |
-
-Mỗi khía cạnh ghi: *thiếu dữ liệu nào* | *ảnh hưởng tới Risk Analysis thế nào* | *mức độ HIGH/MED/LOW*.
-
-### Bước 10 — nguồn đánh giá Risk (bắt buộc đủ 4)
-Business Rules · Gap Analysis (từ Open Questions / logic trống) · Business Criticality
-Assessment · Missing Risk Context Information.
+## Verdict
+- `PASS` — đủ 10 phần đúng format. `OQ` **không** chặn (Chặng 2 xử lý).
+- `FIX` — sai format / thiếu trích dẫn sửa được từ nguồn đang có ⇒ tự sửa rồi chạy lại.
+- `ASK` — chỉ khi không có tài liệu nghiệp vụ để đọc (thiếu `02_ba/` và không có digest).
 
 ## Format output
-Ghi ra `OUTPUT/<task-slug>/01_requirement_risk_summary.md`, giữ nguyên thứ tự 10 phần:
+Ghi ra `OUTPUT/<task-slug>/01_requirement_risk_summary.md`, đúng thứ tự 10 phần:
 
-```markdown
-# REQUIREMENT & RISK ANALYSIS REPORT
-**Dạng tài liệu nhận diện**: [Prose Document | User Story | Wireframe + Mô tả | Email/Chat Thread]
+````markdown
+# Requirement & Risk Summary · <task-slug>
+Owner: qa-system/qa-analyst/skills/requirement-risk-summary.md · Nguồn: <các file đã đọc> · Verdict: PASS
 
 ## 1. FEATURE OVERVIEW
-[1–2 câu]
+<1–2 câu> — Nguồn: <file §mục>
 
 ## 2. ACTOR & USER ROLE
-- [Actor/Role]: [vai trò/quyền hạn]
+| Actor | Vai trò / quyền hạn | Nguồn (file §mục) |
+|---|---|---|
 
 ## 3. BUSINESS RULES
-- BR-01: [nội dung]
-- BR-02: [nội dung]
+| ID | Điều kiện | Hành vi / Kết quả | Nguồn (file §mục) | Trích nguyên văn |
+|---|---|---|---|---|
+| BR-01 | <điều kiện đầy đủ, giữ AND/OR> | <hành vi> | 02_ba/<file> §<mục> | <đoạn chép đúng từng chữ> |
+
+## 3b. FIELD & RÀNG BUỘC
+| ID | Field | Kiểu | Bắt buộc | Ràng buộc (min/max/định dạng) | Thông báo khi sai | Nguồn (file §mục) | Trích nguyên văn |
+|---|---|---|---|---|---|---|---|
+| FD-01 | <tên field> | <kiểu> | <Có/Không/[CHƯA CÓ TRONG TÀI LIỆU]> | <ràng buộc hoặc [CHƯA CÓ TRONG TÀI LIỆU]> | <nguyên văn hoặc [CHƯA CÓ TRONG TÀI LIỆU]> | 03_dev/<file> §<mục> | <đoạn chép đúng từng chữ> |
 
 ## 4. HAPPY PATH
-1. [bước 1]  2. [bước 2]  3. [kết quả mong đợi]
+1. <bước> — Nguồn: <file §mục>
 
 ## 5. ALTERNATE FLOWS
-### AF-01: [tên luồng]
-1. [bước 1]
+| ID | Tình huống | Hệ thống phản hồi | Nguồn (file §mục) | Trích nguyên văn |
+|---|---|---|---|---|
+| AF-01 | <tình huống> | <nguyên văn hoặc [CHƯA CÓ TRONG TÀI LIỆU]> | <file §mục> | <đoạn chép đúng từng chữ> |
 
 ## 6. OUT OF SCOPE
-- [ngoài phạm vi 1]
+| Nội dung loại trừ | Nguồn (file §mục) | Trích nguyên văn |
+|---|---|---|
 
-## 7. OPEN QUESTIONS
-- Q1: [câu hỏi] (≥5 câu, kết hợp 06W) — **Trạng thái**: [Chờ trả lời | Đã xác nhận: <nội dung phản hồi>]
+## 7. ĐIỂM CHƯA RÕ
+| ID | Điểm chưa rõ | Vị trí trong nguồn |
+|---|---|---|
+| OQ-01 | <điều chưa rõ / mâu thuẫn / annotation> | <file §mục> |
 
 ## 8. BUSINESS CRITICALITY ASSESSMENT
-- **Trạng thái dữ liệu bối cảnh**: [Đầy đủ | [CONTEXT_MISSING]]
-- **Bối cảnh nghiệp vụ ghi nhận**: [nội dung, hoặc [CONTEXT_MISSING]]
+- Bối cảnh ghi nhận: <trích kèm nguồn, hoặc [CONTEXT_MISSING]>
 
 ## 9. MISSING RISK CONTEXT INFORMATION
-### 9.1 Chi tiết theo khía cạnh
-- **Missing User Context**: [dữ liệu thiếu | ảnh hưởng | HIGH/MED/LOW]
-- **Missing Usage Context**: …
-- **Missing Financial Context**: …
-- **Missing Operational Context**: …
-- **Missing Criticality Context**: …
+| Khía cạnh | Có trong nguồn | Thiếu | Ảnh hưởng tới chấm rủi ro |
+|---|---|---|---|
+| User | <trích + nguồn, hoặc Không> | <…, hoặc [CONTEXT_MISSING]> | <…> |
+| Usage | | | |
+| Financial | | | |
+| Operational | | | |
+| Criticality | | | |
 
-### 9.2 Tổng hợp
-- **Available Context**: […]
-- **Missing Context**: […]
-- **Risk Analysis Impact**: […]
+## 10. RISK ANALYSIS
+| ID | Rủi ro | Likelihood | Impact | Risk Level | Severity | Cờ tin cậy | Nguồn |
+|---|---|---|---|---|---|---|---|
+| RK-01 | <rủi ro> | HIGH | MEDIUM | HIGH | Major | SEVERITY_CONFIDENCE_LOW | BR-01, OQ-02 |
+````
 
-## 10. RISK ANALYSIS & PRIORITIZATION
-### 10.1 Nguồn đánh giá Risk
-- **Business Rules**: [số lượng & độ phức tạp]
-- **Gap Analysis**: [vùng trống logic từ Open Questions / Alternate Flows]
-- **Business Criticality Assessment**: [mức quan trọng ghi nhận được]
-- **Missing Risk Context Information**: [mức ảnh hưởng của dữ liệu bị thiếu]
-
-### 10.2 Ma trận Đánh giá Rủi ro (3x3)
-| Mã rủi ro | Likelihood | Impact | Risk Level | Severity | Cờ tin cậy | Lý do (5 yếu tố Impact) |
-|:---|:---|:---|:---|:---|:---|:---|
-| RK-01: [tên] | [HIGH/MED/LOW] | [HIGH/MED/LOW] | [CRITICAL/HIGH/MED/LOW] | [Critical/Major/Minor] | [SEVERITY_CONFIDENCE_HIGH \| SEVERITY_CONFIDENCE_LOW] | [giải thích] |
-
-### 10.3 Đánh giá tác động chiến lược
-- **Impact to Risk Analysis**: [độ chính xác & toàn diện của bức tranh rủi ro]
-- **Impact to Test Prioritization**: [thứ tự ưu tiên thực thi theo Risk Level]
-- **Impact to Coverage Strategy**: [vùng nào Deep Testing/Automation, vùng nào Sanity/Smoke]
-```
+Mục không có dòng nào ⇒ **không** dựng bảng, ghi một dòng văn bản `Không có` ngay dưới heading. Ô thiếu ⇒ nhãn QA_STANDARD §2.1.
 
 ## Ghi knowledge
-Sau khi xuất báo cáo, cập nhật `knowledge/features/<feature-slug>.md` (tạo từ `knowledge/_template.md`
-nếu chưa có):
+Theo QA_STANDARD §8 (skill `01` ghi §1–§6, §9, §10 của `knowledge/features/<feature-slug>.md`; tạo từ
+`knowledge/_template.md` nếu chưa có). Chỉ ghi dữ kiện có nguồn §10.1. **Không** ghi §7, §8, không ghi `OQ`.
+Không xoá dòng cũ — rule mất nguồn giữ nguyên, đã có `OQ` ở báo cáo.
 
 | Mục knowledge | Lấy từ |
 |---|---|
-| 1 Feature Overview · 2 Actor · 4 Happy Path · 5 Alternate Flows · 6 Out of Scope | phần 1, 2, 4, 5, 6 của báo cáo |
-| 3 Business Rules | phần 3 — trạng thái `Confirmed` nếu ghi rõ trong tài liệu |
-| 7 Open Questions | phần 7 — trạng thái `New` hoặc `Confirmed` sau khi được trả lời |
-| 9 Domain constant | hằng số nghiệp vụ trích được (format mã, khoảng giá trị, đơn vị) |
-| 10 Traceability | nguồn của từng `BR-xx` |
+| §1 · §2 · §4 | phần 1, 2, 4 |
+| §3 · §3b | phần 3, 3b (trạng thái `Confirmed` khi có trích nguyên văn hoặc nguồn `knowledge §8 #n`) |
+| §5 · §6 | phần 5, 6 |
+| §9 | hằng số có trong nguồn (min/max, định dạng, đơn vị) — kèm nguồn |
+| §10 | mã `BR`/`FD`/`AF` + nguồn |
 
 ## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Đủ 100% 10 phần cấu trúc bắt buộc, đúng thứ tự, không được gộp.
-- [ ] Mọi quy tắc nghiệp vụ trích xuất được gắn mã `BR-xx` duy nhất và liên tục.
-- [ ] **Clarification Gate**: Bắt buộc ra Verdict `ASK` và dừng lại khi có Open Questions / điểm chưa rõ. Cập nhật câu trả lời vào file OUTPUT và knowledge trước khi tiến hành phân tích tiếp theo.
-- [ ] **Strict Anti-Bypass**: Nếu người dùng cố tình bỏ qua (skip), tiếp tục dừng lại ở lượt tiếp theo và yêu cầu trả lời, tuyệt đối không đi tiếp.
-- [ ] Hoàn thành trọn vẹn báo cáo này và giải quyết Open Questions **trước khi** chuyển sang missing-rule-06w.
+- [ ] Dòng 1–2 đúng QA_STANDARD §7; đủ 10 phần (cộng §3b), đúng tiêu đề và cột như format.
+- [ ] Mọi `BR`/`FD`/`AF` có `Nguồn` và `Trích nguyên văn` tìm thấy trong `INPUT/` (hoặc nguồn `knowledge §8 #n`) — `npm run lint -- <slug>` kiểm.
+- [ ] Đã đọc đủ 5 ngăn; mâu thuẫn và Annotations đã thành `OQ` hoặc phân xử theo §10.2 (ghi rõ nguồn thắng).
+- [ ] Mã giữ ổn định với knowledge; mã mới lấy từ `npm run ids`.
+- [ ] Out of Scope chỉ có loại trừ tường minh.
+- [ ] Không có con số kinh doanh nào không trích được nguồn.

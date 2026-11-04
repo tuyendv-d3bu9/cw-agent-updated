@@ -9,98 +9,49 @@ triggers:
   - "làm lại sau khi có câu trả lời"
 ---
 
-# RUNBOOK — Chạy lại sau khi có câu trả lời BA / sau verdict FIX
+# RUNBOOK — Chạy lại sau khi BA trả lời / sau verdict FIX
 
-> File này để **CHẠY**. Trỏ: *"Đọc `workflows/re-run-testcase.md` và thực hiện."*
-> Bản đồ toàn hệ thống: `workflows/WORKFLOW.md`.
->
-> Dùng khi pipeline **đã chạy một lần** và bị dừng ở `ASK` hoặc `FIX`. Đây là vòng 2 của
-> **vòng knowledge** (`WORKFLOW.md` §4) — mục tiêu là ít `[GIẢ ĐỊNH]` và ít `ASK` hơn lần 1.
+> Ai ghi mục nào của knowledge: `qa-system/core/QA_STANDARD.md` §8. Mã định danh giữ nguyên: §9.1.
 
-**Tham số**
+## 1. Đưa câu trả lời vào knowledge
 
-| Tham số | Giá trị mẫu |
+Câu trả lời là của **con người**. Agent chỉ chép **nguyên văn** điều người dùng đưa:
+
+- [ ] §7 `knowledge/features/<slug>.md`: đúng dòng `MR-xx`, điền `Phản hồi chính thức`, `Người trả lời`, `Ngày`,
+      đổi `Trạng thái` → `Confirmed` / `Rejected` / `TREO`. Không xoá dòng cũ.
+- [ ] Quyết định nghiệp vụ không gắn với một MR → §8, **bắt buộc** có người phê duyệt + ngày (QA_STANDARD §9.5).
+- [ ] Quy ước cả dự án → báo người dùng sửa `knowledge/_project.md`.
+- [ ] `npm run knowledge:sync -- <slug> --write` (gom câu trả lời còn kẹt trong `OUTPUT/`), rồi `npm run gate <slug>`.
+
+Không tự thêm `BR-xx` vào §3: skill `01` lần chạy kế tiếp sẽ chuyển MR đã chốt thành BR (nguồn `knowledge §8 #n` / §7).
+
+## 2. Chạy lại từ đâu
+
+| Thay đổi | Chạy lại từ |
 |---|---|
-| `task-slug` | `<task-slug>` |
-| `feature knowledge` | `knowledge/features/<task-slug>.md` |
-| `bước bắt đầu lại` | bước thấp nhất bị ảnh hưởng (xác định ở §2) |
+| BA trả lời MR / thêm quyết định §8 / đổi `_project.md` | `01` (để MR đã chốt thành BR, rủi ro tính lại) |
+| Tài liệu trong `INPUT/<slug>/` đổi | intake rồi `01` |
+| Verdict `FIX` ở một bước | Đúng bước đó |
 
----
+Mọi bước **sau** bước bắt đầu đều chạy lại. Cổng `ask` vẫn áp trước `03`.
 
-## 1. Trước khi chạy lại — cập nhật knowledge THỦ CÔNG
-
-Đây là bước **của con người**, agent không làm thay. Không làm bước này thì chạy lại vô nghĩa —
-agent sẽ hỏi lại đúng câu cũ.
-
-Mở `knowledge/features/<task-slug>.md`:
-
-- [ ] **Mục 7** — với mỗi `MR-xx` BA đã trả lời: điền cột `Trả lời của BA`, đổi `Trạng thái`
-      `New` → `Confirmed` (hoặc `TREO` / `Rejected`). **Không xoá dòng cũ.**
-- [ ] **Mục 3** — rule nào đã `Confirmed` thì thêm thành `BR-xx` mới, nguồn ghi
-      `Phản hồi BA/PO (<ngày>)`, trạng thái `Confirmed`
-- [ ] **Mục 8** — mỗi `[GIẢ ĐỊNH]` được chốt: ghi giả định ban đầu, kết luận chính thức, ai chốt, ngày
-- [ ] **Mục 9** — hằng số nghiệp vụ mới biết (format mã, độ dài, timezone, quy tắc làm tròn…)
-- [ ] **Mục 10** — trace nguồn cho các `BR-xx` vừa thêm
-- [ ] Cập nhật dòng `Cập nhật lần cuối`
-
-Nếu câu trả lời là **quy ước cả dự án** (không riêng feature này) → ghi vào
-`knowledge/_project.md` thay vì file feature.
-
----
-
-## 2. Xác định bước bắt đầu lại
-
-Không chạy lại từ `01` nếu không cần. Quy tắc: **chạy lại từ bước thấp nhất bị ảnh hưởng**.
-
-| Thứ vừa đổi trong knowledge | Chạy lại từ | Vì sao |
-|---|---|---|
-| Thêm/sửa `BR-xx` ở mục 3 | `01` | Business Rules là đầu vào của cả pipeline; risk matrix phải tính lại |
-| Chỉ đổi `Trạng thái` của `MR-xx` ở mục 7 (không thêm rule mới) | `02` | `01` không đọc mục 7 |
-| Thêm hằng số ở mục 9 (format mã, timezone, làm tròn) | `01` nếu ảnh hưởng risk · nếu không thì `05` và `09` | Hằng số chủ yếu chi phối test case + dataset |
-| Đổi `knowledge/_project.md` | `01` | Mục 3 của `_project.md` là đầu vào Business Context của skill 01 |
-| Verdict `FIX` ở một bước cụ thể | **đúng bước đó** | `FIX` = đủ thông tin, chỉ sai format/trace → không cần chạy lại bước trước |
-
-Xác định xong thì mọi bước **sau** bước đó cũng phải chạy lại, vì đầu vào đã đổi.
-
----
-
-## 3. Khối lệnh chạy
+## 3. Khối lệnh
 
 ```
-Đọc trước:
-  qa-system/core/QA_STANDARD.md
-  knowledge/_project.md
-  knowledge/features/<task-slug>.md          <-- đã cập nhật ở §1
-  workflows/WORKFLOW.md
-  OUTPUT/<task-slug>/_index.md               <-- xem lần trước dừng ở đâu
-
-task-slug = <task-slug>
-bước bắt đầu lại = <điền theo bảng §2>
-
-Trước khi chạy: backup thư mục OUTPUT/<task-slug>/ hiện có sang OUTPUT/<task-slug>.bak/
-Không xoá file cũ trước khi backup.
-
-Chạy lại từ bước đã chọn, tuần tự tới hết nhánh A. Sau MỖI bước: ghi file output,
-cập nhật OUTPUT/<task-slug>/_index.md, in verdict.
-
-BẮT BUỘC ở lần chạy lại:
-- Mọi rule đã Confirmed trong knowledge KHÔNG được đưa lại thành missing rule / open question.
-- Mọi giả định đã chốt ở mục 8 KHÔNG được gắn lại [GIẢ ĐỊNH].
-- Mọi hằng số có ở mục 9 hoặc _project.md KHÔNG được gắn [CONTEXT_MISSING].
-Vi phạm 3 điều trên = agent không đọc knowledge → dừng, báo tôi.
-
-Cuối cùng: in bảng so sánh lần 1 vs lần 2 (xem §4).
+Trước khi chạy: chép OUTPUT/<slug>/ sang OUTPUT/<slug>.bak/ (không xoá file cũ trước khi chép).
+Chạy từ bước đã chọn tới hết nhánh A, mỗi bước tick 00_plan.md và in verdict.
+Mã đã có giữ nguyên; mã mới lấy từ `npm run ids -- <slug>`.
+Dừng và báo nếu: MR đã Confirmed/Rejected bị hỏi lại · quyết định §8 bị gắn lại [GIẢ ĐỊNH] ·
+giá trị đã khai ở knowledge bị gắn [CONTEXT_MISSING]. Đó là dấu hiệu agent không đọc knowledge.
 ```
 
----
+## 4. So sánh lần 1 và lần 2
 
-## 4. Nghiệm thu so sánh (Lần 1 vs Lần 2)
+| Tiêu chí | Đạt khi |
+|---|---|
+| MR `New`/`TREO` ở `02` | Chỉ còn câu chưa được trả lời; không có câu đã chốt bị hỏi lại |
+| Verdict `02` | `PASS` khi mọi MR đã `Confirmed`/`Rejected` |
+| Mã `BR`/`MR`/`TI`/TC cũ | Giữ nguyên số; khác biệt nào cũng phải giải thích được bằng câu trả lời mới |
+| Ô `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` | MR nào đã chốt thì ô đó đã có giá trị trích từ knowledge |
 
-Sau khi chạy xong, in bảng sau ra màn hình:
-
-| Tiêu chí | Lần 1 | Lần 2 | Đạt khi |
-|---|---|---|---|
-| Số `[GIẢ ĐỊNH]` ở 01 | N | < N | Giảm |
-| Số missing rule `New` ở 02 | M | < M | Giảm |
-| Verdict ở 02 | ASK | PASS | Chuyển PASS |
-| Số test case ở 05 | X | ≥ X | Bao phủ tốt hơn hoặc bằng |
+Số lượng test case **không** phải tiêu chí (QA_STANDARD §2 — không quota).

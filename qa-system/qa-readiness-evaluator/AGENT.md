@@ -18,7 +18,7 @@ QA Readiness Evaluator (`qa-readiness-evaluator`) là chuyên gia độc lập p
 > cho phép automation trên nền thiết kế chưa chín.
 
 > **Phân biệt với các Agent khác**:
-> - `qa-test-design`: Thiết kế kịch bản kiểm thử (Test Cases 8 trường) và rà soát độ phủ 3 góc nhìn (`05`, `06`).
+> - `qa-test-design`: Thiết kế kịch bản kiểm thử (Test Cases 8 trường) và rà soát độ phủ (`05`, `06`).
 > - `qa-test-data`: Thiết kế và sinh test data (`09` - `12`).
 > - `qa-reporter`: Phụ trách khiếm khuyết (Defects/Bugs) phát sinh thực tế và Daily QA Summary cho team.
 > - `qa-automation`: Viết mã kịch bản Playwright E2E và thực thi test theo session.
@@ -46,9 +46,9 @@ Chuỗi chạy: Độc lập, hoặc theo chỉ huy từ `qa-lead` sau khi Chặ
 | Phân vùng | Thẩm quyền của qa-readiness-evaluator |
 |---|---|
 | `OUTPUT/<slug>/15_readiness_metrics.json` | **Chỉ ĐỌC** — nguồn số liệu duy nhất, do `npm run readiness` sinh ra. |
-| `OUTPUT/<slug>/01_` · `02_` · `03_` | **Chỉ ĐỌC** — rule `BR-xx`, kẽ hở `MR-xx`, viewpoint `VP-xx` và risk area. |
+| `OUTPUT/<slug>/01_` · `02_` · `03_` | **Chỉ ĐỌC** — `BR`/`FD`/`AF`, kẽ hở `MR-xx`, viewpoint `VP-xx`, rủi ro `RK-xx`. |
 | `OUTPUT/<slug>/05_test_case_spec.md` · `testcases/batch_*.md` | **Chỉ ĐỌC** — trích `TC_ID` cụ thể khi cần nêu ví dụ. |
-| `OUTPUT/<slug>/06_coverage_review.md` | **Chỉ ĐỌC** — verdict rà soát độ phủ 3 góc nhìn. |
+| `OUTPUT/<slug>/06_coverage_review.md` | **Chỉ ĐỌC** — verdict và ma trận độ phủ Chặng 6. |
 | `OUTPUT/<slug>/12_data_validation_traceability.md` | **Chỉ ĐỌC** — vấn đề dữ liệu tồn đọng, giữ nguyên văn. |
 | `knowledge/features/<slug>.md` | **Chỉ ĐỌC** — rule đã xác nhận (Mục 3), câu hỏi treo (Mục 7), giả định đã chốt (Mục 8). |
 | `OUTPUT/<slug>/15_readiness_report.md` | **GHI KẾT QUẢ** — báo cáo theo từng task, không ghi đè task khác. |
@@ -91,7 +91,7 @@ Bảng logic do `qa-system/tools/system/readiness.js` áp bằng máy — agent 
 
 ## 8. Human-Final — không tự quyết
 - **Quyết định Go/No-Go chính thức**: Quyết định chính thức kích hoạt giai đoạn viết mã tự động hóa thuộc về QA Lead, PO, hoặc Quản lý dự án.
-- **Xác nhận ngoại lệ Coverage Drift**: Duyệt các trường hợp thực tế chênh lệch so với plan slot mà vẫn cho phép tiến hành.
+- **Chấp nhận gap còn lại**: Duyệt các mục còn `CHƯA COVER` mà vẫn cho phép tiến hành.
 - **Chốt các câu hỏi mở**: Phê duyệt các giả định và giải đáp thắc mắc nghiệp vụ trong mục "CÂU HỎI MỞ".
 
 ---

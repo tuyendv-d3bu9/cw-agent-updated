@@ -1,10 +1,10 @@
-# agents/tools — Công cụ nội bộ của hệ thống Agent
+# qa-system/tools — Công cụ nội bộ của hệ thống Agent
 
 > ⚠️ **Người dùng KHÔNG gõ các lệnh này** (luật Zero-CLI, `AGENTS.md` §7).
 > Đây là tay chân của Agent. Agent tự chạy ngầm rồi báo cáo kết quả bằng tiếng Việt.
 
 Tool được gom theo **nhóm chức năng**, mỗi nhóm một thư mục. Cần việc gì thì mở đúng
-thư mục đó, không phải quét cả 16 file.
+thư mục đó, không quét cả cây.
 
 ```
 lib/          ← code dùng chung, KHÔNG gọi trực tiếp
@@ -44,6 +44,7 @@ system/       ← tự kiểm, tiến độ, bản đồ, cổng ASK
 | Xem bán kính ảnh hưởng trước khi sửa | `npm run agent:check -- --impact <agent>` | `system/agent-doctor.js` |
 | Đồng bộ bản đồ hệ thống | `npm run map:sync` | `system/sync-system-map.js` |
 | **Kiểm cổng ASK trước khi sinh chặng 3→6** | `npm run gate [slug]` | `system/gate.js` |
+| **Số kế tiếp cho từng họ mã** (BR/FD/AF/OQ/MR/RK/TI/TC) — mã ổn định qua các lần chạy, QA_STANDARD §9.1 | `npm run ids -- <slug>` | xem script `ids` trong `package.json` |
 | Soát dấu vết nhảy cóc cổng ASK | `npm run gate:audit [slug]` | `system/gate.js` |
 | **Đo độ sẵn sàng trước Automation** | `npm run readiness -- <slug> --write` | `system/readiness.js` |
 | **Kiểm chuẩn FACT của deliverable** | `npm run lint -- <slug>` | `system/lint-deliverables.js` |
@@ -68,9 +69,8 @@ Trước khi viết một hàm tiện ích mới, kiểm tra ở đây đã có 
 
 ## Cổng ASK — 3 lớp (`system/gate.js` + `system/gate-hook.js`)
 
-`AGENTS.md` §1.6 cấm nhảy cóc sang chặng 3→6 khi Verdict còn `ASK`.
-Luật viết bằng văn bản chỉ là *xác suất* — model vẫn có thể bị câu *"cứ làm tiếp đi"*
-thuyết phục. Ba lớp dưới đây biến luật đó thành *điều kiện kiểm được bằng máy*:
+Luật cổng: `qa-system/core/QA_STANDARD.md` §1 (định nghĩa duy nhất). Luật văn bản chỉ là *xác suất*,
+nên ba lớp dưới đây biến nó thành điều kiện kiểm bằng máy:
 
 | Lớp | Cơ chế | Chặn được gì | Hiệu lực ở đâu |
 |---|---|---|---|
@@ -78,11 +78,7 @@ thuyết phục. Ba lớp dưới đây biến luật đó thành *điều kiệ
 | 2 | Hook `PreToolUse` trong `.claude/settings.json` → `gate-hook.js` trả `permissionDecision: deny` | Thao tác ghi file 03→06, **harness chặn, model không cãi được** | Chỉ Claude Code |
 | 3 | `npm run gate:audit` → exit `2` nếu có file 03→06 sinh ra sau mốc khoá | Phát hiện *hậu kiểm* khi ai đó lách được lớp 1 và 2 | Mọi IDE |
 
-**Hai đường mở khoá duy nhất** (khớp `AGENTS.md` §1.6):
-1. BA/PO trả lời → ghi vào **Mục 7** của `knowledge/features/<slug>.md`, cột *Phản hồi chính thức*, Trạng thái → `Confirmed`.
-2. Quyết định nghiệp vụ tường minh → ghi vào **Mục 8** (`GIẢ ĐỊNH ĐÃ CHỐT`).
-
-Cả hai đều là thay đổi **có dấu vết trong tri thức dự án**. Không có đường nào mở bằng lời nói.
+Điều kiện mở khoá: QA_STANDARD §1 luật 2 (trạng thái §9.3, bảng quyết định §9.5). Không có đường nào mở bằng lời nói.
 
 ---
 
@@ -96,7 +92,7 @@ Cả hai đều là thay đổi **có dấu vết trong tri thức dự án**. K
 4. Thêm một dòng vào bảng tra nhanh ở trên.
 5. Nếu tool sinh ra deliverable mới: khai thêm vào `PIPELINE_DEPENDENCIES` của
    `system/agent-doctor.js` để phân tích bán kính ảnh hưởng còn đúng.
-6. Chạy `npm run agent:check` và dán **kết quả thật** vào biên bản nâng cấp.
+6. Chạy `npm test` rồi `npm run agent:check`, dán **kết quả thật** vào biên bản nâng cấp (để ngoài repo).
 
 ---
 
@@ -124,19 +120,14 @@ rồi ghi `OUTPUT/<slug>/15_readiness_metrics.json`.
 
 ## Linter deliverable (`system/lint-deliverables.js`)
 
-`AGENTS.md` §5 và `QA_STANDARD.md` đặt chuẩn rất chặt — 8 trường, Title mở đầu bằng
-Verify/Validate/Confirm, Tags phải trích `Rule#` và `Viewpoint#`, cấm placeholder,
-cấm ô bảng trống, quét đủ W1→W6. Nhưng thứ duy nhất kiểm những chuẩn đó lại là
-`coverage-review`, tức **LLM tự chấm bài của LLM**.
+Chuẩn FACT (QA_STANDARD §3) và schema deliverable (§7, §9) trước đây chỉ được `coverage-review` kiểm —
+tức **LLM tự chấm bài của LLM**.
 
 `npm run lint -- <slug>` biến chuẩn thành điều kiện kiểm được bằng máy:
 
-| Nhóm luật | Kiểm gì |
-|---|---|
-| Test case | `TC_ID` đúng `[MODULE]-[001]` · không trùng · đủ 7 trường còn lại · Title đúng động từ · Steps đánh số và ≤ 8 · Priority hợp lệ · Tags có `Rule#`+`Viewpoint#` · không placeholder |
-| Dòng meta | `Owner:` và `Verdict:` nằm trong 10 dòng đầu (QA_STANDARD §7) |
-| 06W | `02_` quét đủ W1→W6 (QA_STANDARD §4) |
-| Bảng | Không ô nào để trống (QA_STANDARD §2.7) |
+Kiểm phần cơ học: trường bắt buộc và định dạng test case, tag trace, dòng meta (QA_STANDARD §7), schema bảng
+và trích nguyên văn (§9), ma trận 06W (§4), ô trống (§2). Danh sách luật chính xác ở đầu file
+`system/lint-deliverables.js` — README không chép lại để khỏi lệch.
 
 Exit `0` = sạch hoặc chỉ cảnh báo · `1` = có lỗi phải sửa.
 
@@ -151,7 +142,7 @@ Exit `0` = sạch hoặc chỉ cảnh báo · `1` = có lỗi phải sửa.
 ## `__tests__/` — test cho chính các tool
 
 ```bash
-npm test        # 49 ca, chạy bằng node:test có sẵn, không thêm thư viện nào
+npm test        # chạy bằng node:test có sẵn, không thêm thư viện nào
 ```
 
 Mỗi ca ở đây là **một lỗi đã xảy ra thật**, không phải test cho đủ hình thức.

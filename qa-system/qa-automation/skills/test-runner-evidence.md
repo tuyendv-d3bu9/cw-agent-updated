@@ -15,6 +15,7 @@ Thực thi kiểm thử tự động cho một đợt chạy cụ thể (Run Ses
 ## Đầu vào
 - `OUTPUT/<task-slug>/runs/<run-id>/run_plan.md` — danh sách test cases cần chạy đợt này.
 - `automation/pages/*.ts` — các file Page Object Model tương ứng.
+- `knowledge/_project.md` · `knowledge/features/<task-slug>.md` (luôn nạp, QA_STANDARD §7)
 
 ## Quy trình thực hiện
 1. **Sinh file Test Spec**:

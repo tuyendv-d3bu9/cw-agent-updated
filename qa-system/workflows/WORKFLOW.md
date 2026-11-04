@@ -1,204 +1,139 @@
 # WORKFLOW — Bản đồ pipeline QA Agent
 
-> File này để **ĐỌC**: hệ thống có gì, chạy theo thứ tự nào, dừng ở đâu.
-> Muốn **CHẠY** một chuỗi cụ thể => dùng runbook trong `workflows/run-*.md`.
-> Ràng buộc chung nằm ở `qa-system/core/QA_STANDARD.md` — file này không nhắc lại.
-
-Cấu trúc thư mục file (sau khi đã gom agent):
+> File này để **ĐỌC**: có chặng nào, chạy theo thứ tự nào, ai làm, ra file gì.
+> Muốn **CHẠY** một chuỗi ⇒ runbook `qa-system/workflows/run-*.md` (§5).
+> Luật (verdict, cổng ASK, nhãn, knowledge, mã) ở `qa-system/core/QA_STANDARD.md` — file này không nhắc lại.
 
 ```
-agents/
-    qa-lead/
-    qa-analyst/
-    qa-test-design/
-    qa-test-data/
-    qa-ui-review/
-    qa-reporter/
-    qa-automation/
-    qa-readiness-evaluator/
-
-agents/
-    core/QA_STANDARD.md
-
-knowledge/
-    _project.md
-    _template.md
-    <task-slug>.md
-
-INPUT/
-OUTPUT/
-workflows/
+qa-system/
+  core/QA_STANDARD.md
+  qa-lead/  qa-analyst/  qa-test-design/  qa-test-data/  qa-ui-review/
+  qa-reporter/  qa-automation/  qa-readiness-evaluator/
+  tools/  templates/  workflows/
+knowledge/  _project.md · _glossary.md · _template.md · _system_map.json · features/<slug>.md
+INPUT/<slug>/   01_business · 02_ba · 03_dev · 04_design · 05_communication
+OUTPUT/<slug>/  00_plan.md · 01_…15_ · testcases/ · runs/
 ```
 
 ---
 
-## 1. Các nhánh
+## 1. Thứ tự & các nhánh
 
-| Nhánh | Gồm | Khi nào chạy |
+```
+01 → 02 →[gate]→ 03 → 04 → 05 →[lint]→ 06        ← điểm dừng tự nhiên
+                               └─(tuỳ chọn) 09 → 10 → 11 → 12 → chạy lại 06 (gom gap của 12)
+06 →[readiness GO + yêu cầu + URL]→ G1 → G2 → G3 → G4
+```
+
+| Nhánh | Gồm | Khi nào |
 |---|---|---|
-| **A · Pipeline chính** | `01 => 02 => 03 => 04 => 05 => 06` | Luôn chạy. Đây là xương sống requirement => test case. |
-| **B · Nhánh dữ liệu** | `09 => 10 => 11 => 12` | Chạy **sau** `05`, khi cần dataset để execute. |
-| **C · Độc lập** | `07` (exploratory) · `08` (UI screenshot) | Gọi bất cứ lúc nào, không chặn nhánh A/B. |
-| **D · Báo cáo lỗi** | `13` (gen-bug-report) · `14` (gen-daily-summary) | Chạy khi Tester có bug notes thô cần chuẩn hóa hoặc tổng kết sprint. |
-| **E · Chốt chặn Automation** | `15` (gen-readiness-report) | Chạy sau thiết kế/data, **trước Nhánh G**. Số liệu đo bằng `npm run readiness`. Kết quả `GO` vẫn chưa đủ để chạy G — xem cổng biên giới §1.5. |
-| **G · Automation E2E** | `web-journey-discovery` (mò web) · `flow-clustering` · `pom-generator` · `test-runner-evidence` | **Chỉ chạy khi người dùng yêu cầu rõ kèm URL môi trường VÀ readiness-report khuyến nghị GO** (§1.5 AGENTS.md). |
-| **F · Quản trị hệ thống** | `system-upgrade-governance` · `workflow-authoring` | **Không thuộc pipeline kiểm thử.** Chạy khi cần nâng cấp chính bộ agent: thêm skill, dựng agent mới, tinh chỉnh skill cũ. |
+| **A · Pipeline chính** | `01`→`06` | Luôn chạy. `01` không có điểm dừng cứng; cổng ASK nằm **sau `02`** (`npm run gate`) |
+| **B · Dữ liệu** | `09`→`12` | Tuỳ chọn, sau `05`. Đã chạy thì chạy lại `06` |
+| **C · Độc lập** | `07` exploratory charter · `08` UI screenshot | Bất cứ lúc nào. `07` cần `03`; `08` cần ảnh đính kèm |
+| **D · Báo cáo** | bug report · daily summary | Khi có bug notes / sprint data. Ghi `OUTPUT/reports/` |
+| **E · Sẵn sàng** | `15` | Trước nhánh G. Số liệu do `npm run readiness` đo |
+| **G · Automation** | `G1`→`G4` | Chỉ khi đủ điều kiện `AGENTS.md` §1.5 |
+| **F · Quản trị hệ thống** | `workflow-authoring` · `system-upgrade-governance` | Ngoài pipeline kiểm thử. Xong phải smoke lại một chặng nhánh A |
 
-`07` cần risk area từ `03`. `08` cần ảnh đính kèm, không cần bước nào trước. `13` cần file bug notes thô và file rules. `15` cần các deliverable thiết kế của chính task đó (`01_` `02_` `03_` `05_` `06_` `12_`) và `knowledge/features/<slug>.md`.
-Nhánh `F` chạy độc lập hoàn toàn, không cần deliverable nào của A/B/C/D/E — nhưng **sau khi chạy xong phải smoke lại một chặng của nhánh A** để chứng minh luồng cũ không vỡ.
+**Đặt tên file**: số `NN_` cho nhánh A–C, E; tiền tố `G<n>_` cho nhánh G (không dùng chung `07_`/`08_` với nhánh C).
 
 ---
 
-## 2. Bảng điều phối đầy đủ
+## 2. Bảng điều phối
 
-### Nhánh A — Pipeline chính
+Cột **Vào** chỉ liệt kê deliverable; mọi chặng còn nạp `knowledge/_project.md` + `knowledge/features/<slug>.md`
+(QA_STANDARD §7). Danh sách đầu vào chính xác nằm ở mục "Đầu vào" của từng skill.
+
+### Nhánh A
 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
-| 0 | `qa-analyst` | `knowledge-digest` *(chỉ khi tài liệu quá nhiều để đọc một lượt)* | `00_digest_plan.md` (do `npm run knowledge:digest` chia lô) + tài liệu trong lô | `knowledge_digest/batch_*.md` · `00_knowledge_digest.md` |
-| 1 | `qa-analyst` | `requirement-risk-summary` | `INPUT/*.md` hoặc `00_knowledge_digest.md` | `01_requirement_risk_summary.md` |
-| 2 | `qa-analyst` | `missing-rule-06w` | `01` + `knowledge/features/<slug>.md` | `02_missing_rule_report.md` |
+| 0 | `qa-analyst` | `knowledge-digest` *(chỉ khi tài liệu quá nhiều)* | `00_digest_plan.md` + tài liệu trong lô | `knowledge_digest/batch_NN.md` · `00_knowledge_digest.md` |
+| 1 | `qa-analyst` | `requirement-risk-summary` | `INPUT/<slug>/` (5 ngăn) hoặc `00_knowledge_digest.md` | `01_requirement_risk_summary.md` |
+| 2 | `qa-analyst` | `missing-rule-06w` | `01` + nguồn `INPUT/<slug>/` / digest + `01_conflict_warning.md` (nếu có) | `02_missing_rule_report.md` |
+| — | *cổng* | `npm run gate <slug>` | | exit `0` mới sang 3 |
 | 3 | `qa-analyst` | `viewpoint-selection` | `01` + `02` | `03_viewpoint_report.md` |
-| 4 | `qa-analyst` | `test-idea-design` | `01` + `03` | `04_test_idea_report.md` |
-| 5 | `qa-test-design` | `test-case-generation` | `01` + `03` + `04` | `05_test_case_spec.md` |
-| 6 | `qa-test-design` | `coverage-review` | `01` + `03` + `05` + kết quả `npm run lint` | `06_coverage_review.md` |
+| 4 | `qa-analyst` | `test-idea-design` | `01` + `02` + `03` | `04_test_idea_report.md` |
+| 5 | `qa-test-design` | `test-case-generation` | `01` + `03` + `04` | `05_test_case_spec.md` (lớn: `05_test_blueprint.json` + `testcases/batch_NN.md`) |
+| — | *cổng* | `npm run lint -- <slug>` | | exit `0` mới báo xong 5 |
+| 6 | `qa-test-design` | `coverage-review` | `01` + `02` + `04` + `05` + `12` (nếu có) + kết quả lint | `06_coverage_review.md` |
 
-> Chặng 5 và 6 **bắt buộc** chạy `npm run lint -- <slug>` trước khi báo hoàn thành.
-> Linter lo phần cơ học (8 trường, định dạng, trace, placeholder, 06W); skill lo phần
-> nghiệp vụ. Exit `1` ⇒ chưa xong.
-
-### Nhánh B — Dữ liệu
+### Nhánh B
 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
-| 9 | `qa-test-data` | `data-class-map` | `01` | `09_data_class_map.md` |
+| 9 | `qa-test-data` | `data-class-map` | `01` (mục FD) | `09_data_class_map.md` |
 | 10 | `qa-test-data` | `dataset-generation` | `09` | `10_dataset.md` |
 | 11 | `qa-test-data` | `boundary-negative-dataset` | `09` | `11_boundary_negative_dataset.md` |
 | 12 | `qa-test-data` | `data-validation-traceability` | `10` + `11` + `05` | `12_data_validation_traceability.md` |
 
-### Nhánh C — Độc lập
+### Nhánh C, D, E
 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
-| 7 | `qa-automation` | `exploratory-charter` | Risk area ở `03` | `07_exploratory_charter.md` |
-| 8 | `qa-ui-review` | `ui-screenshot-review` | Ảnh đính kèm **+** `INPUT/<slug>/04_design/` | `08_ui_screenshot_analysis.md` |
+| 7 | `qa-automation` | `exploratory-charter` | Rủi ro ở `03` | `07_exploratory_charter.md` |
+| 8 | `qa-ui-review` | `ui-screenshot-review` | Ảnh đính kèm + `INPUT/<slug>/04_design/` | `08_ui_screenshot_analysis.md` |
+| D | `qa-reporter` | `gen-bug-report` | Bug notes + `knowledge/` | `OUTPUT/reports/bug-report-<slug>.md` |
+| D | `qa-reporter` | `gen-daily-summary` | Sprint data JSON + audience | `OUTPUT/reports/daily-summary-<audience>.md` |
+| 15 | `qa-readiness-evaluator` | `gen-readiness-report` | `15_readiness_metrics.json` + `01` `02` `03` `05` `06` `12` | `15_readiness_report.md` |
 
-### Nhánh D — Báo cáo lỗi & Tổng kết Sprint (Defect Reporting & Summary)
-
-| # | Agent | Skill | Vào | Ra |
-|---|---|---|---|---|
-| 13 | `qa-reporter` | `gen-bug-report` | File bug notes + `knowledge/` | `OUTPUT/reports/bug-report-<slug>.md` |
-| 14 | `qa-reporter` | `gen-daily-summary` | Sprint data JSON + audience | `OUTPUT/reports/daily-summary-<audience>.md` |
-
-### Nhánh E — Đánh giá độ sẵn sàng kiểm thử (Design-time QA Readiness Gate)
+### Nhánh G — không tự chạy sau Chặng 6
 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
-| 15 | `qa-readiness-evaluator` | `gen-readiness-report` | `15_readiness_metrics.json` (do `npm run readiness` đo) + `01_` `02_` `03_` `05_` `06_` `12_` + `knowledge/features/<slug>.md` | `OUTPUT/<slug>/15_readiness_report.md` |
+| G1 | `qa-automation` | `web-journey-discovery` | URL môi trường + `05` | `G1_web_journey_discovery.md` |
+| G2 | `qa-automation` | `flow-clustering` | `G1_…` + `05` | `G2_flow_clusters.md` |
+| G3 | `qa-automation` | `pom-generator` | `G2_…` + `knowledge/features/<sut>-ui-map.md` | `automation/pages/*.ts` |
+| G4 | `qa-automation` | `test-runner-evidence` | `automation/tests/*.spec.ts` + `runs/<run-id>/run_plan.md` | `runs/<run-id>/run_result.md` · `evidence/` · `run_defects.md` |
 
-> Số liệu do `qa-system/tools/system/readiness.js` đo bằng máy; skill chỉ diễn giải, không tự đếm.
-> Exit code: `0` = GO · `1` = CONDITIONAL GO · `2` = NO-GO.
+Kết quả chạy đẩy lên Jira: `npm run jira:sync <slug> <run-id>`.
 
-### Nhánh G — Automation E2E Playwright (Execution Layer)
+### Nhánh F
 
-> ⛔ **Cổng biên giới**: nhánh này KHÔNG tự động chạy tiếp sau Chặng 6.
-> Điều kiện kích hoạt: người dùng yêu cầu rõ ràng **kèm URL môi trường**, và
-> `qa-readiness-evaluator` đã ra khuyến nghị **GO** (`AGENTS.md` §1.5).
-
-| # | Agent | Skill | Vào | Ra |
-|---|---|---|---|---|
-| G1 | `qa-automation` | `web-journey-discovery` | URL môi trường + `05_test_case_spec.md` | `07_web_journey_discovery.md` (Gherkin BDD + bảng ánh xạ Step ➔ Locator) |
-| G2 | `qa-automation` | `flow-clustering` | `07_web_journey_discovery.md` + `05_test_case_spec.md` | `08_flow_clusters.md` (gom test case thành cụm luồng dùng chung tiền điều kiện) |
-| G3 | `qa-automation` | `pom-generator` | `08_flow_clusters.md` + `knowledge/features/<sut>-ui-map.md` | `automation/pages/*.ts` (Page Object Model) |
-| G4 | `qa-automation` | `test-runner-evidence` | `automation/tests/*.spec.ts` + phạm vi ticket | `runs/RUN-XX_<ticket>/run_result.md` · `evidence/*.png` · `run_defects.md` |
-
-Nhánh G ghi code vào `automation/` và kết quả chạy vào `OUTPUT/<task-slug>/runs/`.
-Kết quả chạy đẩy lên Jira bằng `npm run jira:sync <slug> <run-id>`.
-
-### Nhánh F — Quản trị & Nâng cấp Hệ thống (System Governance)
-
-| # | Agent | Skill | Vào | Ra |
-|---|---|---|---|---|
-| — | `qa-lead` | `workflow-authoring` | Mô tả quy trình bằng lời (TẠO) hoặc câu ngắn khớp cụm kích hoạt (CHẠY) + `knowledge/_system_map.json` + `qa-system/templates/workflows/` | `qa-system/workflows/run-<tên>.md` · checklist trong `OUTPUT/<slug>/00_plan.md` |
-| — | `qa-lead` | `system-upgrade-governance` | Yêu cầu nâng cấp của người dùng (hoặc file `.md` họ đưa) + `knowledge/_system_map.json` + `qa-system/templates/` | `qa-system/_upgrades/<ngày>_<tên>.md`<br>**và** thay đổi thật trong `agents/`, `WORKFLOW.md`, `_system_map.json` |
-
-> Nhánh F **không mang số `NN`** vì nó không sinh deliverable trong pipeline kiểm thử của một `task-slug`.
-> Hai skill này, cùng sở hữu bởi `qa-lead`, là những skill duy nhất được phép ghi vào `qa-system/` và `knowledge/_system_map.json`.
-
-Mọi output nhánh A-C nằm trong `OUTPUT/<task-slug>/`, kèm `_index.md`. Nhánh D & E ghi tại `OUTPUT/reports/`. Nhánh G ghi code vào `automation/` và kết quả chạy vào `OUTPUT/<task-slug>/runs/`. Nhánh F ghi tại `qa-system/_upgrades/`.
+| Agent | Skill | Vào | Ra |
+|---|---|---|---|
+| `qa-lead` | `workflow-authoring` | Mô tả bằng lời hoặc câu ngắn + `_system_map.json` + `qa-system/templates/workflows/` | `qa-system/workflows/run-<tên>.md` · checklist `00_plan.md` |
+| `qa-lead` | `system-upgrade-governance` | Yêu cầu nâng cấp + `_system_map.json` + `qa-system/templates/` | Thay đổi trong `qa-system/`, `_system_map.json`; biên bản để ngoài repo |
 
 ---
 
-## 3. Luật khi nào dừng
+## 3. Dừng ở đâu
 
-Mỗi bước đều ra một **Verdict**:
-- `PASS` → chạy tiếp bước sau (hoặc người test nhận output).
-- `FIX`  → agent tự sửa lại deliverable theo format chuẩn, không gọi bước tiếp cho tới khi đạt.
-- `ASK`  → **DỪNG PIPELINE**. Đây là chủ ý, không phải bug. Thường vì:
-  - Thiếu tài liệu nguồn (bước 1).
-  - Lộ ra kẽ hở logic / quy tắc mâu thuẫn cần BA/PO chốt (bước 2).
-  - Thiếu ảnh màn hình (bước 8).
-  - Người dùng hỏi ngoài phạm vi.
+Verdict và luật cổng: QA_STANDARD §1 (kể cả luật riêng của `coverage-review`). Ngoài verdict, các nhãn
+§2.1 (`[GIẢ ĐỊNH]`, `[CONTEXT_MISSING]`, `[ĐỀ XUẤT]`, `CHƯA COVER`, `CHƯA CÓ DATA`) là chỗ cần người xem.
 
-**Ngoại lệ có chủ ý** — skill `coverage-review`: rà đủ 3 góc nhìn mà không thấy gap nào thì kết luận `ASK`,
-không phải `PASS`. `PASS` chỉ khi có người phụ trách ký chấp nhận rủi ro. Đây không phải lỗi.
-
-Các nhãn khác cũng là điểm dừng cần người: `[GIẢ ĐỊNH]` · `[CONTEXT_MISSING]` ·
-`[SEVERITY_CONFIDENCE_LOW]` · `CHƯA COVER` · `CHƯA CÓ DATA` · `[GAP — chuyển coverage-review bổ sung]`.
-
----
-
-## 4. Vòng knowledge — thứ làm workflow nhanh dần
-
-```
-Chạy lần 1  =>  02 sinh MR-01…MR-nn (trạng thái New)  =>  hỏi BA
-            =>  ghi câu trả lời vào knowledge/features/<slug>.md (mục 7 => Confirmed, mục 8)
-Chạy lần 2  =>  01/02 đọc knowledge trước  =>  ít [GIẢ ĐỊNH] hơn, ít ASK hơn
-```
-
-- Chỉ skill `01` và `02` được ghi `knowledge/features/<slug>.md`.
-- Không xoá dòng cũ — chỉ đổi `Trạng thái`.
-- `OUTPUT/` vứt được và chạy lại. `knowledge/` mất là mất công hỏi BA lần nữa.
-
----
-
-## 5. Quy ước chạy
+## 4. Quy ước chạy
 
 | Mục | Quy ước |
 |---|---|
-| `task-slug` | Trùng `feature-slug` (ví dụ: `auth-login`, `order-checkout`). Một feature một thư mục output. |
-| Nạp trước mọi bước | `qa-system/core/QA_STANDARD.md` · `knowledge/_project.md` · `knowledge/features/<slug>.md` (nếu có) |
-| Một skill | Ghi **đúng một** file output. Không dồn nhiều bước vào một file. |
-| Sau mỗi bước | Cập nhật `OUTPUT/<task-slug>/_index.md`: tên file + verdict |
-| Không được | Ghi đè `INPUT/` · sửa deliverable của agent khác · chạy bước sau khi bước trước chưa có output |
+| `slug` | Trùng tên file knowledge tính năng (`auth-login`, `order-checkout`) |
+| Một skill | Ghi **đúng một** file, dòng meta theo QA_STANDARD §7 |
+| Sau mỗi bước | Tick `00_plan.md` |
+| Chạy lại | Mã cũ giữ nguyên, mã mới lấy từ `npm run ids -- <slug>` (QA_STANDARD §9.1) |
+| Không được | Sửa `INPUT/` · sửa deliverable của agent khác · chạy bước khi bước trước chưa có output |
 
----
+## 5. Runbook — tạo bằng lời, chạy bằng câu ngắn
 
-## 6. Workflow (runbook) — tạo bằng lời, chạy bằng câu ngắn
-
-Mỗi workflow là **một file** `workflows/<tên>.md` có frontmatter liệt kê **cụm kích hoạt** và **các bước**.
-File là nguồn chân lý duy nhất — không còn bảng khai báo thủ công nào phải đồng bộ.
+Mỗi workflow là một file `qa-system/workflows/<tên>.md`, frontmatter khai **cụm kích hoạt** và **bước**.
 
 ```bash
-npm run workflow -- list        # có những workflow nào, nói câu nào để chạy
+npm run workflow -- list        # có workflow nào, nói câu nào để chạy
 npm run workflow -- validate    # kiểm toàn bộ (agent:check cũng tự kiểm)
 ```
 
-**Tạo**: người dùng mô tả quy trình bằng lời → `qa-lead` chạy skill `workflow-authoring` → file mới, đã `validate` xanh.
-**Chạy**: người dùng nói một câu ngắn khớp cụm kích hoạt → `workflow find` → `workflow start` → làm từng bước.
-
-Hai loại:
-
-| `format` | Là gì | Ai kiểm |
+| `format` | Là gì | `validate` kiểm |
 |---|---|---|
-| `v1` | Có `steps` máy đọc được: agent + skill hoặc tool, cổng, file ra | `validate` kiểm agent/skill có thật, **không cho lách cổng ASK và cổng automation** |
-| `legacy` | Runbook viết tay có từ trước; chỉ có cụm kích hoạt, thân là văn xuôi | `validate` chỉ kiểm cụm kích hoạt không trùng |
+| `v1` | `steps` máy đọc được | Agent/skill có thật; không lách cổng `ask` (trước Chặng 3→6) và `readiness` + `confirm` (trước automation); `output` nằm trong `OUTPUT/<slug>/` |
+| `legacy` | Văn xuôi, chỉ có cụm kích hoạt | Cụm kích hoạt không trùng |
 
-**Luật không thể lách** (`validate` từ chối workflow vi phạm):
-- Bước dùng skill Chặng 3→6 phải có cổng `ask` đứng trước.
-- Bước của `qa-automation` phải có `readiness` **và** `confirm` đứng trước.
-- Giá trị `output` chỉ được ghi trong `OUTPUT/<slug>/`.
-
-**Thứ tự `06` trong `run-testcase.md`**: `06` chạy **sau** `12`, không phải ngay sau `05`.
-Skill `12` phát hiện test case `CHƯA CÓ DATA` và record mồ côi — đó là đầu vào thật cho gap
-analysis của `06`. Chạy `06` trước `12` thì mất mảng gap dữ liệu.
+| Runbook | Format | Làm gì |
+|---|---|---|
+| `run-req-to-testcase` · `run-ba-spec-to-testcase` | v1 | `01`→`06` có cổng |
+| `run-to-testcase` | v1 | `01`→`05`, chưa rà soát |
+| `run-testcase` | v1 | `01`→`06` + `09`→`12` + chạy lại `06` |
+| `re-run-testcase` | legacy | Chạy lại sau khi BA trả lời / sau `FIX` |
+| `verify-testcase` | legacy | Chỉ chạy `06` trên bộ có sẵn + kiểm tay |
+| `flow` | legacy | Chỉ mục cũ, trỏ sang `run-req-to-testcase` |
+| `run-bulk-doc-intake` | v1 | Intake khối lớn → digest → `01` → `02` → cổng |
+| `run-conflict-check` · `run-jira-sync` | legacy | Soát xung đột · Jira export/push/pull |
+| `run-doc-to-jira-e2e` | v1 | `01`→`06` → Jira → automation (có cổng) → báo cáo |

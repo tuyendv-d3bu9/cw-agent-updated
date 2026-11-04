@@ -10,8 +10,8 @@ description: >
 
 > Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · FACT §3 · luật knowledge §8) và `AGENTS.md`.
 >
-> **Đây là skill tự-quy-chiếu**: đối tượng bị tác động không phải `OUTPUT/`, mà là chính thư mục `agents/`.
-> Vì vậy nó là skill **duy nhất** được phép ghi vào `agents/` và `knowledge/_system_map.json`.
+> **Đây là skill tự-quy-chiếu**: đối tượng bị tác động không phải `OUTPUT/`, mà là chính thư mục `qa-system/`.
+> Cùng `workflow-authoring`, nó là skill duy nhất được ghi vào `qa-system/` và `knowledge/_system_map.json`.
 
 ## Mục đích
 
@@ -38,7 +38,8 @@ thì skill này bảo đảm **ba điều**:
 ## Đầu vào
 
 - Yêu cầu nâng cấp bằng ngôn ngữ tự nhiên của người dùng, **hoặc** một file `.md` người dùng đưa vào.
-- `knowledge/_system_map.json` — **đọc đầu tiên**, để biết hệ thống hiện có gì (AGENTS.md §1.3).
+- `knowledge/_system_map.json` — **đọc đầu tiên**, để biết hệ thống hiện có gì (`AGENTS.md` §1.3).
+- `qa-system/core/QA_STANDARD.md` — để skill mới **trỏ tới** đúng mục thay vì chép luật.
 - `qa-system/templates/README.md` — 4 tầng kiến trúc và 7 bước dựng agent mới.
 - `qa-system/templates/AGENT.md` · `qa-system/templates/skills/ten-skill.md` — khuôn mẫu bắt buộc dùng.
 - `qa-system/workflows/WORKFLOW.md` — bản đồ pipeline hiện hành.
@@ -52,7 +53,8 @@ thì skill này bảo đảm **ba điều**:
 - **Không sửa file rồi bỏ dở việc khai báo.** Sửa xong phần nội dung mà chưa lan truyền đủ 7 điểm neo §4 thì coi như **chưa hoàn thành**, verdict là `FIX`.
 - **Không tự ý đánh số `NN` trùng** với số đã dùng. Trước khi cấp số phải liệt kê dãy đang dùng.
 - **Không xoá skill/agent cũ** để "dọn cho gọn". Chỉ thêm và sửa. Việc gỡ bỏ là quyết định của con người (§6).
-- Không chép lại bảng Verdict / FACT / 06W / chuỗi biên vào file mới — chỉ trỏ tới `qa-system/core/QA_STANDARD.md`.
+- Không chép lại luật đã có ở `qa-system/core/QA_STANDARD.md` (verdict, cổng ASK, nhãn, FACT, 06W, chuỗi biên, knowledge, mã, thang đo) — chỉ trỏ tới số mục.
+- Không đưa ví dụ của một miền nghiệp vụ cụ thể (voucher, đăng nhập…) vào skill lõi: model sẽ chép ví dụ thành dữ kiện. Ví dụ phải trung tính (`<field>`, `BR-01`).
 
 ---
 
@@ -105,8 +107,8 @@ Trước khi viết một dòng nào, trả lời 3 câu của `qa-system/templa
 | Ràng buộc này **mọi** skill đều phải tuân? | `qa-system/core/QA_STANDARD.md` — **không** viết vào skill |
 | Bảng chuẩn này có **≥ 2 skill** dùng? | `qa-system/core/QA_STANDARD.md` rồi trỏ tới |
 | Đây là **dữ kiện của một tính năng cụ thể**? | `knowledge/features/<slug>.md` — **không** nhét vào skill |
-| Còn lại (quy trình, tham số, format output của riêng việc này) | `agents/<agent>/skills/<ten-skill>.md` |
-| Danh tính, quyền hạn, ranh giới, bàn giao | `agents/<agent>/AGENT.md` |
+| Còn lại (quy trình, tham số, format output của riêng việc này) | `qa-system/qa-<agent>/skills/<ten-skill>.md` |
+| Danh tính, quyền hạn, ranh giới, bàn giao | `qa-system/qa-<agent>/AGENT.md` |
 
 > Sai tầng là lỗi hay gặp nhất khi nâng cấp hệ thống. Bước này không được bỏ qua.
 
@@ -114,12 +116,10 @@ Trước khi viết một dòng nào, trả lời 3 câu của `qa-system/templa
 
 Chỉ áp dụng khi skill mới **sinh ra một file deliverable mới** trong `OUTPUT/<task-slug>/`.
 
-1. Liệt kê dãy `NN` đang dùng bằng cách đọc bảng §2 của `qa-system/workflows/WORKFLOW.md`.
-2. Cấp số **kế tiếp chưa dùng**. Không chèn vào giữa, không tái sử dụng số cũ.
-3. Nếu deliverable là biến thể của một bước đã có (ví dụ bản rút gọn của `06`), dùng hậu tố chữ: `06b_`.
-
-> Dãy tại thời điểm viết file này: `01`–`14` đã dùng. Số mới bắt đầu từ `15`.
-> **Luôn kiểm tra lại thực tế**, đừng tin con số này nếu hệ thống đã được nâng cấp nhiều lần.
+1. Liệt kê tiền tố đang dùng từ bảng §2 của `qa-system/workflows/WORKFLOW.md` (gồm `NN_` và `G<n>_`).
+2. Cấp số **kế tiếp chưa dùng** (sau số lớn nhất). Không chèn giữa, không tái sử dụng, không để hai deliverable chung một số.
+3. Biến thể của một bước đã có (ví dụ bản rút gọn của `06`) dùng hậu tố chữ: `06b_`.
+4. Nếu tool đọc file này (gate, lint, readiness…), kiểm tool trước khi đặt/đổi tên — đổi tên mà không sửa tool là làm gãy cổng.
 
 ## 4. Bước 4 — Lan truyền ra 7 điểm neo (phần dễ quên nhất)
 
@@ -127,27 +127,28 @@ Chỉ áp dụng khi skill mới **sinh ra một file deliverable mới** trong 
 
 | # | Điểm neo | Phải cập nhật gì | `[A]` | `[B]` | `[C]` |
 |---|---|---|:---:|:---:|:---:|
-| **N1** | `agents/<agent>/skills/<ten>.md` | Nội dung skill, theo khuôn `qa-system/templates/skills/ten-skill.md`. Có frontmatter `name` + `description`, có mục `Format output`, có `Chốt chặn nghiệm thu` | ✅ | ✅ | ✅ |
-| **N2** | `agents/<agent>/AGENT.md` | Thêm dòng vào `## Skill sở hữu` **và** bảng kỹ năng nếu agent đó có. Tên phải **khớp chính xác** tên file trong `skills/` | ✅ | ✅ | — |
-| **N3** | `qa-system/workflows/WORKFLOW.md` | Bảng §2 (`# · Agent · Skill · Vào · Ra`). Thêm §1 nếu mở nhánh mới. Thêm §6 nếu có runbook mới | ✅ | ✅ | ⚠️ nếu đổi Vào/Ra |
+| **N1** | `qa-system/qa-<agent>/skills/<ten>.md` | Nội dung skill, theo khuôn `qa-system/templates/skills/ten-skill.md`. Có frontmatter `name` + `description`, có mục `Format output`, có `Chốt chặn nghiệm thu` | ✅ | ✅ | ✅ |
+| **N2** | `qa-system/qa-<agent>/AGENT.md` | Thêm dòng vào `## Skill sở hữu` **và** bảng kỹ năng nếu agent đó có. Tên phải **khớp chính xác** tên file trong `skills/` | ✅ | ✅ | — |
+| **N3** | `qa-system/workflows/WORKFLOW.md` | Bảng §2 (`# · Agent · Skill · Vào · Ra`). Thêm §1 nếu mở nhánh mới. Thêm bảng runbook §5 nếu có runbook mới | ✅ | ✅ | ⚠️ nếu đổi Vào/Ra |
 | **N4** | `knowledge/_system_map.json` | `routing_table` (đường dẫn tắt tới skill) **và** `specialized_agents` (chỉ khi `[B]`) | ✅ | ✅ | — |
 | **N5** | `qa-system/qa-lead/AGENT.md` | Dòng mới trong **Ma trận Điều phối §2** + dòng mới trong **Bảng ánh xạ ngôn ngữ tự nhiên §5** (người dùng nói gì thì kích hoạt cái này) | ✅ | ✅ | ⚠️ nếu đổi đầu ra |
 | **N6** | `qa-system/tools/system/agent-doctor.js` | Thêm node vào `PIPELINE_DEPENDENCIES`: `skill`, `produces`, `consumed_by` | ⚠️ nếu sinh deliverable mới | ✅ | — |
+| **N7** | `qa-system/tools/system/lint-deliverables.js` · `qa-system/tools/lib/schema.js` | Luật kiểm và parser cho format mới — chỉ khi tool phải đọc deliverable đó; kèm ca test trong `__tests__/` | ⚠️ | ⚠️ | ⚠️ nếu đổi format tool đọc |
 
 Riêng `[B]` — dựng agent mới — làm **đủ 7 bước** của `qa-system/templates/README.md`, và bổ sung:
 
 | # | Việc thêm của `[B]` |
 |---|---|
-| B-a | Tạo `agents/qa-<tên>/` và `agents/qa-<tên>/skills/` |
+| B-a | Tạo `qa-system/qa-<tên>/` và `qa-system/qa-<tên>/skills/` |
 | B-b | `AGENT.md` copy từ `qa-system/templates/AGENT.md`, **thay hết** placeholder `<…>` |
 | B-c | `AGENT.md` **bắt buộc** có mục `Human-Final` — nêu rõ quyết định nào không giao cho agent |
-| B-d | Mục `Knowledge` mặc định là **không ghi** (chỉ `qa-analyst` được ghi — `QA_STANDARD.md` §8) |
-| B-e | Cập nhật `README.md` gốc: bản đồ thư mục mục 1 |
+| B-d | Mục `Knowledge` mặc định là **không ghi** — ai ghi mục nào theo bảng QA_STANDARD §8 |
+| B-e | Cập nhật `qa-system/README.md` (bảng thư mục) |
 | B-f | Nếu agent mở nhánh mới → khai vào bảng §1 của `WORKFLOW.md` |
 
 ## 5. Bước 5 — Cổng nghiệm thu "hệ thống vẫn chạy mượt"
 
-Chạy đủ 4 kiểm tra, ghi lại kết quả thật (không được ghi "OK" mà chưa chạy):
+Chạy đủ các kiểm tra, ghi lại kết quả thật (không được ghi "OK" mà chưa chạy):
 
 | # | Kiểm tra | Lệnh | Đạt khi |
 |---|---|---|---|
@@ -156,11 +157,22 @@ Chạy đủ 4 kiểm tra, ghi lại kết quả thật (không được ghi "OK
 | G3 | Đồng bộ bản đồ | `npm run map:sync` | `_system_map.json` cập nhật, mở lại thấy có mục mới |
 | G3b | Test tool nội bộ | `npm test` | Toàn bộ ca xanh. Nếu nâng cấp đụng vào `qa-system/tools/`, phải **thêm ca test tái hiện được** thay đổi đó |
 | G4 | Smoke luồng cũ | Chạy lại **một chặng cũ bất kỳ không liên quan** tới thay đổi | Ra đúng deliverable như trước, verdict không đổi |
+| G5 | Nghiệm thu skill (bắt buộc cho skill mới/sửa) | Xem §5.1 | Đủ 5 điều kiện |
+
+### 5.1. Nghiệm thu skill mới hoặc skill đã sửa
+
+| # | Điều kiện | Cách kiểm |
+|---|---|---|
+| a | **Trỏ, không chép** luật của QA_STANDARD | Không có bảng verdict / nhãn / FACT / 06W / luật ghi knowledge chép lại; chỉ có `QA_STANDARD §n` |
+| b | **Khai đủ đầu vào**, gồm knowledge | Mục "Đầu vào" có deliverable cần đọc + `knowledge/_project.md` + `knowledge/features/<slug>.md` (QA_STANDARD §7) |
+| c | **Output đọc được bằng máy** | Dòng meta dòng 2 đúng QA_STANDARD §7; mọi bảng có cột nguồn / mã trace (§9); mã lấy từ `npm run ids -- <slug>` |
+| d | **Chạy hai lần cho cùng một kết quả** | Chạy skill **2 lần** trên cùng một đầu vào mẫu (phiên mới mỗi lần). So tập mã (BR/MR/TI/TC…) và verdict. Mọi khác biệt phải giải thích được; không giải thích được ⇒ skill còn chỗ cho model tự sáng tác ⇒ `FIX` |
+| e | **Không ví dụ theo miền** trong skill lõi | Ví dụ dùng chỗ giữ chỗ trung tính, không có giá trị/thông báo của một dự án thật |
 
 **Kiểm tra thủ công bắt buộc** (công cụ không bắt được):
 
 - [ ] Mở `AGENT.md` — danh sách `## Skill sở hữu` khớp **từng dòng** với tên file trong `skills/`
-- [ ] Mọi đường dẫn viết đúng hoa/thường: `OUTPUT/` · `INPUT/` · `agents/qa-*/` · `qa-system/workflows/`
+- [ ] Mọi đường dẫn viết đúng hoa/thường: `OUTPUT/` · `INPUT/` · `qa-system/qa-*/` · `qa-system/workflows/`
 - [ ] Không còn placeholder `<…>` sót lại trong file mới
 - [ ] Skill mới ghi **đúng một** file output, có dòng meta `Owner · Nguồn · Verdict`
 - [ ] Người dùng gõ câu tự nhiên tương ứng thì QA Leader định tuyến đúng tới skill mới (thử 1 câu thật)
@@ -168,7 +180,7 @@ Chạy đủ 4 kiểm tra, ghi lại kết quả thật (không được ghi "OK
 Lệnh rà đường dẫn sai nhanh:
 
 ```bash
-grep -rn "output/\|_shared/\|workflow/[a-z]" --include=*.md agents knowledge | grep -v "workflows/"
+grep -rn "output/\|_shared/\|agents/qa-\|workflow/[a-z]" --include=*.md qa-system knowledge | grep -v "workflows/"
 ```
 
 Không in ra gì là sạch.
@@ -185,7 +197,8 @@ Skill này **đề xuất**, người dùng **quyết**:
 
 ## Format output
 
-Ghi ra `qa-system/_upgrades/<YYYY-MM-DD>_<ten-nang-cap>.md`:
+Biên bản nâng cấp **không** nằm trong repo. Hỏi người dùng lưu ở đâu (mặc định: thư mục tạm/ngoài repo,
+không commit) và trình bày nội dung trong hội thoại theo khuôn:
 
 ````markdown
 # BIÊN BẢN NÂNG CẤP HỆ THỐNG · <ten-nang-cap>
@@ -212,8 +225,8 @@ Owner: qa-system/qa-lead/skills/system-upgrade-governance.md · Ngày: <YYYY-MM-
 ## 4. Lan truyền 7 điểm neo
 | # | Điểm neo | File đã sửa | Nội dung thay đổi | Trạng thái |
 |---|---|---|---|---|
-| N1 | skills/ | `agents/…/….md` | <…> | ĐÃ XONG |
-| N2 | AGENT.md | `agents/…/AGENT.md` | <…> | ĐÃ XONG |
+| N1 | skills/ | `qa-system/qa-…/skills/….md` | <…> | ĐÃ XONG |
+| N2 | AGENT.md | `qa-system/qa-…/AGENT.md` | <…> | ĐÃ XONG |
 | N3 | WORKFLOW.md | §2 bảng điều phối | <…> | ĐÃ XONG |
 | N4 | _system_map.json | routing_table | <…> | ĐÃ XONG |
 | N5 | qa-lead/AGENT.md | §2 + §5 | <…> | ĐÃ XONG |
@@ -227,6 +240,7 @@ Owner: qa-system/qa-lead/skills/system-upgrade-governance.md · Ngày: <YYYY-MM-
 | G2 | `--impact <agent>` | <danh sách bước bị ảnh hưởng> |
 | G3 | `npm run map:sync` | <đã cập nhật mục nào> |
 | G4 | Smoke luồng cũ | <chặng nào, kết quả> |
+| G5 | Nghiệm thu skill §5.1 | <a–e: đạt/không; d: hai tập mã + verdict, khác biệt và lý do> |
 
 ## 6. Rủi ro còn lại & việc cần người quyết
 - <…>
@@ -236,7 +250,7 @@ Owner: qa-system/qa-lead/skills/system-upgrade-governance.md · Ngày: <YYYY-MM-
 
 - [ ] Có bảng quyết định A/B/C với lý do tường minh cho **cả 3 câu** của cây quyết định — không kết luận suông.
 - [ ] Mọi điểm neo trong bảng §4 áp dụng cho nhánh đã chọn đều ở trạng thái `ĐÃ XONG` hoặc `KHÔNG ÁP DỤNG` **kèm lý do**; còn dòng nào trống → `Verdict: FIX`.
-- [ ] 4 cổng `G1`–`G4` có **kết quả thật** đã chạy, không phải dự đoán; cổng nào đỏ → `Verdict: FIX`.
+- [ ] Cổng `G1`–`G5` có **kết quả thật** đã chạy, không phải dự đoán; cổng nào đỏ → `Verdict: FIX`.
 - [ ] Tên skill trong `## Skill sở hữu` khớp chính xác tên file trên đĩa.
-- [ ] Biên bản xuất đúng đường dẫn `qa-system/_upgrades/<YYYY-MM-DD>_<ten-nang-cap>.md`.
+- [ ] Biên bản đã trình bày cho người dùng và lưu ở nơi họ chọn — không ghi vào repo nếu họ không yêu cầu.
 - [ ] Không có nội dung nào đặt sai tầng theo bảng tự kiểm §2.

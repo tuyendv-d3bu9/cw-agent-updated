@@ -17,6 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 const { PATHS, taskDir, featureKnowledge, listTaskSlugs } = require('../lib/paths');
+const S = require('../lib/schema');
 const { evaluate: evaluateGate } = require('./gate');
 
 const TRACE_FLOOR = 80; // below this is an automatic NO-GO
@@ -26,50 +27,36 @@ const TRACE_FLOOR = 80; // below this is an automatic NO-GO
 const read = (p) => (fs.existsSync(p) ? fs.readFileSync(p, 'utf-8') : null);
 const uniq = (a) => [...new Set(a)];
 
-/** Identifiers present in a document, e.g. BR-01, BR-AUTH-01, VP-03, MR-07. */
-function ids(text, prefix) {
-  return text ? uniq(text.match(new RegExp(`\\b${prefix}(?:-[A-Za-z0-9]+)*-\\d+\\b`, 'g')) || []).sort() : [];
-}
-
-/**
- * Reads test cases from the merged spec, falling back to `testcases/batch_*.md`.
- * Tags look like: `Rule#BR-01, Viewpoint#VP-01, Module#VCHR, Automated`
- */
+/** Test cases from the merged spec, falling back to testcases/batch_*.md (via lib/schema). */
 function readTestCases(dir) {
-  const specPath = path.join(dir, '05_test_case_spec.md');
-  let content = read(specPath);
+  let content = read(path.join(dir, '05_test_case_spec.md'));
   let source = '05_test_case_spec.md';
 
   if (content === null) {
     const batchDir = path.join(dir, 'testcases');
     if (!fs.existsSync(batchDir)) return { cases: [], source: null };
-    const batches = fs.readdirSync(batchDir).filter((f) => /^batch_.*\.md$/.test(f)).sort();
+    const batches = fs.readdirSync(batchDir).filter((f) => /^batch_.*\.md$/i.test(f))
+      .sort((a, b) => Number((a.match(/\d+/) || [0])[0]) - Number((b.match(/\d+/) || [0])[0]));
     if (batches.length === 0) return { cases: [], source: null };
-    content = batches.map((f) => read(path.join(batchDir, f))).join('\n');
+    content = batches.map((f) => read(path.join(batchDir, f))).join('\n\n---\n\n');
     source = `testcases/${batches.length} batch`;
   }
 
-  const cases = [];
-  for (const sec of content.split(/\n(?=###\s+TC_ID:)/g)) {
-    const idm = sec.match(/###\s+TC_ID:\s*([A-Za-z0-9_-]+)/);
-    if (!idm) continue;
-    const tags = (sec.match(/-\s+\*\*Tags\*\*:\s*([^\n]+)/) || [, ''])[1];
-    cases.push({
-      id: idm[1].trim(),
-      rules: uniq([...tags.matchAll(/Rule#(BR(?:-[A-Za-z0-9]+)*-\d+)/g)].map((m) => m[1])).sort(),
-      viewpoints: uniq([...tags.matchAll(/Viewpoint#(VP(?:-[A-Za-z0-9]+)*-\d+)/g)].map((m) => m[1])).sort(),
-      priority: (sec.match(/-\s+\*\*Priority\*\*:\s*([^\n]+)/) || [, ''])[1].trim(),
-    });
-  }
+  const cases = S.parseTestCases(content).cases.map((tc) => {
+    const t = S.tcTags(tc);
+    return {
+      id: tc.id,
+      rules: t.rules.sort(S.compareIds),
+      viewpoints: t.viewpoints.sort(S.compareIds),
+      ideas: t.ideas.sort(S.compareIds),
+      priority: S.stripMd(S.tcField(tc, 'Priority') || ''),
+    };
+  });
   return { cases, source };
 }
 
-/** Verdict from the meta line at the top of a deliverable. */
-function verdictOf(text) {
-  if (!text) return null;
-  const m = text.match(/\*{0,2}Verdict\*{0,2}:\s*`?\*{0,2}(PASS|FIX|ASK)\*{0,2}`?/i);
-  return m ? m[1].toUpperCase() : null;
-}
+/** Verdict from the meta line only (QA_STANDARD §7). */
+const verdictOf = (text) => S.readVerdict(text);
 
 /** Unresolved data issues listed in 12_data_validation_traceability.md. */
 function dataIssues(text) {
@@ -83,6 +70,8 @@ function dataIssues(text) {
 
 // ───────────────────── Metrics ─────────────────────
 
+const REQUIRED = ['01_requirement_risk_summary.md', '02_missing_rule_report.md', '03_viewpoint_report.md'];
+
 function collect(slug) {
   const dir = taskDir(slug);
   if (!fs.existsSync(dir)) throw new Error(`No OUTPUT/${slug}/ directory`);
@@ -91,30 +80,41 @@ function collect(slug) {
   const present = (n) => fs.existsSync(path.join(dir, n));
 
   const s01 = f('01_requirement_risk_summary.md');
-  const s02 = f('02_missing_rule_report.md');
   const s03 = f('03_viewpoint_report.md');
+  const s04 = f('04_test_idea_report.md');
   const s06 = f('06_coverage_review.md');
   const s12 = f('12_data_validation_traceability.md');
+  const k = S.readKnowledge(slug);
 
   const { cases, source } = readTestCases(dir);
 
-  const allRules = ids(s01, 'BR');
-  const allVPs = ids(s03, 'VP');
+  const d01 = S.read01(s01) || { BR: [], FD: [], AF: [] };
+  const dk = k.exists ? S.readKnowledgeDefs(k.text) : { BR: [], FD: [], AF: [] };
+  const allRules = uniq([...d01.BR, ...d01.FD, ...d01.AF]).sort(S.compareIds);
+  const defined = new Set([...allRules, ...dk.BR, ...dk.FD, ...dk.AF]);
+  const allVPs = S.read03Viewpoints(s03);
+  const ideas = S.read04Ideas(s04);
 
-  // A case is traced when it carries at least one BR-xx or VP-xx reference.
-  const traced = cases.filter((c) => c.rules.length > 0 || c.viewpoints.length > 0);
+  const mrResolved = new Set();
+  for (const q of k.questions) if (/^MR-/.test(q.id) && S.resolvedInKnowledge(q, k)) mrResolved.add(q.id);
+  for (const d of k.decisions) if (d.valid) d.related.forEach((x) => mrResolved.add(x));
+
+  const isDefinedRule = (r) => (r.startsWith('MR-') ? mrResolved.has(r) : defined.has(r));
+
+  // Traced = cites at least one DEFINED rule and one DEFINED viewpoint.
+  const traced = cases.filter((c) => c.rules.some(isDefinedRule) && c.viewpoints.some((v) => allVPs.includes(v)));
   const tracePct = cases.length ? Math.round((traced.length / cases.length) * 1000) / 10 : 0;
 
   const coveredRules = uniq(cases.flatMap((c) => c.rules));
   const coveredVPs = uniq(cases.flatMap((c) => c.viewpoints));
+  const coveredTi = new Set(cases.flatMap((c) => c.ideas));
 
   const gate = evaluateGate(slug);
 
-  // Cases resting on unsettled rules carry the highest hallucination risk.
-  const knowledge = read(featureKnowledge(slug)) || '';
+  // Cases resting on an unsettled MR (any Rule#<code>, MR included) carry the highest hallucination risk.
   const pendingIds = new Set(gate.pending.map((q) => q.id));
   const riskyCases = cases
-    .filter((c) => c.rules.some((r) => pendingIds.has(r)) || c.viewpoints.some((v) => pendingIds.has(v)))
+    .filter((c) => c.rules.some((r) => pendingIds.has(r) || (r.startsWith('MR-') && !mrResolved.has(r))))
     .map((c) => c.id);
 
   const issues = dataIssues(s12);
@@ -126,40 +126,72 @@ function collect(slug) {
       '01_requirement_risk_summary.md': present('01_requirement_risk_summary.md'),
       '02_missing_rule_report.md': present('02_missing_rule_report.md'),
       '03_viewpoint_report.md': present('03_viewpoint_report.md'),
+      '04_test_idea_report.md': present('04_test_idea_report.md'),
       testcases: source,
       '06_coverage_review.md': present('06_coverage_review.md'),
       '12_data_validation_traceability.md': present('12_data_validation_traceability.md'),
-      [`knowledge/features/${slug}.md`]: knowledge !== '',
+      [`knowledge/features/${slug}.md`]: k.exists,
     },
+    missingRequired: [...REQUIRED.filter((n) => !present(n)), ...(k.exists ? [] : [`knowledge/features/${slug}.md`])],
     coverage: {
+      brCount: d01.BR.length,
       viewpointsPlanned: allVPs,
-      viewpointsCovered: coveredVPs,
+      viewpointsCovered: coveredVPs.filter((v) => allVPs.includes(v)),
       viewpointsUncovered: allVPs.filter((v) => !coveredVPs.includes(v)),
+      viewpointsReferencedButUndefined: coveredVPs.filter((v) => !allVPs.includes(v)),
       rulesTotal: allRules,
       rulesCovered: coveredRules.filter((r) => allRules.includes(r)),
       rulesUncovered: allRules.filter((r) => !coveredRules.includes(r)),
-      rulesReferencedButUndefined: coveredRules.filter((r) => !allRules.includes(r)),
+      rulesReferencedButUndefined: coveredRules.filter((r) => !isDefinedRule(r)),
+      ideasKept: ideas.filter((i) => i.keep === 'Giữ').map((i) => i.id),
+      ideasUncovered: ideas.filter((i) => i.keep === 'Giữ' && !coveredTi.has(i.id)).map((i) => i.id),
+      ideasReferencedButUndefined: [...coveredTi].filter((t) => !ideas.some((i) => i.id === t)),
     },
     testCases: { total: cases.length, traced: traced.length, tracePct, untraced: cases.filter((c) => !traced.includes(c)).map((c) => c.id) },
     askGate: { blocked: gate.blocked, pending: gate.pending, reasons: gate.reasons, advisories: gate.advisories },
     riskyCases,
-    data: { hasValidation: !!s12, issues },
+    // Data branch (Chặng 9-12) counts only once it was started: Mode 1 stops at 06.
+    data: { hasValidation: !!s12, started: fs.readdirSync(dir).some((n) => /^(09|10|11|12)[a-z]?_/i.test(n)), issues },
     reviewVerdict: verdictOf(s06),
+    reviewPresent: s06 !== null,
   };
 }
 
-/** Go/No-Go table from the skill, wired to the artifacts this pipeline produces. */
+/** Go/No-Go, fail-closed: what cannot be measured is not GO. */
 function decide(m) {
   const blockers = [];
   const conditions = [];
+  const notes = [];
+  const cov = m.coverage;
 
+  if (m.missingRequired && m.missingRequired.length) {
+    blockers.push(`Required inputs missing: ${m.missingRequired.join(', ')}`);
+  }
   if (m.askGate.blocked) {
     blockers.push(`ASK gate is CLOSED: ${m.askGate.reasons.join(' · ')}`);
+  }
+  if (m.sources['01_requirement_risk_summary.md'] && cov.brCount === 0) {
+    blockers.push('Cannot measure: 0 BR-xx parsed from 01 §3 — rule coverage is unmeasurable');
+  }
+  if (m.sources['03_viewpoint_report.md'] && cov.viewpointsPlanned.length === 0) {
+    blockers.push('Cannot measure: 0 VP-xx parsed from 03 §2 — viewpoint coverage is unmeasurable');
   }
   if (m.testCases.total === 0) {
     blockers.push('No test cases at all (neither 05_test_case_spec.md nor testcases/batch_*.md)');
   } else if (m.testCases.tracePct < TRACE_FLOOR) {
-    blockers.push(`Trace rate ${m.testCases.tracePct}% is below ${TRACE_FLOOR}% — ${m.testCases.untraced.length} case(s) untraceable`);
+    blockers.push(`Trace rate ${m.testCases.tracePct}% is below ${TRACE_FLOOR}% — ${m.testCases.untraced.length} case(s) cite no defined rule + viewpoint`);
+  }
+  if (cov.rulesReferencedButUndefined.length) {
+    blockers.push(`Cases cite rules that are undefined (or unsettled MRs): ${cov.rulesReferencedButUndefined.join(', ')}`);
+  }
+  if (cov.viewpointsReferencedButUndefined.length) {
+    blockers.push(`Cases cite viewpoints absent from 03: ${cov.viewpointsReferencedButUndefined.join(', ')}`);
+  }
+  if (cov.ideasReferencedButUndefined.length) {
+    blockers.push(`Cases cite test ideas absent from 04: ${cov.ideasReferencedButUndefined.join(', ')}`);
+  }
+  if (cov.ideasUncovered.length) {
+    blockers.push(`Test ideas marked Giữ with no test case: ${cov.ideasUncovered.join(', ')}`);
   }
   if (m.riskyCases.length) {
     blockers.push(`${m.riskyCases.length} case(s) rest on unsettled rules or gaps: ${m.riskyCases.slice(0, 8).join(', ')}`);
@@ -171,24 +203,20 @@ function decide(m) {
   if (m.testCases.tracePct >= TRACE_FLOOR && m.testCases.tracePct < 100) {
     conditions.push(`Trace rate is ${m.testCases.tracePct}%, not yet 100%`);
   }
-  if (m.coverage.viewpointsUncovered.length) {
-    conditions.push(`Viewpoints with no test case: ${m.coverage.viewpointsUncovered.join(', ')}`);
+  if (cov.viewpointsUncovered.length) conditions.push(`Viewpoints with no test case: ${cov.viewpointsUncovered.join(', ')}`);
+  if (cov.rulesUncovered.length) conditions.push(`Business rules not covered: ${cov.rulesUncovered.join(', ')}`);
+  if (m.reviewVerdict && m.reviewVerdict !== 'PASS') conditions.push(`Stage 6 verdict is \`${m.reviewVerdict}\`, not PASS`);
+  if (!m.reviewVerdict) {
+    conditions.push(m.reviewPresent ? '06_coverage_review.md has no readable meta line verdict' : '06_coverage_review.md is missing');
   }
-  if (m.coverage.rulesUncovered.length) {
-    conditions.push(`Business rules not covered: ${m.coverage.rulesUncovered.join(', ')}`);
+  if (!m.data.hasValidation) {
+    if (m.data.started) conditions.push('12_data_validation_traceability.md is missing although the data branch (09-11) was started — data readiness cannot be assessed');
+    else notes.push('Data branch (Chặng 9-12) not started — test data readiness not assessed');
   }
-  if (m.coverage.rulesReferencedButUndefined.length) {
-    conditions.push(`Cases cite rules absent from stage 1: ${m.coverage.rulesReferencedButUndefined.join(', ')}`);
-  }
-  if (m.reviewVerdict && m.reviewVerdict !== 'PASS') {
-    conditions.push(`Stage 6 verdict is \`${m.reviewVerdict}\`, not PASS`);
-  }
-  if (!m.reviewVerdict) conditions.push('06_coverage_review.md is missing');
-  if (!m.data.hasValidation) conditions.push('12_data_validation_traceability.md is missing — data readiness cannot be assessed');
   (m.askGate.advisories || []).forEach((a) => conditions.push(a));
 
   const verdict = blockers.length ? 'NO-GO' : conditions.length ? 'CONDITIONAL GO' : 'GO';
-  return { verdict, blockers, conditions, exitCode: { 'GO': 0, 'CONDITIONAL GO': 1, 'NO-GO': 2 }[verdict] };
+  return { verdict, blockers, conditions, notes, exitCode: { 'GO': 0, 'CONDITIONAL GO': 1, 'NO-GO': 2 }[verdict] };
 }
 
 // ───────────────────── Output ─────────────────────
@@ -218,6 +246,7 @@ function render(m, d) {
     d.conditions.forEach((c, i) => console.log(`    ${i + 1}. ${c}`));
   }
 
+  (d.notes || []).forEach((n) => console.log(`\n  Note: ${n}`));
   console.log('\n  A technical recommendation derived from measured data.');
   console.log('  The final Go/No-Go call remains with the QA Lead or owner.');
   console.log(`${line}\n`);

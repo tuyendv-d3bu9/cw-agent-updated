@@ -1,131 +1,87 @@
 ---
 name: dataset-generation
 description: >
-  Sinh dataset sát nghiệp vụ (Realistic Data) cho các ca kiểm thử hợp lệ (Valid),
-  đa dạng hóa dữ liệu và xuất ra định dạng dùng được ngay (CSV, SQL INSERT, JSON).
+  Sinh dataset Valid cho các test case cần dữ liệu, giá trị nằm trong ràng buộc có nguồn,
+  tái lập được bằng seed, xuất CSV / SQL INSERT / JSON.
 ---
 
 # Skill: dataset-generation
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT).
+> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · nhãn §2.1 · FACT §3 · nguồn §10 · ngày §11).
 
 ## Mục đích
-Sinh dataset **sát nghiệp vụ** (giống dữ liệu thật của dự án, không phải placeholder vô hồn) và
-xuất ra định dạng dùng được ngay: CSV / SQL INSERT / JSON.
+Sinh record **Valid** cho từng test case cần data, xuất định dạng dùng được ngay. Cùng schema + cùng seed ⇒ cùng dataset.
 
 ## Tham số
-- `format` ∈ `csv` · `sql` · `json` — chọn theo mục đích tiêu thụ (bảng dưới).
-- `volume` — số record mong muốn, do người gọi chỉ định.
-
-## Mẫu schema
-
-Khuôn sẵn dùng được ngay: [`qa-system/templates/dataset-schema.example.json`](../../templates/dataset-schema.example.json)
-— có đủ 9 generator engine hỗ trợ (`vietnamese_name` `phone_vn` `email` `date_vn`
-`voucher_code` `currency_vnd` `enum` `boundary` `negative`).
-
-Chép ra `OUTPUT/<slug>/dataset_schema.json`, sửa theo field thật, rồi chạy:
-```bash
-npm run data:gen -- --slug <slug> --schema OUTPUT/<slug>/dataset_schema.json --count 50
-```
-Khoá bắt đầu bằng `_` là chú thích, engine bỏ qua — dùng để tự mô tả schema.
+- `format` ∈ `csv` · `sql` · `json`.
+- `seed` — số nguyên, **bắt buộc** khi dùng engine. Ghi lại trong output.
 
 ## Đầu vào
-- `OUTPUT/<task-slug>/09_data_class_map.md` — Field Map.
-- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — Business Rules để không vi phạm.
+- `OUTPUT/<task-slug>/09_data_class_map.md` — Field Map và ràng buộc có nguồn.
+- `OUTPUT/<task-slug>/05_test_case_spec.md` — TC cần data (`Test Data`).
+- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `FD`, `BR`.
+- `knowledge/_project.md` (§2 định dạng ngày/tiền, NULL vs rỗng, được dùng dữ liệu giống production không) ·
+  `knowledge/features/<feature-slug>.md` (§9 hằng số).
 
 ## KHÔNG được (riêng skill này)
-- Dùng placeholder mơ hồ (`V001`, `test`, `abc`, `[email]`) — phải là giá trị thực tế.
-- Bịa rule / campaign / domain assumption ngoài Requirement → gắn `[GIẢ ĐỊNH]`.
-- Đổi tên field/khoá so với Field Map hoặc schema.
-- Sinh record biên/âm tính ở đây — đó là skill `boundary-negative-dataset`.
+- Đặt khoảng giá trị, định dạng mã, đơn vị, mức "phổ biến của ngành" không có trong `FD`/knowledge §9.
+  Field có ràng buộc thiếu nguồn ⇒ ô giá trị `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]`, không sinh.
+- Sinh record biên/âm tính — việc của `boundary-negative-dataset`.
+- Đổi tên field so với Field Map.
+- Chạy engine không có `--seed`.
+- Mix định dạng ngày trong một dataset.
 
-## Nguyên tắc "sát nghiệp vụ"
-- Mã/định danh đúng **format thật của dự án**, không dùng tên giả kiểu `V001`.
-- Giá trị nằm trong **khoảng phổ biến thực tế** của domain, không chỉ chọn giá trị cực đoan.
-- **Logic ngày tháng có nghĩa**: spread hợp lý quanh hiện tại; không đặt mốc xa vô lý, không đặt
-  quá khứ trong khi trạng thái là "đang hiệu lực".
-- **Đa dạng hoá**: mix các loại/enum, mix range giá trị, có bản ghi "gần tới hạn" và "còn xa hạn".
-- Mọi giả định về domain (AOV, mức phổ biến theo campaign…) phải gắn `[GIẢ ĐỊNH]`.
+Field **không có ràng buộc nghiệp vụ** (vd họ tên tự do) được dùng generator để có giá trị trông thật — giá trị
+đó không khẳng định rule nào.
 
-## 5 bẫy khi AI sinh data & cách phòng
-| Bẫy | Biểu hiện | Cách phòng |
+## Engine (>10 record)
+Không tự gõ từng record. Viết schema rồi chạy:
+```bash
+npm run data:gen -- --slug <task-slug> --schema OUTPUT/<task-slug>/dataset_schema.json --count <n> --seed <số> --output OUTPUT/<task-slug>/10_dataset.md
+```
+Khuôn schema và danh sách generator: `qa-system/templates/dataset-schema.example.json`. Khoá bắt đầu bằng `_`
+là chú thích. Ràng buộc trong schema (min/max, enum, định dạng) phải chép từ Field Map; ngày dùng `YYYY-MM-DD`
+(hoặc định dạng `_project.md` §2).
+
+## Chọn format
+| Format | Dùng khi | Lưu ý |
 |---|---|---|
-| Data lặp đơn điệu | Nhiều record trùng gần hết giá trị | Yêu cầu rõ "đa dạng hoá" theo từng field |
-| Data phi thực tế | Định danh giả, giá trị vượt xa rule | Nêu rõ domain + khoảng hợp lệ trước khi sinh |
-| Date logic sai | Mốc thời gian xa vô lý, hoặc quá khứ nhưng vẫn Active | Cung cấp range ngày cụ thể + kiểm tra chéo với trạng thái |
-| Giá trị bịa theo kiểu | Enum là "số tiền cố định" nhưng lại điền `%` | Nêu rõ business rule của từng enum |
-| Thiếu edge tự nhiên | Không record nào gần ngưỡng | Yêu cầu rõ "gồm bản ghi gần tới hạn" |
+| CSV | Import Excel/TestRail, data provider | Header đúng tên field; giá trị có dấu phẩy/ngoặc ⇒ bọc quotes |
+| SQL INSERT | Seed test DB | Escape ký tự đặc biệt; mỗi record một statement |
+| JSON | API test | Key khớp tên field |
 
-## Chọn format theo mục đích
-| Format | Dùng khi | Lưu ý bắt buộc |
-|---|---|---|
-| **CSV** | Import Excel / TestRail, data provider | Header đúng tên field; giá trị có ký tự đặc biệt → wrap trong quotes |
-| **SQL INSERT** | Seed trực tiếp test DB | Escape ký tự đặc biệt; date đúng format DB; mỗi record 1 statement |
-| **JSON** | API testing (Postman) | Key khớp API schema; nested object cho rule lồng nhau |
-
-**Quy ước chung**: date thống nhất `YYYY-MM-DD` (không mix định dạng) · NULL → CSV để ô trống,
-SQL dùng `NULL`, JSON dùng `null` · tên cột/khoá đúng Field Map ở skill `data-class-map`.
-
-## Nguyên tắc Tiết kiệm Token (Engine-First)
-- Khi cần sinh dữ liệu số lượng lớn (> 10 records), **CẤM** AI tự gõ text từng record vì gây tràn token context.
-- Thay vào đó, AI chỉ thiết kế **Schema JSON ngắn gọn** (~30 token) và gọi công cụ hậu trường:
-  ```bash
-  npm run data:gen -- --slug <task-slug> --schema <schema.json> --count 50 --output OUTPUT/<slug>/10_dataset.md
-  ```
-- Schema JSON hỗ trợ các generator:
-  + `vietnamese_name` / `person`: Họ tên tiếng Việt chuẩn Unicode có dấu (`has_accents: true/false`, giới tính `gender: male/female`, `part: full/first_name/last_name`).
-  + `phone` / `phone_vn`: Số điện thoại đa định dạng (`country: VN/US/SG...`, `format: e164/national/international`, `carrier: viettel/vinaphone/mobifone`). Hỗ trợ chuẩn `+84`, `09x`.
-  + `address_vn` / `location`: Đơn vị hành chính Việt Nam (`part: full/city/district/street/postal_code`).
-  + `cccd_vn`: CCCD 12 số chuẩn cấu trúc Bộ Công An (mã tỉnh, thế kỷ/giới tính, năm sinh).
-  + `bank_vn`: Ngân hàng thương mại Việt Nam và số tài khoản (`field: full/bank_name/account_number`).
-  + `email`: Hỗ trợ sinh email thực tế theo tên (`realistic: true`) hoặc theo template.
-  + `voucher_code`: Mã khuyến mại theo prefix và giá trị.
-  + `currency_vnd`: Tiền VND (định dạng hoặc số nguyên).
-  + `date_vn` / `date`: Ngày tháng theo format `DD/MM/YYYY` hoặc `YYYY-MM-DD`.
-  + `boundary`: Sinh đủ chuỗi 7 điểm biên theo chuẩn QA_STANDARD §6.
-  + `enum`: Chọn ngẫu nhiên từ danh sách giá trị.
-  + `negative`: Các trường hợp dữ liệu xấu (rỗng, null, space, sql injection, xss).
+NULL: CSV ô trống · SQL `NULL` · JSON `null` (trừ khi `_project.md` khai khác).
 
 ## Các bước
-1. Đọc Field Map (`09_data_class_map.md`), xác định field nào cần sinh và khoảng giá trị hợp lệ.
-2. Thiết kế file `dataset_schema.json` chứa định nghĩa kiểu dữ liệu.
-3. Kích hoạt engine sinh dữ liệu: `node qa-system/tools/testdata/generate-dataset.js ...` để tự động điền bảng.
-4. Tự soi lại theo bảng 5 bẫy.
-5. Xuất ra `OUTPUT/<task-slug>/10_dataset.md` (kèm file `.csv` hoặc `.json` nếu cần).
+1. Lấy danh sách TC cần data từ 05; mỗi TC một hoặc nhiều record.
+2. Với mỗi field, lấy ràng buộc từ Field Map. Thiếu ⇒ nhãn, không sinh.
+3. ≤ 10 record: viết tay theo ràng buộc. > 10: schema + engine với `--seed`.
+4. Tự soi: giá trị nằm trong ràng buộc có nguồn; ngày nhất quán với trạng thái; không trùng lặp vô ích.
 
 ## Format output
 Ghi ra `OUTPUT/<task-slug>/10_dataset.md`:
 
 ````markdown
-# REALISTIC DATASET — [TÊN TÍNH NĂNG]
+# Dataset · <task-slug>
+Owner: qa-system/qa-test-data/skills/dataset-generation.md · Nguồn: 09_data_class_map.md, 05_test_case_spec.md · Verdict: PASS
+Seed: <số> · Schema: OUTPUT/<task-slug>/dataset_schema.json
 
-## 1. Bảng dataset (Valid)
-| # | [field 1] | [field 2] | … | Ghi chú |
+## 1. DATASET (VALID)
+| # | TC_ID | <field 1> | <field 2> | Ghi chú |
 |---|---|---|---|---|
-| 1 | [giá trị thực tế] | … | … | [vd "gần tới hạn"] |
+| D-01 | <MODULE>-001 | <giá trị trong ràng buộc FD-xx> | <…> | <…> |
 
-## 2. Giả định đã dùng
-| # | Giả định | Vì sao cần | Chờ ai xác nhận |
+## 2. FIELD CHƯA SINH ĐƯỢC
+| Field | FD | Thiếu gì | MR |
 |---|---|---|---|
-| 1 | `[GIẢ ĐỊNH]` […] | […] | BA/PO |
 
-## 3. Export — [csv | sql | json]
-```[csv|sql|json]
-[nội dung export, đúng cú pháp, dùng được ngay]
+## 3. EXPORT — <csv | sql | json>
+```<csv|sql|json>
+<nội dung đúng cú pháp>
 ```
-
-## 4. Tự soi 5 bẫy
-| Bẫy | Đã kiểm | Kết quả |
-|---|---|---|
-| Data lặp đơn điệu | [x] | [đạt / đã sửa: …] |
-| Data phi thực tế | [x] | … |
-| Date logic sai | [x] | … |
-| Giá trị bịa theo kiểu | [x] | … |
-| Thiếu edge tự nhiên | [x] | … |
 ````
 
 ## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Không lỗi cú pháp, escape đầy đủ ký tự đặc biệt (FACT — A).
-- [ ] Dữ liệu ở dạng máy tiêu thụ được ngay: provider / seed / API (FACT — T).
-- [ ] Đã tự soi đủ 5 bẫy sinh dữ liệu và ghi kết quả đối chiếu.
-- [ ] File xuất ra tại `OUTPUT/<task-slug>/10_dataset.md`.
+- [ ] Mỗi record gắn `TC_ID`; mọi TC cần data có record hoặc lý do ở §2.
+- [ ] Mọi giá trị có ràng buộc nằm trong ràng buộc có nguồn; seed được ghi lại.
+- [ ] Không lỗi cú pháp export; ngày một định dạng.

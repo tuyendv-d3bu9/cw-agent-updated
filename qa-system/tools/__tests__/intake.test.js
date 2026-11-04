@@ -65,7 +65,7 @@ test('slugify — strips Vietnamese diacritics and whitespace', () => {
 test('pickSlug — names the task after the BA document, not the strategy document', () => {
   // A business document spans a whole quarter, so naming after it overstates scope.
   const files = ['/x/Chinh sach Q4.md', '/x/PRD Gio hang.md', '/x/notes.md'];
-  assert.strictEqual(pickSlug(files), 'prd-gio-hang');
+  assert.strictEqual(pickSlug(files), 'gio-hang');
 });
 
 test('pickSlug — falls back to the first file when no BA document exists', () => {
@@ -199,4 +199,168 @@ test('thông điệp dừng nêu đủ: trùng ở đâu, task nào, và hai l�
   assert.match(notice, /spec-function-d/);
   assert.match(notice, /--into function-d-voucher/);
   assert.match(notice, /--force/);
+});
+
+// ───────────────────── Audit 2026-11-04 (G2 #4, #5, #6, #11, #1) ─────────────────────
+
+const {
+  classifyDetailed, processFile, newReport, scaffoldTask,
+} = require('../intake/intake');
+
+test('#11 — spec có chữ "wireframe" vẫn vào 02_ba (tên file + tiêu đề thắng nội dung)', () => {
+  const content = '# Đặc tả chức năng Đăng nhập\nMàn hình wireframe: xem Figma.\nMật khẩu tối thiểu 8 ký tự.';
+  assert.strictEqual(classifyDocument(content, 'Dac_ta_dang_nhap.docx'), '02_ba');
+});
+
+test('#11 — CR có chữ "đặc tả" vào 05_communication (tên file CR-12)', () => {
+  const content = '# Thay đổi ngưỡng khoá\nCập nhật đặc tả use case đăng nhập: 5 lần thay vì 3.';
+  assert.strictEqual(classifyDocument(content, 'CR-12_doi_nguong.md'), '05_communication');
+});
+
+test('#11 — CR nhận ra qua tiêu đề "Change Request" dù nội dung toàn chữ đặc tả', () => {
+  const content = '# Change Request: đổi ngưỡng khoá\nĐặc tả mới: acceptance criteria thay đổi, use case UC-01.';
+  assert.strictEqual(classifyDocument(content, 'thay-doi.md'), '05_communication');
+});
+
+test('#11 — CR chỉ nhận ra qua nội dung vẫn thắng chữ chung chung "đặc tả"', () => {
+  const content = 'Nội dung: yêu cầu thay đổi đặc tả use case X.';
+  assert.strictEqual(classifyDocument(content, 'ghi-chu.md'), '05_communication');
+});
+
+test('#11 — "revision" không còn khớp "vision" → không rơi vào 01_business', () => {
+  const r = classifyDetailed('Revision history\nRevision 2: cập nhật nhỏ.', 'notes.md');
+  assert.notStrictEqual(r.bin, '01_business');
+  assert.strictEqual(r.unsure, true);
+});
+
+test('#11 — chữ Việt dạng tổ hợp (NFD) vẫn khớp như dạng dựng sẵn', () => {
+  const nfd = '# Biên bản họp 2026-10-02\nBA xác nhận khoá 15 phút.'.normalize('NFD');
+  assert.strictEqual(classifyDocument(nfd, 'tai-lieu.md'), '05_communication');
+});
+
+test('#11 — hoà điểm / không tín hiệu bị đánh dấu chưa chắc', () => {
+  assert.strictEqual(classifyDetailed('Generic content.', 'ghi-chu.md').unsure, true);
+  const tie = classifyDetailed('figma và đặc tả', 'x.md');
+  assert.strictEqual(tie.unsure, true);
+});
+
+test('#4 — chuyển đổi lỗi thì KHÔNG xoá file gốc, processFile trả false và ghi vào failed', async () => {
+  const t = useTempProject();
+  try {
+    const src = write('INPUT/hong.docx', 'không phải zip');
+    const report = newReport();
+    const ok = await processFile(src, 'task-a', report, { consume: true });
+    assert.strictEqual(ok, false);
+    assert.ok(fs.existsSync(src), 'file gốc bị xoá dù chuyển đổi lỗi');
+    assert.strictEqual(report.failed.length, 1);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('#4 — thành công thì trả true, ghi .md và chỉ khi đó mới xoá bản rời', async () => {
+  const t = useTempProject();
+  try {
+    const src = write('INPUT/PRD Dang nhap.md', '# PRD Đăng nhập\nAcceptance criteria: sai 5 lần.');
+    const report = newReport();
+    assert.strictEqual(await processFile(src, 'dang-nhap', report, { consume: true }), true);
+    assert.ok(!fs.existsSync(src));
+    const dest = path.join(PATHS.INPUT, 'dang-nhap', '02_ba', 'prd-dang-nhap.md');
+    assert.match(fs.readFileSync(dest, 'utf8'), /source_file: PRD Dang nhap\.md/);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('#5 — file không hỗ trợ (.zip) giữ nguyên chỗ, không đọc mò thành chữ', async () => {
+  const t = useTempProject();
+  try {
+    const src = write('INPUT/goi.zip', 'PK\u0003\u0004rác');
+    const report = newReport();
+    assert.strictEqual(await processFile(src, 'task-a', report, { consume: true }), false);
+    assert.ok(fs.existsSync(src));
+    assert.ok(!fs.existsSync(path.join(PATHS.INPUT, 'task-a', '02_ba', 'goi.md')));
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('#5 — ảnh được chuyển nguyên vẹn vào 04_design/_assets/ kèm file .md trỏ tới', async () => {
+  const t = useTempProject();
+  try {
+    const png = Buffer.from('89504e470d0a1a0a0000000d49484452', 'hex');
+    const src = path.join(PATHS.INPUT, 'wireframe login.png');
+    fs.writeFileSync(src, png);
+    const report = newReport();
+    assert.strictEqual(await processFile(src, 'task-a', report, { consume: true }), true);
+    const dest = path.join(PATHS.INPUT, 'task-a', '04_design', '_assets', 'wireframe login.png');
+    assert.deepStrictEqual(fs.readFileSync(dest), png);
+    assert.ok(!fs.existsSync(src));
+    const idx = fs.readFileSync(path.join(PATHS.INPUT, 'task-a', '04_design', 'design-assets.md'), 'utf8');
+    assert.match(idx, /wireframe login\.png/);
+    assert.ok(!fs.existsSync(path.join(PATHS.INPUT, 'task-a', '02_ba', 'wireframe-login.md')));
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('#6 — .ppt bị từ chối kèm hướng dẫn "Save As .pptx", file gốc còn nguyên', async () => {
+  const t = useTempProject();
+  try {
+    const src = write('INPUT/slide.ppt', 'binary');
+    const report = newReport();
+    assert.strictEqual(await processFile(src, 'task-a', report, { consume: true }), false);
+    assert.ok(fs.existsSync(src));
+    assert.match(report.failed[0].reason, /pptx/);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('#1 — knowledge mới tạo từ template: thay <feature-slug>, không thêm dữ liệu mẫu', () => {
+  const t = useTempProject();
+  try {
+    write('knowledge/_template.md', '# <Tên Tính Năng>\nFeature slug: `<feature-slug>` · Nguồn: `INPUT/<feature-slug>/`\n| ID |\n|---|\n');
+    scaffoldTask('dang-nhap');
+    const k = fs.readFileSync(path.join(PATHS.FEATURES, 'dang-nhap.md'), 'utf8');
+    assert.match(k, /Feature slug: `dang-nhap` · Nguồn: `INPUT\/dang-nhap\/`/);
+    assert.ok(!k.includes('<feature-slug>'));
+    assert.strictEqual(k.split('\n').length, 5);
+  } finally {
+    t.cleanup();
+  }
+});
+
+test('vân tay bỏ qua khối metadata — cùng nội dung khác tên file vẫn là trùng', () => {
+  const a = '<!-- SOURCE_METADATA\nsource_file: a.docx\nsha256: 1\n-->\n\n# X\nnội dung';
+  const b = '<!-- SOURCE_METADATA\nsource_file: b.docx\nsha256: 2\n-->\n\n# X\nnội dung';
+  assert.strictEqual(docFingerprint(a), docFingerprint(b));
+});
+
+// ───── Follow-up: slug theo tính năng, không theo bản tài liệu ─────
+
+const { featureSlug } = require('../intake/intake');
+
+test('featureSlug — bỏ loại tài liệu, version, ngày: v1 và v2 cùng một task', () => {
+  assert.strictEqual(featureSlug('SRS_Doi_mat_khau_v1'), 'doi-mat-khau');
+  assert.strictEqual(featureSlug('SRS Đổi mật khẩu v2 (2026-10-28)'), 'doi-mat-khau');
+  assert.strictEqual(featureSlug('PRD_Gio_hang_v1.2_final'), 'gio-hang');
+  assert.strictEqual(featureSlug('URD-thanh-toan-rev3-20261028'), 'thanh-toan');
+  assert.strictEqual(featureSlug('Tai lieu voucher 28-10-2026 draft'), 'voucher');
+  assert.strictEqual(featureSlug('Đặc tả Đăng nhập ver2 - bản nháp'), 'dang-nhap');
+  assert.strictEqual(featureSlug('BRD spec Thanh toán v3'), 'thanh-toan');
+});
+
+test('featureSlug — không làm rơi chữ của tên tính năng ("đăng nhập" giữ "nhap")', () => {
+  assert.strictEqual(featureSlug('Dang nhap'), 'dang-nhap');
+});
+
+test('featureSlug — không bao giờ rỗng và xác định', () => {
+  assert.strictEqual(featureSlug('SRS v1'), 'srs-v1');
+  assert.strictEqual(featureSlug('2026-10-28'), '2026-10-28');
+  assert.strictEqual(featureSlug('PRD Gio hang'), featureSlug('PRD Gio hang'));
+});
+
+test('pickSlug — hai bản v1/v2 của cùng đặc tả ra cùng slug', () => {
+  assert.strictEqual(pickSlug(['/x/SRS_Doi_mat_khau_v2.docx']), pickSlug(['/x/SRS Doi mat khau v1 2026-10-01.docx']));
 });

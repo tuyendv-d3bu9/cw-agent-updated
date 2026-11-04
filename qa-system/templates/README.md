@@ -1,69 +1,57 @@
-# _agent_template — dựng agent mới
+# qa-system/templates/ — khuôn mẫu
 
-Mẫu để thêm agent thứ 6 trở đi. Cấu trúc phải giống hệt 5 agent đang có trong `agents/`.
+| File | Dùng khi |
+|---|---|
+| `AGENT.md` | Dựng agent mới |
+| `skills/ten-skill.md` | Viết skill mới |
+| `workflows/workflow.md` | `npm run workflow -- new <tên>` chép khuôn này |
+| `run/` | Session chạy test theo ticket (`OUTPUT/<slug>/runs/RUN-XX_<ticket>/`) |
+| `automation/` | Khung Playwright cho `npm run init` |
+| `knowledge/` | Khuôn `knowledge/` cho dự án mới (do `npm run init` chép) |
 
-```
-_agent_template/
-├─ README.md              ← file này
-├─ AGENT.md               ← mẫu danh tính
-└─ skills/
-    └─ NN-ten-skill.md    ← mẫu skill
-```
-
-**Không có template cho knowledge.** Knowledge per-feature dùng `knowledge/_template.md`
-(copy thành `knowledge/features/<feature-slug>.md`). Quy ước dự án dùng `knowledge/_project.md`.
-Xem `qa-system/core/QA_STANDARD.md` §8 để biết loại tri thức nào ở đâu.
+Quy trình nâng cấp đầy đủ (cây `[A]/[B]/[C]`, 7 điểm neo, nghiệm thu):
+`qa-system/qa-lead/skills/system-upgrade-governance.md`.
 
 ---
 
-## 4 tầng — nhớ đúng chỗ đặt
+## 4 tầng — đặt đúng chỗ
 
 | Tầng | File | Chứa gì |
 |---|---|---|
-| **LÀ AI** | `agents/<agent>/AGENT.md` | Danh tính · skill sở hữu · được/không được làm · human-final · bàn giao |
-| **LÀM THẾ NÀO** | `agents/<agent>/skills/NN-*.md` | Tham số · đầu vào · các bước · format output |
-| **LUẬT CHUNG** | `qa-system/core/QA_STANDARD.md` | Verdict · guard · FACT · 06W · risk matrix · chuỗi biên · quy ước output · luật knowledge |
-| **TRI THỨC** | `knowledge/` | `_project.md` (cả dự án) · `<feature-slug>.md` (một tính năng) |
+| **LÀ AI** | `qa-system/qa-<agent>/AGENT.md` | Danh tính · skill sở hữu · được/không được · Human-Final · bàn giao |
+| **LÀM THẾ NÀO** | `qa-system/qa-<agent>/skills/<ten-skill>.md` | Tham số · đầu vào · các bước · format output |
+| **LUẬT CHUNG** | `qa-system/core/QA_STANDARD.md` | Verdict · cổng ASK · nhãn · FACT · 06W · rủi ro · chuỗi biên · I/O · knowledge · mã · nguồn · thang đo |
+| **TRI THỨC** | `knowledge/` | `_project.md` (cả dự án) · `features/<slug>.md` (một tính năng) |
 
-Sai tầng là lỗi hay gặp nhất. Ba câu tự kiểm:
-
-- Ràng buộc này **mọi** skill đều phải tuân? → `qa-system/core/QA_STANDARD.md`, không viết vào skill.
-- Bảng chuẩn này có **≥2 skill** dùng? → `qa-system/core/QA_STANDARD.md`. Chỉ 1 skill? → để trong skill đó.
-- Đây là **dữ kiện của một tính năng cụ thể**? → `knowledge/features/<feature-slug>.md`, không nhét vào skill.
+Ba câu tự kiểm:
+- **Mọi** skill phải tuân? → QA_STANDARD, không viết vào skill.
+- Bảng chuẩn **≥2 skill** dùng? → QA_STANDARD. Chỉ 1 skill → để trong skill đó.
+- **Dữ kiện của một tính năng**? → `knowledge/features/<slug>.md`, không nhét vào skill.
 
 ---
 
 ## 7 bước dựng agent mới
 
-1. **Tạo thư mục** `agents/qa-<tên>/` và `agents/qa-<tên>/skills/`.
-2. **Copy** `_agent_template/AGENT.md` → `agents/qa-<tên>/AGENT.md`, điền hết placeholder `<…>`.
-3. **Copy** `_agent_template/skills/NN-ten-skill.md` → `agents/qa-<tên>/skills/<NN>-<ten>.md` cho từng skill.
-   Số `NN` tiếp nối dãy đang dùng (hiện đã dùng `01`–`12`), không trùng.
-4. **Khai skill** vào mục `## Skill sở hữu` của `AGENT.md`. Danh sách này **phải khớp đúng** tên
-   file trong `skills/` — lệch là agent gọi sai skill.
-5. **Khai vào bản đồ** `workflows/WORKFLOW.md`: bảng §2 (agent · skill · vào · ra) và §1 nếu
-   agent thuộc nhánh mới.
-6. **Runbook** — nếu agent cần chạy theo chuỗi riêng, tạo `workflows/run-<mục-tiêu>.md` và khai
-   vào bảng §6 của `WORKFLOW.md`.
-7. **Cập nhật** `README.md` gốc: bản đồ ở mục 1 và bảng "sửa/mở rộng ở đâu" ở mục 5.
+1. Tạo `qa-system/qa-<tên>/` và `qa-system/qa-<tên>/skills/`.
+2. Chép `templates/AGENT.md` → `qa-system/qa-<tên>/AGENT.md`, thay hết `<…>`.
+3. Chép `templates/skills/ten-skill.md` → `qa-system/qa-<tên>/skills/<ten-skill>.md` cho từng skill.
+4. Khai skill vào `## Skill sở hữu` của `AGENT.md` — **khớp đúng** tên file trong `skills/`.
+5. Khai vào `qa-system/workflows/WORKFLOW.md`: bảng §2, và §1 nếu mở nhánh mới. Tên file deliverable
+   không trùng tiền tố đang dùng (governance §3).
+6. Runbook riêng (nếu cần): `npm run workflow -- new run-<mục-tiêu>`, `validate` xanh.
+7. Cập nhật `qa-system/README.md`, `qa-system/qa-lead/AGENT.md` (§2 + §5), rồi `npm run map:sync`.
 
 ---
 
 ## Kiểm trước khi coi là xong
 
-- [ ] Mọi placeholder `<…>` đã thay hết, không sót cái nào
-- [ ] `## Skill sở hữu` khớp đúng tên file trong `skills/`
-- [ ] Mọi đường dẫn dùng `OUTPUT/` (hoa), `shared/`, `workflows/`, `agents/qa-*/` — không phải
-      `output/`, `_shared/`, `workflow/`
-- [ ] Không copy lại bảng Verdict, FACT, 06W, chuỗi biên vào skill — chỉ trỏ tới `qa-system/core/QA_STANDARD.md`
-- [ ] Mỗi skill ghi **đúng một** file output, có dòng meta `Owner · Nguồn · Verdict`
-- [ ] `AGENT.md` có mục `Human-Final` — nêu rõ quyết định nào không giao cho agent
-- [ ] Đã khai vào `workflows/WORKFLOW.md`
-
-Lệnh kiểm nhanh đường dẫn sai:
-
-```bash
-grep -rn "output/\|_shared/\|workflow/[a-z]" --include=*.md agents shared workflows | grep -v "workflows/"
-```
-
-Không in gì là sạch.
+- [ ] Không còn `<…>` sót lại
+- [ ] `## Skill sở hữu` khớp tên file trong `skills/`
+- [ ] `AGENT.md` có mục `Human-Final`
+- [ ] **Nghiệm thu skill** (bắt buộc với skill mới hoặc đã sửa — chi tiết governance §5.1):
+  - [ ] (a) Trỏ tới QA_STANDARD, không chép luật
+  - [ ] (b) "Đầu vào" khai đủ, gồm `knowledge/_project.md` + `knowledge/features/<slug>.md`
+  - [ ] (c) Output một file, dòng meta QA_STANDARD §7, bảng có cột nguồn / mã trace
+  - [ ] (d) Chạy **2 lần** trên cùng đầu vào mẫu, so tập mã và verdict; khác biệt phải giải thích được
+  - [ ] (e) Không ví dụ theo miền nghiệp vụ cụ thể trong skill lõi
+- [ ] `npm test` và `npm run agent:check` xanh, dán kết quả thật

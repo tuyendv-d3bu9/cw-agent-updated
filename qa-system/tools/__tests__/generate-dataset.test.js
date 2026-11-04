@@ -113,3 +113,16 @@ test('generate-dataset — generates Vietnamese bank names and account numbers',
     assert.match(r.stk, /^\d{8,16}$/);
   });
 });
+
+test('cùng seed ⇒ cùng bộ dữ liệu; khác seed ⇒ khác', () => {
+  const schema = {
+    name: { type: 'name', locale: 'vi' },
+    amount: { type: 'currency_vnd', min: 1000, max: 9000, step: 10 },
+    phone: { type: 'phone_vn' },
+  };
+  const a = generateDataset(schema, 5, { seed: 42 });
+  const b = generateDataset(schema, 5, { seed: 42 });
+  const c = generateDataset(schema, 5, { seed: 7 });
+  assert.deepStrictEqual(a, b);
+  assert.notDeepStrictEqual(a, c);
+});

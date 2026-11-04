@@ -60,7 +60,10 @@
     "knowledge_guide": "knowledge/README.md",
     "system_guide": "qa-system/README.md",
     "sprint_data_template": "qa-system/templates/sprint-data.example.json",
-    "dataset_schema_template": "qa-system/templates/dataset-schema.example.json"
+    "dataset_schema_template": "qa-system/templates/dataset-schema.example.json",
+    "ids_tool": "qa-system/tools/system/ids.js",
+    "ids_command": "npm run ids -- <slug>",
+    "shared_schema_module": "qa-system/tools/lib/schema.js"
   },
   "specialized_agents": {
     "qa_lead": {

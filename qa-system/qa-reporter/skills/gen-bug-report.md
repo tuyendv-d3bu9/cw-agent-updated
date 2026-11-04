@@ -17,12 +17,12 @@ Chuyển đổi ghi chép lỗi thô (Raw Bug Notes) của Tester thành Bug Rep
 
 ## Tham số
 - `bug_notes_path`: Đường dẫn file chứa bug notes thô của tester (ví dụ: `INPUT/bug_notes.txt` hoặc file markdown/text bất kỳ). Bắt buộc.
-- `rules_path`: Đường dẫn file chứa Business Rules để đối soát Expected (tùy chọn; mặc định tra cứu `knowledge/rules/rules.md`, nếu không có tự động fallback sang `knowledge/features/<feature-slug>.md` dựa trên module phát hiện).
-- `feature_name`: Tên tính năng/module liên quan (ví dụ: `Function D`, `Voucher`). Tùy chọn.
+- `rules_path`: File Business Rules để đối soát Expected (tùy chọn; mặc định `knowledge/features/<feature-slug>.md`).
+- `feature_name`: Tên tính năng/module liên quan (tùy chọn) — dùng để chọn `<feature-slug>`.
 
 ## Đầu vào
 - File bug notes thô tại `<bug_notes_path>`.
-- File tri thức nghiệp vụ: `knowledge/rules/rules.md` HOẶC `knowledge/features/<feature-slug>.md` (ví dụ: `knowledge/features/<feature-slug>.md`).
+- File tri thức nghiệp vụ: `knowledge/features/<feature-slug>.md` (§3 BR, §3b FD, §5 AF, §8 quyết định) hoặc `<rules_path>`.
 - `knowledge/_project.md` (quy ước múi giờ, định dạng mã, tiền tệ).
 
 > Nếu thiếu file bug notes bắt buộc → DỪNG và yêu cầu cung cấp, tuyệt đối không tự bịa đặt nội dung.
@@ -43,8 +43,8 @@ Chuyển đổi ghi chép lỗi thô (Raw Bug Notes) của Tester thành Bug Rep
 | **1** | **Title** | Tóm tắt lỗi theo cú pháp: `[<Module/Function>] <Hành vi lỗi thực tế> khi <Thao tác/Điều kiện>` | Ngắn gọn, súc tích, phản ánh đúng bản chất lỗi. Dùng làm căn cứ sinh file slug. |
 | **2** | **Environment** | Bóc tách: OS, Trình duyệt/Thiết bị, Môi trường (Staging/Dev/UAT), Version/Build, Account test | Chỉ ghi những gì có trong bug notes. Thiếu thông tin nào ghi rõ `(cần bổ sung)` vào mục đó. |
 | **3** | **Steps to Reproduce** | Gồm: Tiền điều kiện (Preconditions) + Các bước đánh số tuần tự (1, 2, 3...) kèm Test Data cụ thể | Bám sát thao tác thực tế từ bug notes. Thiếu data cụ thể ghi `(cần bổ sung test data)`. |
-| **4** | **Actual vs Expected** | Tách bạch 2 vế:<br>- **Actual**: Hiện tượng lỗi quan sát được từ notes.<br>- **Expected**: Hành vi chuẩn của hệ thống, **BẮT BUỘC TRACE VỀ MÃ RULE** | Trích dẫn cụ thể mã rule (ví dụ: `BR-03`, `BR-05` trong `knowledge/features/<feature-slug>.md`). Nếu rule chưa có trong knowledge → gắn `[GIẢ ĐỊNH - CHƯA CÓ TRONG KNOWLEDGE]`. |
-| **5** | **Severity** | Đánh giá mức độ nghiêm trọng kỹ thuật: `Critical` / `Major` / `Medium` / `Minor` | **BẮT BUỘC KÈM LÝ DO KỸ THUẬT**: Phân tích ảnh hưởng luồng chính, crash, rò rỉ dữ liệu, hay chỉ là lỗi UI. |
+| **4** | **Actual vs Expected** | Tách bạch 2 vế:<br>- **Actual**: Hiện tượng lỗi quan sát được từ notes.<br>- **Expected**: Hành vi chuẩn của hệ thống, **BẮT BUỘC TRACE VỀ MÃ RULE** | Trích dẫn cụ thể mã rule (ví dụ: `BR-03`, `BR-05` trong `knowledge/features/<feature-slug>.md`). Nếu rule chưa có trong knowledge → `[CHƯA CÓ TRONG TÀI LIỆU]`, không tự viết Expected. |
+| **5** | **Severity** | Thang QA_STANDARD §11: `Critical` / `Major` / `Minor` / `Trivial` | **BẮT BUỘC KÈM LÝ DO KỸ THUẬT**: Phân tích ảnh hưởng luồng chính, crash, rò rỉ dữ liệu, hay chỉ là lỗi UI. |
 | **6** | **Priority** | Format: `[ĐỀ XUẤT] [P1 / P2 / P3 / P4]` + lý do đề xuất mức độ khẩn cấp | Kèm cảnh báo tường minh: `⚠️ CẦN REVIEWER / PM XÁC NHẬN VÀ CHỐT TRƯỚC KHI LOG JIRA`. |
 | **7** | **Evidence** | Logs, Response status/body, chuỗi thông báo lỗi trên UI, đường dẫn screenshot/video | Trích xuất nguyên văn từ bug notes. Nếu tester chưa đính kèm bằng chứng → ghi `(cần bổ sung screenshot/video/log)`. |
 
@@ -55,9 +55,9 @@ Chuyển đổi ghi chép lỗi thô (Raw Bug Notes) của Tester thành Bug Rep
 ### Bước 1: Tiếp nhận và bóc tách dữ kiện thô từ Bug Notes
 1. Đọc nội dung file `<bug_notes_path>`.
 2. Trích xuất toàn bộ các dữ kiện hiện có:
-   - Module / Chức năng bị lỗi (ví dụ: Áp dụng voucher, Function D).
+   - Module / Chức năng bị lỗi.
    - Môi trường, thiết bị, tài khoản (nếu có).
-   - Thao tác thực hiện và dữ liệu đầu vào (mã voucher, giá trị giỏ hàng...).
+   - Thao tác thực hiện và dữ liệu đầu vào đúng như notes ghi.
    - Hiện tượng lỗi thực tế (Actual result) và thông báo lỗi.
    - Bằng chứng kỹ thuật đi kèm (log, ảnh, status code).
 3. Đánh dấu danh sách các thông tin bị khuyết để đưa vào mục `(cần bổ sung)`.
@@ -65,17 +65,17 @@ Chuyển đổi ghi chép lỗi thô (Raw Bug Notes) của Tester thành Bug Rep
 ### Bước 2: Tra cứu Business Rules để xây dựng Expected Result
 1. Xác định module nghiệp vụ liên quan từ dữ kiện bước 1.
 2. Tìm kiếm quy tắc nghiệp vụ theo thứ tự ưu tiên:
-   - File được chỉ định tại `rules_path` (hoặc `knowledge/rules/rules.md`).
-   - File tính năng tương ứng trong `knowledge/features/<feature-slug>.md` (ví dụ: `knowledge/features/<feature-slug>.md` mục §3 `BUSINESS RULES`).
+   - File được chỉ định tại `rules_path`.
+   - `knowledge/features/<feature-slug>.md` — §3, §3b (chữ thông báo nguyên văn), §5, §8.
 3. Xác định chính xác mã quy tắc (`BR-xx`) quy định hành vi chuẩn trong tình huống này.
-4. Viết Expected Result dựa trên quy tắc đó kèm dẫn xuất nguồn cụ thể (Traceability).
+4. Viết Expected Result dựa trên quy tắc đó kèm dẫn xuất nguồn cụ thể (Traceability). Chữ thông báo chỉ chép nguyên văn từ knowledge; không có ⇒ `[CHƯA CÓ TRONG TÀI LIỆU]`.
 
 ### Bước 3: Đánh giá Severity kỹ thuật & Đề xuất Priority
 1. **Severity (Độ nghiêm trọng kỹ thuật)**:
-   - `Critical`: Crash hệ thống, mất dữ liệu, chặn đứng hoàn toàn luồng thanh toán/đăng nhập, lỗ hổng bảo mật nghiêm trọng.
-   - `Major`: Chức năng chính hoạt động sai lệch logic (ví dụ voucher hết hạn vẫn giảm tiền, sai tổng tiền thanh toán) mà không có workaround.
-   - `Medium`: Tính năng phụ sai, thông báo lỗi sai lệch hoặc có giải pháp tạm thời (workaround).
-   - `Minor`: Lỗi hiển thị giao diện (UI/UX), lỗi chính tả, căn lề, không ảnh hưởng logic tính toán.
+   - `Critical`: Crash, mất/hỏng dữ liệu, chặn hoàn toàn luồng chính, lỗ hổng bảo mật.
+   - `Major`: Chức năng chính sai so với rule (`BR-xx`) mà không có workaround.
+   - `Minor`: Tính năng phụ sai, thông báo sai lệch, hoặc có workaround.
+   - `Trivial`: Lỗi hiển thị, chính tả, căn lề — không ảnh hưởng logic.
    - *Viết rõ đoạn phân tích lý do kỹ thuật đằng sau mức đánh giá.*
 2. **Priority (Mức độ ưu tiên xử lý)**:
    - Đưa ra đề xuất `[ĐỀ XUẤT] P1 / P2 / P3 / P4` dựa trên tính cấp bách kinh doanh, phạm vi ảnh hưởng người dùng.
@@ -109,7 +109,7 @@ Ghi ra `OUTPUT/reports/bug-report-<slug>.md`:
 
 ````markdown
 # BUG REPORT: <Title>
-Owner: qa-system/qa-reporter/gen-bug-report · Nguồn Bug Notes: <path/to/bug_notes> · Rules: <path/to/rules> · Verdict: <PASS/ASK>
+Owner: qa-system/qa-reporter/skills/gen-bug-report.md · Nguồn: <bug_notes_path>, <rules_path> · Verdict: PASS
 
 ---
 
@@ -138,7 +138,7 @@ Owner: qa-system/qa-reporter/gen-bug-report · Nguồn Bug Notes: <path/to/bug_n
   - *Traceability*: Căn cứ theo `<Mã Rule>` tại tài liệu `<Tên file rule>`.
 
 ## 5. Severity
-**[Critical / Major / Medium / Minor]**
+**[Critical / Major / Minor / Trivial]**
 - *Lý do kỹ thuật*: <Phân tích chi tiết impact kỹ thuật đối với hệ thống, dữ liệu, bảo mật hoặc luồng người dùng>
 
 ## 6. Priority
@@ -182,7 +182,7 @@ Không ghi knowledge (chỉ đọc knowledge để đối soát).
 - [ ] File output nằm tại `OUTPUT/reports/bug-report-<slug>.md`, không ghi đè input.
 - [ ] Tên file đúng dạng kebab-case không dấu.
 - [ ] Đầy đủ 100% 7 trường bắt buộc, không trường nào bị bỏ trống.
-- [ ] Expected Result bắt buộc trích dẫn mã `BR-xx` từ file rules; nếu chưa có trong knowledge phải gắn nhãn `[GIẢ ĐỊNH - CHƯA CÓ TRONG KNOWLEDGE]`.
+- [ ] Expected Result trích dẫn mã `BR-xx` từ knowledge; chưa có thì `[CHƯA CÓ TRONG TÀI LIỆU]`.
 - [ ] Severity có giải trình lý do kỹ thuật; Priority ở dạng `[ĐỀ XUẤT]` có ghi chú cần Reviewer chốt.
 - [ ] Tuyệt đối không tự bịa thông tin; mọi chỗ thiếu ghi `(cần bổ sung)` và tổng hợp tại Mục 8.
 - [ ] Có checklist Human-Final Review tại Mục 9.

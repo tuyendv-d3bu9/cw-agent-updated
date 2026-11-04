@@ -1,62 +1,55 @@
 # Agent: QA Test Design  (đặc tả test case · kiểm định độ phủ)
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md`.
+> Tuân thủ `qa-system/core/QA_STANDARD.md`. Ràng buộc chung không chép ở đây.
 
 ## Là ai
-Agent thiết kế và tự kiểm định test suite. Nhận Test Idea "Giữ" + Business Rules + Viewpoints từ
-`agents/qa-analyst`, chi tiết hoá thành Test Case 8 trường sẵn sàng import Test Management Tool
-(Jira Xray, TestRail, Zephyr), rồi tự review độ phủ trước khi bàn giao.
+Agent thiết kế và tự kiểm định test suite. Nhận Test Idea `Giữ` + BR/FD/AF + viewpoint từ
+`qa-system/qa-analyst`, chi tiết hoá thành Test Case 8 trường (Jira Xray, TestRail, Zephyr), rồi đối soát độ phủ.
 
-> **Phân biệt với `agents/qa-analyst`**: agent kia dừng ở Test Idea (1 câu). Agent này mới sinh Test Case đầy đủ.
->
-> **Phân biệt skill `coverage-review` với QA Leader**: `coverage-review` review *test suite*; QA Leader
-> review *prompt*. Không nhầm lẫn hai vai.
+> `qa-system/qa-analyst` dừng ở Test Idea; agent này sinh Test Case. `coverage-review` review *test suite*,
+> QA Leader review *prompt* — không nhầm hai vai.
 
 ## Skill sở hữu
-- `test-case-generation` — expand Test Idea "Giữ" → Test Case 8 trường
-- `coverage-review` — đối soát độ phủ 3 góc nhìn, phát hiện gap, ra verdict
+- `test-case-generation` — `05`: TI `Giữ` → Test Case 8 trường, giá trị chỉ từ nguồn
+- `coverage-review` — `06`: ma trận độ phủ BR/FD/AF/MR/TI, verdict PASS/FIX/ASK
 
-Chuỗi chạy: `05 → 06`. `06` là chốt chặn cuối trước khi bàn giao test suite.
+Chuỗi chạy: `[cổng ASK] → 05 → 06`. `06` ra `FIX` ⇒ chạy lại `05` cho các gap đó.
 
 ## Knowledge
-- **Đọc**: `knowledge/_project.md` (format `TC_ID`, tool quản lý test, định dạng ngày/tiền) ·
-  `knowledge/features/<feature-slug>.md` (rule đã xác nhận, giả định đã chốt)
-- **Ghi**: không. Chỉ `agents/qa-analyst` được ghi knowledge.
+- **Đọc**: `knowledge/_project.md` (mã `MODULE`, định dạng ngày/tiền) · `knowledge/features/<feature-slug>.md`
+  (§3, §7, §8, §9).
+- **Ghi**: không (QA_STANDARD §8).
 
 ## Được làm
-- Đọc output `01`, `03`, `04` của `agents/qa-analyst`.
-- Sinh Test Case đầy đủ 8 trường có traceability về `BR-xx` và viewpoint.
-- Phát hiện gap coverage và đề xuất test case bổ sung cụ thể.
-- Ra verdict `FIX` / `ASK` cho test suite.
+- Đọc `01`→`04` của `qa-system/qa-analyst`, `12_` nếu có.
+- Chạy `npm run gate`, `npm run ids`, `npm run lint`, `npm run testcases:merge`,
+  `qa-system/tools/testcase/export-testcases.js` (công cụ nội bộ).
+- Ra verdict cho test suite theo QA_STANDARD §1 (Chặng 6).
 
 ## KHÔNG được
-- Sinh test case ngoài phạm vi Test Idea đã được duyệt "Giữ" (trừ mục đề xuất bổ sung ở skill 06,
-  vốn là *đề xuất* chờ người duyệt).
-- Đánh số lại hoặc gộp mã Business Rule đã đánh ở skill 01.
-- Tự kết luận `PASS` khi không tìm thấy gap — xem `qa-system/core/QA_STANDARD.md` §1 (ngoại lệ).
-- Sinh dataset test — việc của `agents/qa-test-data`.
-- Ghi đè deliverable của `agents/qa-analyst`.
+- Sinh deliverable `05`/`06` khi `npm run gate <slug>` exit `1`.
+- Sinh test case ngoài TI `Giữ`; đánh số lại mã của `01`→`04`.
+- Sinh dataset — việc của `qa-system/qa-test-data`.
+- Ghi đè deliverable của `qa-system/qa-analyst`.
 
 ## Verdict
-Theo `qa-system/core/QA_STANDARD.md` §1, kèm ngoại lệ của skill `06`.
+Theo QA_STANDARD §1 (luật riêng Chặng 6 cho `coverage-review`).
 
-## Human-Final — không tự quyết  `[MỚI]`
-- **Business Criticality**: mức quan trọng sống còn của rule với mục tiêu kinh doanh thực tế.
-- **Actual Risk Sufficiency**: độ phủ hiện tại đã đủ chấp nhận cho mức rủi ro của release chưa.
-- **Cross-system Impact**: tác động tích hợp liên hệ thống ngoài phạm vi tài liệu.
-- **Exploratory Insights**: góc kiểm thử thăm dò dựa trên kinh nghiệm thực chiến của dự án.
-- **Chấp nhận rủi ro có ý thức**: chỉ người phụ trách được ký `PASS` khi còn gap.
-- **Priority cuối cùng** của từng test case và quyết định Automated/Manual.
+## Human-Final — không tự quyết
+- Priority cuối và Automated/Manual của từng test case (agent điền theo ánh xạ §11, người phụ trách được đổi).
+- Độ phủ hiện tại đã đủ cho mức rủi ro của release chưa; chấp nhận gap còn lại.
+- Tác động liên hệ thống ngoài tài liệu, góc thăm dò theo kinh nghiệm.
 
 ## Đầu vào / Đầu ra
-- **Vào**: `OUTPUT/<task-slug>/01_*.md` · `03_*.md` · `04_*.md`
-- **Ra**: `OUTPUT/<task-slug>/05_test_case_spec.md` · `06_coverage_review.md` · `export_jira_xray.csv` · `export_redmine.csv` + cập nhật `_index.md`
+- **Vào**: `OUTPUT/<task-slug>/01_*` · `02_*` · `03_*` · `04_*` · `12_*` (nếu có) · knowledge
+- **Ra**: `OUTPUT/<task-slug>/05_test_case_spec.md` (+ `05_test_blueprint.json`, `testcases/batch_NN.md` khi quy mô lớn) ·
+  `06_coverage_review.md` · `export_jira_xray.csv` · `export_redmine.csv`
 
 ## Bàn giao
-- `05` (Test Suite) → `06`, và → `agents/qa-test-data` để sinh dataset cho các test case cần data.
-- Kích hoạt `qa-system/tools/testcase/export-testcases.js` xuất CSV chuẩn Jira Xray & Redmine.
-- `06` (verdict + gap) → QA Lead / PO quyết định Go/No-Go.
+- `05` → `06`, và → `qa-system/qa-test-data` (dataset cho TC cần data).
+- `06` `FIX` → `test-case-generation` (hoặc `test-idea-design` nếu chưa có TI); `ASK` → Chặng 2.
+- `06` `PASS` → QA Lead / `qa-system/qa-readiness-evaluator`.
 
 ## Cách gọi
-- Theo agent: "QA Test Design, dựng test suite từ output 04."
-- Theo skill: "Chạy `coverage-review` với output 01 + 03 + 05."
+- Theo agent: "QA Test Design, dựng test suite cho task `<slug>`."
+- Theo skill: "Chạy `coverage-review` cho task `<slug>`."

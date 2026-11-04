@@ -1,110 +1,115 @@
 ---
 name: missing-rule-06w
 description: >
-  Đại diện Tester đặt câu hỏi phản biện 06W (W1-W6) để phát hiện triệt để missing rules,
-  implicit rules và kẽ hở logic trong tài liệu yêu cầu. Xuất danh sách 8 trường và câu hỏi clarification cho BA/PO.
+  Quét ma trận đóng 06W (mỗi BR/FD/AF × W1–W6) để tìm kẽ hở quy tắc, chuyển mọi OQ của Chặng 1
+  thành câu hỏi MR-xx cho BA/PO. Là cổng ASK của pipeline.
 ---
 
 # Skill: missing-rule-06w
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT · 06W).
+> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict & cổng ASK §1 · guard §2 · FACT §3 · **06W §4** ·
+> knowledge §8 · bảng câu hỏi §9.4 · nguồn §10 · thang đo §11).
 
 ## Mục đích
-Đại diện Tester đặt câu hỏi phản biện đa chiều để phát hiện triệt để **missing rule** (quy tắc
-thiếu), **implicit rule** (quy tắc ngầm chưa văn bản hoá) và kẽ hở logic trong tài liệu yêu cầu.
-Đầu ra là danh sách Missing Rule có cấu trúc + câu hỏi clarification dùng ngay được với BA/PO.
+Biến mọi chỗ nguồn **chưa trả lời** thành câu hỏi đóng `MR-xx` cho BA/PO. Cùng tài liệu + cùng knowledge
+⇒ cùng bộ câu hỏi, vì phép quét là ma trận đóng (QA_STANDARD §4), không phải tìm tự do.
 
 ## Đầu vào
-- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — Business Rules + Open Questions từ requirement-risk-summary.
-- `knowledge/features/<feature-slug>.md` (hoặc `knowledge/features/<feature-slug>.md`) — mục 7 (gap đã hỏi trước đó) và mục 8 (giả định đã chốt).
-
-> **Không hỏi lại điều đã có câu trả lời**: gap nào ở mục 7 knowledge đã có `Trả lời của BA`
-> và trạng thái `Confirmed`/`Rejected` thì KHÔNG đưa vào báo cáo như missing rule mới — nó đã
-> là rule xác nhận hoặc đã bị loại. Chỉ `New` và `TREO` mới còn là gap.
+- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — danh sách `BR`, `FD`, `AF` (hàng của ma trận) và `OQ`.
+- `INPUT/<task-slug>/` **hoặc** `OUTPUT/<task-slug>/00_knowledge_digest.md` — để kiểm một ô có thật sự
+  thiếu trong nguồn trước khi kết luận `Có kẽ hở` (01 có thể đã nén mất chi tiết).
+- `OUTPUT/<task-slug>/01_conflict_warning.md` nếu có.
+- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` — §7 (câu đã hỏi), §8 (quyết định đã chốt), §9.
 
 ## KHÔNG được (riêng skill này)
-- Sinh test case / scenario / steps / test data / expected result.
-- Sao chép nguyên văn Open Questions của requirement-risk-summary — phải **chuyển hoá và đào sâu** thành kẽ hở
-  quy tắc nghiệp vụ cụ thể.
+- Sinh test idea / test case / test data / expected result.
+- Tìm kẽ hở ngoài ma trận. Quét xong ma trận là dừng.
+- Hỏi lại điều nguồn hoặc knowledge (§3 Confirmed, §8, §9) đã trả lời.
+- Viết câu hỏi mở chung chung ("hệ thống xử lý thế nào?"). Câu hỏi phải trả lời được bằng Có/Không,
+  một con số, hoặc chọn phương án.
+- Coi `Phương án gợi ý` là rule, hay dùng nó làm expected ở chặng sau.
+- Tự điền `Phản hồi chính thức`, `Người trả lời`, `Ngày`, hay đổi `Trạng thái` khi người dùng chưa chuyển lời BA/PO.
 
 ## Các bước
-1. **Quét 06W** — áp đủ W1→W6 theo `qa-system/core/QA_STANDARD.md` §4 lên toàn bộ tài liệu đầu vào.
-2. **Ghi nhận truy vết** — W nào ra kẽ hở → lập bản ghi Missing Rule. W nào không ra → ghi
-   `"Không phát hiện vấn đề qua câu hỏi #W[X]"`. Không bỏ trống câu hỏi nào.
-3. **Phân loại** mỗi missing rule vào đúng 1 trong 5 nhóm:
+1. **Dựng ma trận** — mỗi `BR-xx`, `FD-xx`, `AF-xx` của 01 một hàng × `W1…W6` (tên và trọng tâm theo §4).
+2. **Chấm từng ô** đúng một kết quả:
+   - `Nguồn: <mã hoặc file §mục>` — nguồn/knowledge đã trả lời (kiểm lại trong `INPUT/` hoặc digest).
+   - `Không áp dụng` — chiều W này không liên quan đối tượng (vd `W5` cho field không phụ thuộc actor).
+   - `MR-xx` — có kẽ hở. Một kẽ hở dùng chung cho nhiều ô ⇒ cùng một mã.
+   Field thiếu min/max/độ dài ⇒ một `MR` ở ô `W1` của `FD` đó (chuỗi biên thuộc §6, không hỏi từng điểm biên).
+3. **Đối chiếu OQ** — mỗi `OQ-xx` của 01 ⇒ đúng một `MR-xx` (có thể trùng MR đã sinh ở bước 2), hoặc
+   `Nguồn: <...>` nếu nguồn/knowledge thực ra đã trả lời.
+4. **Cấp mã** — kẽ hở trùng một câu đã có ở knowledge §7 ⇒ **giữ mã cũ** và chép trạng thái/phản hồi hiện có.
+   Kẽ hở mới ⇒ số kế tiếp từ `npm run ids -- <task-slug>`. Không đánh lại từ `MR-01`.
+5. **Chi tiết hoá** mỗi `MR` mới (format §2) và ghi vào bảng câu hỏi §3.
+6. **Verdict** (bên dưới), FACT Self-Audit, ghi file và knowledge.
 
-   | Nhóm | Nội dung |
-   |---|---|
-   | Boundary & Edge Rules | Giá trị biên, ngưỡng giới hạn, ca ngoại lệ |
-   | State & Lifecycle Rules | Vòng đời đối tượng, điều kiện chuyển trạng thái, xung đột trạng thái |
-   | Exception & Error Handling Rules | Luồng lỗi, fallback, rollback, thông báo phản hồi |
-   | Dependency & Side-Effect Rules | Liên kết hệ thống, phụ thuộc dữ liệu chéo, ảnh hưởng liên đới |
-   | Implicit & Authorization Rules | Quy tắc ngầm, kiểm soát quyền, xác thực, an toàn dữ liệu |
+### Phân loại MR (một trong 5 nhóm)
+`Boundary & Edge` · `State & Lifecycle` · `Exception & Error Handling` · `Dependency & Side-Effect` · `Implicit & Authorization`.
 
-4. **Chi tiết hoá** từng Missing Rule đủ **8 trường** (xem format).
-5. **Tổng hợp** ma trận truy vết 06W + bảng câu hỏi clarification gửi BA/PO.
+## Verdict
+- `ASK` — còn ít nhất một `MR` trạng thái `New` hoặc `TREO` (§9.3). Cổng ASK đóng theo QA_STANDARD §1.
+- `PASS` — không có `MR`, hoặc mọi `MR` đều `Confirmed`/`Rejected`.
+- `FIX` — ma trận thiếu hàng/ô, OQ chưa đối chiếu ⇒ tự sửa rồi chạy lại.
 
 ## Format output
 Ghi ra `OUTPUT/<task-slug>/02_missing_rule_report.md`:
 
-```markdown
-# BÁO CÁO PHÂN TÍCH QUY TẮC NGHIỆP VỤ BỊ THIẾU (MISSING-RULE REPORT)
-Owner: qa-system/qa-analyst/missing-rule-06w · Nguồn: OUTPUT/<task-slug>/01_requirement_risk_summary.md · Verdict: <PASS/ASK>
+````markdown
+# Missing Rule Report · <task-slug>
+Owner: qa-system/qa-analyst/skills/missing-rule-06w.md · Nguồn: 01_requirement_risk_summary.md, <INPUT/digest đã đối chiếu>, knowledge/features/<feature-slug>.md · Verdict: ASK
 
-## 1. Ma trận Truy vết 06W
-> Tên W1–W6 lấy đúng `qa-system/core/QA_STANDARD.md` §4 — không đổi tên.
+## 1. MA TRẬN 06W
+| Đối tượng | W1 | W2 | W3 | W4 | W5 | W6 |
+|---|---|---|---|---|---|---|
+| BR-01 | Nguồn: 02_ba/<file> §2.1 | MR-03 | Không áp dụng | MR-04 | Không áp dụng | Nguồn: BR-02 |
+| FD-01 | MR-05 | Không áp dụng | Không áp dụng | Không áp dụng | Không áp dụng | Không áp dụng |
 
-| STT | Câu hỏi 06W | Trọng tâm đã quét | Trạng thái | Mã Missing Rule liên quan |
-|:---|:---|:---|:---|:---|
-| W1 | What if input lạ | [trọng tâm đã soi cho feature này] | [Đã phát hiện / Không phát hiện] | [MR-xx hoặc "Không phát hiện vấn đề qua câu hỏi #W1"] |
-| W2 | What if state lạ | … | … | … |
-| W3 | What if data lạ | … | … | … |
-| W4 | What when timing | … | … | … |
-| W5 | Who else actor | … | … | … |
-| W6 | What happens after | … | … | … |
+## 2. CHI TIẾT MISSING RULES
+### MR-03 — <tên ngắn>
+- Căn cứ: <mã đối tượng × W, trích vị trí trong nguồn — hoặc "nguồn không đề cập">
+- W: W2 — What if state lạ
+- Nhóm: State & Lifecycle
+- Kẽ hở: <tình huống nguồn chưa nói>
+- Rủi ro nếu bỏ qua: <hệ quả, chỉ từ điều tài liệu mô tả>
+- Ưu tiên: High
 
-## 2. Chi tiết Missing Rules
+## 3. BẢNG CÂU HỎI
+| ID | Kẽ hở | Nhóm 06W | Nguồn phát hiện | Phương án gợi ý (chưa phải rule) | Câu hỏi cho BA/PO | Phản hồi chính thức | Người trả lời | Ngày | Trạng thái |
+|---|---|---|---|---|---|---|---|---|---|
+| MR-03 | <kẽ hở> | W2 | BR-01 × W2 | A) <…> · B) <…> | <câu hỏi đóng> |  |  |  | New |
 
-### [MR-01] <tên ngắn gọn>
-1. **Mã Rule ID**: MR-01
-2. **Căn cứ Requirement gốc**: <trích cụ thể mục/câu từ output 01 HOẶC "Chưa đề cập trong tài liệu">
-3. **Câu hỏi 06W tương ứng**: <W1…W6>
-4. **Phân loại**: <1 trong 5 nhóm>
-5. **Mô tả kẽ hở / quy tắc bị thiếu**: <chi tiết tình huống thiếu sót, mơ hồ, thiếu quy tắc xử lý>
-6. **Rủi ro & Tác động**: <hệ quả với hệ thống / dữ liệu / người dùng nếu bỏ qua>
-7. **Đề xuất hành vi xử lý mặc định**: <giải pháp logic đề xuất>
-8. **Câu hỏi xác nhận cho BA/PO**: <câu hỏi cụ thể, rõ ngữ cảnh, dùng ngay được trong buổi clarification>
+## 4. ĐỐI CHIẾU OQ
+| OQ | Xử lý |
+|---|---|
+| OQ-01 | MR-03 |
+| OQ-02 | Nguồn: 05_communication/<file> §<mục> |
+````
 
-*(Tiếp tục [MR-02]… theo đúng 8 trường, đến khi hết missing rule tìm được)*
-
-## 3. Tổng hợp Câu hỏi Clarification gửi BA/PO
-| STT | Mã Rule | Phân loại | Câu hỏi cho BA/PO | Ưu tiên |
-|:---|:---|:---|:---|:---|
-| 1 | MR-01 | <nhóm> | <nội dung> | <High/Medium/Low> |
-```
+Không có MR ⇒ §2 và §3 ghi dòng văn bản `Không có` (không dựng bảng). Không có OQ ⇒ §4 ghi dòng văn bản `Không có`.
 
 ## Ghi knowledge
-Cập nhật `knowledge/features/<feature-slug>.md`:
-- Mục **7** — thêm mỗi `MR-xx` thành một dòng, trạng thái `New`, cột `Trả lời của BA` để trống.
-- Mục **8** — khi BA/PO trả lời, người duyệt chuyển kết luận xuống đây kèm ai chốt + ngày.
-- **Không xoá** dòng cũ, chỉ đổi `Trạng thái` (`New` → `Confirmed` / `TREO` / `Rejected`).
+Theo QA_STANDARD §8: skill `02` chỉ **thêm** dòng mới vào §7 của `knowledge/features/<feature-slug>.md`,
+trạng thái `New`, đúng bảng §9.4. Không xoá, không sửa dòng cũ, không ghi §8.
 
-## Chốt chặn bắt buộc: chuyển câu trả lời sang `knowledge/`
-
-Khi Chặng 2 chuyển sang `PASS` nhờ BA/PO đã trả lời, **bắt buộc** chạy:
+Khi người dùng chuyển lời BA/PO: chép **nguyên văn** vào `Phản hồi chính thức` / `Người trả lời` / `Ngày`
+/ `Trạng thái` trong §3 của báo cáo, rồi chạy:
 
 ```bash
 npm run knowledge:sync -- <task-slug> --write
+npm run gate <task-slug>
 ```
 
-Lý do (`QA_STANDARD` §8): `OUTPUT/` là kết quả một lần chạy, có thể bỏ đi;
-`knowledge/` mới là thứ tích luỹ. Câu trả lời chỉ nằm trong `02_missing_rule_report.md`
-thì lần chạy sau sẽ phải đi hỏi lại BA đúng những câu đã được trả lời.
+Dán kết quả thật. Mọi MR đã `Confirmed`/`Rejected` ⇒ sửa dòng meta của 02 thành `Verdict: PASS`
+(không chạy lại Chặng 2), rồi chạy lại Chặng `01` để nâng MR đã chốt thành `BR` và cập nhật §9 hằng số.
 
-`npm run gate <slug>` sẽ cảnh báo nếu còn mã `MR-xx` kẹt lại trong `OUTPUT/`.
+Câu trả lời phải dùng được **nguyên văn**. Câu trả lời còn biến hoặc mẫu (`<tên trường>`, `X ký tự`,
+"tuỳ trường hợp") thì chưa phải giá trị cụ thể: để trạng thái `TREO`, ghi câu hỏi tiếp theo nêu rõ cần chữ/số gì.
+Câu trả lời chỉ nằm trong `OUTPUT/` sẽ mất ở lần chạy sau — vì vậy bước sync là bắt buộc.
 
 ## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Quét đủ 6 câu hỏi W1→W6, không bỏ trống bất kỳ câu hỏi nào trong Ma trận 06W.
-- [ ] Mỗi Missing Rule mô tả đủ 8 trường bắt buộc, có mã `MR-xx` tăng dần.
-- [ ] Câu hỏi gửi BA/PO viết trực diện, kèm giả định/phương án đề xuất để BA/PO trả lời Có/Không hoặc chọn giải pháp ngay — không đặt câu hỏi mở chung chung.
-- [ ] Nếu có kẽ hở chưa chốt từ BA/PO ➔ Verdict bắt buộc là `ASK` (dừng lại để người dùng chốt).
+- [ ] Ma trận có đủ mọi `BR`/`FD`/`AF` của 01; mọi ô có đúng một kết quả hợp lệ.
+- [ ] Mọi `OQ` của 01 có một dòng ở §4.
+- [ ] Mỗi `MR` ở ma trận có mục `###` ở §2 và một dòng ở §3; câu hỏi là câu đóng.
+- [ ] Không MR nào trùng câu đã có ở knowledge §7 mà mang mã mới.
+- [ ] Verdict khớp trạng thái các MR (§9.3); `npm run gate <slug>` đã chạy, kết quả thật được dán.

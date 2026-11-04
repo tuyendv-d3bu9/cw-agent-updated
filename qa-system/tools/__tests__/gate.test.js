@@ -1,126 +1,245 @@
 /**
- * Tests for the ASK gate.
+ * Tests for the ASK gate (QA_STANDARD §1) and its PreToolUse hook.
  *
- * This gate is the only thing stopping the agent from generating test cases on
- * unsettled rules. If it fails silently the whole system loses its guarantee
- * without anyone noticing, so each unlock path gets its own case.
+ * The gate is the only thing stopping test cases from being written on
+ * unsettled rules. Every hole found in the 2026-11-04 audit (#48-#58) gets a
+ * case that reproduces it.
  */
 
 const test = require('node:test');
 const assert = require('node:assert');
-const { useTempProject, write } = require('./helpers');
-const { evaluate, audit, LOCKED_DELIVERABLES } = require('../system/gate');
+const fs = require('fs');
+const path = require('path');
+const { useTempProject, write, knowledgeDoc, report02, head, PATHS } = require('./helpers');
+const { evaluate, audit, writeLock, isLockedPath, LOCKED_DELIVERABLES } = require('../system/gate');
+const hook = require('../system/gate-hook');
 
-/** Sections 7 and 8 of a knowledge file, with section 8 LAST as in the template. */
-function knowledge({ pending = [], resolved = [], section8 = [] }) {
-  const rows = [
-    ...pending.map((q) => `| ${q} | Kẽ hở | W1 | HIGH | Mặc định | Câu hỏi? |  | New |`),
-    ...resolved.map((q) => `| ${q} | Kẽ hở | W1 | HIGH | Mặc định | Câu hỏi? | Đã trả lời | Confirmed |`),
-  ];
-  return `# Tri thức · test
+const ok = (s) => assert.ok(!s.blocked, `gate should be open, got: ${s.reasons.join(' · ')}`);
+const closed = (s, re) => {
+  assert.ok(s.blocked, 'gate must be closed');
+  if (re) assert.match(s.reasons.join(' '), re);
+};
 
-## 7. CÂU HỎI MỞ & KẼ HỞ 06W (OPEN QUESTIONS & MISSING RULES)
-
-| ID | Mô tả kẽ hở | Nhóm 06W | Mức rủi ro | Đề xuất mặc định | Câu hỏi cho BA/PO | Phản hồi chính thức | Trạng thái |
-|---|---|---|---|---|---|---|---|
-${rows.join('\n')}
-
-## 8. GIẢ ĐỊNH ĐÃ ĐƯỢC CHỐT (CONFIRMED ASSUMPTIONS LOG)
-
-| # | Mã liên quan | Giả định ban đầu | Quyết định chính thức | Người phê duyệt | Ngày chốt |
-|---|---|---|---|---|---|
-${section8.map((q, i) => `| ${i + 1} | ${q} | Giả định | Quyết định chính thức | PO | 2026-10-02 |`).join('\n')}
-`;
-}
+// ───────────── Verdict & fail-closed ─────────────
 
 test('CLOSED when stage 2 returns Verdict ASK', () => {
   const t = useTempProject();
   try {
-    write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nVerdict: ASK\n');
-    const s = evaluate('t');
-    assert.ok(s.blocked, 'gate must be closed');
-    assert.match(s.reasons.join(' '), /Verdict: ASK/);
+    write('OUTPUT/t/02_missing_rule_report.md', report02({ verdict: 'ASK' }));
+    closed(evaluate('t'), /Verdict: ASK/);
   } finally { t.cleanup(); }
 });
 
-test('CLOSED while section 7 still has New questions', () => {
+test('#48 CLOSED when 02 does not exist — skipping stage 2 is not a way in', () => {
   const t = useTempProject();
   try {
-    write('knowledge/features/t.md', knowledge({ pending: ['MR-01', 'MR-02'] }));
+    write('OUTPUT/t/01_requirement_risk_summary.md', head('x'));
     const s = evaluate('t');
-    assert.ok(s.blocked);
+    closed(s, /does not exist/);
+    assert.strictEqual(s.phase, 'pre-stage-2');
+  } finally { t.cleanup(); }
+});
+
+for (const [name, line] of [
+  ['bold', 'Owner: x · **Verdict:** ASK'],
+  ['backticked', 'Owner: x · Verdict: `ASK`'],
+  ['Vietnamese', 'Owner: x · Kết luận: ASK'],
+  ['no Owner', 'Verdict: PASS'],
+]) {
+  test(`#49 CLOSED when the meta line is unreadable (${name})`, () => {
+    const t = useTempProject();
+    try {
+      write('OUTPUT/t/02_missing_rule_report.md', `# R\n${line}\n`);
+      closed(evaluate('t'), /Cannot read the verdict/);
+    } finally { t.cleanup(); }
+  });
+}
+
+test('#57 a legend cell `| ASK |` in a PASS report does not close the gate', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02() + '\n## Chú giải\n| PASS | đủ |\n| ASK | thiếu |\n');
+    ok(evaluate('t'));
+  } finally { t.cleanup(); }
+});
+
+test('verdict FIX keeps the gate closed (fix and re-run stage 2)', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02({ verdict: 'FIX' }));
+    closed(evaluate('t'), /FIX/);
+  } finally { t.cleanup(); }
+});
+
+// ───────────── What counts as settled ─────────────
+
+test('CLOSED while knowledge §7 still has New questions', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02());
+    write('knowledge/features/t.md', knowledgeDoc({ q7: [{ id: 'MR-01' }, { id: 'MR-02' }] }));
+    const s = evaluate('t');
+    closed(s);
     assert.deepStrictEqual(s.pending.map((q) => q.id), ['MR-01', 'MR-02']);
   } finally { t.cleanup(); }
 });
 
-test('unlock path 1 — answer in section 7, status Confirmed', () => {
+test('unlock path 1 — Confirmed with an official answer, or Rejected', () => {
   const t = useTempProject();
   try {
-    write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nVerdict: PASS\n');
-    write('knowledge/features/t.md', knowledge({ resolved: ['MR-01', 'MR-02'] }));
+    write('OUTPUT/t/02_missing_rule_report.md', report02());
+    write('knowledge/features/t.md', knowledgeDoc({ q7: [
+      { id: 'MR-01', answer: '200.000', by: 'BA An', date: '2026-11-01', status: 'Confirmed' },
+      { id: 'MR-02', status: 'Rejected' },
+      { id: 'MR-03', answer: 'Có', status: 'Đã xác nhận' },
+      { id: 'MR-04', answer: 'Có', status: 'Confirmed (BA An)' },
+    ] }));
     const s = evaluate('t');
-    assert.ok(!s.blocked, `gate should be open, got: ${s.reasons.join(' · ')}`);
-    assert.strictEqual(s.resolvedCount, 2);
+    ok(s);
+    assert.strictEqual(s.resolvedCount, 4);
   } finally { t.cleanup(); }
 });
 
-test('unlock path 2 — decision recorded in section 8 (the LAST section)', () => {
-  // Bug that nearly shipped: the section reader used `\Z`, which does NOT exist
-  // in JavaScript regex (JS reads it as a literal Z). Section 8 usually sits last,
-  // so it never matched and this unlock path silently did nothing.
+test('#50 an answer cell with text but status New/TREO does not settle it', () => {
   const t = useTempProject();
   try {
-    write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nVerdict: PASS\n');
-    write('knowledge/features/t.md', knowledge({ pending: ['MR-01'], section8: ['MR-01'] }));
+    write('OUTPUT/t/02_missing_rule_report.md', report02());
+    write('knowledge/features/t.md', knowledgeDoc({ q7: [
+      { id: 'MR-01', answer: 'Chờ BA trả lời', status: 'TREO' },
+      { id: 'MR-02', answer: 'N/A', status: 'New' },
+    ] }));
+    assert.strictEqual(evaluate('t').pending.length, 2);
+  } finally { t.cleanup(); }
+});
+
+test('Confirmed with an EMPTY official answer is not settled', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02());
+    write('knowledge/features/t.md', knowledgeDoc({ q7: [{ id: 'MR-01', status: 'Confirmed' }] }));
+    closed(evaluate('t'));
+  } finally { t.cleanup(); }
+});
+
+test('#51 a row missing a column is read by header, not shifted into the answer', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02());
+    write('knowledge/features/t.md', `# K\n## 7. Q\n| ID | Kẽ hở | Câu hỏi cho BA/PO | Phản hồi chính thức | Trạng thái |\n|---|---|---|---|---|\n| MR-01 | a | q? |  | New |\n`);
+    closed(evaluate('t'));
+  } finally { t.cleanup(); }
+});
+
+test('#52 a §8 decision needs approver AND date to count', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02());
+    write('knowledge/features/t.md', knowledgeDoc({ q7: [{ id: 'MR-01' }], d8: [{ id: 'MR-01', decision: 'chưa chốt' }] }));
+    closed(evaluate('t'));
+    write('knowledge/features/t.md', knowledgeDoc({ q7: [{ id: 'MR-01' }], d8: [{ id: 'MR-01', by: 'PO Bình', date: '2026-11-02' }] }));
+    ok(evaluate('t'));
+  } finally { t.cleanup(); }
+});
+
+test('#53 #34 bold IDs, non-MR IDs and a heading without a dot are all seen', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02());
+    const k = knowledgeDoc({ q7: [{ id: 'Q-01', status: 'Chờ trả lời' }, { id: '**MR-02**' }] }).replace('## 7. CÂU HỎI', '## 7 Câu hỏi');
+    write('knowledge/features/t.md', k);
     const s = evaluate('t');
-    assert.ok(!s.blocked, `section 8 should unlock the gate, got: ${s.reasons.join(' · ')}`);
+    closed(s);
+    assert.deepStrictEqual(s.pending.map((q) => q.id).sort(), ['MR-02', 'Q-01']);
   } finally { t.cleanup(); }
 });
 
-test('OPEN before stage 2 runs — work that has not started is not blocked', () => {
+test('an empty knowledge template contributes no questions', () => {
   const t = useTempProject();
   try {
-    write('OUTPUT/t/00_plan.md', '# Plan\n');
-    assert.ok(!evaluate('t').blocked);
+    write('OUTPUT/t/02_missing_rule_report.md', report02());
+    write('knowledge/features/t.md', fs.readFileSync(path.join(__dirname, '..', '..', '..', 'knowledge', '_template.md'), 'utf-8'));
+    ok(evaluate('t'));
   } finally { t.cleanup(); }
 });
 
-test('ADVISES (without blocking) when BA answers stay stranded in OUTPUT/', () => {
-  // QA_STANDARD §8: OUTPUT/ is disposable, knowledge/ is what accumulates. If
-  // stage 2 passed on BA answers that never reached knowledge/, the next run
-  // asks the BA those same questions again.
+// ───────────── 02 MRs vs knowledge ─────────────
+
+test('every MR of 02 must be settled IN knowledge — answer only in OUTPUT keeps it closed', () => {
   const t = useTempProject();
   try {
-    write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nVerdict: PASS\n| MR-01 | ... |\n| MR-02 | ... |\n');
+    write('OUTPUT/t/02_missing_rule_report.md', report02({ questions: [{ id: 'MR-01', answer: 'Có', status: 'Confirmed' }] }));
+    closed(evaluate('t'), /knowledge:sync/);
+  } finally { t.cleanup(); }
+});
+
+test('#58 02 says ASK but every MR is settled in knowledge ⇒ open (stale verdict) with advisory', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02({ verdict: 'ASK', questions: [{ id: 'MR-01', question: 'Mức sàn?' }] }));
+    write('knowledge/features/t.md', knowledgeDoc({ q7: [{ id: 'MR-01', question: 'Mức sàn?', answer: '200k', status: 'Confirmed' }] }));
     const s = evaluate('t');
-    assert.ok(!s.blocked, 'an advisory must not close the gate');
-    assert.strictEqual(s.advisories.length, 1);
-    assert.match(s.advisories[0], /MR-01, MR-02/);
+    ok(s);
+    assert.match(s.advisories.join(' '), /Mọi MR của 02 đã chốt trong knowledge/);
   } finally { t.cleanup(); }
 });
 
-test('no advisory once every code is recorded in knowledge/', () => {
+test('#37 an old MR-04 with different wording does not settle today\'s MR-04', () => {
   const t = useTempProject();
   try {
-    write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nVerdict: PASS\n| MR-01 | ... |\n');
-    write('knowledge/features/t.md', knowledge({ resolved: ['MR-01'] }));
-    assert.strictEqual(evaluate('t').advisories.length, 0);
+    write('OUTPUT/t/02_missing_rule_report.md', report02({ verdict: 'ASK', questions: [{ id: 'MR-04', question: 'Voucher có cộng dồn không?' }] }));
+    write('knowledge/features/t.md', knowledgeDoc({ q7: [{ id: 'MR-04', question: 'Mức sàn đơn hàng là bao nhiêu?', answer: '200k', status: 'Confirmed' }] }));
+    const s = evaluate('t');
+    closed(s);
+    assert.deepStrictEqual(s.pending.map((q) => q.id), ['MR-04']);
   } finally { t.cleanup(); }
 });
 
-test('audit — detects stage 03-06 files written after the lock timestamp', async () => {
+// ───────────── Lock & audit ─────────────
+
+test('#55 lock covers any 03-06 name (any case) and testcases/**, not 01/02', () => {
+  for (const p of ['03_viewpoint_report.md', '05_Test_Case_Spec.md', '05_testcases.md', '06b_x.md', 'testcases/batch_01.md']) {
+    assert.ok(isLockedPath(p), p);
+  }
+  for (const p of ['01_requirement_risk_summary.md', '02_missing_rule_report.md', '00_plan.md', '12_data.md']) {
+    assert.ok(!isLockedPath(p), p);
+  }
+  assert.ok(!LOCKED_DELIVERABLES.some((f) => f.startsWith('01_') || f.startsWith('02_')));
+});
+
+test('audit — detects stage 03-06 files written after the lock timestamp', () => {
   const t = useTempProject();
   try {
-    write('OUTPUT/t/02_missing_rule_report.md', '# Báo cáo\nVerdict: ASK\n');
+    write('OUTPUT/t/02_missing_rule_report.md', report02({ verdict: 'ASK' }));
     write('OUTPUT/t/_gate.lock', JSON.stringify({ slug: 't', lockedAt: new Date(Date.now() - 60000).toISOString() }));
     write('OUTPUT/t/03_viewpoint_report.md', '# written past the gate\n');
+    write('OUTPUT/t/testcases/batch_01.md', '# batch\n');
     const a = audit('t');
-    assert.strictEqual(a.violations.length, 1);
-    assert.strictEqual(a.violations[0].file, '03_viewpoint_report.md');
+    assert.deepStrictEqual(a.violations.map((v) => v.file).sort(), ['03_viewpoint_report.md', 'testcases/batch_01.md']);
   } finally { t.cleanup(); }
 });
 
-test('audit — reports nothing when no lock is active', () => {
+test('#56 opening the gate later does not erase the evidence (append-only log)', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02({ verdict: 'ASK' }));
+    const lockPath = writeLock(evaluate('t'));
+    // Backdate the lock so a file written "now" falls inside the locked interval.
+    const past = new Date(Date.now() - 60000).toISOString();
+    fs.writeFileSync(path.join(PATHS.OUTPUT, 't', '_gate.log'), JSON.stringify({ event: 'locked', at: past }) + '\n');
+    fs.writeFileSync(lockPath, JSON.stringify({ lockedAt: past }));
+    write('OUTPUT/t/05_test_case_spec.md', '# bypass\n');
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 30); // mtime strictly before the unlock
+    write('OUTPUT/t/02_missing_rule_report.md', report02());
+    writeLock(evaluate('t')); // gate opens, lock file removed
+    assert.ok(!fs.existsSync(lockPath));
+    const a = audit('t');
+    assert.deepStrictEqual(a.violations.map((v) => v.file), ['05_test_case_spec.md']);
+    const log = fs.readFileSync(path.join(PATHS.OUTPUT, 't', '_gate.log'), 'utf-8');
+    assert.match(log, /"unlocked"/);
+  } finally { t.cleanup(); }
+});
+
+test('audit — reports nothing when no lock was ever active', () => {
   const t = useTempProject();
   try {
     write('OUTPUT/t/03_viewpoint_report.md', '# legitimate\n');
@@ -128,9 +247,56 @@ test('audit — reports nothing when no lock is active', () => {
   } finally { t.cleanup(); }
 });
 
-test('the locked-deliverable list covers exactly stages 3 to 6', () => {
-  assert.ok(LOCKED_DELIVERABLES.includes('03_viewpoint_report.md'));
-  assert.ok(LOCKED_DELIVERABLES.includes('06_coverage_review.md'));
-  // Stages 1 and 2 must stay runnable, otherwise nobody can answer the questions.
-  assert.ok(!LOCKED_DELIVERABLES.some((f) => f.startsWith('01_') || f.startsWith('02_')));
+// ───────────── Hook ─────────────
+
+const denied = (out) => /"deny"/.test(out);
+
+test('#54 #55 hook denies Write/Edit/MultiEdit/NotebookEdit into locked paths of a blocked task', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02({ verdict: 'ASK' }));
+    const o = PATHS.OUTPUT;
+    assert.ok(denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: `${o}/t/05_test_case_spec.md` } })));
+    assert.ok(denied(hook.decide({ tool_name: 'Edit', tool_input: { file_path: `${o}/t/05_Test_Case_Spec.md` } })));
+    assert.ok(denied(hook.decide({ tool_name: 'MultiEdit', tool_input: { file_path: `${o}/t/testcases/batch_01.md` } })));
+    assert.ok(denied(hook.decide({ tool_name: 'NotebookEdit', tool_input: { notebook_path: `${o}/t/04_x.ipynb` } })));
+    assert.ok(denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: 'OUTPUT/t/03_vp.md' }, cwd: PATHS.ROOT })));
+    assert.ok(!denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: `${o}/t/02_missing_rule_report.md` } })));
+    assert.ok(!denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: `${PATHS.ROOT}/knowledge/features/t.md` } })));
+  } finally { t.cleanup(); }
+});
+
+test('hook denies a write into a task that has no 02 yet (fail-closed)', () => {
+  const t = useTempProject();
+  try {
+    assert.ok(denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: `${PATHS.OUTPUT}/new/03_vp.md` } })));
+  } finally { t.cleanup(); }
+});
+
+test('#54 hook blocks Bash writes and merge/export for a blocked task, allows reads', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02({ verdict: 'ASK' }));
+    const run = (command) => hook.decide({ tool_name: 'Bash', tool_input: { command }, cwd: PATHS.ROOT });
+    assert.ok(denied(run('echo x > OUTPUT/t/05_test_case_spec.md')));
+    assert.ok(denied(run('cat a.md | tee OUTPUT/t/testcases/batch_02.md')));
+    assert.ok(denied(run('cp /tmp/x.md OUTPUT/t/06_coverage_review.md')));
+    assert.ok(denied(run('mv /tmp/05_test_case_spec.md OUTPUT/t/')));
+    assert.ok(denied(run('cd OUTPUT/t && printf x >> 04_test_idea_report.md')));
+    assert.ok(denied(run(`node -e "require('fs').writeFileSync('OUTPUT/t/03_vp.md','x')"`)));
+    assert.ok(denied(run('npm run testcases:merge t')));
+    assert.ok(denied(run('node qa-system/tools/testcase/export-testcases.js t')));
+    assert.ok(!denied(run('cat OUTPUT/t/05_test_case_spec.md 2>/dev/null')));
+    assert.ok(!denied(run('npm run gate t')));
+    assert.ok(!denied(run('echo x > OUTPUT/t/02_missing_rule_report.md')));
+  } finally { t.cleanup(); }
+});
+
+test('hook allows everything once the gate is open', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02());
+    assert.ok(!denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: `${PATHS.OUTPUT}/t/05_test_case_spec.md` } })));
+    assert.ok(!denied(hook.decide({ tool_name: 'Bash', tool_input: { command: 'npm run testcases:merge t' }, cwd: PATHS.ROOT })));
+  } finally { t.cleanup(); }
 });

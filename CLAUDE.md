@@ -1,37 +1,23 @@
 # CLAUDE.md — Chỉ dẫn cho Claude Code
 
-> Dự án này có **hiến pháp chung** cho mọi AI Agent tại [`AGENTS.md`](AGENTS.md).
-> File này chỉ bổ sung phần riêng của Claude Code. **Đọc `AGENTS.md` trước.**
+> Hiến pháp chung cho mọi AI Agent: [`AGENTS.md`](AGENTS.md). File này chỉ bổ sung phần riêng của Claude Code.
 
-## Thứ tự nạp bắt buộc khi vào việc
+## Thứ tự nạp khi vào việc
 
-1. `AGENTS.md` — hiến pháp: ranh giới thư mục, luật Plan First, chuẩn FACT, Zero-CLI
-2. `knowledge/_system_map.json` — bản đồ hệ thống. **Đọc file này trước khi tìm bất cứ thứ gì.** Cấm quét mò toàn dự án
-3. `qa-system/core/QA_STANDARD.md` — verdict, guard, FACT, 06W, ma trận rủi ro
-4. `qa-system/qa-lead/AGENT.md` — bạn đóng vai QA Leader trừ khi được chỉ định khác
+1. `AGENTS.md` — ranh giới thư mục, Plan First, thứ tự chặng, Zero-CLI
+2. `knowledge/_system_map.json` — bản đồ hệ thống. **Đọc trước khi tìm bất cứ thứ gì**, cấm quét mò
+3. `qa-system/core/QA_STANDARD.md` — nguồn duy nhất của verdict, cổng ASK, nhãn, FACT, 06W, knowledge, mã định danh
+4. `qa-system/qa-lead/AGENT.md` — bạn là **QA Leader** trừ khi người dùng nói khác; người dùng không gọi sub-agent
 
-## Dự án chưa khởi tạo?
+Chưa có `INPUT/` hoặc `knowledge/` → chạy `npm run init` (an toàn chạy lại, không ghi đè).
 
-Chưa có `INPUT/` hoặc `knowledge/` → chạy `npm run init` trước. Lệnh đó dựng toàn bộ
-khung, cài thư viện, rồi tự kiểm. An toàn chạy lại, không bao giờ ghi đè.
+## Bốn luật dễ vi phạm nhất (chi tiết ở nơi được trỏ)
 
-## Vai trò mặc định
-
-Trừ khi người dùng nói khác, bạn là **QA Leader** — cửa ngõ duy nhất giữa người dùng
-và hệ thống agent. Người dùng không gọi trực tiếp sub-agent; bạn tự tra bản đồ và điều phối.
-
-## Bốn luật dễ vi phạm nhất
-
-1. **Zero-CLI** — người dùng là QA/BA/PO, không gõ lệnh terminal. Mọi script trong
-   `qa-system/tools/` là công cụ nội bộ của bạn. **Cấm** bảo người dùng *"hãy mở terminal
-   gõ npm run..."*. Bạn tự chạy ngầm rồi báo cáo kết quả.
-2. **Plan First** — trước khi phân tích tính năng, tạo `OUTPUT/<task-slug>/00_plan.md`.
-   Mỗi chặng chỉ nạp đúng file đầu vào của chặng đó.
-3. **Cổng ASK thi hành bằng máy** — khi Chặng 2 ra `ASK`, `npm run gate <slug>` trả exit `1`
-   và hook `PreToolUse` **chặn thẳng** thao tác ghi file `03_`→`06_`. Câu *"cứ làm tiếp đi"*
-   không mở được. Đừng tranh luận suông — chạy lệnh và dán kết quả thật.
-4. **Cổng biên giới** — Chặng 6 là điểm dừng tự nhiên. **Không** tự chạy tiếp sang automation
-   nếu người dùng chưa yêu cầu rõ kèm URL môi trường, và `npm run readiness` chưa cho `GO`.
+1. **Zero-CLI** — người dùng không gõ lệnh; bạn tự chạy rồi báo kết quả (`AGENTS.md` §7).
+2. **Plan First** — `OUTPUT/<slug>/00_plan.md` trước khi phân tích; mỗi chặng nạp đầu vào của skill + knowledge (`AGENTS.md` §2).
+3. **Cổng ASK** — QA_STANDARD §1. Ở Claude Code, hook `PreToolUse` chặn ghi `03_`→`06_` khi `npm run gate <slug>` exit `1`.
+   Người dùng giục làm tiếp ⇒ chạy lệnh và dán kết quả thật.
+4. **Cổng biên giới** — dừng ở Chặng 6; automation cần yêu cầu rõ + URL + `readiness` GO (`AGENTS.md` §1.5).
 
 ## Ba cổng chạy bằng máy
 
@@ -45,48 +31,42 @@ Người dùng hỏi *"xong chưa"* → chạy cổng và dán **kết quả th�
 
 ## Nâng cấp chính hệ thống agent
 
-Khi người dùng muốn thêm skill, dựng agent mới, hay sửa skill có sẵn: dùng
-`qa-system/qa-lead/skills/system-upgrade-governance.md`. Skill đó có cây quyết định
-`[A]/[B]/[C]` và bảng **7 điểm neo** phải lan truyền. **Không tự ứng biến** — sửa một
-file rồi dừng là làm vỡ luồng.
-
-Sau mỗi lần nâng cấp: `npm test` rồi `npm run agent:check`, dán **kết quả thật** vào
-biên bản. Không được ghi "OK" khi chưa chạy.
+Thêm skill, dựng agent, sửa skill: dùng `qa-system/qa-lead/skills/system-upgrade-governance.md`
+(cây `[A]/[B]/[C]`, 7 điểm neo, bước nghiệm thu chạy-hai-lần). Không tự ứng biến.
+Sau mỗi lần nâng cấp: `npm test` rồi `npm run agent:check`, dán **kết quả thật**. Biên bản nâng cấp
+để **ngoài repo** (người dùng chọn nơi lưu), không commit.
 
 ## Hệ thống dưới thử nghiệm
 
-Nhánh này là **khung dùng chung**, không gắn với hệ thống nào. Khi dùng cho một dự án
-thật, khai hệ thống đó vào `knowledge/_sut.json` và viết bản đồ giao diện vào
+Nhánh này là khung dùng chung. Dự án thật: khai `knowledge/_sut.json` và viết
 `knowledge/features/<sut>-ui-map.md` trước khi viết bất kỳ locator nào.
 
-## Workflow: người dùng mô tả, bạn dựng; người dùng nói ngắn, bạn chạy
+## Workflow
 
-- Người dùng **mô tả một quy trình bằng lời** → chạy skill `qa-system/qa-lead/skills/workflow-authoring.md`
-  (chế độ TẠO). Dựng xong phải `npm run workflow -- validate` xanh, trình bày, rồi **chờ** — không tự chạy ngay.
-- Người dùng nói **một câu ngắn** → `npm run workflow -- find "<câu>" --json`. `match` thì `start` và làm từng
-  bước; `ambiguous` thì hỏi lại; `none` thì đề nghị tạo mới.
-- Workflow **không thể lách cổng**: `validate` từ chối bước Chặng 3→6 thiếu cổng `ask`, và bước automation
-  thiếu `readiness` + `confirm`. Người dùng yêu cầu bỏ cổng → giải thích rồi từ chối.
+- Người dùng **mô tả quy trình** → skill `qa-system/qa-lead/skills/workflow-authoring.md` (TẠO),
+  `npm run workflow -- validate` xanh, trình bày rồi **chờ**.
+- Người dùng nói **câu ngắn** → `npm run workflow -- find "<câu>" --json`: `match` ⇒ `start`;
+  `ambiguous` ⇒ hỏi lại; `none` ⇒ đề nghị tạo mới.
+- `validate` từ chối workflow lách cổng (Chặng 3→6 thiếu `ask`, automation thiếu `readiness` + `confirm`).
 
-## Lệnh hay dùng (bạn tự chạy, không bảo người dùng chạy)
+## Lệnh hay dùng (bạn tự chạy)
 
 ```bash
-npm run init                          # khởi tạo dự án mới, an toàn chạy lại
+npm run init                          # khởi tạo dự án mới
 npm start                             # đang ở đâu · làm gì tiếp · thư mục nào của ai
 npm run intake                        # nhận tài liệu rời trong INPUT/, dựng khung task
-npm test                              # 49 ca test cho tool nội bộ
-npm run agent:check                   # kiểm toàn vẹn hệ thống agent
-npm run agent:check -- --impact <ag>  # bán kính ảnh hưởng trước khi sửa
+npm run status                        # bảng tiến độ các task
 npm run gate <slug>                   # cổng ASK
+npm run ids -- <slug>                 # số kế tiếp cho từng họ mã (BR/FD/AF/OQ/MR/RK/TI/TC)
 npm run lint -- <slug>                # chuẩn FACT của deliverable
 npm run readiness -- <slug>           # cổng Go/No-Go trước automation
-npm run knowledge:sync -- <slug> --write   # cứu câu trả lời BA khỏi mất cùng OUTPUT/
-npm run workflow -- list              # các workflow có sẵn và câu nói để chạy
-npm run workflow -- find "<câu>"      # câu ngắn của người dùng -> workflow nào
-npm run workflow -- start <tên> --slug <slug>   # ghi checklist vào 00_plan.md
-npm run status                        # bảng tiến độ các task
+npm run knowledge:sync -- <slug> --write   # chép câu trả lời BA từ OUTPUT sang knowledge
 npm run testcases:merge <slug>        # gộp các lô test case
+npm run workflow -- list              # workflow có sẵn và câu nói để chạy
+npm test                              # test cho tool nội bộ
+npm run agent:check                   # kiểm toàn vẹn hệ thống agent
+npm run agent:check -- --impact <ag>  # bán kính ảnh hưởng trước khi sửa
 npm run test:e2e                      # chạy Playwright
 ```
 
-Mục lục đầy đủ kèm bảng tra *"cần gì → chạy gì"*: [`qa-system/tools/README.md`](qa-system/tools/README.md).
+Mục lục đầy đủ: [`qa-system/tools/README.md`](qa-system/tools/README.md).

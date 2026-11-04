@@ -1,26 +1,35 @@
 #!/usr/bin/env node
 /**
- * gate.js — The ASK gate: blocks stages 03-06 while the feature spec still has
- * unanswered questions.
+ * gate.js — The ASK gate (QA_STANDARD §1): blocks stages 03-06 while any
+ * question is unsettled. Fail-closed: whatever cannot be read keeps it shut.
  *
- *   evaluate(slug)  Gate state: blocked, reasons, pending questions, advisories.
- *   audit(slug)     Deliverables written after the lock timestamp (bypass detection).
- *   LOCKED_DELIVERABLES  Files the gate protects.
+ *   evaluate(slug)     Gate state: blocked, reasons, pending questions, advisories.
+ *   audit(slug)        Locked deliverables written while the gate was closed.
+ *   isLockedPath(rel)  Is a path inside OUTPUT/<slug>/ a stage 03-06 deliverable?
+ *   writeLock(state)   Sync `_gate.lock` and append to the `_gate.log` evidence trail.
  *
- * AGENTS.md §1.6 states this rule in prose, but prose is only a probability — a
- * model can still be talked past it. This turns the rule into a machine-checkable
- * condition. Layer 2 (the PreToolUse hook) and layer 3 (`audit`) build on it.
+ * Rules (QA_STANDARD §1, §9.3-§9.5):
+ *   - 02 missing ⇒ closed. 02 meta line unreadable ⇒ closed. 02 verdict FIX ⇒ closed.
+ *   - A question is settled only by: status Confirmed with a non-empty
+ *     "Phản hồi chính thức", status Rejected, or a §8 decision with approver + date.
+ *   - Every row of knowledge §7 counts (any ID family), and every MR of 02 §3
+ *     must be settled IN KNOWLEDGE, matched by ID *and* question text — an old
+ *     run's MR-04 with different wording does not settle today's MR-04.
+ *   - 02 says ASK but every one of its MRs is settled in knowledge ⇒ open
+ *     (stale verdict), with an advisory.
  *
  * Usage:
  *   gate.js check [slug] [--json]   Exit 0 = open, 1 = closed
- *   gate.js audit [slug]            Exit 2 when a bypass is detected
+ *   gate.js audit [slug]            Exit 2 when a bypass is detected (read-only)
  *   gate.js explain [slug]          List the pending questions
  */
 
 const fs = require('fs');
 const path = require('path');
-const { PATHS, taskDir, featureKnowledge, listTaskSlugs } = require('../lib/paths');
+const { PATHS, taskDir, listTaskSlugs } = require('../lib/paths');
+const S = require('../lib/schema');
 
+/** Kept for callers that list the stage files; `isLockedPath` is the real rule. */
 const LOCKED_DELIVERABLES = [
   '03_viewpoint_report.md',
   '04_test_idea_report.md',
@@ -29,167 +38,158 @@ const LOCKED_DELIVERABLES = [
   '06_coverage_review.md',
 ];
 
-/** Any other status — including blank and `TREO` — keeps the gate closed. */
-const RESOLVED_STATES = new Set(['confirmed', 'rejected']);
-
+/** Any stage 03-06 file name (case-insensitive: macOS does not distinguish). */
+const LOCKED_NAME = /^0[3-6][a-z]?_/i;
 const LOCK_FILE = '_gate.lock';
+const LOG_FILE = '_gate.log';
 
-// ───────────────────────────── Parsing ─────────────────────────────
+const STALE_NOTE =
+  'Mọi MR của 02 đã chốt trong knowledge — sửa dòng meta của 02 thành Verdict: PASS (không cần chạy lại Chặng 2). ' +
+  'Chạy lại Chặng 01 để nâng MR đã chốt thành BR và cập nhật §9.';
 
-/** Markdown table rows as cell arrays, minus the header separator. */
-function tableRows(section) {
-  const rows = [];
-  for (const line of section.split('\n')) {
-    const t = line.trim();
-    if (!t.startsWith('|')) continue;
-    if (/^\|[\s:|-]+\|$/.test(t)) continue;
-    rows.push(t.split('|').slice(1, -1).map((c) => c.trim()));
-  }
-  return rows;
-}
-
-/**
- * Body of a `## N. ...` section.
- *
- * Split on headings rather than one lookahead regex: the last section has no
- * heading after it, so a lookahead silently returns empty — and section 8
- * (confirmed assumptions), one of the two unlock paths, usually sits last.
- */
-function section(content, num) {
-  const lines = content.split('\n');
-  const head = new RegExp(`^##\\s*${num}\\.`);
-  const anyHead = /^##\s/;
-
-  const start = lines.findIndex((l) => head.test(l));
-  if (start === -1) return '';
-
-  const rest = lines.slice(start + 1);
-  const end = rest.findIndex((l) => anyHead.test(l));
-  return (end === -1 ? rest : rest.slice(0, end)).join('\n');
-}
-
-/** Reads sections 7 (open questions) and 8 (confirmed assumptions). */
-function readOpenQuestions(slug) {
-  const kPath = featureKnowledge(slug);
-  if (!fs.existsSync(kPath)) {
-    return { exists: false, path: kPath, pending: [], resolved: [] };
-  }
-
-  const content = fs.readFileSync(kPath, 'utf-8');
-
-  // Section 8: any code with a recorded decision counts as unlocked.
-  const decided = new Set();
-  for (const cells of tableRows(section(content, 8))) {
-    const code = (cells[1] || '').replace(/`/g, '').trim();
-    const decision = (cells[3] || '').trim();
-    if (/^(MR|BR)-\w+/i.test(code) && decision && !/^[-–—]?$/.test(decision)) {
-      decided.add(code.toUpperCase());
-    }
-  }
-
-  const pending = [];
-  const resolved = [];
-  for (const cells of tableRows(section(content, 7))) {
-    const id = (cells[0] || '').replace(/`/g, '').trim();
-    if (!/^MR-\w+/i.test(id)) continue;
-
-    const question = cells[5] || '(no question recorded)';
-    const answer = (cells[6] || '').trim();
-    const state = (cells[7] || '').trim().toLowerCase();
-
-    const isResolved =
-      RESOLVED_STATES.has(state) ||
-      decided.has(id.toUpperCase()) ||
-      (answer && !/^[-–—]?$/.test(answer));
-
-    (isResolved ? resolved : pending).push({
-      id: id.toUpperCase(),
-      question,
-      risk: cells[3] || '',
-      state: cells[7] || '(blank)',
-    });
-  }
-
-  return { exists: true, path: kPath, pending, resolved };
-}
-
-function verdictAsk(slug) {
-  const p = path.join(taskDir(slug), '02_missing_rule_report.md');
-  if (!fs.existsSync(p)) return { exists: false, ask: false, path: p };
-  const c = fs.readFileSync(p, 'utf-8');
-  return { exists: true, ask: /Verdict:\s*ASK/i.test(c) || /\|\s*ASK\s*\|/.test(c), path: p };
+/** `rel` is relative to OUTPUT/<slug>/. Stage 03-06 files, plus anything under testcases/. */
+function isLockedPath(rel) {
+  const parts = String(rel).split(/[\\/]+/).filter(Boolean);
+  if (parts.length === 0) return false;
+  if (parts[0].toLowerCase() === 'testcases' && parts.length > 1) return true;
+  return parts.length === 1 && LOCKED_NAME.test(parts[0]);
 }
 
 // ───────────────────────────── Evaluation ─────────────────────────────
 
 function evaluate(slug) {
-  const questions = readOpenQuestions(slug);
-  const verdict = verdictAsk(slug);
+  const rel = (p) => path.relative(PATHS.ROOT, p);
+  const k = S.readKnowledge(slug);
+  const p02 = path.join(taskDir(slug), '02_missing_rule_report.md');
+  const has02 = fs.existsSync(p02);
+  const text02 = has02 ? fs.readFileSync(p02, 'utf-8') : null;
+  const verdict = has02 ? S.readVerdict(text02) : null;
 
   const reasons = [];
-  if (verdict.ask) {
-    reasons.push(`Stage 2 returned \`Verdict: ASK\` in ${path.relative(PATHS.ROOT, verdict.path)}`);
+  const advisories = [];
+  const pending = [];
+  const seen = new Set();
+  const addPending = (q, source) => {
+    const key = `${q.id}|${S.questionKey(q.question)}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    pending.push({ id: q.id, question: q.question || '(no question recorded)', risk: q.w || '', state: q.statusRaw || '(blank)', source });
+  };
+
+  // 1. Every row of knowledge §7, whatever its ID family (Q-01, OQ-01, MR-01 …).
+  let resolvedCount = 0;
+  for (const q of k.questions) {
+    if (S.resolvedInKnowledge(q, k)) resolvedCount++;
+    else addPending(q, 'knowledge §7');
   }
-  if (questions.pending.length > 0) {
+
+  // 2. Every MR of 02 must be settled in knowledge.
+  const mr02 = has02 ? S.read02Questions(text02) : [];
+  const unsettled02 = mr02.filter((q) => !S.resolvedInKnowledge(q, k));
+  for (const q of unsettled02) {
+    const inK = k.questions.some((r) => S.sameQuestion(r, q));
+    addPending({ ...q, statusRaw: inK ? q.statusRaw : `${q.statusRaw || 'New'} — not in knowledge` }, '02 §3');
+  }
+  const answeredOnlyIn02 = unsettled02.filter((q) => q.resolved);
+
+  let phase = 'stage-2-done';
+  if (!has02) {
+    phase = 'pre-stage-2';
+    reasons.push(`${rel(p02)} does not exist — stage 2 must run before stages 3-6 (fail-closed)`);
+  } else if (!verdict) {
+    reasons.push(`Cannot read the verdict of ${rel(p02)}: line 2 must be "Owner: … · Verdict: PASS|FIX|ASK" (QA_STANDARD §7, fail-closed)`);
+  } else if (verdict === 'FIX') {
+    reasons.push(`Stage 2 returned \`Verdict: FIX\` in ${rel(p02)} — fix and re-run stage 2 first`);
+  } else if (verdict === 'ASK') {
+    if (mr02.length > 0 && unsettled02.length === 0 && pending.length === 0) {
+      advisories.push(STALE_NOTE);
+    } else {
+      reasons.push(`Stage 2 returned \`Verdict: ASK\` in ${rel(p02)}`);
+    }
+  }
+
+  // Template slots (`<số ngày>`) in an answer or decision are not an answer.
+  const notConcrete = [
+    ...k.questions.filter((q) => q.placeholder).map((q) => q.id),
+    ...k.decisions.filter((d) => d.placeholder).flatMap((d) => d.related),
+  ];
+  if (notConcrete.length) {
+    advisories.push(`${[...new Set(notConcrete)].join(', ')}: ${S.NOT_CONCRETE_HINT}`);
+  }
+
+  if (pending.length) {
+    reasons.push(`${pending.length} question(s) unsettled in ${rel(k.path)} (${pending.map((q) => q.id).join(', ')})`);
+  }
+  if (answeredOnlyIn02.length) {
     reasons.push(
-      `${questions.pending.length} question(s) in section 7 have no official answer ` +
-        `(${questions.pending.map((q) => q.id).join(', ')})`
+      `${answeredOnlyIn02.map((q) => q.id).join(', ')} answered only in ${rel(p02)} — OUTPUT/ is disposable; ` +
+        `record them in knowledge (npm run knowledge:sync -- ${slug} --write)`
     );
   }
-  if (verdict.ask && !questions.exists) {
-    reasons.push(`No knowledge file at ${path.relative(PATHS.ROOT, questions.path)} to record answers in`);
+  if (!k.exists && (mr02.length || (verdict && verdict !== 'PASS'))) {
+    reasons.push(`No knowledge file at ${rel(k.path)} to record answers in`);
   }
 
-  // Advisory, never blocking. QA_STANDARD §8: OUTPUT/ is disposable, knowledge/
-  // is what accumulates. Answers left only in the stage-2 report are lost on the
-  // next run, so the BA gets asked the same questions again.
-  const advisories = [];
-  if (verdict.exists && !verdict.ask) {
-    const text = fs.readFileSync(verdict.path, 'utf-8');
-    const mrInReport = [...new Set(text.match(/\bMR-\d+\b/g) || [])].map((s) => s.toUpperCase());
-    const recorded = new Set([...questions.pending, ...questions.resolved].map((q) => q.id));
-    const unrecorded = mrInReport.filter((id) => !recorded.has(id));
-
-    if (unrecorded.length) {
-      advisories.push(
-        `${unrecorded.length} gap(s) (${unrecorded.join(', ')}) were settled in stage 2 but are ` +
-          `NOT recorded in ${path.relative(PATHS.ROOT, questions.path)}. ` +
-          `OUTPUT/ is disposable — the next run will ask the BA these same questions again.`
-      );
+  // Advisory: MR codes mentioned in 02 outside its question table and absent from knowledge.
+  if (has02) {
+    const known = new Set([...k.questions.map((q) => q.id), ...mr02.map((q) => q.id)]);
+    const stray = S.idsIn(text02, 'MR').filter((id) => !known.has(id));
+    if (stray.length) {
+      advisories.push(`${stray.join(', ')} appear in ${rel(p02)} but in neither its §3 question table nor ${rel(k.path)} — the gate cannot track them.`);
     }
   }
 
   return {
     slug,
+    phase,
+    verdict02: verdict,
     blocked: reasons.length > 0,
     reasons,
     advisories,
-    pending: questions.pending,
-    resolvedCount: questions.resolved.length,
-    knowledgePath: path.relative(PATHS.ROOT, questions.path),
+    pending,
+    resolvedCount,
+    knowledgePath: rel(k.path),
   };
 }
 
-/** Writes or removes `_gate.lock` to match the current state. */
+// ───────────────────────────── Lock & evidence ─────────────────────────────
+
+function readLog(dir) {
+  const p = path.join(dir, LOG_FILE);
+  if (!fs.existsSync(p)) return [];
+  return fs.readFileSync(p, 'utf-8').split('\n').filter(Boolean).map((l) => {
+    try { return JSON.parse(l); } catch { return null; }
+  }).filter(Boolean);
+}
+
+function appendLog(dir, entry) {
+  fs.appendFileSync(path.join(dir, LOG_FILE), JSON.stringify(entry) + '\n', 'utf-8');
+}
+
+/**
+ * Writes `_gate.lock` while closed and removes it when open. Every transition is
+ * appended to `_gate.log`, which is never rewritten — `audit` reads it, so
+ * opening the gate later does not erase evidence of a write made while closed.
+ */
 function writeLock(state) {
   const dir = taskDir(state.slug);
   if (!fs.existsSync(dir)) return null;
   const lockPath = path.join(dir, LOCK_FILE);
+  const log = readLog(dir);
+  const last = log[log.length - 1];
+  const now = new Date().toISOString();
 
   if (!state.blocked) {
+    if (last && last.event === 'locked') appendLog(dir, { event: 'unlocked', at: now });
     if (fs.existsSync(lockPath)) fs.unlinkSync(lockPath);
     return null;
   }
 
-  // Preserve the original lock time so `audit` keeps a stable reference point.
-  let lockedAt = new Date().toISOString();
+  let lockedAt = now;
   if (fs.existsSync(lockPath)) {
-    try {
-      lockedAt = JSON.parse(fs.readFileSync(lockPath, 'utf-8')).lockedAt || lockedAt;
-    } catch {
-      /* corrupt lock file: start a fresh timestamp */
-    }
+    try { lockedAt = JSON.parse(fs.readFileSync(lockPath, 'utf-8')).lockedAt || lockedAt; } catch { /* corrupt: fresh timestamp */ }
   }
+  if (!last || last.event !== 'locked') appendLog(dir, { event: 'locked', at: lockedAt, reasons: state.reasons });
 
   fs.writeFileSync(
     lockPath,
@@ -197,13 +197,13 @@ function writeLock(state) {
       {
         slug: state.slug,
         lockedAt,
-        updatedAt: new Date().toISOString(),
+        updatedAt: now,
         reasons: state.reasons,
         pending: state.pending,
-        lockedDeliverables: LOCKED_DELIVERABLES,
+        locked: 'OUTPUT/<slug>/0[3-6]*_* and OUTPUT/<slug>/testcases/**',
         unlock:
-          'Answer in section 7 (fill "Phản hồi chính thức", set status to Confirmed) ' +
-          'OR record an explicit business decision in section 8 of ' + state.knowledgePath,
+          'Answer in knowledge §7 ("Phản hồi chính thức" filled, status Confirmed/Rejected) ' +
+          'OR record a decision with approver + date in §8 of ' + state.knowledgePath,
       },
       null,
       2
@@ -213,29 +213,55 @@ function writeLock(state) {
   return lockPath;
 }
 
-/** Layer 3: deliverables whose mtime is at or after the lock timestamp. */
+/** Every locked file under the task dir, relative to it. */
+function lockedFiles(dir) {
+  const out = [];
+  const walk = (d, relBase) => {
+    if (!fs.existsSync(d)) return;
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const rel = relBase ? `${relBase}/${e.name}` : e.name;
+      if (e.isDirectory()) { if (e.name.toLowerCase() === 'testcases') walk(path.join(d, e.name), rel); continue; }
+      if (isLockedPath(rel)) out.push(rel);
+    }
+  };
+  walk(dir, '');
+  return out;
+}
+
+/**
+ * Layer 3, read-only: locked files whose mtime falls inside a locked interval
+ * recorded in `_gate.log` (or the current `_gate.lock` when there is no log).
+ * Never deletes the lock or the log.
+ */
 function audit(slug) {
   const dir = taskDir(slug);
   const lockPath = path.join(dir, LOCK_FILE);
-  if (!fs.existsSync(lockPath)) return { violations: [], hadLock: false };
-
-  let lockedAt;
-  try {
-    lockedAt = new Date(JSON.parse(fs.readFileSync(lockPath, 'utf-8')).lockedAt);
-  } catch {
-    return { violations: [], hadLock: true, corrupt: true };
+  const intervals = [];
+  let open = null;
+  for (const e of readLog(dir)) {
+    if (e.event === 'locked' && !open) open = new Date(e.at);
+    else if (e.event === 'unlocked' && open) { intervals.push([open, new Date(e.at)]); open = null; }
   }
+  if (open) intervals.push([open, null]);
+
+  let corrupt = false;
+  const hadLock = fs.existsSync(lockPath);
+  if (hadLock) {
+    try {
+      const at = new Date(JSON.parse(fs.readFileSync(lockPath, 'utf-8')).lockedAt);
+      if (isNaN(at)) throw new Error('bad date');
+      if (!intervals.some(([s, e]) => e === null && s <= at)) intervals.push([at, null]);
+    } catch { corrupt = true; }
+  }
+  if (intervals.length === 0) return { violations: [], hadLock, corrupt };
 
   const violations = [];
-  for (const name of LOCKED_DELIVERABLES) {
-    const p = path.join(dir, name);
-    if (!fs.existsSync(p)) continue;
-    const mtime = fs.statSync(p).mtime;
-    if (mtime >= lockedAt) {
-      violations.push({ file: name, createdAt: mtime.toISOString() });
-    }
+  for (const rel of lockedFiles(dir)) {
+    const mtime = fs.statSync(path.join(dir, rel)).mtime;
+    const hit = intervals.find(([s, e]) => mtime >= s && (e === null || mtime <= e));
+    if (hit) violations.push({ file: rel, createdAt: mtime.toISOString(), lockedAt: hit[0].toISOString() });
   }
-  return { violations, hadLock: true, lockedAt: lockedAt.toISOString() };
+  return { violations, hadLock: true, corrupt, lockedAt: intervals[intervals.length - 1][0].toISOString() };
 }
 
 // ───────────────────────────── Output ─────────────────────────────
@@ -249,7 +275,7 @@ function printState(state, lockPath) {
   if (!state.blocked) {
     console.log('  OPEN — stages 3 to 6 may run.');
     if (state.resolvedCount) console.log(`  ${state.resolvedCount} question(s) settled.`);
-    state.advisories.forEach((a) => console.log(`\n  WARNING, knowledge at risk: ${a}`));
+    state.advisories.forEach((a) => console.log(`\n  NOTE: ${a}`));
     console.log(`${line}\n`);
     return;
   }
@@ -260,20 +286,16 @@ function printState(state, lockPath) {
 
   if (state.pending.length) {
     console.log('\n  Pending questions:');
-    for (const q of state.pending) {
-      console.log(`    - [${q.id}] (risk ${q.risk || 'n/a'}) ${q.question}`);
-    }
+    for (const q of state.pending) console.log(`    - [${q.id}] (${q.state}) ${q.question}`);
   }
+  state.advisories.forEach((a) => console.log(`\n  NOTE: ${a}`));
 
-  state.advisories.forEach((a) => console.log(`\n  WARNING, knowledge at risk: ${a}`));
-
-  console.log('\n  To unlock, do ONE of:');
-  console.log('    (1) BA/PO answers -> record it in section 7 under "Phản hồi chính thức",');
-  console.log('        set status to Confirmed.');
-  console.log('    (2) Record an explicit business decision in section 8.');
+  console.log('\n  To unlock, for EACH question do one of:');
+  console.log('    (1) BA/PO answers -> knowledge §7: fill "Phản hồi chính thức", "Người trả lời",');
+  console.log('        "Ngày", set status Confirmed (or Rejected).');
+  console.log('    (2) A decision in knowledge §8 with "Người phê duyệt" and "Ngày chốt".');
   console.log(`    File: ${state.knowledgePath}`);
   console.log('\n  Telling the agent to "just continue" does NOT open this gate.');
-  console.log('  Test cases built on unsettled rules are hallucinations.');
   if (lockPath) console.log(`\n  Lock: ${path.relative(PATHS.ROOT, lockPath)}`);
   console.log(`${line}\n`);
 }
@@ -292,8 +314,9 @@ function resolveSlugs(arg) {
 
 function main() {
   const args = process.argv.slice(2);
-  const cmd = args[0] && !args[0].startsWith('--') ? args[0] : 'check';
-  const slugArg = args.find((a, i) => i > 0 && !a.startsWith('--'));
+  const cmd = args[0] && !args[0].startsWith('--') && ['check', 'audit', 'explain'].includes(args[0]) ? args[0] : 'check';
+  const rest = args[0] === cmd ? args.slice(1) : args;
+  const slugArg = rest.find((a) => !a.startsWith('--'));
   const asJson = args.includes('--json');
 
   const slugs = resolveSlugs(slugArg);
@@ -302,26 +325,27 @@ function main() {
 
   for (const slug of slugs) {
     const state = evaluate(slug);
-    const lockPath = writeLock(state);
 
     if (cmd === 'audit') {
+      // Read-only: auditing must never move or remove the evidence it audits.
       const a = audit(slug);
       payload.push({ ...state, audit: a });
       if (!asJson) {
         if (a.violations.length) {
           console.log(`\nBYPASS DETECTED [${slug}] — ${a.violations.length} file(s) written while locked:`);
-          a.violations.forEach((v) => console.log(`   - ${v.file}  (written ${v.createdAt}, locked since ${a.lockedAt})`));
+          a.violations.forEach((v) => console.log(`   - ${v.file}  (written ${v.createdAt}, locked since ${v.lockedAt})`));
           console.log('   These rest on unsettled rules. Review or regenerate them once the gate opens.');
         } else if (a.hadLock) {
-          console.log(`[${slug}] Locked, and no deliverable was written past the lock.`);
+          console.log(`[${slug}] Lock history found, and no deliverable was written while locked.`);
         } else {
-          console.log(`[${slug}] No active lock.`);
+          console.log(`[${slug}] No lock history.`);
         }
       }
       if (a.violations.length) worstExit = Math.max(worstExit, 2);
       continue;
     }
 
+    const lockPath = writeLock(state);
     payload.push(state);
     if (!asJson) printState(state, lockPath);
     if (state.blocked) worstExit = Math.max(worstExit, 1);
@@ -333,4 +357,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { evaluate, audit, LOCKED_DELIVERABLES };
+module.exports = { STALE_NOTE, evaluate, audit, writeLock, isLockedPath, LOCKED_DELIVERABLES, LOCK_FILE, LOG_FILE };

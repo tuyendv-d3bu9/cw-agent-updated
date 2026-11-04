@@ -48,11 +48,12 @@ Công cụ đo đọc các deliverable sau. Skill đọc lại **chỉ khi cần
 | Nguồn | Dùng để làm gì |
 |---|---|
 | `OUTPUT/<slug>/15_readiness_metrics.json` | **Nguồn số liệu duy nhất.** Mọi con số trong báo cáo lấy từ đây. |
-| `OUTPUT/<slug>/01_requirement_risk_summary.md` | Danh sách `BR-xx` và ma trận rủi ro — trích dẫn khi giải thích rule chưa phủ. |
+| `OUTPUT/<slug>/01_requirement_risk_summary.md` | `BR`/`FD`/`AF` và rủi ro `RK` — trích dẫn khi giải thích mục chưa phủ. |
 | `OUTPUT/<slug>/02_missing_rule_report.md` | Kẽ hở `MR-xx`, Verdict Chặng 2 — trích nguyên văn câu hỏi còn treo. |
 | `OUTPUT/<slug>/03_viewpoint_report.md` | Risk area và `VP-xx` — giải thích vì sao một viewpoint chưa có test case. |
+| `OUTPUT/<slug>/04_test_idea_report.md` | TI `Giữ` / `Chờ MR` — giải thích idea chưa thành test case. |
 | `OUTPUT/<slug>/05_test_case_spec.md` *(hoặc `testcases/batch_*.md`)* | Test case 8 trường — trích `TC_ID` cụ thể khi cần nêu ví dụ. |
-| `OUTPUT/<slug>/06_coverage_review.md` | Verdict rà soát độ phủ 3 góc nhìn. |
+| `OUTPUT/<slug>/06_coverage_review.md` | Verdict và ma trận độ phủ Chặng 6 (`CHƯA COVER`, `FIX:`/`ASK:`). |
 | `OUTPUT/<slug>/12_data_validation_traceability.md` *(nếu có)* | Vấn đề dữ liệu tồn đọng — **giữ nguyên văn**, không tự sửa. |
 | `knowledge/features/<slug>.md` | Trạng thái rule đã xác nhận (Mục 3), câu hỏi treo (Mục 7), giả định đã chốt (Mục 8). |
 
@@ -104,7 +105,8 @@ Ghi ra `OUTPUT/<task-slug>/15_readiness_report.md`:
 
 ````markdown
 # Báo Cáo Độ Sẵn Sàng Kiểm Thử · <task-slug>
-Owner: qa-readiness-evaluator/gen-readiness-report · Nguồn: 15_readiness_metrics.json · Verdict: <GO | CONDITIONAL GO | NO-GO>
+Owner: qa-system/qa-readiness-evaluator/skills/gen-readiness-report.md · Nguồn: 15_readiness_metrics.json · Verdict: PASS
+Khuyến nghị: <GO | CONDITIONAL GO | NO-GO>
 
 ## 1. Tổng quan
 - **Phạm vi**: <tóm tắt tính năng đang đánh giá>
@@ -171,7 +173,7 @@ Owner: qa-readiness-evaluator/gen-readiness-report · Nguồn: 15_readiness_metr
 - [ ] Đã chạy `npm run readiness -- <slug> --write` **trước khi** viết báo cáo.
 - [ ] File xuất đúng `OUTPUT/<task-slug>/15_readiness_report.md` (theo task, không ghi đè task khác).
 - [ ] **Mọi con số** trong báo cáo đối chiếu ngược được 100% về `15_readiness_metrics.json`.
-- [ ] Verdict ghi ở dòng meta khớp đúng `recommendation.verdict` trong metrics.
+- [ ] Dòng meta đúng QA_STANDARD §7 (`Verdict: PASS` khi báo cáo khớp metrics; `FIX` khi còn số lệch). Dòng 3 `Khuyến nghị:` khớp đúng `recommendation.verdict` trong metrics.
 - [ ] Mỗi `VP-xx` / `BR-xx` chưa phủ đều được giải thích **hở rủi ro gì**, không chỉ liệt kê mã.
 - [ ] Vấn đề dữ liệu giữ nguyên văn từ `12_`, không diễn đạt lại.
 - [ ] Báo cáo tuyệt đối không chứa dữ liệu execution (Pass/Fail rate, bug, thời lượng chạy).

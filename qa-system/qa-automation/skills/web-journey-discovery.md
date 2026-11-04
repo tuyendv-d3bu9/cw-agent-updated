@@ -16,8 +16,12 @@ Khám phá trực tiếp ứng dụng web đang chạy (Staging / Dev / Producti
 3. Đề xuất các selector / locator chuẩn nhất cho `qa-automation` đưa vào POM.
 
 ## Tham số
-- `url`: Địa chỉ trang web mục tiêu (ví dụ: `https://cwshopo.github.io` hoặc `http://localhost:3000`).
+- `url`: Địa chỉ trang web mục tiêu (người dùng cung cấp; không tự đoán).
 - `scope`: Hành trình cần khám phá (ví dụ: `checkout`, `cart`, `login`).
+
+## Đầu vào
+- `url` do người dùng đưa (không tự chọn môi trường) · `OUTPUT/<task-slug>/05_test_case_spec.md`
+- `knowledge/_project.md` · `knowledge/features/<task-slug>.md` (luôn nạp, QA_STANDARD §7)
 
 ## Các bước thực hiện
 1. **Khởi tạo & Điều hướng**:
@@ -33,11 +37,12 @@ Khám phá trực tiếp ứng dụng web đang chạy (Staging / Dev / Producti
    - Ghi lại danh sách các locator bền vững kèm ảnh chụp màn hình hiện trạng trang.
 
 ## Format output
-Ghi ra `OUTPUT/<task-slug>/07_web_journey_discovery.md` (kèm file Gherkin riêng `OUTPUT/<task-slug>/exploratory/journeys.feature` nếu cần import vào Jira Xray/Zephyr):
+Ghi ra `OUTPUT/<task-slug>/G1_web_journey_discovery.md` (kèm file Gherkin riêng `OUTPUT/<task-slug>/exploratory/journeys.feature` nếu cần import vào Jira Xray/Zephyr):
 
 ```markdown
 # WEB JOURNEY DISCOVERY & GHERKIN SPEC — [TÊN ỨNG DỤNG / DOMAIN]
-URL khảo sát: [URL] · Thời gian: YYYY-MM-DD · Người thực hiện: qa-automation
+Owner: qa-automation/web-journey-discovery · Nguồn: [URL], 05_test_case_spec.md · Verdict: PASS
+URL khảo sát: [URL] · Thời gian: YYYY-MM-DD
 
 ## 1. Kịch Bản Gherkin BDD (Chuẩn Hóa Từ Thực Tế Khám Phá)
 
@@ -65,9 +70,9 @@ Feature: [Tên tính năng được khám phá trên web]
 ## 2. Bản Đồ Ánh Xạ Step Gherkin ➔ Locator Khuyến Nghị Cho POM
 | Step Gherkin | Tên phần tử | Action | Recommended Locator (Playwright) | Ghi chú |
 |---|---|---|---|---|
-| When Nhập mã voucher "GIAM50K" | Input Voucher | fill | `page.getByPlaceholder('Nhập mã voucher')` hoặc `#input-voucher` | Ổn định |
-| And Bấm nút "Áp dụng" | Nút Áp dụng | click | `page.getByRole('button', { name: 'Áp dụng' })` | Accessible |
-| Then Tổng tiền giảm còn "300.000đ" | Nhãn Tổng tiền | text | `page.locator('#order-total')` | Cần chờ update |
+| When Nhập `<field>` "<giá trị từ Test Data>" | `<field>` | fill | `page.getByLabel('<nhãn thật trên trang>')` | Lấy từ DOM snapshot |
+| And Bấm nút "<nhãn nút thật>" | Nút `<tên>` | click | `page.getByRole('button', { name: '<nhãn nút thật>' })` | Accessible |
+| Then Hiển thị "<chữ từ Expected Result>" | Vùng thông báo | text | `page.getByTestId('<data-testid thật>')` | Chờ cập nhật |
 
 ## 3. Nhật Ký Hành Trình Khám Phá (Timeline)
 | Bước | URL | Thao tác thử nghiệm | Kết quả chuyển trang / Popup / Toast | Ảnh bằng chứng |

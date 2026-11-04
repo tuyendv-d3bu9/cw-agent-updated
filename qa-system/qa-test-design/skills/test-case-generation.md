@@ -1,106 +1,96 @@
 ---
 name: test-case-generation
 description: >
-  Mở rộng toàn bộ Test Idea "Giữ" thành Test Case hoàn chỉnh 8 trường chuẩn Jira Xray/TestRail.
-  Hỗ trợ Scale Detection và mô hình 3 giai đoạn (Blueprint JSON -> Chunked Batching -> Assembly Merge) cho quy mô lớn.
+  Mở rộng Test Idea "Giữ" thành Test Case 8 trường chuẩn Jira Xray/TestRail. Giá trị và kết quả
+  mong đợi chỉ lấy từ nguồn, thiếu thì gắn nhãn. Quy mô lớn chạy Blueprint → batch → merge.
 ---
 
 # Skill: test-case-generation
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT · chuỗi biên §6).
+> Tuân thủ `qa-system/core/QA_STANDARD.md` (cổng ASK §1 · guard §2 · nhãn §2.1 · FACT §3 · chuỗi biên §6 ·
+> knowledge §8 · ID §9 · nguồn §10 · Priority/Automated §11).
 
 ## Mục đích
-Expand toàn bộ Test Idea gắn nhãn "Giữ" thành Test Case hoàn chỉnh **8 trường**, sẵn sàng import
-trực tiếp vào Test Management Tool (Jira Xray, TestRail, Zephyr).
+Chi tiết hoá mỗi Test Idea `Giữ` thành một hoặc nhiều Test Case 8 trường, trace được về `TI`, rule và viewpoint.
 
 ## Đầu vào
-- `OUTPUT/<task-slug>/04_test_idea_report.md` — danh sách Test Idea "Giữ".
-- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — Business Rules để trace.
-- `OUTPUT/<task-slug>/03_viewpoint_report.md` — Viewpoint để trace.
+- `OUTPUT/<task-slug>/04_test_idea_report.md` — chỉ các dòng `Giữ`.
+- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `BR`, `FD` (ràng buộc, `Thông báo khi sai`), `AF`, `RK`.
+- `OUTPUT/<task-slug>/02_missing_rule_report.md` — `MR` và trạng thái.
+- `OUTPUT/<task-slug>/03_viewpoint_report.md` — `VP`, `RK`.
+- `knowledge/_project.md` (§1 mã `MODULE`, §2 định dạng ngày/tiền) · `knowledge/features/<feature-slug>.md` (§8 quyết định, §9 hằng số).
+
+> Trước khi ghi: `npm run gate <task-slug>` phải exit `0` (QA_STANDARD §1).
+> `_project.md` §1 chưa khai mã `MODULE` ⇒ hỏi người dùng, không tự đặt.
 
 ## KHÔNG được (riêng skill này)
-- Tạo test case ngoài phạm vi Test Idea "Giữ" hoặc rule hiện có (Scope Creep).
-- Tạo test case "mồ côi" — không trace về `BR-xx` và viewpoint cụ thể.
-- Dùng placeholder mơ hồ trong `Test Data` ("nhập chuỗi bất kỳ", "abc", "test data", "[email]").
-- Gộp nhiều thao tác vào một step.
+- Sinh test case cho idea `Bỏ` / `Chờ MR`, hoặc ngoài 04.
+- Tự chế giá trị Test Data, chữ thông báo, mã HTTP, trạng thái DB, ngưỡng.
+- Dùng placeholder mơ hồ ("chuỗi bất kỳ", "abc", "TBD", "[email]"). Thiếu giá trị ⇒ nhãn §2.1, không phải placeholder.
+- Gộp nhiều thao tác vào một step; quá 8 step.
+- Lấy `Phương án gợi ý` của 02 làm Expected.
 
-## Các bước thực hiện
+## Luật giá trị
+| Ô | Lấy từ | Không có trong nguồn |
+|---|---|---|
+| Test Data | `FD` (ràng buộc), knowledge §9, ví dụ trong `INPUT/`; điểm biên **tính** từ min/max có nguồn (§6) | `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` (hoặc không mã nếu chưa có MR) |
+| Chữ thông báo trong Expected | `FD` cột `Thông báo khi sai`, `AF` cột `Hệ thống phản hồi`, knowledge §8 — **nguyên văn** | `Hiển thị thông báo lỗi [CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` |
+| Mã HTTP / trạng thái DB | Chỉ khi `FD`/`AF` có nguồn `03_dev/` nói rõ | Không viết |
+| Priority | Ánh xạ cố định QA_STANDARD §11 từ Risk Level cao nhất của các `RK` có `Nguồn` chứa mã rule của TC | `Medium [ĐỀ XUẤT]` |
+| Automated/Manual | QA_STANDARD §11 | `Manual` |
+| Ngày | `YYYY-MM-DD` hoặc định dạng `_project.md` §2 | — |
 
-### 1. Phân loại theo quy mô (Scale Detection)
-- **Quy mô nhỏ (≤ 50 Test Cases)**: Thực hiện sinh trực tiếp 8 trường vào `05_test_case_spec.md`.
-- **Quy mô lớn (> 50 hoặc hàng trăm / hàng nghìn Test Cases)**: **BẮT BUỘC** áp dụng mô hình 3 giai đoạn: Blueprint JSON ➔ Chia Lô (Batching) ➔ Gộp (Merge).
-
-### 2. Chi tiết quy trình Quy mô lớn (> 50 Test Cases)
-
-#### Giai đoạn 5.1: Sinh Bản thiết kế khung (`05_test_blueprint.json`)
-Ghi danh mục toàn bộ Test Ideas đã duyệt vào `OUTPUT/<task-slug>/05_test_blueprint.json`:
-```json
-[
-  {
-    "tc_id": "VCHR-001",
-    "module": "VCHR",
-    "rule_id": "BR-01",
-    "viewpoint_id": "VP-01",
-    "purpose": "Verify áp mã voucher hết hạn tại trang thanh toán",
-    "priority": "High",
-    "batch": 1
-  }
-]
-```
-> *Tác dụng: Khung thiết kế JSON cực kỳ gọn nhẹ (~30 token/item), giúp định hình trọn vẹn 500 - 1.000 test case mà không bao giờ bị tràn token hoặc trùng lặp mã.*
-
-#### Giai đoạn 5.2: Chia lô sinh chi tiết (`Chunked Batching`)
-- Chia file Blueprint thành các lô (khuyến nghị **50 test cases / batch**).
-- Ghi mỗi lô vào thư mục: `OUTPUT/<task-slug>/testcases/batch_01.md`, `batch_02.md`...
-- Mỗi test case trong batch được expand đầy đủ **8 trường chuẩn**, không viết tắt, không placeholder.
-
-#### Giai đoạn 5.3: Gộp tổng thể (`Assembly`)
-- Kích hoạt công cụ nội bộ gộp các batch:
-  ```bash
-  npm run testcases:merge <task-slug>
-  ```
-
----
-
-## Định dạng 8 trường bắt buộc
+## 8 trường
 | Trường | Quy tắc |
 |---|---|
-| `TC_ID` | `[MODULE]-[001]` — vd `VCHR-001`, `PAY-012` |
-| `Title` | Bắt đầu bằng `Verify` / `Validate` / `Confirm` + hành động + điều kiện |
-| `Precondition` | Trạng thái hệ thống, dữ liệu nền, quyền hạn user trước khi bắt đầu |
-| `Test Steps` | Đánh số 1, 2, 3… · mỗi step đúng 01 thao tác · tối đa 8 steps |
-| `Test Data` | Giá trị tường minh, cụ thể — cấm placeholder |
-| `Expected Result` | Cụ thể, có tiêu chí đo lường để phân định Pass/Fail |
-| `Priority` | High / Medium / Low |
-| `Tags` | `Rule#[ID]`, `Viewpoint#[ID/Tên]`, `Module#[Tên]`, `[Automated/Manual]` |
+| `TC_ID` | `<MODULE>-NNN` (§9.1). Số kế tiếp từ `npm run ids -- <task-slug>`; TC đã có giữ mã |
+| `Title` | Bắt đầu `Verify` / `Validate` / `Confirm` + hành động + điều kiện |
+| `Precondition` | Trạng thái, dữ liệu nền, quyền — chỉ điều có trong nguồn |
+| `Test Steps` | Đánh số, mỗi step một thao tác, tối đa 8 |
+| `Test Data` | Theo luật giá trị |
+| `Expected Result` | Theo luật giá trị; tiêu chí Pass/Fail phân định được hoặc nhãn chỉ rõ phần còn thiếu |
+| `Priority` | `High` / `Medium` / `Low`, có thể kèm ` [ĐỀ XUẤT]` |
+| `Tags` | `Rule#` + mã `BR`/`FD`/`AF`/`MR` (một hoặc nhiều, vd `Rule#BR-01`) · `Viewpoint#VP-xx` (mọi VP ở cột VP của TI, mỗi VP một tag) · `TI#TI-xx` · `Module#<MODULE>` · `Manual` hoặc `[ĐỀ XUẤT] Automated` |
 
-## Format output (Mỗi Test Case)
+`Rule#MR-xx` chỉ dùng khi MR đó `Confirmed`/`Rejected` ở knowledge §7. Một idea `BVA` ⇒ một TC cho mỗi điểm
+của chuỗi biên có trong nguồn.
 
-```markdown
-### TC_ID: [MODULE]-[001]
-- **Title**: [Verify/Validate/Confirm] + [hành động] + [điều kiện]
+## Các bước
+1. Chạy `npm run gate <task-slug>`; exit `1` ⇒ dừng, dán kết quả.
+2. Đếm số TC dự kiến. **≤ 50** ⇒ viết thẳng `05_test_case_spec.md`. **> 50** ⇒ ba giai đoạn:
+   - **Blueprint** — `OUTPUT/<task-slug>/05_test_blueprint.json`, mỗi TC một dòng ngắn:
+     ```json
+     [{ "tc_id": "<MODULE>-001", "ti_id": "TI-01", "rule_id": "BR-01", "viewpoint_id": "VP-01", "purpose": "<một câu>", "priority": "High", "batch": 1 }]
+     ```
+   - **Batch** — mỗi lô khoảng 50 TC, ghi `OUTPUT/<task-slug>/testcases/batch_01.md`, `batch_02.md`… (2 chữ số).
+   - **Merge** — `npm run testcases:merge <task-slug>` gộp thành `05_test_case_spec.md`.
+3. Viết từng TC theo luật giá trị.
+4. Chạy `npm run lint -- <task-slug>`; exit `1` ⇒ sửa rồi chạy lại. Dán kết quả thật.
+
+## Format output
+`OUTPUT/<task-slug>/05_test_case_spec.md` (và mỗi `testcases/batch_NN.md`, cùng dòng 1–2):
+
+````markdown
+# Test Case Spec · <task-slug>
+Owner: qa-system/qa-test-design/skills/test-case-generation.md · Nguồn: 04_test_idea_report.md, 01_requirement_risk_summary.md, 03_viewpoint_report.md, knowledge/features/<feature-slug>.md · Verdict: PASS
+
+### TC_ID: <MODULE>-001
+- **Title**: Verify <hành động> khi <điều kiện>
 - **Precondition**:
-  - [trạng thái hệ thống / dữ liệu nền / quyền hạn]
+  - <điều kiện có nguồn>
 - **Test Steps**:
-  1. [hành động 1]
-  2. [hành động 2]
+  1. <thao tác 1>
+  2. <thao tác 2>
 - **Test Data**:
-  - [Tên trường]: [giá trị cụ thể]
+  - <field FD-xx>: <giá trị từ nguồn, hoặc [CHƯA CÓ TRONG TÀI LIỆU – MR-xx]>
 - **Expected Result**:
-  - [trạng thái UI / thông báo / thay đổi DB / mã phản hồi]
-- **Priority**: [High/Medium/Low]
-- **Tags**: Rule#[ID], Viewpoint#[ID/Tên], Module#[Tên], [Automated/Manual]
-```
+  - <kết quả; chữ thông báo nguyên văn hoặc [CHƯA CÓ TRONG TÀI LIỆU – MR-xx]>
+- **Priority**: High
+- **Tags**: Rule#BR-01, Viewpoint#VP-01, TI#TI-01, Module#<MODULE>, Manual
+````
 
 ## Chốt chặn nghiệm thu (Quality Gates)
-
-> **Bước bắt buộc trước khi báo hoàn thành**: chạy `npm run lint -- <task-slug>`.
-> Exit code `1` ⇒ CHƯA xong, phải sửa hết lỗi rồi chạy lại. Checklist dưới đây được
-> linter kiểm bằng máy — không tự đánh dấu `[x]` khi chưa chạy lệnh.
-
-- [ ] `npm run lint -- <slug>` trả exit `0`, và **kết quả thật** được dán vào báo cáo.
-- [ ] 100% Test Case có đủ 8 trường chuẩn, không trường nào bị bỏ trống.
-- [ ] Tiêu đề (Title) bắt đầu đúng quy chuẩn bằng `Verify` / `Validate` / `Confirm`.
-- [ ] Test Data mang giá trị cụ thể, sát nghiệp vụ, cấm dùng placeholder chung chung.
-- [ ] Tags bắt buộc trích dẫn mã Rule (`Rule#BR-xx`) và Viewpoint (`Viewpoint#VP-xx`).
-- [ ] Test Case file xuất ra tại `OUTPUT/<task-slug>/05_test_case_spec.md`.
+- [ ] `npm run gate <slug>` exit `0` trước khi ghi; `npm run lint -- <slug>` exit `0`, kết quả thật được dán.
+- [ ] Mọi TI `Giữ` có ít nhất một TC; không TC nào từ TI khác `Giữ`.
+- [ ] Mọi giá trị, chữ thông báo, mã phản hồi trích được về nguồn; chỗ thiếu mang nhãn §2.1.
+- [ ] Priority đúng ánh xạ §11; Tags đủ `Rule#`, `Viewpoint#`, `TI#`, `Module#`, Manual/Automated.

@@ -24,7 +24,7 @@ const targetImpact = impactIndex !== -1 ? args[impactIndex + 1] : null;
 // Dependency Graph between Deliverables and Skills
 const PIPELINE_DEPENDENCIES = {
   'digest': {
-    skill: 'agents/qa-analyst/skills/knowledge-digest.md',
+    skill: 'qa-system/qa-analyst/skills/knowledge-digest.md',
     produces: '00_knowledge_digest.md & knowledge_digest/batch_*.md',
     consumed_by: [
       { step: '01', name: 'qa-analyst/requirement-risk-summary', reason: 'Reads the digest instead of hundreds of raw documents, keeping its source column' },
@@ -32,7 +32,7 @@ const PIPELINE_DEPENDENCIES = {
     ]
   },
   '01': {
-    skill: 'agents/qa-analyst/skills/requirement-risk-summary.md',
+    skill: 'qa-system/qa-analyst/skills/requirement-risk-summary.md',
     produces: '01_requirement_risk_summary.md',
     consumed_by: [
       { step: '02', name: 'qa-analyst/missing-rule-06w', reason: 'Consumes Business Rules to scan for 06W gaps' },
@@ -44,7 +44,7 @@ const PIPELINE_DEPENDENCIES = {
     ]
   },
   '02': {
-    skill: 'agents/qa-analyst/skills/missing-rule-06w.md',
+    skill: 'qa-system/qa-analyst/skills/missing-rule-06w.md',
     produces: '02_missing_rule_report.md',
     consumed_by: [
       { step: '03', name: 'qa-analyst/viewpoint-selection', reason: 'Integrates 06W gaps into risk viewpoints' },
@@ -52,7 +52,7 @@ const PIPELINE_DEPENDENCIES = {
     ]
   },
   '03': {
-    skill: 'agents/qa-analyst/skills/viewpoint-selection.md',
+    skill: 'qa-system/qa-analyst/skills/viewpoint-selection.md',
     produces: '03_viewpoint_report.md',
     consumed_by: [
       { step: '04', name: 'qa-analyst/test-idea-design', reason: 'Allocates test ideas per viewpoint' },
@@ -62,14 +62,14 @@ const PIPELINE_DEPENDENCIES = {
     ]
   },
   '04': {
-    skill: 'agents/qa-analyst/skills/test-idea-design.md',
+    skill: 'qa-system/qa-analyst/skills/test-idea-design.md',
     produces: '04_test_idea_report.md',
     consumed_by: [
       { step: '05', name: 'qa-test-design/test-case-generation', reason: 'Expands kept test ideas into 8-field test case specifications' }
     ]
   },
   '05': {
-    skill: 'agents/qa-test-design/skills/test-case-generation.md',
+    skill: 'qa-system/qa-test-design/skills/test-case-generation.md',
     produces: '05_test_case_spec.md & 05_test_blueprint.json',
     consumed_by: [
       { step: '06', name: 'qa-test-design/coverage-review', reason: 'Reviews test case execution coverage' },
@@ -79,7 +79,7 @@ const PIPELINE_DEPENDENCIES = {
     ]
   },
   '09': {
-    skill: 'agents/qa-test-data/skills/data-class-map.md',
+    skill: 'qa-system/qa-test-data/skills/data-class-map.md',
     produces: '09_data_class_map.md',
     consumed_by: [
       { step: '10', name: 'qa-test-data/dataset-generation', reason: 'Uses field maps to generate realistic datasets' },
@@ -87,7 +87,7 @@ const PIPELINE_DEPENDENCIES = {
     ]
   },
   'readiness': {
-    skill: 'agents/qa-readiness-evaluator/skills/gen-readiness-report.md',
+    skill: 'qa-system/qa-readiness-evaluator/skills/gen-readiness-report.md',
     produces: '15_readiness_report.md & 15_readiness_metrics.json',
     consumed_by: [
       { step: 'automation', name: 'qa-automation/flow-clustering & pom-generator', reason: 'Acts as Go/No-Go gate before implementing POM and running Playwright E2E' }
@@ -133,7 +133,7 @@ if (targetImpact) {
     console.log('\n📋 REQUIRED SYNCHRONIZATION CHECKLIST:');
     console.log(' [ ] If identifier format changes (e.g., BR-xx -> REQ-xx) -> Update all downstream consumers.');
     console.log(' [ ] If fields are added/removed in output -> Update format parser in downstream steps.');
-    console.log(' [ ] Update agents/qa-lead/AGENT.md if skill name or arguments changed.');
+    console.log(' [ ] Update qa-system/qa-lead/AGENT.md if skill name or arguments changed.');
     console.log(' [ ] Run: npm run map:sync to re-synchronize system map.\n');
   } else {
     console.log(`ℹ️ No explicit dependency entry found for: "${targetImpact}".`);
@@ -278,7 +278,7 @@ try {
   const scripts = JSON.parse(fs.readFileSync(path.join(PATHS.ROOT, 'package.json'), 'utf8')).scripts || {};
   let checked = 0;
   for (const [name, cmd] of Object.entries(scripts)) {
-    const m = cmd.match(/node\s+(agents\/tools\/[^\s]+\.js)/);
+    const m = cmd.match(/node\s+(qa-system\/tools\/[^\s]+\.js)/);
     if (!m) continue;
     checked++;
     if (!fs.existsSync(path.join(PATHS.ROOT, m[1]))) {

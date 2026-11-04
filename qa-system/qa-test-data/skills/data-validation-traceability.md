@@ -7,17 +7,19 @@ description: >
 
 # Skill: data-validation-traceability
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT).
+> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · nhãn §2.1 · FACT §3 · chuỗi biên §6 · nguồn §10).
 
 ## Mục đích
-Hai việc chốt chặn cuối của `agents/qa-test-data`:
+Hai việc chốt chặn cuối của `qa-system/qa-test-data`:
 1. **Validate** dataset TRƯỚC khi seed/dùng — bắt lỗi logic/nghiệp vụ/format.
 2. **Traceability Matrix** — nối mỗi record dữ liệu với test case dùng nó.
 
 ## Đầu vào
 - `OUTPUT/<task-slug>/10_dataset.md` + `11_boundary_negative_dataset.md` — dataset cần validate.
 - `OUTPUT/<task-slug>/05_test_case_spec.md` — test suite để trace.
-- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — rule để đối chiếu.
+- `OUTPUT/<task-slug>/09_data_class_map.md` — ràng buộc có nguồn của từng field.
+- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `FD`, `BR` để đối chiếu.
+- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (§8, §9).
 
 ## KHÔNG được (riêng skill này)
 - Tự "sửa ngầm" dataset nguồn — chỉ **đề xuất** bản sửa.
@@ -31,7 +33,7 @@ Hai việc chốt chặn cuối của `agents/qa-test-data`:
 ### FACT áp cho dataset
 | | Tiêu chí | Dạng lỗi điển hình |
 |---|---|---|
-| **F** | Giá trị đúng thực tế/rule | Giá trị cố định lớn hơn ngưỡng tối thiểu → về lý thuyết ra kết quả âm |
+| **F** | Giá trị trích được về ràng buộc có nguồn | Giá trị nằm ngoài khoảng `FD`, hoặc khoảng không có nguồn |
 | **A** | Đúng định dạng/khoảng | Định danh sai format quy ước → INSERT fail do constraint |
 | **C** | Không thiếu trường bắt buộc | Thiếu cột NOT NULL → SQL fail |
 | **T** | Đủ rõ để biết pass/fail | Giá trị thập phân nhưng chưa rõ hệ thống có nhận |
@@ -61,10 +63,10 @@ Nguyên tắc:
 Ghi ra `OUTPUT/<task-slug>/12_data_validation_traceability.md`:
 
 ```markdown
-# DATA VALIDATION & TRACEABILITY — [TÊN TÍNH NĂNG]
+# Data Validation & Traceability · <task-slug>
+Owner: qa-system/qa-test-data/skills/data-validation-traceability.md · Nguồn: 10_dataset.md, 11_boundary_negative_dataset.md, 05_test_case_spec.md · Verdict: FIX
 
 ## 1. Kết quả Validation
-- **Verdict**: `[PASS / FIX / ASK]`
 - **Tổng quan**: [số issue theo từng loại lỗi]
 
 | # | Record | Field lỗi | Mô tả lỗi | Loại lỗi | Gợi ý sửa | Verdict |
@@ -83,16 +85,20 @@ Ghi ra `OUTPUT/<task-slug>/12_data_validation_traceability.md`:
 ## 3. Traceability Matrix
 | Test Case ID | Test Case Title | Test Data Record | Data Type | Notes |
 |---|---|---|---|---|
-| TC-001 | [title] | [mã record] | Valid | [ghi chú] |
-| TC-005 | [title] | [mã record] | Boundary | [biên dưới] |
-| TC-0xx | [title] | **CHƯA CÓ DATA** | — | [cần sinh thêm] |
+| <MODULE>-001 | [title] | D-01 | Valid | [ghi chú] |
+| <MODULE>-005 | [title] | B-01 | Boundary | [điểm §6] |
+| <MODULE>-0xx | [title] | CHƯA CÓ DATA | — | [cần sinh thêm] |
 
 ## 4. Record mồ côi (nếu có)
 | Record | Vì sao chưa nối test case nào | Đề xuất |
 |---|---|---|
 | [mã] | […] | [bổ sung TC / xoá record] |
 
-## 5. ASK — cần BA/PO quyết
+## FIX
+| # | Vị trí | Vấn đề | Bản sửa đề xuất |
+|---|---|---|---|
+
+## ASK
 | # | Vị trí | Cần gì | Chuyển cho ai |
 |---|---|---|---|
 ```

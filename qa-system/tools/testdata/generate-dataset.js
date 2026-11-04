@@ -20,7 +20,7 @@
  * - negative / invalid: Edge cases (empty, whitespace, null, special chars, injection)
  * 
  * Usage:
- *   node qa-system/tools/testdata/generate-dataset.js --slug <task-slug> --schema <schema.json> --count 50 --format md
+ *   node qa-system/tools/testdata/generate-dataset.js --slug <task-slug> --schema <schema.json> --count 50 --format md --seed 42
  *   node qa-system/tools/testdata/generate-dataset.js --demo
  */
 
@@ -80,17 +80,39 @@ const VN_FIRST_NAMES = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Huỳn
 const VN_MIDDLE_NAMES = ['Văn', 'Thị', 'Đức', 'Hồng', 'Minh', 'Thanh', 'Ngọc', 'Gia', 'Anh', 'Quang', 'Hải'];
 const VN_LAST_NAMES = ['Anh', 'Bình', 'Cường', 'Dũng', 'Giang', 'Hương', 'Huy', 'Khoa', 'Linh', 'Mai', 'Nam', 'Phong', 'Quân', 'Sơn', 'Tú', 'Uyên', 'Vy'];
 
+// ───────────── SEEDED RANDOM ─────────────
+// Cùng seed + cùng schema ⇒ cùng bộ dữ liệu. Không seed thì mỗi lần chạy một khác,
+// và hai lần chạy của cùng một chặng không so sánh được với nhau.
+let rand = Math.random;
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function setSeed(seed) {
+  const n = Number(seed) >>> 0;
+  rand = mulberry32(n);
+  faker.seed(n);
+  fakerVI.seed(n);
+  return n;
+}
+
 // ───────────── HELPER UTILITIES ─────────────
 
 function randomItem(arr) {
   if (!arr || arr.length === 0) return '';
-  return arr[Math.floor(Math.random() * arr.length)];
+  return arr[Math.floor(rand() * arr.length)];
 }
 
 function randomDigits(length) {
   let str = '';
   for (let i = 0; i < length; i++) {
-    str += Math.floor(Math.random() * 10);
+    str += Math.floor(rand() * 10);
   }
   return str;
 }
@@ -169,7 +191,7 @@ function generatePhone(spec) {
   try {
     let sampleRaw = '';
     if (country === 'US') {
-      sampleRaw = `+1${Math.floor(200 + Math.random() * 700)}${randomDigits(7)}`;
+      sampleRaw = `+1${Math.floor(200 + rand() * 700)}${randomDigits(7)}`;
     } else if (country === 'SG') {
       sampleRaw = `+65${randomItem(['8', '9'])}${randomDigits(7)}`;
     } else if (country === 'JP') {
@@ -193,15 +215,15 @@ function generateAddressVN(spec) {
   const districtList = VN_DISTRICTS[city] || ['Quận 1', 'Quận Trung Tâm', 'Huyện Ngoại Thành'];
   const district = spec.district || randomItem(districtList);
   const streetName = spec.street || randomItem(VN_STREETS);
-  const streetNo = Math.floor(Math.random() * 500) + 1;
-  const wardNo = Math.floor(Math.random() * 15) + 1;
+  const streetNo = Math.floor(rand() * 500) + 1;
+  const wardNo = Math.floor(rand() * 15) + 1;
 
   if (part === 'city' || part === 'province') return city;
   if (part === 'district') return district;
   if (part === 'ward') return `Phường ${wardNo}`;
   if (part === 'street') return `${streetNo} Đường ${streetName}`;
   if (part === 'postal_code' || part === 'zip_code') {
-    return `${Math.floor(10000 + Math.random() * 89999)}0`;
+    return `${Math.floor(10000 + rand() * 89999)}0`;
   }
 
   return `${streetNo} Đường ${streetName}, Phường ${wardNo}, ${district}, ${city}`;
@@ -218,7 +240,7 @@ function generateCCCD(spec) {
 function generateBankVN(spec) {
   const field = (spec.field || 'bank_name').toLowerCase();
   const bank = spec.bank || randomItem(VN_BANKS);
-  const accNo = `${Math.floor(1000 + Math.random() * 9000)}${randomDigits(randomItem([6, 8, 10]))}`;
+  const accNo = `${Math.floor(1000 + rand() * 9000)}${randomDigits(randomItem([6, 8, 10]))}`;
 
   if (field === 'account_number' || field === 'stk') return accNo;
   if (field === 'full') return `${bank} - ${accNo}`;
@@ -270,14 +292,14 @@ function generateField(spec, index) {
       const min = spec.min || 10000;
       const max = spec.max || 2000000;
       const step = spec.step || 10000;
-      const rawVal = Math.floor((Math.random() * (max - min) + min) / step) * step;
+      const rawVal = Math.floor((rand() * (max - min) + min) / step) * step;
       return spec.formatted ? `${rawVal.toLocaleString('vi-VN')} VND` : rawVal;
 
     case 'date':
     case 'date_vn':
       const year = spec.year || 2026;
-      const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
-      const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+      const month = String(Math.floor(rand() * 12) + 1).padStart(2, '0');
+      const day = String(Math.floor(rand() * 28) + 1).padStart(2, '0');
       return spec.format === 'DD/MM/YYYY' ? `${day}/${month}/${year}` : `${year}-${month}-${day}`;
 
     case 'enum':
@@ -317,7 +339,8 @@ function generateField(spec, index) {
   }
 }
 
-function generateDataset(schema, count = 10) {
+function generateDataset(schema, count = 10, opts = {}) {
+  if (opts.seed !== undefined && opts.seed !== null) setSeed(opts.seed);
   const rows = [];
   // Keys starting with `_` are schema annotations, not data fields.
   const fields = Object.keys(schema).filter((k) => !k.startsWith('_'));
@@ -379,6 +402,7 @@ function main() {
   let schemaPath = '';
   let outputFile = '';
   let format = 'md';
+  let seed = null;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--slug' && args[i + 1]) slug = args[++i];
@@ -386,6 +410,11 @@ function main() {
     if (args[i] === '--schema' && args[i + 1]) schemaPath = args[++i];
     if (args[i] === '--output' && args[i + 1]) outputFile = args[++i];
     if (args[i] === '--format' && args[i + 1]) format = args[++i];
+    if (args[i] === '--seed' && args[i + 1]) seed = parseInt(args[++i], 10);
+  }
+  if (seed === null || Number.isNaN(seed)) {
+    seed = Date.now() % 2147483647;
+    console.error(`[Warn] Không có --seed. Dùng seed ${seed} — ghi seed này vào deliverable để chạy lại ra đúng bộ dữ liệu.`);
   }
 
   let schema = null;
@@ -402,7 +431,7 @@ function main() {
     process.exit(1);
   }
 
-  const dataset = generateDataset(schema, count);
+  const dataset = generateDataset(schema, count, { seed });
 
   let resultString = '';
   if (format === 'json') {
@@ -411,7 +440,7 @@ function main() {
     const headers = Object.keys(dataset[0]);
     resultString = headers.join(',') + '\n' + dataset.map(r => Object.values(r).join(',')).join('\n');
   } else {
-    resultString = exportToMarkdownTable(dataset, `Test Dataset · ${slug || 'Dataset'}`);
+    resultString = `> Seed: ${seed} · Records: ${count}\n\n` + exportToMarkdownTable(dataset, `Test Dataset · ${slug || 'Dataset'}`);
   }
 
   if (outputFile) {
@@ -430,6 +459,7 @@ if (require.main === module) {
 
 module.exports = {
   generateDataset,
+  setSeed,
   exportToMarkdownTable,
   generateName,
   generatePhone,

@@ -18,6 +18,27 @@
 const fs = require('fs');
 const path = require('path');
 const { PATHS, taskDir, listTaskSlugs } = require('../lib/paths');
+const { deliverableProgress } = require('../lib/schema');
+
+/** Agents = qa-* folders under qa-system/ that hold an AGENT.md. */
+function agentCount() {
+  try {
+    return fs.readdirSync(PATHS.SYSTEM).filter((d) => fs.existsSync(path.join(PATHS.SYSTEM, d, 'AGENT.md'))).length;
+  } catch {
+    return 0;
+  }
+}
+
+/** Loose documents in INPUT/: the same rule intake uses (README.md, .gitkeep … are not documents). */
+function looseDocs() {
+  try {
+    return require('../intake/intake').looseFiles();
+  } catch {
+    const META = new Set(['readme.md', 'readme.txt', '.gitkeep', '.keep', 'index.md']);
+    if (!fs.existsSync(PATHS.INPUT)) return [];
+    return fs.readdirSync(PATHS.INPUT).filter((f) => !f.startsWith('.') && !META.has(f.toLowerCase()) && fs.statSync(path.join(PATHS.INPUT, f)).isFile());
+  }
+}
 
 const W = 68;
 const line = (c = '─') => c.repeat(W);
@@ -46,8 +67,8 @@ const ZONES = [
     title: 'MÁY MÓC — chỉ đụng khi cố ý nâng cấp hệ thống',
     icon: '⚙️',
     rows: [
-      ['qa-system/', '9 agent QA + skill + công cụ. Sửa ở đây = nâng cấp hệ thống.'],
-      ['automation/', 'Code Playwright cho SUT hiện tại (ShopGo). Chỉ cần ở Mode 4.'],
+      ['qa-system/', `${agentCount() || 'Các'} agent QA + skill + công cụ. Sửa ở đây = nâng cấp hệ thống.`],
+      ['automation/', 'Code Playwright cho hệ thống đang kiểm thử. Chỉ cần khi làm automation.'],
     ],
   },
   {
@@ -55,7 +76,6 @@ const ZONES = [
     icon: '📖',
     rows: [
       ['AGENTS.md', 'Hiến pháp cho mọi AI Agent. Agent tự đọc, bạn không cần.'],
-      ['DE-BAI/', 'Đề bài và cách nộp (chỉ có ở nhánh exam).'],
     ],
   },
 ];
@@ -96,25 +116,33 @@ function tasks() {
     const dir = taskDir(slug);
     const planPath = path.join(dir, '00_plan.md');
     const plan = fs.existsSync(planPath) ? fs.readFileSync(planPath, 'utf-8') : '';
-    const done = (plan.match(/- \[x\]/gi) || []).length;
+    let done = (plan.match(/- \[x\]/gi) || []).length;
     const todo = (plan.match(/- \[ \]/g) || []).length;
+    let total = done + todo;
+    let fromFiles = false;
+    // Plan without ticks: measure from the deliverables actually present (meta verdict PASS = done).
+    if (done === 0) {
+      const p = deliverableProgress(slug);
+      if (p.present > 0) { done = p.done; total = p.total; fromFiles = true; }
+    }
 
     let gateBlocked = false;
     try {
-      gateBlocked = require('./gate').evaluate(slug).blocked;
+      const g = require('./gate').evaluate(slug);
+      // Chưa qua Chặng 2 thì cổng đóng theo thiết kế (fail-closed) nhưng chưa có câu hỏi nào
+      // để chờ BA — đó là "đang làm dở", không phải "bị chặn".
+      gateBlocked = g.blocked && g.phase !== 'pre-stage-2';
     } catch {
       /* treat a gate error as open; never block viewing progress */
     }
 
-    return { slug, done, total: done + todo, gateBlocked };
+    return { slug, done, total, fromFiles, gateBlocked };
   });
 }
 
 /** The next action, phrased as a sentence the user can say to the agent. */
 function nextStep(list) {
-  const loose = fs.existsSync(PATHS.INPUT)
-    ? fs.readdirSync(PATHS.INPUT).filter((f) => !f.startsWith('.') && fs.statSync(path.join(PATHS.INPUT, f)).isFile())
-    : [];
+  const loose = looseDocs();
 
   if (loose.length) {
     return [
@@ -169,7 +197,7 @@ function main() {
     console.log('  📋 CÔNG VIỆC HIỆN CÓ');
     console.log(line());
     for (const t of list) {
-      const bar = t.total ? `${t.done}/${t.total} chặng` : 'chưa có kế hoạch';
+      const bar = t.total ? `${t.done}/${t.total} chặng${t.fromFiles ? ' (đếm theo file 01–06 đạt PASS)' : ''}` : 'chưa có kế hoạch';
       const flag = t.gateBlocked ? '  ⛔ đang bị chặn (chờ BA trả lời)' : '';
       console.log(`  • ${t.slug.padEnd(30)} ${bar}${flag}`);
     }
@@ -201,3 +229,5 @@ function main() {
 }
 
 if (require.main === module) main();
+
+module.exports = { tasks, nextStep, looseDocs, agentCount };

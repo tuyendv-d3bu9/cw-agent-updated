@@ -27,6 +27,7 @@
     "map:sync": "node qa-system/tools/system/sync-system-map.js",
     "agent:check": "node qa-system/tools/system/agent-doctor.js",
     "gate": "node qa-system/tools/system/gate.js check",
+    "ids": "node qa-system/tools/system/ids.js",
     "gate:audit": "node qa-system/tools/system/gate.js audit",
     "readiness": "node qa-system/tools/system/readiness.js",
     "workflow": "node qa-system/tools/system/workflow.js",
@@ -41,6 +42,7 @@
   "dependencies": {
     "@faker-js/faker": "^10.6.0",
     "js-yaml": "^5.4.2",
+    "jszip": "^3.10.1",
     "libphonenumber-js": "^1.13.14",
     "mammoth": "^1.12.1",
     "pdf-parse": "^2.4.5",
