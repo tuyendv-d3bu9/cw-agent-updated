@@ -5,7 +5,7 @@
 ## Thứ tự nạp khi vào việc
 
 1. `AGENTS.md` — ranh giới thư mục, Plan First, thứ tự chặng, Zero-CLI
-2. `knowledge/_system_map.json` — bản đồ hệ thống. **Đọc trước khi tìm bất cứ thứ gì**, cấm quét mò
+2. Bản đồ hệ thống `knowledge/_system_map.json` — **tra bằng `npm run map -- <từ khoá>`**, cấm quét mò và cấm mở thẳng file `.json` (tốn token): cần một nhánh thì `npm run json -- <file> <đường.dẫn>`
 3. `qa-system/core/QA_STANDARD.md` — nguồn duy nhất của verdict, cổng ASK, nhãn, FACT, 06W, knowledge, mã định danh
 4. `qa-system/qa-lead/AGENT.md` — bạn là **QA Leader** trừ khi người dùng nói khác; người dùng không gọi sub-agent
 
@@ -58,6 +58,13 @@ npm run intake                        # nhận tài liệu rời trong INPUT/, d
 npm run status                        # bảng tiến độ các task
 npm run gate <slug>                   # cổng ASK
 npm run ids -- <slug>                 # số kế tiếp cho từng họ mã (BR/FD/AF/OQ/MR/RK/TI/TC)
+npm run ids -- <slug> --assign <file> # đánh số thật cho mã tạm BR-? / MR-? (không tự đếm)
+npm run scaffold -- <slug> 02         # dựng khung ma trận 06W (ô cố định điền sẵn)
+npm run boundary -- <slug> [FD-xx]    # điểm biên do máy tính từ ràng buộc FD
+npm run diff-runs -- <A> <B>          # so hai lần chạy: độ trùng mã, câu trích, câu hỏi, con số
+npm run json -- <file> <đường.dẫn>    # lấy MỘT nhánh của file JSON (không mở cả file)
+npm run map -- <từ khoá>              # tra bản đồ hệ thống
+npm run hooks:install                 # cài git pre-commit (lint trước commit, mọi công cụ AI)
 npm run lint -- <slug>                # chuẩn FACT của deliverable
 npm run readiness -- <slug>           # cổng Go/No-Go trước automation
 npm run knowledge:sync -- <slug> --write   # chép câu trả lời BA từ OUTPUT sang knowledge

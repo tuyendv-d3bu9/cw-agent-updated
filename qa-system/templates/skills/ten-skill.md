@@ -70,6 +70,6 @@ Owner: qa-system/qa-<agent>/skills/<ten-skill>.md · Nguồn: <file đã đọc>
 
 ## Nghiệm thu skill (trước khi đưa vào dùng — `system-upgrade-governance` §5.1)
 - [ ] (a) Không chép luật QA_STANDARD · (b) Đầu vào khai đủ, gồm knowledge · (c) Output có dòng meta + cột nguồn
-- [ ] (d) Chạy 2 lần trên cùng đầu vào mẫu: tập mã và verdict giống nhau, hoặc khác biệt đã giải thích
+- [ ] (d) Chạy 2 lần trên cùng đầu vào mẫu rồi `npm run diff-runs -- <thư mục lần 1> <thư mục lần 2>`: tập mã, nội dung và verdict giống nhau, hoặc khác biệt đã giải thích
 - [ ] (e) Không ví dụ theo miền nghiệp vụ cụ thể
 - [ ] Xoá mục này khỏi skill thật sau khi đạt

@@ -149,6 +149,11 @@ function inlineToText(html) {
       .replace(/<li\b[^>]*>/gi, '• ')
       .replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, '**$2**')
       .replace(/<(em|i)\b[^>]*>([\s\S]*?)<\/\1>/gi, '*$2*')
+      // Chữ gạch ngang = giá trị đã bị gạch/thay thế. Hiển thị {--…--} để KHÔNG bị đọc như giá trị đang hiệu lực.
+      .replace(/<(s|del|strike)\b[^>]*>([\s\S]*?)<\/\1>/gi, '{--$2--}')
+      // Chỉ số trên/dưới đổi nghĩa con số: 10^6 không được thành "106".
+      .replace(/<sup\b[^>]*>([\s\S]*?)<\/sup>/gi, '^($1)')
+      .replace(/<sub\b[^>]*>([\s\S]*?)<\/sub>/gi, '_($1)')
       .replace(/<[^>]+>/g, '')
   )
     .split('\n')
@@ -255,6 +260,12 @@ function htmlToMarkdown(html) {
       const l = lists[lists.length - 1] || { type: 'ul', n: 0 };
       l.n++;
       out += `\n${'  '.repeat(Math.max(0, lists.length - 1))}${l.type === 'ol' ? l.n + '.' : '-'} `;
+    } else if (tag === 's' || tag === 'del' || tag === 'strike') {
+      out += close ? '--}' : '{--';
+    } else if (tag === 'sup') {
+      out += close ? ')' : '^(';
+    } else if (tag === 'sub') {
+      out += close ? ')' : '_(';
     } else if (tag === 'strong' || tag === 'b') {
       out += '**';
     } else if (tag === 'em' || tag === 'i') {
@@ -554,6 +565,19 @@ async function docxImageInfo(zip, docXml) {
   return infos;
 }
 
+/** Chữ ẩn trong docx (w:vanish): mammoth vẫn xuất như chữ thường, nên phải báo ra để người dùng xác nhận. */
+function docxHiddenText(docXml) {
+  const out = [];
+  for (const m of String(docXml).matchAll(/<w:r\b[^>]*>([\s\S]*?)<\/w:r>/g)) {
+    const run = m[1];
+    const v = run.match(/<w:vanish\b([^>]*)\/?>/);
+    if (!v || /w:val="(?:0|false|off)"/i.test(v[1])) continue;
+    const text = [...run.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g)].map((t) => decodeEntities(t[1])).join('').trim();
+    if (text) out.push(text);
+  }
+  return out;
+}
+
 async function docxParts(filePath) {
   const buffer = fs.readFileSync(filePath);
   const zip = await JSZip.loadAsync(buffer);
@@ -582,6 +606,13 @@ async function docxParts(filePath) {
 
   const body = htmlToMarkdown(result.value);
   const warnings = (result.messages || []).map((m) => `${m.type}: ${m.message}`);
+  if (/<(s|del|strike)\b/i.test(result.value)) {
+    warnings.push('Có chữ GẠCH NGANG, hiển thị dạng {--…--}: đó là giá trị đã bị gạch/thay thế — không dùng làm rule hiện hành.');
+  }
+  const hiddenRuns = docxHiddenText(docXml);
+  for (const text of hiddenRuns.slice(0, 20)) {
+    tracked.push({ type: 'Chữ ẩn (w:vanish)', location: 'trong thân tài liệu', content: `"${oneLine(text, 200)}" — chữ này bị ẨN trong file gốc nhưng vẫn nằm trong nội dung ở trên; cần xác nhận còn hiệu lực không.` });
+  }
   const hfText = hf.map((h) => h.content).join(' ');
   let version = core.version || null;
   if (!version) {
@@ -642,6 +673,15 @@ function sheetToParts(sheet, name, { hidden = 0, raw = false } = {}) {
 
   const annotations = [];
   if (hidden) annotations.push({ type: hidden === 2 ? 'Sheet ẩn (very hidden)' : 'Sheet ẩn', location: `Sheet "${name}"`, content: 'Nội dung sheet ẩn đã xuất kèm nhãn (HIDDEN SHEET); cần xác nhận còn hiệu lực không.' });
+  const hiddenRows = (sheet['!rows'] || []).map((r, i) => (r && r.hidden ? i + 1 : null)).filter(Boolean);
+  const hiddenCols = (sheet['!cols'] || []).map((cl, i) => (cl && cl.hidden ? XLSX.utils.encode_col(i) : null)).filter(Boolean);
+  if (hiddenRows.length || hiddenCols.length) {
+    annotations.push({
+      type: 'Dòng/cột ẩn',
+      location: `Sheet "${name}"${hiddenRows.length ? ` — dòng ${hiddenRows.slice(0, 20).join(', ')}` : ''}${hiddenCols.length ? ` — cột ${hiddenCols.join(', ')}` : ''}`,
+      content: 'Nội dung này VẪN nằm trong bảng ở trên nhưng bị ẩn trong file gốc; cần xác nhận còn hiệu lực không.',
+    });
+  }
   for (const k of Object.keys(sheet)) {
     if (k[0] === '!') continue;
     const cell = sheet[k];
@@ -681,17 +721,31 @@ function workbookParts(workbook, filePath, { raw = false } = {}) {
 }
 
 function excelParts(filePath) {
-  const workbook = XLSX.readFile(filePath, { cellDates: true, cellNF: true, cellText: true });
+  const workbook = XLSX.readFile(filePath, { cellDates: true, cellNF: true, cellText: true, cellStyles: true });
   return { ...workbookParts(workbook, filePath), alwaysAnnotations: true };
+}
+
+/**
+ * Đọc file văn bản: UTF-8 (có/không BOM) và UTF-16 có BOM. Byte không hợp lệ ⇒ NÉM LỖI (không đọc bừa):
+ * file UTF-16 không BOM hay Windows-1258 từng bị giải mã thành chữ rác, vẫn được nhận vào INPUT/, bản gốc bị xoá.
+ */
+function readText(filePath) {
+  const buf = fs.readFileSync(filePath);
+  if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xfe) return new TextDecoder('utf-16le').decode(buf.subarray(2));
+  if (buf.length >= 2 && buf[0] === 0xfe && buf[1] === 0xff) return new TextDecoder('utf-16be').decode(buf.subarray(2));
+  try {
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(buf);
+    return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+  } catch {
+    throw new Error(`${path.basename(filePath)} không đọc được bằng UTF-8 (có thể UTF-16 không BOM hoặc Windows-1258) — lưu lại dạng UTF-8 rồi nhận lại`);
+  }
 }
 
 /** CSV luôn đọc như UTF-8 (bỏ BOM). Giữ giá trị nguyên văn (không đổi "001" → 1). */
 function csvParts(filePath) {
-  let text = fs.readFileSync(filePath, 'utf8');
-  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
-  const warnings = text.includes('\uFFFD') ? ['File CSV có ký tự không đọc được bằng UTF-8 — hãy lưu lại dạng "CSV UTF-8".'] : [];
+  const text = readText(filePath);
   const workbook = XLSX.read(text, { type: 'string', raw: true });
-  return { ...workbookParts(workbook, filePath, { raw: true }), warnings };
+  return { ...workbookParts(workbook, filePath, { raw: true }), warnings: [] };
 }
 
 // ───────────────────────── PDF ─────────────────────────
@@ -915,14 +969,14 @@ async function convertParts(filePath) {
     case '.pdf': return pdfParts(filePath);
     case '.html':
     case '.htm': {
-      const raw = fs.readFileSync(filePath, 'utf8');
+      const raw = readText(filePath);
       const title = (raw.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i) || [])[1];
       return { meta: { title: title && decodeEntities(title).trim() }, body: htmlToMarkdown(replaceDataUris(raw)) };
     }
     case '.json':
     case '.yaml':
     case '.yml': {
-      const raw = fs.readFileSync(filePath, 'utf8');
+      const raw = readText(filePath);
       try {
         const parsed = ext === '.json' ? JSON.parse(raw) : yaml.load(raw);
         return { meta: {}, body: convertApiSpec(filePath, parsed, raw) };
@@ -931,8 +985,7 @@ async function convertParts(filePath) {
       }
     }
     default: {
-      let raw = fs.readFileSync(filePath, 'utf8');
-      if (raw.charCodeAt(0) === 0xfeff) raw = raw.slice(1);
+      const raw = readText(filePath);
       return { meta: {}, body: cleanMarkdown(raw) };
     }
   }
@@ -967,6 +1020,8 @@ const convertDoc = async (p) => assemble({ ...docParts(p), meta: { source_file: 
 
 module.exports = {
   SUPPORTED_EXTENSIONS,
+  docxHiddenText,
+  readText,
   ASSET_EXTENSIONS,
   REJECTED_EXTENSIONS,
   UnsupportedDocumentError,

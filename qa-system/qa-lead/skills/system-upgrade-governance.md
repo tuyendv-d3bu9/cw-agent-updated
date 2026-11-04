@@ -38,7 +38,7 @@ thì skill này bảo đảm **ba điều**:
 ## Đầu vào
 
 - Yêu cầu nâng cấp bằng ngôn ngữ tự nhiên của người dùng, **hoặc** một file `.md` người dùng đưa vào.
-- `knowledge/_system_map.json` — **đọc đầu tiên**, để biết hệ thống hiện có gì (`AGENTS.md` §1.3).
+- `knowledge/_system_map.json` — **tra đầu tiên** bằng `npm run map -- <từ khoá>` / `npm run json -- knowledge/_system_map.json <đường.dẫn>`, để biết hệ thống hiện có gì (`AGENTS.md` §1.3).
 - `qa-system/core/QA_STANDARD.md` — để skill mới **trỏ tới** đúng mục thay vì chép luật.
 - `qa-system/templates/README.md` — 4 tầng kiến trúc và 7 bước dựng agent mới.
 - `qa-system/templates/AGENT.md` · `qa-system/templates/skills/ten-skill.md` — khuôn mẫu bắt buộc dùng.
@@ -166,7 +166,7 @@ Chạy đủ các kiểm tra, ghi lại kết quả thật (không được ghi 
 | a | **Trỏ, không chép** luật của QA_STANDARD | Không có bảng verdict / nhãn / FACT / 06W / luật ghi knowledge chép lại; chỉ có `QA_STANDARD §n` |
 | b | **Khai đủ đầu vào**, gồm knowledge | Mục "Đầu vào" có deliverable cần đọc + `knowledge/_project.md` + `knowledge/features/<slug>.md` (QA_STANDARD §7) |
 | c | **Output đọc được bằng máy** | Dòng meta dòng 2 đúng QA_STANDARD §7; mọi bảng có cột nguồn / mã trace (§9); mã lấy từ `npm run ids -- <slug>` |
-| d | **Chạy hai lần cho cùng một kết quả** | Chạy skill **2 lần** trên cùng một đầu vào mẫu (phiên mới mỗi lần). So tập mã (BR/MR/TI/TC…) và verdict. Mọi khác biệt phải giải thích được; không giải thích được ⇒ skill còn chỗ cho model tự sáng tác ⇒ `FIX` |
+| d | **Chạy hai lần cho cùng một kết quả** | Chạy skill **2 lần** trên cùng một đầu vào mẫu (phiên mới mỗi lần). So bằng `npm run diff-runs -- <OUTPUT lần 1> <OUTPUT lần 2>` (tập mã, câu trích, câu hỏi, con số, verdict). Mọi khác biệt phải giải thích được; không giải thích được ⇒ skill còn chỗ cho model tự sáng tác ⇒ `FIX` |
 | e | **Không ví dụ theo miền** trong skill lõi | Ví dụ dùng chỗ giữ chỗ trung tính, không có giá trị/thông báo của một dự án thật |
 
 **Kiểm tra thủ công bắt buộc** (công cụ không bắt được):

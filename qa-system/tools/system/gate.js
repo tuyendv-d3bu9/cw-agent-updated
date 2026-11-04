@@ -73,7 +73,13 @@ function evaluate(slug) {
     const key = `${q.id}|${S.questionKey(q.question)}`;
     if (seen.has(key)) return;
     seen.add(key);
-    pending.push({ id: q.id, question: q.question || '(no question recorded)', risk: q.w || '', state: q.statusRaw || '(blank)', source });
+    // Nói rõ VÌ SAO chưa tính là đã chốt — agent cần biết phải hỏi người dùng điều gì.
+    let why = '';
+    if (q.status === 'Confirmed' && q.answer && !q.resolved) {
+      why = S.isAiName(q.answeredBy) ? ' — người trả lời là AI/agent, phải là BA/PO' : ' — thiếu Người trả lời hoặc Ngày (hỏi người dùng: ai trả lời, hôm nào)';
+    } else if (q.status === 'Confirmed' && !q.answer) why = ' — Confirmed nhưng ô Phản hồi chính thức trống';
+    else if (q.status === 'Rejected' && !q.resolved) why = ' — Rejected phải có lý do hoặc người quyết định';
+    pending.push({ id: q.id, question: q.question || '(no question recorded)', risk: q.w || '', state: (q.statusRaw || '(blank)') + why, source });
   };
 
   // 1. Every row of knowledge §7, whatever its ID family (Q-01, OQ-01, MR-01 …).

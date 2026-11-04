@@ -44,7 +44,9 @@ function getArgValue(flag, defaultValue) {
 const customSlug = getArgValue('--into', null) || getArgValue('--slug', null);
 const concurrency = parseInt(getArgValue('--concurrency', '4'), 10);
 const chunkSize = parseInt(getArgValue('--chunk', '10'), 10);
-const positional = args.filter((a, idx) => !a.startsWith('--') && (idx === 0 || !args[idx - 1].startsWith('--')));
+// Chỉ bỏ giá trị của các cờ CÓ GIÁ TRỊ — `--dry-run <path>` từng nuốt mất đường dẫn.
+const VALUE_FLAGS = new Set(['--slug', '--into', '--concurrency', '--chunk']);
+const positional = args.filter((a, idx) => !a.startsWith('--') && !(idx > 0 && VALUE_FLAGS.has(args[idx - 1])));
 const targetSource = positional[0] || PATHS.INPUT;
 
 // Files to ignore

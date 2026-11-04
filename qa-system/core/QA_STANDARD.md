@@ -55,8 +55,8 @@ Luật cổng `ASK` (định nghĩa duy nhất — nơi khác chỉ trỏ về �
 
 | Nhãn | Dùng khi | Ví dụ |
 |---|---|---|
-| `[CHƯA CÓ TRONG TÀI LIỆU]` | Cần một giá trị cụ thể (chữ thông báo, số, mã lỗi, định dạng) mà nguồn không có. Có câu hỏi rồi thì kèm mã: `[CHƯA CÓ TRONG TÀI LIỆU – MR-03]` | Expected: `Hiển thị thông báo lỗi [CHƯA CÓ TRONG TÀI LIỆU – MR-03]` |
-| `[GIẢ ĐỊNH]` | Một suy luận của agent, kèm lý do. **Không** dùng để bịa giá trị cụ thể | `[GIẢ ĐỊNH] Field này không có vòng đời trạng thái vì tài liệu chỉ mô tả nhập liệu` |
+| `[CHƯA CÓ TRONG TÀI LIỆU]` | Cần một giá trị cụ thể (chữ thông báo, số, mã lỗi, định dạng) mà nguồn không có. Có câu hỏi rồi thì kèm mã: `[CHƯA CÓ TRONG TÀI LIỆU – MR-03]` — mã MR phải là câu hỏi có thật ở 02 §3 hoặc knowledge §7 (lint kiểm) | Expected: `Hiển thị thông báo lỗi [CHƯA CÓ TRONG TÀI LIỆU – MR-03]` |
+| `[GIẢ ĐỊNH]` | Một suy luận của agent, kèm lý do. **Không** dùng để bịa giá trị cụ thể, và **cấm** trong ô giá trị (Precondition, Test Steps, Test Data, Expected Result) — lint báo lỗi; ở đó dùng `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` | `[GIẢ ĐỊNH] Field này không có vòng đời trạng thái vì tài liệu chỉ mô tả nhập liệu` |
 | `[CONTEXT_MISSING]` | Thiếu bối cảnh kinh doanh (người dùng, tải, doanh thu, SLA) | Ô Usage Context của skill 01 |
 | `[ĐỀ XUẤT]` | Agent đề nghị, chờ người duyệt (Human-Final) | `[ĐỀ XUẤT] Automated` |
 | `CHƯA COVER` / `CHƯA CÓ DATA` | Ô ma trận chưa có test case / dữ liệu | Ma trận Chặng 6, Chặng 12 |
@@ -94,6 +94,15 @@ F **TRƯỢT** dù trông đầy đủ. Tiêu chí trượt thì sửa trước 
 quét **từng đối tượng** (mỗi `BR-xx`, mỗi `FD-xx`, mỗi `AF-xx`) × **W1→W6**. Mỗi ô nhận đúng một
 kết quả: `Có kẽ hở` (⇒ sinh một `MR-xx`) · `Nguồn đã trả lời` (ghi mã nguồn) · `Không áp dụng`.
 Câu hỏi chỉ sinh từ ô `Có kẽ hở`. Quét xong ma trận là **dừng** — không tìm thêm ngoài ma trận.
+
+**Bảng áp dụng** (cố định, để số ô cần phán đoán không do model quyết). Ô ngoài bảng mặc định `Không áp dụng` và
+**không sửa**; `npm run scaffold -- <slug> 02` dựng sẵn khung theo bảng này.
+
+| Đối tượng | W cần phán đoán | W cố định `Không áp dụng` |
+|---|---|---|
+| `BR-xx` | W1 W2 W3 W4 W5 W6 | — |
+| `FD-xx` | W1 W3 | W2 W4 W5 W6 (kẽ hở về trạng thái/thời gian/actor/hậu quả nằm ở `BR`/`AF` liên quan) |
+| `AF-xx` | W2 W6 | W1 W3 W4 W5 |
 
 > Chuỗi biên min/max của một field thuộc §6, không lặp thành câu hỏi W riêng.
 

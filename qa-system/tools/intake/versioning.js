@@ -89,11 +89,15 @@ function versionInfo(mdPath) {
 
 /**
  * 1 nếu `a` mới hơn `b`, -1 nếu cũ hơn, 0 nếu không phân định được.
- * Ngày thắng version khi cả hai bản đều có ngày và ngày khác nhau.
+ * Version thắng ngày: version là thứ người soạn chủ ý ghi, còn ngày trong metadata thường là ngày LƯU file
+ * (một bản v1 mở lại rồi lưu sẽ có ngày muộn hơn v2). Chỉ khi thiếu version ở một bên mới dùng ngày.
  */
 function compareDocs(a, b) {
+  if (a.version && b.version) {
+    const c = cmpVersion(a.version, b.version);
+    if (c !== 0) return c;
+  }
   if (a.date && b.date && a.date !== b.date) return a.date > b.date ? 1 : -1;
-  if (a.version && b.version) return cmpVersion(a.version, b.version);
   return 0;
 }
 

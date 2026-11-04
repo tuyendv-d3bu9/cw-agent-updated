@@ -48,7 +48,7 @@ Phần `## Annotations / Pending changes` (comment, tracked changes, "DRAFT") **
 - Dừng pipeline vì có `OQ` — cổng ở Chặng 2, không ở đây.
 
 ## Mã định danh
-- Chạy `npm run ids -- <task-slug>` để lấy số kế tiếp của từng họ mã (`BR`, `FD`, `AF`, `OQ`, `RK`).
+- **Không tự đếm số.** Viết mã tạm theo thứ tự đọc nguồn (`BR-?`, `FD-?`, `AF-?`, `OQ-?`, `RK-?`; cùng một nhãn như `BR-?a` ⇒ cùng một số), ghi file, rồi chạy `npm run ids -- <task-slug> --assign OUTPUT/<task-slug>/01_requirement_risk_summary.md`. Tool đánh số thật, tiếp nối số đang có.
 - Rule/field đã có trong knowledge §3/§3b (cùng nguồn, cùng nội dung) ⇒ **giữ mã cũ**. Mới ⇒ số kế tiếp.
 - MR đã chốt ở knowledge §8 sinh ra rule mới ⇒ cấp `BR` số kế tiếp, `Nguồn` = `knowledge §8 #n`, `Trích nguyên văn` để trống.
 - `BR` cũ trong knowledge mà đoạn trích không còn tìm thấy trong `INPUT/` hiện tại ⇒ giữ mã, thêm một `OQ`

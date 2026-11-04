@@ -33,3 +33,19 @@ test('ids.js CLI prints JSON', () => {
   assert.strictEqual(r.next.MR, 'MR-01');
   assert.strictEqual(r.next.VP, 'VP-91');
 });
+
+test('ids --assign — mã tạm được đánh số tiếp nối, theo thứ tự xuất hiện; nhãn giống nhau cùng một số', (t) => {
+  const p = useTempProject(); t.after(p.cleanup);
+  const { assign } = require('../system/ids');
+  const fs = require('fs');
+  write('knowledge/features/t.md', knowledgeDoc({ br: ['BR-07'] }));
+  const f = write('OUTPUT/t/01_x.md', '| BR-? | a |\n| BR-? | b |\n| FD-?x | c | thấy lại FD-?x |\n| BR-08 | đã có |\n');
+  const dry = assign('t', 'OUTPUT/t/01_x.md', { dryRun: true });
+  assert.deepStrictEqual(dry.map.map((m) => m[1]), ['BR-09', 'BR-10', 'FD-01']);
+  assert.match(fs.readFileSync(f, 'utf-8'), /BR-\?/, 'dry-run không ghi file');
+  assign('t', 'OUTPUT/t/01_x.md');
+  const out = fs.readFileSync(f, 'utf-8');
+  assert.match(out, /\| BR-09 \| a \|\n\| BR-10 \| b \|\n\| FD-01 \| c \| thấy lại FD-01 \|/);
+  assert.strictEqual(assign('t', 'OUTPUT/t/01_x.md').changed, false, 'chạy lại không đổi gì');
+  assert.throws(() => assign('t', '../../etc/passwd'), /ngoài repo/);
+});

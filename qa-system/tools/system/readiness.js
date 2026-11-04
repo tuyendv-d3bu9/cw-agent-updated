@@ -72,6 +72,15 @@ function dataIssues(text) {
 
 const REQUIRED = ['01_requirement_risk_summary.md', '02_missing_rule_report.md', '03_viewpoint_report.md'];
 
+function lintSummary(slug) {
+  try {
+    const l = require('./lint-deliverables').lint(slug);
+    return { errors: l.errors.length, warnings: l.warns.length, sample: l.errors.slice(0, 5).map((e) => `${e.file} [${e.where}] ${e.msg}`) };
+  } catch (e) {
+    return { errors: 1, warnings: 0, sample: [`lint could not run: ${e.message}`] };
+  }
+}
+
 function collect(slug) {
   const dir = taskDir(slug);
   if (!fs.existsSync(dir)) throw new Error(`No OUTPUT/${slug}/ directory`);
@@ -149,6 +158,8 @@ function collect(slug) {
     },
     testCases: { total: cases.length, traced: traced.length, tracePct, untraced: cases.filter((c) => !traced.includes(c)).map((c) => c.id) },
     askGate: { blocked: gate.blocked, pending: gate.pending, reasons: gate.reasons, advisories: gate.advisories },
+    // GO không được dựa trên một spec mà lint không chấp nhận (trước đây `Expected: TBD` vẫn ra GO).
+    lint: lintSummary(slug),
     riskyCases,
     // Data branch (Chặng 9-12) counts only once it was started: Mode 1 stops at 06.
     data: { hasValidation: !!s12, started: fs.readdirSync(dir).some((n) => /^(09|10|11|12)[a-z]?_/i.test(n)), issues },
@@ -169,6 +180,9 @@ function decide(m) {
   }
   if (m.askGate.blocked) {
     blockers.push(`ASK gate is CLOSED: ${m.askGate.reasons.join(' · ')}`);
+  }
+  if (m.lint && m.lint.errors > 0) {
+    blockers.push(`npm run lint reports ${m.lint.errors} error(s) — fabricated or malformed content must be fixed first: ${m.lint.sample.join(' | ')}`);
   }
   if (m.sources['01_requirement_risk_summary.md'] && cov.brCount === 0) {
     blockers.push('Cannot measure: 0 BR-xx parsed from 01 §3 — rule coverage is unmeasurable');
@@ -232,6 +246,7 @@ function render(m, d) {
   console.log(`  Viewpoints       ${m.coverage.viewpointsCovered.length}/${m.coverage.viewpointsPlanned.length} covered by a test case`);
   console.log(`  Business rules   ${m.coverage.rulesCovered.length}/${m.coverage.rulesTotal.length} covered`);
   console.log(`  ASK gate         ${m.askGate.blocked ? 'CLOSED' : 'open'}`);
+  console.log(`  Lint             ${m.lint ? `${m.lint.errors} error(s), ${m.lint.warnings} warning(s)` : 'not run'}`);
   console.log(`  Stage 6          ${m.reviewVerdict || 'not run'}`);
   console.log(`  Test data        ${m.data.hasValidation ? `${m.data.issues.length} unresolved issue(s)` : '12_ not present'}`);
   console.log(`  Knowledge        ${(m.askGate.advisories || []).length ? 'at risk of being lost' : 'recorded in knowledge/'}`);

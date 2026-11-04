@@ -262,6 +262,15 @@ function main() {
   console.log('\n  Bước 2/4 — Cài thư viện');
   const installOk = stepInstall();
 
+  if (!dryRun) {
+    try {
+      const h = require('./precommit').install();
+      console.log(`     ${h.ok ? '✅' : 'ℹ️ '} Git pre-commit (chặn commit deliverable bịa/sai định dạng, mọi công cụ AI): ${h.note}`);
+    } catch (e) {
+      console.log(`     ℹ️  Không cài được git pre-commit: ${e.message}`);
+    }
+  }
+
   console.log('\n  Bước 3/4 — Tự kiểm hệ thống');
   const checkOk = dryRun ? true : run('npm run --silent agent:check', 'Kiểm toàn vẹn agent');
 

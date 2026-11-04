@@ -180,9 +180,10 @@ test('does NOT treat an XSS payload or `SG-XXXXXX` as a placeholder', () => {
   } finally { t.cleanup(); }
 });
 
-test('the §2.1 label [CHƯA CÓ TRONG TÀI LIỆU – MR-03] is valid, not a placeholder', () => {
+test('the §2.1 label [CHƯA CÓ TRONG TÀI LIỆU – MR-03] is valid when MR-03 is a real question', () => {
   const t = setup();
   try {
+    write('knowledge/features/t.md', knowledgeDoc({ q7: [{ id: 'MR-03', question: 'Thông báo lỗi là gì?' }] }));
     write05([ok1('TST-001', { 'Expected Result': '\n  - Hiển thị thông báo lỗi [CHƯA CÓ TRONG TÀI LIỆU – MR-03]' }), ok2('TST-002')]);
     assert.deepStrictEqual(errorsOf(), []);
   } finally { t.cleanup(); }
@@ -262,9 +263,9 @@ test('06W — a valid matrix with `Nguồn: BR-03, FD-01` and MR lists passes', 
   try {
     write('OUTPUT/t/02_missing_rule_report.md', report02({
       cells: { 'BR-01:W1': 'Nguồn: BR-02, spec §1', 'BR-02:W3': 'MR-01, MR-02' },
-      questions: [{ id: 'MR-01', answer: 'a', status: 'Confirmed' }, { id: 'MR-02', status: 'Rejected' }],
+      questions: [{ id: 'MR-01', answer: 'a', status: 'Confirmed' }, { id: 'MR-02', answer: 'không cần', status: 'Rejected' }],
     }));
-    write('knowledge/features/t.md', knowledgeDoc({ q7: [{ id: 'MR-01', answer: 'a', status: 'Confirmed' }, { id: 'MR-02', status: 'Rejected' }] }));
+    write('knowledge/features/t.md', knowledgeDoc({ q7: [{ id: 'MR-01', answer: 'a', status: 'Confirmed' }, { id: 'MR-02', answer: 'không cần', status: 'Rejected' }] }));
     assert.deepStrictEqual(errorsOf(), []);
   } finally { t.cleanup(); }
 });

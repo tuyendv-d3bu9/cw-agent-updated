@@ -79,7 +79,18 @@
     "workflows_dir": "qa-system/workflows/",
     "ids_tool": "qa-system/tools/system/ids.js",
     "ids_command": "npm run ids -- <slug>",
-    "shared_schema_module": "qa-system/tools/lib/schema.js"
+    "shared_schema_module": "qa-system/tools/lib/schema.js",
+    "json_tool": "qa-system/tools/system/json.js",
+    "json_command": "npm run json -- <file.json> <đường.dẫn> [--keys]",
+    "map_tool": "qa-system/tools/system/map.js",
+    "map_command": "npm run map -- <từ khoá>",
+    "precommit_tool": "qa-system/tools/system/precommit.js",
+    "precommit_install_command": "npm run hooks:install",
+    "provenance_module": "qa-system/tools/lib/provenance.js",
+    "boundary_command": "npm run boundary -- <slug> [FD-xx]",
+    "scaffold_command": "npm run scaffold -- <slug> 02",
+    "diff_runs_command": "npm run diff-runs -- <dirA> <dirB> [--min N]",
+    "ids_assign_command": "npm run ids -- <slug> --assign <file>"
   },
   "specialized_agents": {
     "qa_lead": {

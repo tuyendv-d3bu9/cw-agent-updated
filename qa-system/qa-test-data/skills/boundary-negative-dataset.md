@@ -19,6 +19,7 @@ Mỗi record kiểm đúng một edge case, các field còn lại giữ Valid đ
 - `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (§9).
 
 ## KHÔNG được (riêng skill này)
+- Tự tính điểm biên: chạy `npm run boundary -- <task-slug>` và chép giá trị (máy tính từ ràng buộc FD).
 - Dựng chuỗi biên cho field không có min/max/độ dài trong nguồn — ô đó ghi `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]`.
 - Sinh nhiều record cho cùng một edge case, hoặc thêm record để đủ số lượng.
 - Để trống `Test Purpose` hay `TC_ID`.

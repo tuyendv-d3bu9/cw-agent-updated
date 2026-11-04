@@ -24,6 +24,7 @@ const fs = require('fs');
 const path = require('path');
 const { PATHS, taskDir, listTaskSlugs } = require('../lib/paths');
 const S = require('../lib/schema');
+const P = require('../lib/provenance');
 
 // ───────────────────────────── Rules ─────────────────────────────
 
@@ -98,8 +99,13 @@ function context(slug, dir) {
   for (const q of k.questions) if (/^MR-/.test(q.id) && S.resolvedInKnowledge(q, k)) mrResolved.add(q.id);
   for (const d of k.decisions) if (d.valid) d.related.filter((x) => x.startsWith('MR-')).forEach((x) => mrResolved.add(x));
 
+  // MR có thật = có trong bảng câu hỏi của 02 hoặc trong knowledge §7 (nhãn [CHƯA CÓ… – MR-xx] phải trỏ vào đây).
+  const mrKnown = new Set(k.questions.filter((q) => /^MR-/.test(q.id)).map((q) => q.id));
+  if (t02) for (const q of S.read02Questions(t02)) if (/^MR-/.test(q.id)) mrKnown.add(q.id);
+
   return {
-    slug, dir, t01, t02, t03, t04, k, d01, ruleDefs, mrResolved,
+    slug, dir, t01, t02, t03, t04, k, d01, ruleDefs, mrResolved, mrKnown,
+    sources: P.buildSources({ t01, k }),
     vps: S.read03Viewpoints(t03),
     ideas: S.read04Ideas(t04),
   };
@@ -173,6 +179,12 @@ function lintTestCases(ctx, R, FIELDS) {
 
       if (values.Priority && !S.isBlank(values.Priority) && !PRIORITY.test(S.stripMd(values.Priority))) {
         R.error(rel, id, `Priority "${S.stripMd(values.Priority)}" is not High / Medium / Low (optionally followed by [ĐỀ XUẤT]) — QA_STANDARD §11`);
+      }
+
+      // Nguồn gốc giá trị: chuỗi trong ngoặc kép / con số ở Expected & Test Data phải có trong nguồn đã kiểm;
+      // [GIẢ ĐỊNH] không được nằm trong ô giá trị; nhãn [CHƯA CÓ… – MR-xx] phải trỏ tới MR có thật.
+      for (const f of P.checkTestCase((name) => S.tcField(tc, name), ctx.sources, ctx.mrKnown)) {
+        (f.level === 'error' ? R.error : R.warn)(rel, id, f.msg);
       }
 
       // Placeholders in every field, code spans included.
@@ -271,11 +283,8 @@ function inputFiles(ctx) {
   };
   const input = path.join(PATHS.INPUT, ctx.slug);
   walk(input, input);
-  if (fs.existsSync(ctx.dir)) {
-    for (const f of fs.readdirSync(ctx.dir)) {
-      if (/^00_knowledge_digest.*\.md$/i.test(f)) files.push({ rel: f, norm: S.normText(read(path.join(ctx.dir, f))) });
-    }
-  }
+  // 00_knowledge_digest*.md cố ý KHÔNG nằm trong tập nguồn: nó do agent viết ra từ INPUT/, không ai dò lại.
+  // Trích dẫn qua digest vẫn dò được vì tài liệu gốc vẫn ở INPUT/.
   return files;
 }
 
@@ -315,13 +324,22 @@ function lint01(ctx, R) {
         const src = S.stripMd(S.cell(t, r, 'source'));
         const where = `§${num} line ${r.line}`;
         if (S.isBlank(quote)) {
-          if (!/^knowledge\s*§\s*8/i.test(src)) R.error(name, where, '"Trích nguyên văn" is empty — only allowed when Nguồn is `knowledge §8 #n`');
+          if (!/^knowledge\s*§\s*8/i.test(src)) {
+            R.error(name, where, '"Trích nguyên văn" is empty — only allowed when Nguồn is `knowledge §8 #n`');
+          } else {
+            // `knowledge §8 #n` phải trỏ tới một dòng §8 CÓ THẬT và hợp lệ (người phê duyệt + ngày).
+            const num = (src.match(/#\s*(\d+)/) || [])[1];
+            const d = num ? ctx.k.decisions.find((x) => String(x.num).replace(/\D/g, '') === num) : null;
+            if (!num) R.error(name, where, 'Nguồn `knowledge §8` needs the row number: `knowledge §8 #n`');
+            else if (!d) R.error(name, where, `Nguồn \`knowledge §8 #${num}\` — no such row in knowledge §8`);
+            else if (!d.valid) R.error(name, where, `Nguồn \`knowledge §8 #${num}\` — that decision has no approver/date, so it is not settled yet`);
+          }
           continue;
         }
         if (S.hasLabel(quote)) { R.error(name, where, '"Trích nguyên văn" must be text copied from INPUT/, not a label'); continue; }
         if (files === undefined) files = inputFiles(ctx);
         if (files.length === 0) {
-          if (!corpusReported) R.error(name, '-', `Cannot verify quotes: nothing readable in INPUT/${ctx.slug}/ or 00_knowledge_digest.md`);
+          if (!corpusReported) R.error(name, '-', `Cannot verify quotes: nothing readable in INPUT/${ctx.slug}/ (the agent-written 00_knowledge_digest.md is not a source)`);
           corpusReported = true;
           continue;
         }
@@ -329,6 +347,20 @@ function lint01(ctx, R) {
         if (!m.ok) {
           const scope = m.named ? m.searched.join(', ') : `any single file of INPUT/${ctx.slug}/`;
           R.error(name, where, `Quote not found verbatim in ${scope} (${m.reason}): "${S.stripMd(quote).slice(0, 70)}"`);
+          continue;
+        }
+
+        // Câu trích có thật chưa đủ: các con số của dòng phải nằm TRONG câu trích, và chữ thông báo phải có trong nguồn.
+        const rowText = ['condition', 'behavior', 'constraint'].map((c) => S.stripMd(S.cell(t, r, c))).join(' ');
+        const missingNums = P.numbersMissingFromQuote(rowText, S.stripMd(quote));
+        if (missingNums.length) {
+          R.error(name, where, `The row states ${missingNums.join(', ')} but the quote does not contain ${missingNums.length > 1 ? 'them' : 'it'} — the quote proves a different sentence, not this value`);
+        }
+        const msgCol = num === '3b' ? 'message' : num === '5' ? 'response' : null;
+        const msg = msgCol ? S.stripMd(S.cell(t, r, msgCol)) : '';
+        if (msg && !S.isBlank(msg) && !S.hasLabel(msg)) {
+          const mm = S.quoteInSources(msg.replace(/^["“«]|["”»]$/g, ''), src, files);
+          if (!mm.ok) R.error(name, where, `"${msgCol === 'message' ? 'Thông báo khi sai' : 'Hệ thống phản hồi'}" holds text not found in the source: "${msg.slice(0, 60)}" — copy it verbatim or write [CHƯA CÓ TRONG TÀI LIỆU]`);
         }
       }
     }

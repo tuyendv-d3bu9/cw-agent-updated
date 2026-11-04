@@ -45,6 +45,14 @@ system/       ← tự kiểm, tiến độ, bản đồ, cổng ASK
 | Đồng bộ bản đồ hệ thống | `npm run map:sync` | `system/sync-system-map.js` |
 | **Kiểm cổng ASK trước khi sinh chặng 3→6** | `npm run gate [slug]` | `system/gate.js` |
 | **Số kế tiếp cho từng họ mã** (BR/FD/AF/OQ/MR/RK/TI/TC) — mã ổn định qua các lần chạy, QA_STANDARD §9.1 | `npm run ids -- <slug>` | xem script `ids` trong `package.json` |
+| **Lấy một nhánh của file JSON** (system map, manifest, metrics…) — không nạp cả file | `npm run json -- <file> <đường.dẫn> [--keys]` | `qa-system/tools/system/json.js` |
+| **Tra bản đồ hệ thống theo từ khoá** | `npm run map -- <từ khoá>` | `qa-system/tools/system/map.js` |
+| **Lint trước mỗi `git commit`** (mọi công cụ AI; chặn deliverable bịa/sai định dạng vào lịch sử) | `npm run hooks:install` (init cài sẵn) | `qa-system/tools/system/precommit.js` |
+| **Điểm biên của từng field** do máy tính từ ràng buộc FD (agent chép, không tự tính) | `npm run boundary -- <slug> [FD-xx]` | `qa-system/tools/system/boundary.js` |
+| **Dựng khung 02** (ma trận 06W đủ dòng, ô cố định điền sẵn) | `npm run scaffold -- <slug> 02` | `qa-system/tools/system/scaffold.js` |
+| **Đánh số mã tạm** (`BR-?` → `BR-09`) | `npm run ids -- <slug> --assign <file>` | `qa-system/tools/system/ids.js` |
+| **So hai lần chạy** (độ trùng mã, câu trích, câu hỏi, con số, verdict) | `npm run diff-runs -- <thư mục A> <thư mục B> [--min N]` | `qa-system/tools/system/diff-runs.js` |
+| *Nguồn gốc giá trị* (module dùng trong lint): chữ thông báo / con số ở Expected & Test Data phải có trong nguồn | — | `qa-system/tools/lib/provenance.js` |
 | Soát dấu vết nhảy cóc cổng ASK | `npm run gate:audit [slug]` | `system/gate.js` |
 | **Đo độ sẵn sàng trước Automation** | `npm run readiness -- <slug> --write` | `system/readiness.js` |
 | **Kiểm chuẩn FACT của deliverable** | `npm run lint -- <slug>` | `system/lint-deliverables.js` |

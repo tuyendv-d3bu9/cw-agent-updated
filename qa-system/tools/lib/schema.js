@@ -25,7 +25,8 @@ const { PATHS, taskDir, featureKnowledge } = require('./paths');
 
 // ───────────────────────────── Text ─────────────────────────────
 
-const nfc = (s) => String(s == null ? '' : s).normalize('NFC');
+// Một chỗ chuẩn hoá mọi file: NFC + bỏ BOM + CRLF/CR về LF (`.` không khớp `\r` nên file CRLF từng bị coi là thiếu trường).
+const nfc = (s) => String(s == null ? '' : s).normalize('NFC').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
 
 /** Removes markdown decoration (bold, italics, code ticks, escapes) and trims. */
 function stripMd(s) {
@@ -65,6 +66,7 @@ function questionKey(s) {
 
 const ELISION = /\s*(?:\.\.\.|…)\s*/;
 const MIN_PIECE_WORDS = 4;
+const MIN_QUOTE_WORDS = 4;
 const MAX_GAP = 400;
 
 /** Pieces of a quote split on … / ... (normText'ed, quote marks trimmed). */
@@ -83,6 +85,10 @@ function quotePieces(quote) {
 function quoteMatch(quote, haystackNorm) {
   const parts = quotePieces(quote);
   if (parts.length === 0) return { ok: false, reason: 'empty quote' };
+  const whole = parts.join(' ');
+  if (whole.split(' ').length < MIN_QUOTE_WORDS) {
+    return { ok: false, reason: `quote has fewer than ${MIN_QUOTE_WORDS} words — a single word or short phrase appears in any document and proves nothing` };
+  }
   if (parts.length > 1) {
     const short = parts.find((p) => p.split(' ').length < MIN_PIECE_WORDS);
     if (short) return { ok: false, reason: `elided piece "${short}" has fewer than ${MIN_PIECE_WORDS} words` };
@@ -93,9 +99,11 @@ function quoteMatch(quote, haystackNorm) {
     let end = anchor + parts[0].length;
     let ok = true;
     for (const p of parts.slice(1)) {
-      const at = haystackNorm.indexOf(p, end);
-      if (at === -1 || at - end > MAX_GAP) { ok = false; break; }
-      end = at + p.length;
+      // Chỉ nhìn trong cửa sổ MAX_GAP — không quét hết file cho mỗi mỏ neo.
+      const win = haystackNorm.slice(end, end + MAX_GAP + p.length);
+      const at = win.indexOf(p);
+      if (at === -1) { ok = false; break; }
+      end = end + at + p.length;
     }
     if (ok) return { ok: true, reason: '' };
     anchor = haystackNorm.indexOf(parts[0], anchor + 1);
@@ -133,8 +141,17 @@ function resolveSourceFiles(sourceCell, files) {
  * cell resolves, otherwise each file on its own (never one joined corpus).
  * Returns { ok, reason, searched: [rel] }.
  */
+function namedSourceFiles(sourceCell) {
+  const src = stripMd(sourceCell).toLowerCase();
+  return [...src.matchAll(/([^\s,;§()|]+\.(?:md|txt|csv|docx?|pdf|xlsx?|pptx?|html?))/g)].map((m) => m[1]);
+}
+
 function quoteInSources(quote, sourceCell, files) {
   const named = resolveSourceFiles(sourceCell, files);
+  const wanted = namedSourceFiles(sourceCell);
+  if (wanted.length && named.length === 0) {
+    return { ok: false, reason: `Nguồn names ${wanted.join(', ')} but no such file in INPUT/ — a quote cannot be checked against a file that does not exist`, searched: [], named: true };
+  }
   const pool = named.length ? named : files;
   let reason = 'not found';
   for (const f of pool) {
@@ -250,8 +267,8 @@ function hasWord(text, phrase) {
 }
 
 const STATUS_LEAD = [
-  ['Confirmed', ['confirmed', 'đã xác nhận', 'đã chốt']],
-  ['Rejected', ['rejected', 'không xử lý', 'loại']],
+  ['Confirmed', ['confirmed', 'đã xác nhận', 'đã chốt', 'đã trả lời', 'approved', 'accepted']],
+  ['Rejected', ['rejected', 'không xử lý', 'loại', 'từ chối', 'declined']],
   ['TREO', ['treo', 'pending']],
   ['New', ['new', 'mới', 'chờ trả lời']],
 ];
@@ -261,9 +278,14 @@ const STATUS_LEAD = [
  * "Confirmed (BA An)" -> Confirmed. Negations win over substrings:
  * "Chưa xác nhận" / "Unconfirmed" -> New, never Confirmed.
  */
+const PENDING_MARKERS = ['chưa', 'chờ', 'một phần', 'tạm', 'tbd', 'not yet', 'partial', 'unconfirmed', 'waiting'];
+
 function normalizeStatus(raw) {
   const t = normKey(raw);
   if (!t) return null;
+  // 0. Dấu hỏi hoặc từ chờ/chưa/một phần ở BẤT KỲ đâu ⇒ chưa chốt, dù đứng sau chữ "Confirmed".
+  //    ("Confirmed? chưa chắc", "Confirmed – chờ BA ký", "Đã xác nhận một phần" từng mở cổng.)
+  if (/\?/.test(t) || PENDING_MARKERS.some((w) => hasWord(t, w))) return hasWord(t, 'treo') ? 'TREO' : 'New';
   // 1. A canonical word at the very start decides ("Confirmed (BA An)").
   for (const [canon, words] of STATUS_LEAD) {
     for (const w of words) {
@@ -273,9 +295,17 @@ function normalizeStatus(raw) {
   // 2. Otherwise negation/pending words win over any resolved substring.
   if (hasWord(t, 'treo') || hasWord(t, 'pending')) return 'TREO';
   if (['chưa', 'chờ', 'not', 'unconfirmed', 'open', 'waiting', 'new', 'mới'].some((w) => hasWord(t, w))) return 'New';
-  if (['confirmed', 'đã xác nhận', 'đã chốt'].some((w) => hasWord(t, w))) return 'Confirmed';
-  if (['rejected', 'không xử lý', 'loại'].some((w) => hasWord(t, w))) return 'Rejected';
+  if (['confirmed', 'đã xác nhận', 'đã chốt', 'đã trả lời', 'approved'].some((w) => hasWord(t, w))) return 'Confirmed';
+  if (['rejected', 'không xử lý', 'loại', 'từ chối'].some((w) => hasWord(t, w))) return 'Rejected';
   return null;
+}
+
+/** Người trả lời / phê duyệt phải là con người: AI, agent, bot không được tự chốt thay BA/PO (QA_STANDARD §1.4). */
+function isAiName(raw) {
+  const t = normText(raw).replace(/^[\s("'*_`]+/, '');
+  if (!t) return false;
+  if (/^(claude|gpt|chatgpt|llm|codex|cursor|gemini|copilot|antigravity|agent|bot|assistant|qa agent|qa-agent|qa leader|qa-leader)(?![\p{L}\p{N}])/u.test(t)) return true;
+  return /^ai(?:\s*(?:agent|assistant|bot)|\s*\(|\s*$|[:,;/-])/u.test(t);
 }
 
 // ───────────────────────────── Tables ─────────────────────────────
@@ -299,6 +329,13 @@ const COLUMN_ALIASES = {
   approver: ['người phê duyệt'],
   decidedOn: ['ngày chốt'],
   // 01
+  field: ['field', 'trường'],
+  type: ['kiểu', 'kiểu dữ liệu'],
+  condition: ['điều kiện'],
+  behavior: ['hành vi / kết quả', 'hành vi', 'kết quả'],
+  constraint: ['ràng buộc (min/max/định dạng)', 'ràng buộc'],
+  message: ['thông báo khi sai', 'thông báo'],
+  response: ['hệ thống phản hồi (nguyên văn nếu có)', 'hệ thống phản hồi'],
   source: ['nguồn (file §mục)', 'nguồn'],
   quote: ['trích nguyên văn'],
   // 02 matrix / OQ
@@ -605,7 +642,8 @@ function readQuestionRows(text, offset = 0) {
         date: isBlank(cell(t, r, 'date')) ? '' : stripMd(cell(t, r, 'date')),
         status,
         statusRaw: stripMd(statusRaw),
-        resolved: (status === 'Confirmed' && answered) || status === 'Rejected',
+        resolved: (status === 'Confirmed' && answered && !isBlank(cell(t, r, 'answeredBy')) && !isBlank(cell(t, r, 'date')) && !isAiName(cell(t, r, 'answeredBy')))
+          || (status === 'Rejected' && (answered || !isBlank(cell(t, r, 'answeredBy'))) && !isAiName(cell(t, r, 'answeredBy'))),
         placeholder,
         line: r.line,
       });
@@ -632,7 +670,7 @@ function readDecisions(text, offset = 0) {
         approver: isBlank(approver) ? '' : approver,
         date: isBlank(date) ? '' : date,
         placeholder: hasAnglePlaceholder(cell(t, r, 'decision')),
-        valid: !isBlank(decision) && !hasAnglePlaceholder(cell(t, r, 'decision')) && !isBlank(approver) && !isBlank(date) && related.length > 0,
+        valid: !isBlank(decision) && !hasAnglePlaceholder(cell(t, r, 'decision')) && !isBlank(approver) && !isAiName(approver) && !isBlank(date) && related.length > 0,
         line: r.line,
       });
     }
@@ -713,7 +751,26 @@ function read01(text) {
 
 /** Definitions recorded in knowledge §3/§3b/§5 (ID columns). */
 function readKnowledgeDefs(text) {
-  return read01(text) || { BR: [], FD: [], AF: [], OQ: [], RK: [] };
+  const out = { BR: [], FD: [], AF: [], OQ: [], RK: [] };
+  if (!text) return out;
+  const found = { BR: new Set(), FD: new Set(), AF: new Set() };
+  // Chỉ §3/§3b/§5 — KHÔNG đọc §10 (ma trận truy vết, cột "Mã") hay §7: mã ở đó không phải định nghĩa rule.
+  for (const n of ['3', '3b', '5']) {
+    const body = sectionBody(text, n);
+    if (!body) continue;
+    for (const t of parseTables(body)) {
+      const i = col(t, 'id');
+      if (i === -1) continue;
+      const si = col(t, 'status');
+      for (const r of t.rows) {
+        // Có cột Trạng thái thì chỉ tính dòng Confirmed (Rejected/Draft không phải rule đang có hiệu lực).
+        if (si !== -1 && normalizeStatus(r.cells[si]) !== 'Confirmed' && !isBlank(r.cells[si])) continue;
+        for (const f of ['BR', 'FD', 'AF']) { const id = canonicalId(r.cells[i], f); if (id) found[f].add(id); }
+      }
+    }
+  }
+  for (const f of ['BR', 'FD', 'AF']) out[f] = [...found[f]].sort(compareIds);
+  return out;
 }
 
 /** VP rows of 03 §2 (pins). */
@@ -833,7 +890,7 @@ function nextIds(slug) {
 
 module.exports = {
   // text
-  nfc, stripMd, normKey, normText, questionKey, quoteFound, quoteMatch, quotePieces, quoteInSources, resolveSourceFiles, isBlank,
+  nfc, stripMd, normKey, normText, questionKey, quoteFound, quoteMatch, quotePieces, quoteInSources, resolveSourceFiles, namedSourceFiles, isBlank, isAiName,
   // meta
   readMeta, readVerdict, worstVerdict, META_LINE, META_TOP,
   // ids

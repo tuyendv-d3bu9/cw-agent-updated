@@ -220,3 +220,58 @@ test('metadata xlsx — H1 do converter tự đặt không bị coi là tiêu đ
   XLSX.writeFile(wb, file);
   assert.strictEqual(parseSourceMetadata(await convertDocumentToMarkdown(file)).title, undefined);
 });
+
+test('readText — UTF-8 (có/không BOM) và UTF-16 có BOM đọc đúng; byte rác thì từ chối, không đọc bừa', (t) => {
+  const fs = require('fs');
+  const os = require('os');
+  const path = require('path');
+  const { readText } = require('../lib/doc-converter');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qa-enc-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const w = (n, buf) => { const p = path.join(dir, n); fs.writeFileSync(p, buf); return p; };
+
+  const vi = 'Mật khẩu dài 8–64 ký tự';
+  assert.strictEqual(readText(w('a.txt', vi)), vi);
+  assert.strictEqual(readText(w('b.txt', Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(vi)]))), vi);
+  assert.strictEqual(readText(w('c.txt', Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(vi, 'utf16le')]))), vi);
+  // Windows-1258 / byte không phải UTF-8: không được giải mã thành chữ rác.
+  assert.throws(() => readText(w('d.txt', Buffer.from([0x4d, 0x61, 0xe2, 0x74, 0x20, 0x6b, 0x68, 0xe2, 0x75]))), /không đọc được bằng UTF-8/);
+});
+
+test('định dạng có nghĩa: chữ gạch ngang, chỉ số trên/dưới, bảng — không bị đọc như giá trị đang hiệu lực', () => {
+  const { htmlToMarkdown } = require('../lib/doc-converter');
+  const md = htmlToMarkdown('<p>Hạn mức <s>500.000</s> 300.000 VNĐ; dung lượng 10<sup>6</sup> byte; H<sub>2</sub>O</p>');
+  assert.match(md, /\{--500\.000--\} 300\.000 VNĐ/);
+  assert.match(md, /10\^\(6\) byte/);
+  assert.match(md, /H_\(2\)O/);
+  const tbl = htmlToMarkdown('<table><tr><th>Ngưỡng</th></tr><tr><td><del>800000</del> 500000</td></tr></table>');
+  assert.match(tbl, /\{--800000--\} 500000/);
+});
+
+test('docx: chữ ẩn (w:vanish) được tách ra, chữ thường và w:val="0" thì không', () => {
+  const { docxHiddenText } = require('../lib/doc-converter');
+  const xml = '<w:p><w:r><w:t>Hiện</w:t></w:r><w:r><w:rPr><w:vanish/></w:rPr><w:t>Khoá 99 phút</w:t></w:r>'
+    + '<w:r><w:rPr><w:vanish w:val="0"/></w:rPr><w:t>Không ẩn</w:t></w:r></w:p>';
+  assert.deepStrictEqual(docxHiddenText(xml), ['Khoá 99 phút']);
+});
+
+test('xlsx: dòng/cột ẩn được báo trong Annotations', async (t) => {
+  const fs = require('fs');
+  const os = require('os');
+  const path = require('path');
+  const XLSX = require('xlsx');
+  const { convertDocumentToMarkdown } = require('../lib/doc-converter');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qa-xlsx-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const ws = XLSX.utils.aoa_to_sheet([['Tên', 'Ngưỡng'], ['A', '500000'], ['B', '800000']]);
+  ws['!rows'] = [{}, {}, { hidden: true }];
+  ws['!cols'] = [{}, { hidden: true }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Rules');
+  const p = path.join(dir, 'r.xlsx');
+  XLSX.writeFile(wb, p);
+  const md = await convertDocumentToMarkdown(p);
+  assert.match(md, /Dòng\/cột ẩn/);
+  assert.match(md, /dòng 3/);
+  assert.match(md, /cột B/);
+});

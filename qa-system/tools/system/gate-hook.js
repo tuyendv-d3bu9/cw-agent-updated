@@ -19,6 +19,7 @@ const fs = require('fs');
 const path = require('path');
 const { PATHS, listTaskSlugs } = require('../lib/paths');
 const { evaluate, isLockedPath } = require('./gate');
+const S = require('../lib/schema');
 
 function emitAllow() {
   return '{}';
@@ -232,10 +233,86 @@ function denyMessage(slug, what, state) {
 }
 
 /** Pure decision: returns the hook's stdout string for a payload object. */
+// ───────────────────────────── Bảo vệ câu trả lời của BA ─────────────────────────────
+
+/** Áp các chỉnh sửa của Write/Edit/MultiEdit lên nội dung hiện có. null = không dựng lại được (cho qua). */
+function applyEdits(tool, input, before) {
+  if (tool === 'Write') return typeof input.content === 'string' ? input.content : null;
+  const edits = tool === 'MultiEdit' ? input.edits : [{ old_string: input.old_string, new_string: input.new_string, replace_all: input.replace_all }];
+  if (!Array.isArray(edits)) return null;
+  let text = before;
+  for (const e of edits) {
+    if (typeof e?.old_string !== 'string' || typeof e?.new_string !== 'string') return null;
+    if (!text.includes(e.old_string)) return null;
+    text = e.replace_all ? text.split(e.old_string).join(e.new_string) : text.replace(e.old_string, () => e.new_string);
+  }
+  return text;
+}
+
+function knowledgeRows(text) {
+  const s7 = S.sectionAt(text, '7', /câu hỏi|open questions/);
+  const s8 = S.sectionAt(text, '8', /quyết định|giả định|decision/);
+  return {
+    q: s7 ? S.readQuestionRows(s7.body, s7.offset) : [],
+    d: s8 ? S.readDecisions(s8.body, s8.offset) : [],
+  };
+}
+
+/**
+ * Agent KHÔNG được tự chốt câu hỏi: ghi §7 thành Confirmed/Rejected hay thêm quyết định hợp lệ vào §8,
+ * xoá câu hỏi chưa chốt khỏi knowledge hay khỏi 02. Con đường duy nhất: người dùng chuyển lời BA → chép nguyên văn
+ * vào 02 §3 (kèm Người trả lời + Ngày) → `npm run knowledge:sync -- <slug> --write` (tool ghi, không qua hook này).
+ * @returns {string|null} lý do chặn, hoặc null.
+ */
+function answerViolation(tool, input, cwd) {
+  if (!['Write', 'Edit', 'MultiEdit'].includes(tool)) return null;
+  const fp = input.file_path;
+  if (!fp || typeof fp !== 'string') return null;
+  const abs = path.resolve(cwd, fp.replace(/^["']|["']$/g, '')).toLowerCase();
+  const kdir = path.join(PATHS.KNOWLEDGE, 'features').toLowerCase() + path.sep;
+  const isKnowledge = abs.startsWith(kdir) && abs.endsWith('.md') && !abs.endsWith(`${path.sep}readme.md`);
+  const is02 = /[\\/]02_missing_rule_report\.md$/.test(abs) && abs.startsWith(PATHS.OUTPUT.toLowerCase() + path.sep);
+  if (!isKnowledge && !is02) return null;
+
+  let before = '';
+  try { before = fs.readFileSync(path.resolve(cwd, fp), 'utf-8'); } catch { /* file mới */ }
+  const after = applyEdits(tool, input, before);
+  if (after === null) return null;
+
+  const route = 'Đường duy nhất: người dùng chuyển lời BA/PO → chép NGUYÊN VĂN vào 02 §3 (Phản hồi chính thức, Người trả lời, Ngày, Trạng thái) → `npm run knowledge:sync -- <slug> --write`.';
+
+  if (is02) {
+    const b = S.read02Questions(before);
+    const a = new Set(S.read02Questions(after).map((q) => q.id));
+    const dropped = b.filter((q) => !q.resolved && !a.has(q.id)).map((q) => q.id);
+    if (dropped.length) return `Không được xoá câu hỏi chưa chốt khỏi 02 (${dropped.join(', ')}) — xoá câu hỏi là cách mở cổng ASK mà không hỏi BA. ${route}`;
+    return null;
+  }
+
+  const B = knowledgeRows(before);
+  const A = knowledgeRows(after);
+  const key = (q) => `${q.id}|${S.questionKey(q.question)}`;
+  const was = new Map(B.q.map((q) => [key(q), q]));
+  const nowKeys = new Set(A.q.map(key));
+  const removed = B.q.filter((q) => !q.resolved && !nowKeys.has(key(q))).map((q) => q.id);
+  if (removed.length) return `Không được xoá câu hỏi chưa chốt khỏi knowledge §7 (${removed.join(', ')}). ${route}`;
+  const newlyResolved = A.q.filter((q) => q.resolved && !(was.get(key(q)) && was.get(key(q)).resolved)).map((q) => q.id);
+  if (newlyResolved.length) return `Agent không được tự chốt câu hỏi ở knowledge §7 (${newlyResolved.join(', ')}). ${route}`;
+  const decNow = new Set(B.d.filter((d) => d.valid).map((d) => `${d.num}|${d.decision}`));
+  const newDec = A.d.filter((d) => d.valid && !decNow.has(`${d.num}|${d.decision}`)).map((d) => `#${d.num}`);
+  if (newDec.length) return `Agent không được tự thêm quyết định vào knowledge §8 (${newDec.join(', ')}). ${route}`;
+  return null;
+}
+
 function decide(payload) {
   const tool = payload?.tool_name || '';
   const input = payload?.tool_input || {};
   const cwd = payload?.cwd || process.cwd();
+
+  try {
+    const why = answerViolation(tool, input, cwd);
+    if (why) return emitDeny(why);
+  } catch { /* không dựng được ⇒ không chặn nhầm; các cổng khác vẫn chạy */ }
 
   /** [{slug, what}] the call would touch. */
   const touches = [];

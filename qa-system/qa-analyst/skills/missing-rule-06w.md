@@ -31,7 +31,9 @@ Biến mọi chỗ nguồn **chưa trả lời** thành câu hỏi đóng `MR-xx
 - Tự điền `Phản hồi chính thức`, `Người trả lời`, `Ngày`, hay đổi `Trạng thái` khi người dùng chưa chuyển lời BA/PO.
 
 ## Các bước
-1. **Dựng ma trận** — mỗi `BR-xx`, `FD-xx`, `AF-xx` của 01 một hàng × `W1…W6` (tên và trọng tâm theo §4).
+1. **Dựng ma trận bằng tool**, không tự dựng: `npm run scaffold -- <task-slug> 02`. Tool ghi khung `02_missing_rule_report.md` — mỗi
+   `BR`/`FD`/`AF` của 01 một hàng theo thứ tự cố định, ô không áp dụng (bảng §4) đã điền sẵn `Không áp dụng` và **không được sửa**,
+   ô cần phán đoán là `<điền>` (tên và trọng tâm W theo §4). File đã có thì không ghi đè (`--stdout` để xem khung).
 2. **Chấm từng ô** đúng một kết quả:
    - `Nguồn: <mã hoặc file §mục>` — nguồn/knowledge đã trả lời (kiểm lại trong `INPUT/` hoặc digest).
    - `Không áp dụng` — chiều W này không liên quan đối tượng (vd `W5` cho field không phụ thuộc actor).
@@ -40,7 +42,8 @@ Biến mọi chỗ nguồn **chưa trả lời** thành câu hỏi đóng `MR-xx
 3. **Đối chiếu OQ** — mỗi `OQ-xx` của 01 ⇒ đúng một `MR-xx` (có thể trùng MR đã sinh ở bước 2), hoặc
    `Nguồn: <...>` nếu nguồn/knowledge thực ra đã trả lời.
 4. **Cấp mã** — kẽ hở trùng một câu đã có ở knowledge §7 ⇒ **giữ mã cũ** và chép trạng thái/phản hồi hiện có.
-   Kẽ hở mới ⇒ số kế tiếp từ `npm run ids -- <task-slug>`. Không đánh lại từ `MR-01`.
+   Kẽ hở mới ⇒ ghi mã tạm `MR-?` rồi chạy `npm run ids -- <task-slug> --assign OUTPUT/<task-slug>/02_missing_rule_report.md`
+   (cùng nhãn `MR-?a` ⇒ cùng một số). Không tự đếm, không đánh lại từ `MR-01`.
 5. **Chi tiết hoá** mỗi `MR` mới (format §2) và ghi vào bảng câu hỏi §3.
 6. **Verdict** (bên dưới), FACT Self-Audit, ghi file và knowledge.
 

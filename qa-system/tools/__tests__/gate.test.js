@@ -90,7 +90,7 @@ test('unlock path 1 — Confirmed with an official answer, or Rejected', () => {
     write('OUTPUT/t/02_missing_rule_report.md', report02());
     write('knowledge/features/t.md', knowledgeDoc({ q7: [
       { id: 'MR-01', answer: '200.000', by: 'BA An', date: '2026-11-01', status: 'Confirmed' },
-      { id: 'MR-02', status: 'Rejected' },
+      { id: 'MR-02', answer: 'không cần xử lý', status: 'Rejected' },
       { id: 'MR-03', answer: 'Có', status: 'Đã xác nhận' },
       { id: 'MR-04', answer: 'Có', status: 'Confirmed (BA An)' },
     ] }));
@@ -298,5 +298,63 @@ test('hook allows everything once the gate is open', () => {
     write('OUTPUT/t/02_missing_rule_report.md', report02());
     assert.ok(!denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: `${PATHS.OUTPUT}/t/05_test_case_spec.md` } })));
     assert.ok(!denied(hook.decide({ tool_name: 'Bash', tool_input: { command: 'npm run testcases:merge t' }, cwd: PATHS.ROOT })));
+  } finally { t.cleanup(); }
+});
+
+test('cổng nói rõ vì sao một câu Confirmed chưa được tính (thiếu người/ngày, hoặc AI tự trả lời)', () => {
+  const t = useTempProject();
+  try {
+    write('OUTPUT/t/02_missing_rule_report.md', report02());
+    write('knowledge/features/t.md', knowledgeDoc({ q7: [
+      { id: 'MR-01', answer: '200k', by: '', date: '', status: 'Confirmed' },
+      { id: 'MR-02', answer: 'Có', by: 'Claude', date: '2026-11-01', status: 'Confirmed' },
+    ] }));
+    const s = evaluate('t');
+    assert.strictEqual(s.blocked, true);
+    assert.match(s.pending.find((q) => q.id === 'MR-01').state, /thiếu Người trả lời hoặc Ngày/);
+    assert.match(s.pending.find((q) => q.id === 'MR-02').state, /AI\/agent/);
+  } finally { t.cleanup(); }
+});
+
+// ───────────── Hook: agent không được tự chốt câu trả lời của BA ─────────────
+
+test('hook chặn agent tự chốt câu hỏi ở knowledge §7 / thêm quyết định §8; cho qua việc thêm câu hỏi mới', () => {
+  const t = useTempProject();
+  try {
+    const k = knowledgeDoc({ q7: [{ id: 'MR-01', question: 'Mức sàn?' }] });
+    const kp = write('knowledge/features/t.md', k);
+    const edit = (oldS, newS) => hook.decide({ tool_name: 'Edit', tool_input: { file_path: kp, old_string: oldS, new_string: newS } });
+
+    // Tự điền câu trả lời + người + ngày + Confirmed vào §7.
+    const row = k.split('\n').find((l) => l.startsWith('| MR-01'));
+    const self = row.replace(/\|\s*\|\s*\|\s*\|\s*New\s*\|$/, '| 200k | BA An | 2026-11-01 | Confirmed |');
+    assert.notStrictEqual(self, row);
+    assert.ok(denied(edit(row, self)), 'tự chốt §7 phải bị chặn');
+
+    // Write cả file với §7 đã chốt.
+    assert.ok(denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: kp, content: k.replace(row, self) } })));
+
+    // Xoá câu hỏi chưa chốt.
+    assert.ok(denied(edit(row + '\n', '')), 'xoá câu hỏi chưa chốt phải bị chặn');
+
+    // Thêm quyết định hợp lệ vào §8.
+    const withDecision = knowledgeDoc({ q7: [{ id: 'MR-01', question: 'Mức sàn?' }], d8: [{ id: 'MR-01', question: 'Mức sàn?', decision: '200k', by: 'BA An', date: '2026-11-01' }] });
+    assert.ok(denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: kp, content: withDecision } })));
+
+    // Thêm một câu hỏi MỚI (New) thì được.
+    const more = knowledgeDoc({ q7: [{ id: 'MR-01', question: 'Mức sàn?' }, { id: 'MR-02', question: 'Làm tròn?' }] });
+    assert.ok(!denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: kp, content: more } })));
+  } finally { t.cleanup(); }
+});
+
+test('hook chặn xoá câu hỏi chưa chốt khỏi 02; chốt qua 02 §3 (đường chính thống) thì được', () => {
+  const t = useTempProject();
+  try {
+    const r = report02({ verdict: 'ASK', cells: { 'BR-01:W1': 'MR-01' }, questions: [{ id: 'MR-01', question: 'Mức sàn?' }] });
+    const p = write('OUTPUT/t/02_missing_rule_report.md', r);
+    const without = report02({ verdict: 'PASS' });
+    assert.ok(denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: p, content: without } })));
+    const answered = report02({ verdict: 'ASK', cells: { 'BR-01:W1': 'MR-01' }, questions: [{ id: 'MR-01', question: 'Mức sàn?', answer: '200k', by: 'BA An', date: '2026-11-01', status: 'Confirmed' }] });
+    assert.ok(!denied(hook.decide({ tool_name: 'Write', tool_input: { file_path: p, content: answered } })));
   } finally { t.cleanup(); }
 });

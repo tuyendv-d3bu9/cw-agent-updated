@@ -91,7 +91,7 @@ const Q_HEAD = '| ID | Kẽ hở | Nhóm 06W | Nguồn phát hiện | Phương �
 
 /** One §9.4 row. q = {id, question, answer, by, date, status}. */
 function qRow(q) {
-  return `| ${q.id} | Kẽ hở ${q.id} | W1 | BR-01 × W1 | Gợi ý | ${q.question || `Câu hỏi ${q.id}?`} | ${q.answer || ''} | ${q.by || ''} | ${q.date || ''} | ${q.status || 'New'} |`;
+  return `| ${q.id} | Kẽ hở ${q.id} | W1 | BR-01 × W1 | Gợi ý | ${q.question || `Câu hỏi ${q.id}?`} | ${q.answer || ''} | ${q.by ?? (q.answer ? 'BA An' : '')} | ${q.date ?? (q.answer ? '2026-11-01' : '')} | ${q.status || 'New'} |`;
 }
 
 /** Knowledge file with the new template's §7/§8 tables (§8 LAST-but-two as in the template). */

@@ -37,7 +37,8 @@ Master Spec `01_`→`06_` cố định. Chạy test cho một ticket thì mở s
 (khuôn ở `qa-system/templates/run/`).
 
 ### 1.3. System Map First
-Vào việc là đọc `knowledge/_system_map.json` (bảng `routing_table`) rồi mở **đúng file đích**.
+Vào việc là tra `npm run map -- <từ khoá>` (bảng `routing_table` của `knowledge/_system_map.json`) rồi mở **đúng file đích**.
+**Không mở thẳng file `.json`** (system map, manifest, metrics, blueprint, sprint-data): dùng `npm run json -- <file> <đường.dẫn>` để lấy đúng nhánh cần, `--keys` để xem có những khoá nào.
 Cấm quét/grep mò toàn dự án. Bản đồ lệch thực tế ⇒ `npm run map:sync`.
 
 ### 1.4. QA Leader là cửa ngõ duy nhất
@@ -138,7 +139,8 @@ Khởi tạo: `npm run init` (repo mới) · `npm run knowledge:new <slug>` (tí
 1. **Chỉ trích hoặc hỏi, không sáng tác** — guard QA_STANDARD §2, nhãn khi thiếu §2.1, FACT §3.
 2. **Verdict** PASS / FIX / ASK — QA_STANDARD §1. Dòng meta 10 dòng đầu — §7.
 3. **Kiểm bằng máy trước khi báo xong**: `npm run lint -- <slug>` trước khi báo xong Chặng 5/6 (exit `1` ⇒ chưa xong).
-   Linter lo phần cơ học; độ phủ nghiệp vụ vẫn là việc của agent và con người.
+   Linter lo phần cơ học **và nguồn gốc giá trị** (chữ thông báo, con số, trích dẫn phải có trong nguồn); độ phủ nghiệp vụ và việc hiểu đúng một câu vẫn là việc của agent và con người.
+   Lint chạy lại ở mọi lối ra (`export`, đẩy Jira, `readiness`) và trước mỗi `git commit` (`npm run hooks:install`, `npm run init` cài sẵn) — áp dụng cho mọi công cụ AI, không riêng Claude Code.
 4. **Giữ gốc sạch**: không tạo file ở root (`TODO.md`, `.cursorrules`…). Mọi kết quả trong `OUTPUT/<slug>/`.
 
 ---

@@ -313,7 +313,10 @@ async function processFile(filePath, userSlug, report = newReport(), { consume =
     ensureBins(slug);
     let destPath = path.join(PATHS.INPUT, slug, cls.bin, `${slugify(baseName)}.md`);
     // Hai file nguồn trùng tên gốc trong cùng một lượt (spec.docx + spec.pdf) không được ghi đè nhau.
-    if (report.written.has(destPath)) destPath = path.join(PATHS.INPUT, slug, cls.bin, `${slugify(baseName)}-${ext.slice(1)}.md`);
+    // Trùng tên trong cùng lượt: thêm đuôi, rồi số thứ tự — file thứ ba không được ghi đè file thứ hai.
+    for (let n = 2; report.written.has(destPath); n++) {
+      destPath = path.join(PATHS.INPUT, slug, cls.bin, `${slugify(baseName)}-${n === 2 ? ext.slice(1) : `${ext.slice(1)}-${n}`}.md`);
+    }
     fs.writeFileSync(destPath, markdown, 'utf8');
     if (fs.readFileSync(destPath, 'utf8') !== markdown) return fail('ghi file đích không khớp');
     report.written.add(destPath);
@@ -555,7 +558,8 @@ function featureSlug(name) {
     tokens = out;
   }
   tokens = tokens.filter((t) => !DOC_TYPE_TOKENS.has(t));
-  return tokens.join('-') || slugify(name) || 'task';
+  // Tên toàn ký tự không Latin (中文, ไทย…) cho slug rỗng — dùng mã băm để các file khác nhau không dồn vào một task `task`.
+  return tokens.join('-') || slugify(name) || `task-${crypto.createHash('sha1').update(String(name)).digest('hex').slice(0, 6)}`;
 }
 
 function pickSlug(files) {

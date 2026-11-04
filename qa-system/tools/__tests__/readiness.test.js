@@ -170,3 +170,18 @@ test('paths — every entry resolves under ROOT', () => {
   assert.strictEqual(path.basename(P.SYSTEM), 'qa-system');
   assert.strictEqual(P.FEATURES, path.join(P.KNOWLEDGE, 'features'));
 });
+
+test('readiness không cho GO khi lint có lỗi (Expected: TBD từng vẫn ra GO)', () => {
+  const t = useTempProject();
+  try {
+    fullTask();
+    assert.strictEqual(decide(collect('t')).verdict, 'GO');
+    write('OUTPUT/t/05_test_case_spec.md', spec([
+      testCase('TST-001', { 'Expected Result': '\n  - TBD', Tags: 'Rule#BR-01, Viewpoint#VP-01, TI#TI-01, Module#TST, Manual' }),
+      testCase('TST-002', { Tags: 'Rule#BR-02, Viewpoint#VP-02, TI#TI-02, Module#TST, Manual' }),
+    ]));
+    const d = decide(collect('t'));
+    assert.strictEqual(d.verdict, 'NO-GO');
+    assert.match(d.blockers.join(' '), /npm run lint reports/);
+  } finally { t.cleanup(); }
+});

@@ -364,3 +364,18 @@ test('featureSlug — không bao giờ rỗng và xác định', () => {
 test('pickSlug — hai bản v1/v2 của cùng đặc tả ra cùng slug', () => {
   assert.strictEqual(pickSlug(['/x/SRS_Doi_mat_khau_v2.docx']), pickSlug(['/x/SRS Doi mat khau v1 2026-10-01.docx']));
 });
+
+test('featureSlug — tên không có ký tự Latin vẫn ra slug riêng, xác định', () => {
+  const { featureSlug } = require('../intake/intake');
+  const a = featureSlug('需求文档');
+  assert.match(a, /^task-[0-9a-f]{6}$/);
+  assert.strictEqual(a, featureSlug('需求文档'));
+  assert.notStrictEqual(a, featureSlug('规格说明'));
+});
+
+test('bulk-intake — `--dry-run <path>` không nuốt đường dẫn', () => {
+  const fs = require('fs');
+  const src = fs.readFileSync(require('path').join(__dirname, '../intake/bulk-intake.js'), 'utf-8');
+  assert.match(src, /VALUE_FLAGS = new Set\(\['--slug', '--into', '--concurrency', '--chunk'\]\)/);
+  assert.doesNotMatch(src, /!args\[idx - 1\]\.startsWith\('--'\)/);
+});

@@ -10,7 +10,7 @@ giao việc cho agent chuyên môn, kiểm verdict và gác cổng. Người dù
 
 ## 2. Ma trận điều phối
 
-Tra `knowledge/_system_map.json` trước, rồi giao việc:
+Tra `npm run map -- <từ khoá>` (không mở cả `_system_map.json`) trước, rồi giao việc:
 
 | Nhiệm vụ | Agent | Skill / tool | Đầu ra (`OUTPUT/<slug>/` trừ khi ghi khác) |
 |---|---|---|---|

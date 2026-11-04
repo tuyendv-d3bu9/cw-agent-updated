@@ -100,12 +100,47 @@ test('quote matching: NFC, whitespace, markdown, case, curly quotes and elisions
 });
 
 test('question rows: resolved only with Confirmed + answer, or Rejected', () => {
-  const rows = S.readQuestionRows('| ID | Câu hỏi cho BA/PO | Phản hồi chính thức | Trạng thái |\n|---|---|---|---|\n| MR-01 | a | x | Confirmed |\n| MR-02 | b |  | Confirmed |\n| MR-03 | c |  | Rejected |\n| MR-04 | d | – | New |\n');
-  assert.deepStrictEqual(rows.map((r) => r.resolved), [true, false, true, false]);
+  const rows = S.readQuestionRows('| ID | Câu hỏi cho BA/PO | Phản hồi chính thức | Người trả lời | Ngày | Trạng thái |\n|---|---|---|---|---|---|\n| MR-01 | a | x | BA An | 2026-11-01 | Confirmed |\n| MR-02 | b |  |  |  | Confirmed |\n| MR-03 | c | không cần | BA An |  | Rejected |\n| MR-04 | d | – |  |  | New |\n| MR-05 | e | x |  |  | Confirmed |\n| MR-06 | f | x | Claude | 2026-11-01 | Confirmed |\n');
+  // MR-05: Confirmed nhưng không có người trả lời/ngày ⇒ chưa tính. MR-06: AI không được tự trả lời.
+  assert.deepStrictEqual(rows.map((r) => r.resolved), [true, false, true, false, false, false]);
 });
 
 test('decisions valid only with approver + date', () => {
   const d = S.readDecisions('| # | Mã liên quan | Câu hỏi | Quyết định chính thức | Người phê duyệt | Ngày chốt |\n|---|---|---|---|---|---|\n| 1 | MR-01, MR-02 | q | x | PO | 2026-11-01 |\n| 2 | MR-03 | q | x |  | 2026-11-01 |\n| 3 | MR-04 | q | x | <điền> | <điền> |\n');
   assert.deepStrictEqual(d.map((x) => x.valid), [true, false, false]);
   assert.deepStrictEqual(d[0].related, ['MR-01', 'MR-02']);
+});
+
+test('status — dấu hỏi / chờ / một phần ở bất kỳ đâu ⇒ chưa chốt (không bị chữ Confirmed đứng đầu đánh lừa)', () => {
+  for (const x of ['Confirmed? chưa chắc', 'Confirmed – chờ BA ký', 'Đã xác nhận một phần', 'Loại trừ…? chưa']) {
+    assert.strictEqual(S.normalizeStatus(x), 'New', x);
+  }
+  assert.strictEqual(S.normalizeStatus('Từ chối'), 'Rejected');
+  assert.strictEqual(S.normalizeStatus('Đã trả lời'), 'Confirmed');
+  assert.strictEqual(S.normalizeStatus('Approved'), 'Confirmed');
+  assert.strictEqual(S.normalizeStatus('Confirmed (BA An)'), 'Confirmed');
+});
+
+test('isAiName — AI/agent không phải người phê duyệt; tên người thật thì được', () => {
+  for (const x of ['AI', 'Claude', 'agent', 'AI (agent)', 'QA Leader', 'Codex']) assert.strictEqual(S.isAiName(x), true, x);
+  for (const x of ['BA Nguyễn An', 'Ái Nhi', 'PO Trần B', '']) assert.strictEqual(S.isAiName(x), false, x);
+  const d = S.readDecisions('| # | Mã liên quan | Câu hỏi | Quyết định chính thức | Người phê duyệt | Ngày chốt |\n|---|---|---|---|---|---|\n| 1 | MR-01 | q | x | Claude | 2026-11-01 |\n');
+  assert.strictEqual(d[0].valid, false);
+});
+
+test('quote — dưới 4 từ không chứng minh được gì; Nguồn trỏ file không tồn tại thì không được rơi về "mọi file"', () => {
+  assert.strictEqual(S.quoteMatch('voucher', 'tài liệu có chữ voucher ở đây').ok, false);
+  assert.strictEqual(S.quoteMatch('khoá sau 5 lần', 'tài khoản khoá sau 5 lần sai').ok, true);
+  const files = [{ rel: '02_ba/spec.md', norm: S.normText('Tài khoản khoá sau 5 lần sai liên tiếp') }];
+  assert.strictEqual(S.quoteInSources('khoá sau 5 lần sai', '02_ba/spec.md §2', files).ok, true);
+  const miss = S.quoteInSources('khoá sau 5 lần sai', 'spec_fake.md §2', files);
+  assert.strictEqual(miss.ok, false);
+  assert.match(miss.reason, /no such file/);
+});
+
+test('CRLF và BOM — file Windows vẫn parse được test case', () => {
+  const text = '\uFEFF### TC_ID: TST-001\r\n- **Title**: Verify x\r\n- **Precondition**: a\r\n- **Test Steps**: 1. b\r\n- **Test Data**: c\r\n- **Expected Result**: d\r\n- **Priority**: High\r\n- **Tags**: Rule#BR-01\r\n';
+  const { cases } = S.parseTestCases(text);
+  assert.strictEqual(cases.length, 1);
+  assert.ok(S.tcField(cases[0], 'Priority'));
 });

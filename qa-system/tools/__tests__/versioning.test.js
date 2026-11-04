@@ -19,8 +19,12 @@ test('featureSlug — dùng chung phần bỏ version/ngày với versioning', (
   assert.strictEqual(featureSlug('SRS_Doi_mat_khau_v1'), featureSlug('SRS Đổi mật khẩu v2 (2026-10-28)'));
 });
 
-test('compareDocs — ngày thắng version; không đủ thông tin ⇒ 0 (không đoán)', () => {
-  assert.strictEqual(V.compareDocs({ date: '2026-10-28', version: '1' }, { date: '2026-09-01', version: '2' }), 1);
+test('compareDocs — version thắng ngày (ngày là ngày lưu file); thiếu version thì dùng ngày; không đủ thông tin ⇒ 0', () => {
+  // v2 lưu sớm hơn v1 được mở lại lưu muộn: vẫn là v2 mới hơn.
+  assert.strictEqual(V.compareDocs({ date: '2026-10-28', version: '1' }, { date: '2026-09-01', version: '2' }), -1);
+  assert.strictEqual(V.compareDocs({ date: '2026-10-28', version: null }, { date: '2026-09-01', version: '2' }), 1);
+  assert.strictEqual(V.compareDocs({ date: '2026-10-01', version: '2' }, { date: '2026-10-28', version: '2' }), -1);
+  assert.strictEqual(V.compareDocs({ date: null, version: '1.5' }, { date: null, version: '2' }), -1);
   assert.strictEqual(V.compareDocs({ date: null, version: '1.10' }, { date: null, version: '1.9' }), 1);
   assert.strictEqual(V.compareDocs({ date: null, version: null }, { date: null, version: '2' }), 0);
 });

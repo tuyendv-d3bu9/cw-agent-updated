@@ -33,7 +33,7 @@ Chi tiết hoá mỗi Test Idea `Giữ` thành một hoặc nhiều Test Case 8 
 ## Luật giá trị
 | Ô | Lấy từ | Không có trong nguồn |
 |---|---|---|
-| Test Data | `FD` (ràng buộc), knowledge §9, ví dụ trong `INPUT/`; điểm biên **tính** từ min/max có nguồn (§6) | `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` (hoặc không mã nếu chưa có MR) |
+| Test Data | `FD` (ràng buộc), knowledge §9, ví dụ trong `INPUT/`; điểm biên **do máy tính**: chạy `npm run boundary -- <slug> [FD-xx]` rồi chép nguyên giá trị (§6) — không tự tính; điểm máy ghi nhãn thì giữ nhãn | `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` (hoặc không mã nếu chưa có MR) |
 | Chữ thông báo trong Expected | `FD` cột `Thông báo khi sai`, `AF` cột `Hệ thống phản hồi`, knowledge §8 — **nguyên văn** | `Hiển thị thông báo lỗi [CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` |
 | Mã HTTP / trạng thái DB | Chỉ khi `FD`/`AF` có nguồn `03_dev/` nói rõ | Không viết |
 | Priority | Ánh xạ cố định QA_STANDARD §11 từ Risk Level cao nhất của các `RK` có `Nguồn` chứa mã rule của TC | `Medium [ĐỀ XUẤT]` |
@@ -93,4 +93,6 @@ Owner: qa-system/qa-test-design/skills/test-case-generation.md · Nguồn: 04_te
 - [ ] `npm run gate <slug>` exit `0` trước khi ghi; `npm run lint -- <slug>` exit `0`, kết quả thật được dán.
 - [ ] Mọi TI `Giữ` có ít nhất một TC; không TC nào từ TI khác `Giữ`.
 - [ ] Mọi giá trị, chữ thông báo, mã phản hồi trích được về nguồn; chỗ thiếu mang nhãn §2.1.
+      **Lint kiểm bằng máy**: chữ trong ngoặc kép ở Expected phải có trong FD "Thông báo khi sai" / AF / knowledge §8; con số có đơn vị
+      (lần, phút, ký tự, VNĐ, %…) phải có trong nguồn (±1 cho biên, hoặc giá trị giữa); `[GIẢ ĐỊNH]` cấm trong ô giá trị; nhãn `– MR-xx` phải trỏ MR có thật.
 - [ ] Priority đúng ánh xạ §11; Tags đủ `Rule#`, `Viewpoint#`, `TI#`, `Module#`, Manual/Automated.

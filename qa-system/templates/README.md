@@ -52,6 +52,6 @@ Ba câu tự kiểm:
   - [ ] (a) Trỏ tới QA_STANDARD, không chép luật
   - [ ] (b) "Đầu vào" khai đủ, gồm `knowledge/_project.md` + `knowledge/features/<slug>.md`
   - [ ] (c) Output một file, dòng meta QA_STANDARD §7, bảng có cột nguồn / mã trace
-  - [ ] (d) Chạy **2 lần** trên cùng đầu vào mẫu, so tập mã và verdict; khác biệt phải giải thích được
+  - [ ] (d) Chạy **2 lần** trên cùng đầu vào mẫu rồi `npm run diff-runs -- <OUTPUT/slug-lần-1> <OUTPUT/slug-lần-2>`; khác biệt phải giải thích được
   - [ ] (e) Không ví dụ theo miền nghiệp vụ cụ thể trong skill lõi
 - [ ] `npm test` và `npm run agent:check` xanh, dán kết quả thật
