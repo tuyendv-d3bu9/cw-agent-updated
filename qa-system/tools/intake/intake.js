@@ -462,6 +462,9 @@ function ingestedDocs() {
     if (!fs.statSync(taskDir).isDirectory()) continue;
 
     for (const category of fs.readdirSync(taskDir)) {
+      // Chỉ 5 ngăn chuẩn mới là tài liệu đã nạp. Thư mục kho (vd INPUT/RAWS/de-bai/) không phải task —
+      // tính nó vào thì file đề bài bị báo "trùng với chính nó".
+      if (!BINS.includes(category)) continue;
       const catDir = path.join(taskDir, category);
       if (!fs.existsSync(catDir) || !fs.statSync(catDir).isDirectory()) continue;
 

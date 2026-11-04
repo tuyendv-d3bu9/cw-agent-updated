@@ -385,3 +385,14 @@ test('bulk-intake — `--dry-run <path>` không nuốt đường dẫn', () => {
   assert.match(src, /VALUE_FLAGS = new Set\(\['--slug', '--into', '--concurrency', '--chunk'\]\)/);
   assert.doesNotMatch(src, /!args\[idx - 1\]\.startsWith\('--'\)/);
 });
+
+test('ingestedDocs — thư mục kho trong INPUT (vd RAWS/de-bai) không bị coi là task đã nạp', (t) => {
+  const { useTempProject, write } = require('./helpers');
+  const { ingestedDocs } = require('../intake/intake');
+  const p = useTempProject();
+  t.after(p.cleanup);
+  write('INPUT/RAWS/de-bai/BRD.md', '# BRD hoàn tiền\n\nNội dung.');
+  write('INPUT/hoan-tien/02_ba/srs.md', '# SRS hoàn tiền\n\nNội dung.');
+  const docs = ingestedDocs();
+  assert.deepStrictEqual(docs.map((d) => d.slug), ['hoan-tien']);
+});
