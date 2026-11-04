@@ -68,6 +68,12 @@ test('pickSlug — names the task after the BA document, not the strategy docume
   assert.strictEqual(pickSlug(files), 'gio-hang');
 });
 
+test('pickSlug — SRS thắng file API có chữ "spec" (không đặt tên task theo tài liệu dev)', () => {
+  const files = ['/x/API_Ma_loi_hoan_tien.xlsx', '/x/API_Refund_Request_spec.md', '/x/BRD_Hoan_tien_2026-10-01.md', '/x/SRS_Hoan_tien_v2.docx'];
+  assert.strictEqual(pickSlug(files), 'hoan-tien');
+  assert.strictEqual(pickSlug(['/x/API_spec.md', '/x/Spec Gio hang.md']), 'gio-hang');
+});
+
 test('pickSlug — falls back to the first file when no BA document exists', () => {
   assert.strictEqual(pickSlug(['/x/ghi chu.md', '/x/khac.md']), 'ghi-chu');
 });

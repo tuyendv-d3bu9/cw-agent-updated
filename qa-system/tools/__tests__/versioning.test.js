@@ -92,3 +92,24 @@ test('confirmNotice — nêu đúng hai lối đi và dặn agent không tự ch
   assert.match(msg, /--slug <tên-tính-năng-khác>/);
   assert.match(msg, /KHÔNG tự chọn/);
 });
+
+test('needsConfirmation — Q&A của BA mang thêm chữ vẫn dừng hỏi gộp vào task đã có (không lặng lẽ tạo task mới)', (t) => {
+  const p = useTempProject();
+  t.after(p.cleanup);
+  write('INPUT/hoan-tien/02_ba/srs-hoan-tien-v2.md', '# spec');
+  assert.deepStrictEqual(V.relatedTasks('qa-ba-tra-loi-hoan-tien'), ['hoan-tien']);
+  const ask = V.needsConfirmation('qa-ba-tra-loi-hoan-tien');
+  assert.strictEqual(ask.slug, 'hoan-tien');
+  assert.strictEqual(ask.related, true);
+  assert.strictEqual(V.needsConfirmation('doi-mat-khau'), null, 'tên không liên quan thì không hỏi');
+  assert.match(V.confirmNotice('hoan-tien', ['/x/QA.md'], { proposed: 'qa-ba-tra-loi-hoan-tien' }), /gần với task đã có \[ hoan-tien \]/);
+});
+
+test('needsConfirmation — task trùng tên có tài liệu vẫn hỏi như cũ; task chưa có tài liệu không tính', (t) => {
+  const p = useTempProject();
+  t.after(p.cleanup);
+  write('INPUT/hoan-tien/02_ba/README.md', '# hướng dẫn');
+  assert.strictEqual(V.needsConfirmation('qa-hoan-tien'), null);
+  write('INPUT/hoan-tien/02_ba/srs.md', '# spec');
+  assert.deepStrictEqual(V.needsConfirmation('hoan-tien'), { slug: 'hoan-tien', related: false });
+});

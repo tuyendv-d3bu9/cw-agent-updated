@@ -104,7 +104,10 @@ npm run gate <task-slug>
 ```
 
 Dán kết quả thật. Mọi MR đã `Confirmed`/`Rejected` ⇒ sửa dòng meta của 02 thành `Verdict: PASS`
-(không chạy lại Chặng 2), rồi chạy lại Chặng `01` để nâng MR đã chốt thành `BR` và cập nhật §9 hằng số.
+(không quét lại các hàng cũ), rồi chạy lại Chặng `01` để nâng MR đã chốt thành `BR`/`FD`/`AF` (nguồn `knowledge §8 #n`)
+và cập nhật §9 hằng số. **Đối tượng mới của 01 phải có hàng ma trận** (lint kiểm): lấy hàng khung bằng
+`npm run scaffold -- <task-slug> 02 --stdout`, chèn vào §1, chấm như bước 2 — ô đã được câu trả lời chốt ghi
+`Nguồn: knowledge §8 #n`. Ô có kẽ hở mới ⇒ `MR` số kế tiếp, verdict trở lại `ASK` (vòng lặp hội tụ: mỗi vòng chỉ hỏi phần mới).
 
 Câu trả lời phải dùng được **nguyên văn**. Câu trả lời còn biến hoặc mẫu (`<tên trường>`, `X ký tự`,
 "tuỳ trường hợp") thì chưa phải giá trị cụ thể: để trạng thái `TREO`, ghi câu hỏi tiếp theo nêu rõ cần chữ/số gì.

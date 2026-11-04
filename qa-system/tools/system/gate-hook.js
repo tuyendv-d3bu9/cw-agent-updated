@@ -296,7 +296,10 @@ function answerViolation(tool, input, cwd) {
   const nowKeys = new Set(A.q.map(key));
   const removed = B.q.filter((q) => !q.resolved && !nowKeys.has(key(q))).map((q) => q.id);
   if (removed.length) return `Không được xoá câu hỏi chưa chốt khỏi knowledge §7 (${removed.join(', ')}). ${route}`;
-  const newlyResolved = A.q.filter((q) => q.resolved && !(was.get(key(q)) && was.get(key(q)).resolved)).map((q) => q.id);
+  // Chặn theo TRẠNG THÁI agent ghi, không chỉ theo "đã chốt hợp lệ": dòng "Confirmed · Claude" không mở được cổng
+  // (schema loại người trả lời là AI) nhưng vẫn làm bẩn knowledge — người đọc sau tưởng câu đã được BA chốt.
+  const claims = (q) => q && (q.resolved || q.status === 'Confirmed' || q.status === 'Rejected');
+  const newlyResolved = A.q.filter((q) => claims(q) && !claims(was.get(key(q)))).map((q) => q.id);
   if (newlyResolved.length) return `Agent không được tự chốt câu hỏi ở knowledge §7 (${newlyResolved.join(', ')}). ${route}`;
   const decNow = new Set(B.d.filter((d) => d.valid).map((d) => `${d.num}|${d.decision}`));
   const newDec = A.d.filter((d) => d.valid && !decNow.has(`${d.num}|${d.decision}`)).map((d) => `#${d.num}`);
