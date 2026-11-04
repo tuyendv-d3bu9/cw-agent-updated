@@ -1,7 +1,7 @@
 # 05_communication — Biên Bản Trao Đổi, Q&A & Thay Đổi (Change Requests)
 
 ## Mục đích
-Chứa các thông tin trao đổi, làm rõ yêu cầu giữa Tester, BA, Dev và Khách hàng. Đây là nguồn dữ liệu sống quan trọng nhất để giải quyết các kẽ hở logic (`ASK`) mà tài liệu PRD ban đầu chưa kịp cập nhật.
+Chứa các thông tin trao đổi, làm rõ yêu cầu giữa Tester, BA, Dev và Khách hàng. CR, Q&A, biên bản **có ngày** và mới hơn spec thì thắng phần nó nói tới (`qa-system/core/QA_STANDARD.md` §10.2). Không có ngày ⇒ agent hỏi lại BA thay vì tự chọn.
 
 ## Các loại tài liệu phù hợp:
 - Biên bản họp (Meeting Minutes)

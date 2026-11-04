@@ -1,0 +1,25 @@
+{
+  "_comment": [
+    "Mô tả HỆ THỐNG ĐANG KIỂM THỬ (System Under Test).",
+    "",
+    "Tách riêng khỏi _system_map.json có chủ đích: bản đồ hệ thống là của KHUNG,",
+    "dùng chung mọi dự án; file này là của DỰ ÁN. Để chung thì mỗi lần merge khung",
+    "từ nhánh develop về lại xung đột, vì hai bên cùng sửa một file.",
+    "",
+    "playwright.config.ts đọc `url` ở đây để biết chạy test vào đâu.",
+    "Agent đọc `routing` và `constraints` để không viết locator sai."
+  ],
+
+  "name": "<Tên hệ thống>",
+  "url": "<https://... — để trống nếu chưa có môi trường test>",
+  "type": "<ví dụ: React SPA tĩnh · Web MPA có backend · Mobile app>",
+  "routing": "<cách chuyển màn: có router dùng URL, hay đổi state — ảnh hưởng trực tiếp tới automation>",
+  "ui_map": "knowledge/features/<sut>-ui-map.md",
+
+  "storage_keys": [],
+
+  "constraints": [
+    "<ràng buộc cứng mà agent phải biết trước khi viết test>",
+    "<ví dụ: không có router nên CẤM page.goto(path), phải click nút nav>"
+  ]
+}

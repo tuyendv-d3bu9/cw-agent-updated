@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sổ tay tạo skill qa-system</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Bố cục: một cột ~1000px; sơ đồ quy trình SVG ở đầu; mỗi bước là một khối có số thứ tự thật (quy trình tuần tự). */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --sunk: #e9edf3;
+  --fg: #172030;
+  --muted: #5a6577;
+  --line: #d8dee8;
+  --accent: #2a58b8;
+  --accent-soft: #e2eafa;
+  --warn: #a8640f;
+  --warn-soft: #f9ecd8;
+  --bad: #b5352f;
+  --bad-soft: #f9e4e2;
+  --good: #1d7b4a;
+  --good-soft: #e1f2e8;
+  --font: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10141b; --surface: #171d27; --sunk: #1e2632; --fg: #e3e8f0; --muted: #98a3b5; --line: #2a3342;
+    --accent: #8eaef5; --accent-soft: #1f2b45; --warn: #efb060; --warn-soft: #382a17; --bad: #f2877f; --bad-soft: #3b1f1d;
+    --good: #72d69c; --good-soft: #183323; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10141b; --surface: #171d27; --sunk: #1e2632; --fg: #e3e8f0; --muted: #98a3b5; --line: #2a3342;
+  --accent: #8eaef5; --accent-soft: #1f2b45; --warn: #efb060; --warn-soft: #382a17; --bad: #f2877f; --bad-soft: #3b1f1d;
+  --good: #72d69c; --good-soft: #183323; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 16px; line-height: 1.7; }
+.wrap { max-width: 1000px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 36px 80px; display: grid; gap: 52px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -.012em; }
+h1 { font-size: clamp(32px, 5.4vw, 48px); line-height: 1.1; font-weight: 800; }
+h2 { font-size: clamp(22px, 3vw, 27px); line-height: 1.25; font-weight: 700; }
+h3 { font-size: 17px; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+code { font-family: var(--mono); font-size: .86em; background: var(--sunk); padding: 1px 6px; border-radius: 5px; }
+section { display: grid; gap: 18px; }
+.kicker { font-size: 12.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 18px; color: var(--muted); max-width: 62ch; }
+.muted { color: var(--muted); }
+
+.hero { display: grid; gap: 16px; padding: 28px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
+.rules3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.rules3 div { background: var(--sunk); border-radius: 12px; padding: 14px 16px; display: grid; gap: 2px; }
+.rules3 b { font-size: 16.5px; }
+.rules3 span { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; overflow-x: auto; }
+.diagram svg { display: block; min-width: 780px; width: 100%; height: auto; }
+
+.step { display: grid; grid-template-columns: 52px 1fr; gap: 16px; align-items: start; }
+.step .n { width: 44px; height: 44px; border-radius: 12px; background: var(--accent); color: var(--surface); font-weight: 800; font-size: 19px; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+.step .body { display: grid; gap: 14px; min-width: 0; }
+@media (max-width: 560px) { .step { grid-template-columns: 1fr; } }
+
+.tree { display: grid; gap: 10px; }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+.q .ans { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 600px) { .q { grid-template-columns: 1fr; } .q .ans { justify-content: flex-start; } }
+.pill { display: inline-block; font-size: 12.5px; font-weight: 700; padding: 2px 10px; border-radius: 99px; white-space: nowrap; }
+.pill.a { background: var(--accent-soft); color: var(--accent); }
+.pill.ok { background: var(--good-soft); color: var(--good); }
+.pill.no { background: var(--bad-soft); color: var(--bad); }
+.pill.w { background: var(--warn-soft); color: var(--warn); }
+
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; line-height: 1.55; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: var(--sunk); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.c { text-align: center; white-space: nowrap; }
+
+pre { margin: 0; padding: 14px 16px; font-family: var(--mono); font-size: 12.8px; line-height: 1.65; overflow-x: auto; white-space: pre; background: var(--sunk); color: var(--fg); border-radius: 12px; }
+.anno { color: var(--accent); }
+
+.rulegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.rule { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; min-width: 0; align-content: start; }
+.rule h3 { font-size: 16px; }
+.ex { display: grid; gap: 6px; font-size: 14px; }
+.ex div { border-radius: 8px; padding: 7px 10px; }
+.ex .bad { background: var(--bad-soft); }
+.ex .good { background: var(--good-soft); }
+.ex b { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; margin-right: 6px; }
+.ex .bad b { color: var(--bad); }
+.ex .good b { color: var(--good); }
+
+.cmds { display: grid; gap: 8px; }
+.cmd { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; align-items: center; }
+.cmd code { background: none; padding: 0; font-size: 13.5px; overflow-wrap: anywhere; }
+.cmd span { color: var(--muted); font-size: 14px; }
+@media (max-width: 600px) { .cmd { grid-template-columns: 1fr; gap: 2px; } }
+
+.lesson { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.lesson div { background: var(--warn-soft); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; font-size: 14.5px; }
+.lesson b { font-size: 15.5px; }
+
+.prompt { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.prompt .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; background: var(--sunk); flex-wrap: wrap; }
+.prompt .top span { font-weight: 700; font-size: 14px; }
+.prompt textarea { width: 100%; border: 0; background: var(--surface); color: var(--fg); font-family: var(--mono); font-size: 13px; line-height: 1.65; padding: 14px 16px; resize: vertical; min-height: 190px; }
+button { font-family: var(--font); font-size: 13.5px; font-weight: 700; border: 1px solid var(--accent); color: var(--accent); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+button:hover { background: var(--accent-soft); }
+button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.plain { margin: 0; padding-left: 20px; display: grid; gap: 7px; max-width: 74ch; }
+.summary { background: var(--accent); color: var(--surface); border-radius: 18px; padding: 28px; display: grid; gap: 16px; }
+.summary h2 { color: var(--surface); }
+.summary ol { margin: 0; padding-left: 22px; display: grid; gap: 8px; max-width: 72ch; }
+.summary p { max-width: 70ch; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">qa-system · tạo mới / chỉnh sửa skill</div>
+  <h1>Sổ tay tạo skill qa-system</h1>
+  <p class="lede">Một skill viết sai có thể làm AI bịa dữ liệu, làm lệch kết quả giữa các lần chạy, hoặc làm gãy cổng kiểm của cả hệ thống. Trang này là quy trình 6 bước để thêm hoặc sửa skill mà hệ thống vẫn chạy đúng như cũ.</p>
+  <div class="rules3">
+    <div><b>Không sửa tay</b><span>Giao cho QA Leader qua quy trình <code>system-upgrade-governance</code>.</span></div>
+    <div><b>Duyệt trước, làm sau</b><span>Xem bảng phân tích và danh sách file bị ảnh hưởng rồi mới cho sửa.</span></div>
+    <div><b>Xong là có bằng chứng</b><span>Test xanh, kiểm toàn vẹn sạch, chạy thật hai lần ra cùng kết quả.</span></div>
+  </div>
+</header>
+
+<section>
+  <h2>Toàn bộ quy trình</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 980 190" role="img" aria-label="Sáu bước: phân tích, đặt tầng, viết skill, lan truyền 7 điểm neo, nghiệm thu, commit">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--muted)"/></marker></defs>
+      <g style="font-family: var(--font)">
+        <g style="font-size: 13px">
+          <rect x="8" y="40" width="138" height="70" rx="12" style="fill: var(--accent-soft); stroke: var(--accent)"/>
+          <text x="77" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">1 · Phân tích</text>
+          <text x="77" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">A / B / C · ảnh hưởng</text>
+
+          <rect x="172" y="40" width="138" height="70" rx="12" style="fill: var(--surface); stroke: var(--accent)"/>
+          <text x="241" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">2 · Đặt tầng</text>
+          <text x="241" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">luật · skill · tri thức</text>
+
+          <rect x="336" y="40" width="138" height="70" rx="12" style="fill: var(--surface); stroke: var(--accent)"/>
+          <text x="405" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">3 · Viết skill</text>
+          <text x="405" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">theo khuôn + 7 luật</text>
+
+          <rect x="500" y="40" width="138" height="70" rx="12" style="fill: var(--surface); stroke: var(--accent)"/>
+          <text x="569" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">4 · Lan truyền</text>
+          <text x="569" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">đủ 7 điểm neo</text>
+
+          <rect x="664" y="40" width="138" height="70" rx="12" style="fill: var(--surface); stroke: var(--accent)"/>
+          <text x="733" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">5 · Nghiệm thu</text>
+          <text x="733" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">lệnh + chạy thật × 2</text>
+
+          <rect x="828" y="40" width="144" height="70" rx="12" style="fill: var(--good-soft); stroke: var(--good)"/>
+          <text x="900" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">6 · Commit</text>
+          <text x="900" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">tách tool / dữ liệu</text>
+        </g>
+        <g style="stroke: var(--muted); stroke-width: 1.5; fill: none">
+          <line x1="146" y1="75" x2="168" y2="75" marker-end="url(#ah)"/>
+          <line x1="310" y1="75" x2="332" y2="75" marker-end="url(#ah)"/>
+          <line x1="474" y1="75" x2="496" y2="75" marker-end="url(#ah)"/>
+          <line x1="638" y1="75" x2="660" y2="75" marker-end="url(#ah)"/>
+          <line x1="802" y1="75" x2="824" y2="75" marker-end="url(#ah)"/>
+          <path d="M733 110 C 733 165, 405 165, 405 114" marker-end="url(#ah)"/>
+        </g>
+        <rect x="490" y="148" width="158" height="30" rx="8" style="fill: var(--bad-soft)"/>
+        <text x="569" y="168" text-anchor="middle" style="fill: var(--bad); font-size: 12px; font-weight: 700">đỏ ở đâu thì quay lại sửa</text>
+        <rect x="18" y="6" width="118" height="26" rx="8" style="fill: var(--warn-soft)"/>
+        <text x="77" y="24" text-anchor="middle" style="fill: var(--warn); font-size: 12px; font-weight: 700">bạn duyệt tại đây</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<section class="step">
+  <div class="n">1</div>
+  <div class="body">
+    <h2>Phân tích trước, chưa sửa file nào</h2>
+    <p>Nói với AI: <code>Nâng cấp skill &lt;tên&gt;: &lt;muốn thay đổi gì&gt;. Chạy chế độ PHAN_TICH trước.</code> AI trả lời ba câu hỏi theo thứ tự, gặp câu nào đúng thì dừng ở đó:</p>
+    <div class="tree">
+      <div class="q"><span>Chỉ đổi cách làm của một skill đã có? (thêm cột, siết luật, đổi format)</span><span class="ans"><span class="pill a">Có → C · sửa tại chỗ</span></span></div>
+      <div class="q"><span>Đã có agent nào lo đúng mảng việc này chưa?</span><span class="ans"><span class="pill w">Chưa → B · agent mới</span></span></div>
+      <div class="q"><span>Giao thêm việc này thì agent đó có phải đọc loại file khác, ghi vào chỗ khác, hoặc kiêm thêm vai trò không?</span><span class="ans"><span class="pill w">Có → B</span><span class="pill a">Không → A · thêm skill</span></span></div>
+    </div>
+    <p>Kèm theo là danh sách bước bị ảnh hưởng (<code>npm run agent:check -- --impact &lt;agent&gt;</code>). <b>Bạn đọc bảng này rồi mới cho làm.</b> Ưu tiên A hoặc C; chỉ dựng agent mới khi thật cần, vì càng nhiều agent thì QA Leader càng khó điều phối.</p>
+  </div>
+</section>
+
+<section class="step">
+  <div class="n">2</div>
+  <div class="body">
+    <h2>Đặt nội dung vào đúng chỗ</h2>
+    <p>Đây là lỗi hay gặp nhất. Cùng một câu, đặt sai chỗ là thành chuyện khác hẳn.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Nội dung là…</th><th>Để ở</th><th>Vì sao</th></tr></thead>
+      <tbody>
+        <tr><td>Luật mọi skill phải theo, hoặc bảng từ 2 skill trở lên dùng</td><td><code>qa-system/core/QA_STANDARD.md</code></td><td>Một luật chỉ nằm một chỗ. Skill ghi "theo QA_STANDARD §4", không chép lại</td></tr>
+        <tr><td>Giá trị, thông báo, ngưỡng của một tính năng cụ thể</td><td><code>knowledge/features/&lt;slug&gt;.md</code></td><td>Để trong skill thì AI coi là sự thật cho <i>mọi</i> tính năng</td></tr>
+        <tr><td>Cách làm, tham số, mẫu output của riêng việc này</td><td><code>qa-system/qa-&lt;agent&gt;/skills/&lt;tên&gt;.md</code></td><td>Skill là "làm thế nào"</td></tr>
+        <tr><td>Agent là ai, được làm gì, giao lại cho ai</td><td><code>qa-system/qa-&lt;agent&gt;/AGENT.md</code></td><td>Danh tính và ranh giới</td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted">Sửa <code>QA_STANDARD.md</code> là thay đổi luật của cả hệ thống, nên người phải quyết, không để AI tự làm.</p>
+  </div>
+</section>
+
+<section class="step">
+  <div class="n">3</div>
+  <div class="body">
+    <h2>Viết skill theo khuôn có sẵn</h2>
+    <p>Luôn bắt đầu từ <code>qa-system/templates/skills/ten-skill.md</code>. Một skill chuẩn có đủ các phần sau:</p>
+<pre>---
+name: ten-skill
+description: Một câu: làm gì, đọc gì, ra file gì
+---
+# Skill: ten-skill
+&gt; Tuân thủ QA_STANDARD (§1 · §2 · §3 · §7 · §9 · §10)   <span class="anno">← trỏ số mục, không chép luật</span>
+
+## Mục đích                                             <span class="anno">← 1–3 câu</span>
+## Đầu vào
+- OUTPUT/&lt;slug&gt;/0N_….md
+- knowledge/_project.md · knowledge/features/&lt;slug&gt;.md  <span class="anno">← luôn có</span>
+&gt; Thiếu đầu vào → DỪNG                                  <span class="anno">← không tự tưởng tượng</span>
+## KHÔNG được (riêng skill này)                         <span class="anno">← ranh giới với bước sau</span>
+## Các bước                                             <span class="anno">← việc máy làm được thì gọi lệnh</span>
+## Format output
+# &lt;Tên&gt; · &lt;slug&gt;
+Owner: … · Nguồn: … · Verdict: PASS                     <span class="anno">← dòng 2: máy đọc dòng này</span>
+| ID | … | Nguồn |                                      <span class="anno">← mọi bảng có cột nguồn</span>
+## Chốt chặn nghiệm thu                                 <span class="anno">← checklist kiểm được</span></pre>
+    <h3>Bảy luật để skill không làm AI bịa</h3>
+    <div class="rulegrid">
+      <div class="rule"><h3>1. Ví dụ phải trung tính</h3>
+        <div class="ex"><div class="bad"><b>Sai</b>"Ví dụ: khoá tài khoản 15 phút sau 5 lần sai"</div><div class="good"><b>Đúng</b>"Ví dụ: <code>&lt;field&gt;</code> khoá sau <code>&lt;n&gt;</code> lần (<code>BR-01</code>)"</div></div>
+        <p class="muted">Bản cũ từng chép số liệu voucher sang tính năng hoàn tiền vì lý do này.</p></div>
+      <div class="rule"><h3>2. Thiếu thì ghi nhãn</h3>
+        <div class="ex"><div class="bad"><b>Sai</b>"Nếu không có, dùng giá trị hợp lý"</div><div class="good"><b>Đúng</b>"Không có trong nguồn ⇒ <code>[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]</code>"</div></div></div>
+      <div class="rule"><h3>3. Không đặt chỉ tiêu số lượng</h3>
+        <div class="ex"><div class="bad"><b>Sai</b>"Sinh ít nhất 5 câu hỏi / 20 test case"</div><div class="good"><b>Đúng</b>"Quét hết bảng thì dừng; số lượng do tài liệu quyết định"</div></div></div>
+      <div class="rule"><h3>4. Máy làm được thì giao máy</h3>
+        <div class="ex"><div class="bad"><b>Sai</b>"Tự đánh số BR-01, BR-02…", "tự tính điểm biên"</div><div class="good"><b>Đúng</b>"Ghi <code>BR-?</code> rồi chạy <code>npm run ids --assign</code>"; "chép từ <code>npm run boundary</code>"</div></div></div>
+      <div class="rule"><h3>5. Một file output, có dòng meta</h3>
+        <div class="ex"><div class="bad"><b>Sai</b>Ghi nhiều file, hoặc verdict in đậm ở dòng 5</div><div class="good"><b>Đúng</b>Dòng 2: <code>Owner: … · Nguồn: … · Verdict: PASS</code></div></div></div>
+      <div class="rule"><h3>6. Câu hỏi phải là câu đóng</h3>
+        <div class="ex"><div class="bad"><b>Sai</b>"Hệ thống xử lý thế nào?"</div><div class="good"><b>Đúng</b>"Ngày giao là ngày 0 hay ngày 1 (A/B)?"</div></div></div>
+      <div class="rule"><h3>7. Skill và tool không được nói ngược nhau</h3>
+        <div class="ex"><div class="bad"><b>Sai</b>Skill dặn "không quét lại", còn lint bắt quét</div><div class="good"><b>Đúng</b>Đổi format thì sửa luôn lint/schema và thêm test, trong cùng một lần</div></div>
+        <p class="muted">Lỗi này có thật, phát hiện ở lần chạy thử hoàn tiền.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="step">
+  <div class="n">4</div>
+  <div class="body">
+    <h2>Cập nhật đủ 7 chỗ liên quan</h2>
+    <p>Sửa xong file skill mới chỉ được một nửa việc. Hệ thống tìm và gọi skill qua 7 chỗ dưới đây; sót chỗ nào thì skill "có mà như không", hoặc cổng kiểm báo sai.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>#</th><th>Chỗ cần sửa</th><th>Sửa gì</th><th>A</th><th>B</th><th>C</th></tr></thead>
+      <tbody>
+        <tr><td>N1</td><td><code>skills/&lt;tên&gt;.md</code></td><td>Nội dung skill theo khuôn</td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill ok">có</span></td></tr>
+        <tr><td>N2</td><td><code>qa-&lt;agent&gt;/AGENT.md</code></td><td>Thêm vào "Skill sở hữu", tên khớp đúng tên file</td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill ok">có</span></td><td class="c">—</td></tr>
+        <tr><td>N3</td><td><code>workflows/WORKFLOW.md</code></td><td>Bảng chặng: agent, skill, vào, ra</td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill w">nếu đổi vào/ra</span></td></tr>
+        <tr><td>N4</td><td><code>knowledge/_system_map.json</code></td><td>Đường dẫn tra cứu (<code>npm run map:sync</code>)</td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill ok">có</span></td><td class="c">—</td></tr>
+        <tr><td>N5</td><td><code>qa-lead/AGENT.md</code></td><td>Ma trận điều phối + câu người dùng hay nói để gọi tới</td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill w">nếu đổi đầu ra</span></td></tr>
+        <tr><td>N6</td><td><code>tools/system/agent-doctor.js</code></td><td>Khai skill sinh file gì, ai dùng file đó</td><td class="c"><span class="pill w">nếu có file mới</span></td><td class="c"><span class="pill ok">có</span></td><td class="c">—</td></tr>
+        <tr><td>N7</td><td><code>lint-deliverables.js</code> · <code>lib/schema.js</code></td><td>Luật kiểm + bộ đọc cho format mới, kèm test</td><td class="c"><span class="pill w">nếu tool đọc</span></td><td class="c"><span class="pill w">nếu tool đọc</span></td><td class="c"><span class="pill w">nếu đổi format</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted">Skill sinh file output mới thì cấp số thứ tự kế tiếp chưa dùng trong <code>WORKFLOW.md</code>. Không chèn giữa, không dùng lại số cũ. Không xoá skill cũ để "dọn cho gọn"; gỡ bỏ là việc người quyết.</p>
+  </div>
+</section>
+
+<section class="step">
+  <div class="n">5</div>
+  <div class="body">
+    <h2>Nghiệm thu: chạy lệnh, rồi chạy thật</h2>
+    <h3>a. Bốn lệnh phải xanh</h3>
+    <div class="cmds">
+      <div class="cmd"><code>npm test</code><span>Toàn bộ test tool xanh. Có sửa tool thì phải thêm test mới.</span></div>
+      <div class="cmd"><code>npm run agent:check</code><span>Báo INTACT: skill khai báo đều có file thật, các chỗ khớp nhau.</span></div>
+      <div class="cmd"><code>npm run map:sync</code><span>Bản đồ hệ thống có mục mới.</span></div>
+      <div class="cmd"><code>npm run workflow -- validate</code><span>Không workflow nào lách cổng.</span></div>
+    </div>
+    <h3>b. Chạy thật hai lần trên bộ đề chuẩn</h3>
+    <p>Bộ đề nằm trong repo ở <code>docs/skill-lab/de-bai/</code> (tính năng hoàn tiền): 9 tài liệu cài sẵn bẫy gồm hai phiên bản SRS, comment, chỉnh sửa chưa duyệt, dòng Excel bị ẩn, CR đổi giá trị. Kết quả chuẩn để đối chiếu nằm ở <code>docs/skill-lab/01-tao-skill-moi/du-lieu/</code>.</p>
+    <ol class="plain">
+      <li>Nạp đề vào một task mới: <code>npm run intake -- docs/skill-lab/de-bai --slug &lt;tên&gt; --force</code>, rồi chạy pipeline tới chặng mà skill ảnh hưởng.</li>
+      <li>Chạy <b>hai lần, mỗi lần một phiên mới</b>, rồi so: <code>npm run diff-runs -- &lt;lần 1&gt; &lt;lần 2&gt;</code>.</li>
+      <li>Mỗi chỗ khác nhau phải giải thích được bằng một câu trong skill. Không giải thích được nghĩa là skill còn chỗ để AI tự sáng tác: quay lại bước 3.</li>
+      <li>Đối chiếu với kết quả chuẩn: <code>npm run lint</code> sạch, <code>npm run gate</code> đóng/mở đúng lúc, 9/9 bẫy vẫn được bắt.</li>
+      <li>Chạy lại một chặng cũ <b>không liên quan</b> để chắc luồng cũ vẫn ra như trước.</li>
+    </ol>
+    <h3>c. Năm điều kiện cho skill mới hoặc skill vừa sửa</h3>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>Điều kiện</th><th>Cách kiểm</th></tr></thead>
+      <tbody>
+        <tr><td>a</td><td>Trỏ tới luật, không chép luật</td><td>Không có bảng verdict, nhãn, FACT, 06W nào chép lại; chỉ có "QA_STANDARD §n"</td></tr>
+        <tr><td>b</td><td>Khai đủ đầu vào, gồm tri thức</td><td>Có <code>_project.md</code> và <code>features/&lt;slug&gt;.md</code></td></tr>
+        <tr><td>c</td><td>Máy đọc được output</td><td>Dòng meta đúng; bảng có cột nguồn; mã lấy từ <code>npm run ids</code></td></tr>
+        <tr><td>d</td><td>Hai lần chạy cho cùng kết quả</td><td><code>diff-runs</code>, mọi khác biệt giải thích được</td></tr>
+        <tr><td>e</td><td>Không có ví dụ của dự án thật</td><td>Chỉ dùng chỗ giữ chỗ như <code>&lt;field&gt;</code>, <code>BR-01</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="step">
+  <div class="n">6</div>
+  <div class="body">
+    <h2>Commit gọn, tách đúng phần</h2>
+    <ul class="plain">
+      <li>Làm trên <b>nhánh riêng</b>, không sửa thẳng trên develop.</li>
+      <li>Tách hai commit: <b>phần sửa <code>qa-system/</code></b> và <b>phần dữ liệu chạy thử</b> (<code>INPUT/</code>, <code>OUTPUT/</code>, <code>knowledge/features/</code>). Chỉ commit sửa hệ thống được đưa sang develop.</li>
+      <li>Pre-commit tự chạy lint trước mỗi commit. <b>Không dùng <code>--no-verify</code></b> để lách.</li>
+      <li>Biên bản nâng cấp (bảng A/B/C, 7 chỗ đã sửa, kết quả lệnh) để ngoài repo.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Những lỗi đã gặp thật, đừng lặp lại</h2>
+  <div class="lesson">
+    <div><b>Ví dụ thành dữ liệu</b><span>Tri thức mẫu có "trần 500.000" của voucher, bị chép sang tính năng hoàn tiền. Ngưỡng tự duyệt của hoàn tiền cũng là 500.000, nên rất dễ nhầm.</span></div>
+    <div><b>Skill nói một đằng, tool kiểm một nẻo</b><span>Skill 02 dặn không quét lại, còn lint bắt rule mới phải có hàng ma trận. AI bị kẹt giữa hai luật.</span></div>
+    <div><b>Chỉ tiêu số lượng</b><span>"Ít nhất 5 câu hỏi" làm mỗi lần chạy ra một bộ câu hỏi khác nhau.</span></div>
+    <div><b>Thông tin đặt sai mục</b><span>Thông báo thành công chỉ ghi ở mục Happy Path, mà máy kiểm không đọc mục đó, nên test case đúng cũng bị chặn.</span></div>
+    <div><b>Đường dẫn chết</b><span>Skill trỏ tới thư mục <code>agents/</code> không còn tồn tại, nên skill mới được tạo ra chỗ không ai đọc.</span></div>
+    <div><b>Test xanh chưa chắc đã đúng</b><span>331 test đơn vị đều xanh, nhưng chạy thật vẫn lộ 8 lỗi. Bước chạy thật hai lần là bắt buộc.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Bài thực hành</h2>
+  <p>Hai bài làm cùng AI, tài nguyên nằm trong repo ở <code>docs/skill-lab/</code>:</p>
+  <div class="lesson" style="--x:0">
+    <div style="background: var(--accent-soft)"><b>01-tao-skill-moi/</b><span>Tạo skill "Change Request tác động tới test case nào?" khi chưa biết nó thuộc agent nào. Có CR-08 để chạy thử và phiếu phân tích.</span></div>
+    <div style="background: var(--accent-soft)"><b>02-nang-cap-skill/</b><span>Nâng cấp <code>missing-rule-06w</code> để hai lần chạy hỏi cùng bộ câu hỏi. Có số đo độ lệch thật, bản 01 cố định và cách đo trước/sau.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Câu giao việc mẫu</h2>
+  <p>Chép nguyên câu này, thay phần trong ngoặc nhọn, rồi gửi cho AI.</p>
+  <div class="prompt">
+    <div class="top"><span>Giao việc nâng cấp skill</span><button type="button" id="copyBtn">Chép câu này</button></div>
+    <textarea id="promptText" aria-label="Câu giao việc mẫu" spellcheck="false">QA Leader, nâng cấp skill <tên-skill>: <mô tả thay đổi>.
+Làm theo qa-system/qa-lead/skills/system-upgrade-governance.md:
+1. PHAN_TICH: bảng quyết định A/B/C, đặt tầng, danh sách 7 điểm neo, kết quả --impact. Dừng để tôi duyệt.
+2. THI_CONG (sau khi tôi đồng ý): làm trên nhánh riêng, viết theo templates/skills/ten-skill.md, cập nhật đủ 7 điểm neo; đổi format thì sửa lint/schema và thêm test.
+3. NGHIEM_THU: chạy npm test, npm run agent:check, npm run map:sync, npm run workflow -- validate; chạy skill 2 lần (phiên mới) trên bộ đề docs/skill-lab/de-bai và so bằng npm run diff-runs; dán kết quả thật, giải thích từng khác biệt.
+Không sửa QA_STANDARD.md nếu tôi chưa đồng ý. Không đưa ví dụ của dự án thật vào skill.</textarea>
+  </div>
+</section>
+
+<section class="summary">
+  <h2>Nhớ năm điều</h2>
+  <ol>
+    <li><b>Phân tích trước, bạn duyệt rồi mới sửa.</b></li>
+    <li><b>Luật để ở QA_STANDARD, dữ kiện để ở knowledge, skill chỉ giữ cách làm.</b></li>
+    <li><b>Skill không có ví dụ thật, không đặt chỉ tiêu, thiếu thì ghi nhãn.</b></li>
+    <li><b>Sửa đủ 7 chỗ; skill đổi format thì tool đổi theo.</b></li>
+    <li><b>Xong là khi lệnh xanh và chạy thật hai lần ra cùng kết quả.</b></li>
+  </ol>
+  <p>Làm đúng năm điều này thì thêm skill nào hệ thống cũng vẫn chạy như cũ, và AI vẫn chỉ được trích hoặc hỏi, không được bịa.</p>
+</section>
+
+</div>
+
+<script>
+(function () {
+  var btn = document.getElementById('copyBtn');
+  var ta = document.getElementById('promptText');
+  btn.addEventListener('click', function () {
+    var done = function () { btn.textContent = 'Đã chép'; setTimeout(function () { btn.textContent = 'Chép câu này'; }, 1800); };
+    var fallback = function () { ta.focus(); ta.select(); btn.textContent = 'Đã chọn, nhấn Ctrl/⌘+C'; };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, fallback);
+      else fallback();
+    } catch (e) { fallback(); }
+  });
+})();
+</script>
+</body>
+</html>

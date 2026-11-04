@@ -2,7 +2,7 @@
   "mcpServers": {
     "jira": {
       "command": "node",
-      "args": ["agents/tools/jira-mcp-server.js"]
+      "args": ["qa-system/tools/jira/mcp-server.js"]
     }
   }
 }

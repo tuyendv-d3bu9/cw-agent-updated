@@ -1,18 +1,14 @@
-# Quản Lý Tri Thức Tính Năng (knowledge/features/)
+# knowledge/features/ — Tri thức theo tính năng
 
-Thư mục này chứa tri thức tích lũy vĩnh viễn cho từng tính năng cụ thể của dự án.
+Mỗi file một tính năng, tên kebab-case trùng `slug` của task: `<slug>.md`.
+Tạo bằng `npm run knowledge:new <slug>` (intake cũng tự tạo), từ khuôn `knowledge/_template.md`.
 
-## Quy ước đặt tên:
-- Mỗi file đại diện cho một tính năng, đặt tên theo dạng kebab-case: `<feature-slug>.md` (Ví dụ: `voucher-checkout.md`, `cart-management.md`, `user-authentication.md`).
+Vòng đời:
+1. Skill `01` ghi dữ kiện có nguồn; skill `02` thêm câu hỏi `MR-xx` trạng thái `New` vào §7.
+2. BA/PO trả lời → người dùng chuyển lời, agent chép **nguyên văn** vào `Phản hồi chính thức` và đổi trạng thái;
+   quyết định §8 phải có người phê duyệt + ngày. Rồi `npm run knowledge:sync -- <slug> --write`.
+3. Lần chạy sau: mọi chặng đọc file này; MR đã chốt thành `BR` ở lần chạy `01` kế tiếp; không hỏi lại điều đã chốt.
 
-## Cách tạo mới một file tri thức tính năng:
-Sử dụng script tự động:
-```bash
-npm run knowledge:new <feature-slug>
-```
-Hoặc copy từ `knowledge/_template.md` sang thư mục này.
+Luật ghi chi tiết: `qa-system/core/QA_STANDARD.md` §8. Không xoá dòng cũ — chỉ đổi `Trạng thái`.
 
-## Quy trình cập nhật tri thức:
-1. **Lần phân tích đầu tiên**: Agent đọc tài liệu trong `INPUT/` và sinh các kẽ hở ban đầu vào Mục 7 (`OPEN QUESTIONS`).
-2. **Khi BA phản hồi**: Con người hoặc Agent (thông qua skill `qa-knowledge-sync`) ghi nhận câu trả lời vào Mục 8 (`GIẢ ĐỊNH ĐÃ CHỐT`) và chuyển các rule thành công sang Mục 3 (`BUSINESS RULES`).
-3. **Các lần chạy sau**: Mọi Agent sẽ đọc file này trước tiên để kế thừa toàn bộ các quyết định trước đó.
+`<sut>-ui-map.md`: bản đồ giao diện của hệ thống dưới thử nghiệm, locator trích từ app thật — viết trước khi viết locator.

@@ -9,4 +9,4 @@ Chứa tài liệu thiết kế từ UI/UX Designer để `qa-ui-review` so sán
 - Hướng dẫn phong cách (Design System / Tokens: mã màu, font chữ, trạng thái hover/active)
 
 ## Định dạng:
-- `.png`, `.jpg`, `.webp`, `.md` (chứa links)
+- `.png`, `.jpg`, `.webp`, `.md` (chứa links). Ảnh được intake giữ ở `04_design/_assets/`.
