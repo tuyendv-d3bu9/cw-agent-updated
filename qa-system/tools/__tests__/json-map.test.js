@@ -60,3 +60,12 @@ test('map tool — mọi từ khoá phải khớp, bỏ dấu, giới hạn số
   assert.strictEqual(mapTool.run(['khongco']).code, 1);
   assert.strictEqual(mapTool.run([]).code, 2);
 });
+
+test('agent-doctor — --impact 16 trỏ đúng skill cr-impact-analysis và deliverable 16_cr_impact_analysis.md', () => {
+  const { execFileSync } = require('node:child_process');
+  const path = require('node:path');
+  const doctorPath = path.join(__dirname, '..', 'system', 'agent-doctor.js');
+  const out = execFileSync(process.execPath, [doctorPath, '--impact', '16'], { encoding: 'utf8' });
+  assert.match(out, /qa-system\/qa-test-design\/skills\/cr-impact-analysis\.md/);
+  assert.match(out, /16_cr_impact_analysis\.md/);
+});

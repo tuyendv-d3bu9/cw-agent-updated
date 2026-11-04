@@ -40,7 +40,8 @@ const PIPELINE_DEPENDENCIES = {
       { step: '04', name: 'qa-analyst/test-idea-design', reason: 'Consumes Business Rules to generate test ideas' },
       { step: '05', name: 'qa-test-design/test-case-generation', reason: 'Traces BR-xx IDs into test case tags' },
       { step: '06', name: 'qa-test-design/coverage-review', reason: 'Evaluates 100% BR-xx coverage' },
-      { step: '09', name: 'qa-test-data/data-class-map', reason: 'Consumes input fields for Data Class mapping' }
+      { step: '09', name: 'qa-test-data/data-class-map', reason: 'Consumes input fields for Data Class mapping' },
+      { step: '16', name: 'qa-test-design/cr-impact-analysis', reason: 'Compares updated INPUT documents against current BR/FD/AF rules' }
     ]
   },
   '02': {
@@ -75,7 +76,17 @@ const PIPELINE_DEPENDENCIES = {
       { step: '06', name: 'qa-test-design/coverage-review', reason: 'Reviews test case execution coverage' },
       { step: '12', name: 'qa-test-data/data-validation-traceability', reason: 'Maps test datasets to specific TC_IDs' },
       { step: 'readiness', name: 'qa-readiness-evaluator/gen-readiness-report', reason: 'Measures coverage and trace from 05_ to derive the Go/No-Go recommendation' },
-      { step: 'automation', name: 'qa-automation/flow-clustering & pom-generator', reason: 'Clusters flows, generates POM, and executes Playwright E2E' }
+      { step: 'automation', name: 'qa-automation/flow-clustering & pom-generator', reason: 'Clusters flows, generates POM, and executes Playwright E2E' },
+      { step: '16', name: 'qa-test-design/cr-impact-analysis', reason: 'Evaluates CR/update impact and classifies maintenance actions per TC_ID' }
+    ]
+  },
+  '16': {
+    skill: 'qa-system/qa-test-design/skills/cr-impact-analysis.md',
+    produces: '16_cr_impact_analysis.md',
+    consumed_by: [
+      { step: 'knowledge', name: 'knowledge/features/<slug>.md', reason: 'Lists new MR questions for BA/PO and rule deltas to sync after approval' },
+      { step: '01', name: 'qa-analyst/requirement-risk-summary', reason: 'Re-runs after CR approval to update BR/FD/AF definitions' },
+      { step: '05', name: 'qa-test-design/test-case-generation', reason: 'Updates or rewrites impacted test cases identified in the report' }
     ]
   },
   '09': {

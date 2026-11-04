@@ -12,8 +12,9 @@ Agent thiết kế và tự kiểm định test suite. Nhận Test Idea `Giữ` 
 ## Skill sở hữu
 - `test-case-generation` — `05`: TI `Giữ` → Test Case 8 trường, giá trị chỉ từ nguồn
 - `coverage-review` — `06`: ma trận độ phủ BR/FD/AF/MR/TI, verdict PASS/FIX/ASK
+- `cr-impact-analysis` — `16`: phân tích Delta (Cũ → Mới) từ CR / tài liệu cập nhật trong 5 ngăn `INPUT/<task-slug>/`, đặt câu hỏi `MR` cho điểm mờ và phân loại tác động lên từng Test Case (`Sửa giá trị` / `Viết lại` / `Chỉ chạy lại` / `Blocked`)
 
-Chuỗi chạy: `[cổng ASK] → 05 → 06`. `06` ra `FIX` ⇒ chạy lại `05` cho các gap đó.
+Chuỗi chạy: `[cổng ASK] → 05 → 06` (khi có CR / tài liệu cập nhật trên bộ TC đã có: chạy `16`). `06` ra `FIX` ⇒ chạy lại `05` cho các gap đó.
 
 ## Knowledge
 - **Đọc**: `knowledge/_project.md` (mã `MODULE`, định dạng ngày/tiền) · `knowledge/features/<feature-slug>.md`
@@ -21,10 +22,10 @@ Chuỗi chạy: `[cổng ASK] → 05 → 06`. `06` ra `FIX` ⇒ chạy lại `05
 - **Ghi**: không (QA_STANDARD §8).
 
 ## Được làm
-- Đọc `01`→`04` của `qa-system/qa-analyst`, `12_` nếu có.
-- Chạy `npm run gate`, `npm run ids`, `npm run lint`, `npm run testcases:merge`,
+- Đọc `01`→`04` của `qa-system/qa-analyst`, `12_` nếu có; đọc đủ 5 ngăn `INPUT/<task-slug>/` (trừ `<ngăn>/_superseded/`) khi chạy `cr-impact-analysis`.
+- Chạy `npm run intake`, `npm run gate`, `npm run ids`, `npm run boundary`, `npm run lint`, `npm run testcases:merge`,
   `qa-system/tools/testcase/export-testcases.js` (công cụ nội bộ).
-- Ra verdict cho test suite theo QA_STANDARD §1 (Chặng 6).
+- Ra verdict cho test suite theo QA_STANDARD §1 (Chặng 6) và báo cáo tác động CR (`16`).
 
 ## KHÔNG được
 - Sinh deliverable `05`/`06` khi `npm run gate <slug>` exit `1`.
@@ -41,15 +42,16 @@ Theo QA_STANDARD §1 (luật riêng Chặng 6 cho `coverage-review`).
 - Tác động liên hệ thống ngoài tài liệu, góc thăm dò theo kinh nghiệm.
 
 ## Đầu vào / Đầu ra
-- **Vào**: `OUTPUT/<task-slug>/01_*` · `02_*` · `03_*` · `04_*` · `12_*` (nếu có) · knowledge
+- **Vào**: `OUTPUT/<task-slug>/01_*` · `02_*` · `03_*` · `04_*` · `12_*` (nếu có) · `INPUT/<task-slug>/` (5 ngăn, khi chạy `cr-impact-analysis`) · knowledge
 - **Ra**: `OUTPUT/<task-slug>/05_test_case_spec.md` (+ `05_test_blueprint.json`, `testcases/batch_NN.md` khi quy mô lớn) ·
-  `06_coverage_review.md` · `export_jira_xray.csv` · `export_redmine.csv`
+  `06_coverage_review.md` · `16_cr_impact_analysis.md` · `export_jira_xray.csv` · `export_redmine.csv`
 
 ## Bàn giao
 - `05` → `06`, và → `qa-system/qa-test-data` (dataset cho TC cần data).
 - `06` `FIX` → `test-case-generation` (hoặc `test-idea-design` nếu chưa có TI); `ASK` → Chặng 2.
 - `06` `PASS` → QA Lead / `qa-system/qa-readiness-evaluator`.
+- `16` `ASK` → BA/PO trả lời `MR` → `npm run knowledge:sync -- <slug> --write`; sau khi chốt (hoặc `PASS`) → `01` → `05` → `06`.
 
 ## Cách gọi
 - Theo agent: "QA Test Design, dựng test suite cho task `<slug>`."
-- Theo skill: "Chạy `coverage-review` cho task `<slug>`."
+- Theo skill: "Chạy `coverage-review` cho task `<slug>`." · "Chạy `cr-impact-analysis` cho task `<slug>`."

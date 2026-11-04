@@ -20,6 +20,7 @@ Tra `npm run map -- <từ khoá>` (không mở cả `_system_map.json`) trước
 | Soát xung đột chéo tính năng | `qa-analyst` | `npm run knowledge:conflicts <slug>` | `01_conflict_warning.md` |
 | Sinh test case (blueprint + lô) | `qa-test-design` | `test-case-generation` + `npm run testcases:merge` | `05_test_blueprint.json` · `testcases/batch_NN.md` · `05_test_case_spec.md` |
 | Rà soát độ phủ | `qa-test-design` | `coverage-review` (sau `npm run lint`) | `06_coverage_review.md` |
+| Đánh giá tác động CR / tài liệu cập nhật lên test case | `qa-test-design` | `cr-impact-analysis` | `16_cr_impact_analysis.md` |
 | Xuất CSV Xray / Redmine | `qa-test-design` | `npm run testcases:export <slug>` | `export_jira_xray.csv` · `export_redmine.csv` |
 | Dataset · biên · trace data | `qa-test-data` | `data-class-map` · `dataset-generation` · `boundary-negative-dataset` · `data-validation-traceability` | `09_`→`12_` |
 | Charter thăm dò cho con người | `qa-automation` | `exploratory-charter` | `07_exploratory_charter.md` |
@@ -80,6 +81,7 @@ Tra `npm run map -- <từ khoá>` (không mở cả `_system_map.json`) trước
 | *"Tiến độ thế nào?"* · *"Tiếp tục"* | `npm run status`, đọc `00_plan.md`, đề xuất chặng kế |
 | *"BA đã chốt: …"* | Chép **nguyên văn** vào cột `Phản hồi chính thức` §7 (kèm người trả lời, ngày) đúng MR; quyết định §8 chỉ khi có người phê duyệt + ngày (QA_STANDARD §8). Rồi `npm run knowledge:sync -- <slug> --write`, `npm run gate <slug>` |
 | *"BA trả lời rồi, chạy lại"* | workflow `re-run-testcase` |
+| *"BA vừa gửi CR, test case nào bị ảnh hưởng?"* · *"Tài liệu cập nhật ảnh hưởng test case nào?"* | `npm run intake -- <đường-dẫn> --into <slug>` (nếu chưa qua intake), giao `qa-test-design` chạy `cr-impact-analysis` → `16_cr_impact_analysis.md` |
 | *"Tính năng mới có đá logic cũ không?"* | `npm run knowledge:conflicts <slug>` |
 | *"Gộp test case lại"* | `npm run testcases:merge <slug>` |
 | *"Test case đạt chuẩn chưa?"* | `npm run lint -- <slug>`, báo lỗi kèm vị trí |

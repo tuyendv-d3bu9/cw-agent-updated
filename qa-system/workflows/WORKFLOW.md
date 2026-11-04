@@ -12,7 +12,7 @@ qa-system/
   tools/  templates/  workflows/
 knowledge/  _project.md · _glossary.md · _template.md · _system_map.json · features/<slug>.md
 INPUT/<slug>/   01_business · 02_ba · 03_dev · 04_design · 05_communication
-OUTPUT/<slug>/  00_plan.md · 01_…15_ · testcases/ · runs/
+OUTPUT/<slug>/  00_plan.md · 01_…16_ · testcases/ · runs/
 ```
 
 ---
@@ -29,7 +29,7 @@ OUTPUT/<slug>/  00_plan.md · 01_…15_ · testcases/ · runs/
 |---|---|---|
 | **A · Pipeline chính** | `01`→`06` | Luôn chạy. `01` không có điểm dừng cứng; cổng ASK nằm **sau `02`** (`npm run gate`) |
 | **B · Dữ liệu** | `09`→`12` | Tuỳ chọn, sau `05`. Đã chạy thì chạy lại `06` |
-| **C · Độc lập** | `07` exploratory charter · `08` UI screenshot | Bất cứ lúc nào. `07` cần `03`; `08` cần ảnh đính kèm |
+| **C · Độc lập** | `07` exploratory charter · `08` UI screenshot · `16` CR impact analysis | Bất cứ lúc nào. `07` cần `03`; `08` cần ảnh đính kèm; `16` cần `01` + `05` + tài liệu cập nhật trong `INPUT/<slug>/` |
 | **D · Báo cáo** | bug report · daily summary | Khi có bug notes / sprint data. Ghi `OUTPUT/reports/` |
 | **E · Sẵn sàng** | `15` | Trước nhánh G. Số liệu do `npm run readiness` đo |
 | **G · Automation** | `G1`→`G4` | Chỉ khi đủ điều kiện `AGENTS.md` §1.5 |
@@ -76,6 +76,7 @@ Cột **Vào** chỉ liệt kê deliverable; mọi chặng còn nạp `knowledge
 | D | `qa-reporter` | `gen-bug-report` | Bug notes + `knowledge/` | `OUTPUT/reports/bug-report-<slug>.md` |
 | D | `qa-reporter` | `gen-daily-summary` | Sprint data JSON + audience | `OUTPUT/reports/daily-summary-<audience>.md` |
 | 15 | `qa-readiness-evaluator` | `gen-readiness-report` | `15_readiness_metrics.json` + `01` `02` `03` `05` `06` `12` | `15_readiness_report.md` |
+| 16 | `qa-test-design` | `cr-impact-analysis` | `INPUT/<slug>/` (5 ngăn) + `01` + `02` (nếu có) + `05` + `06` (nếu có) | `16_cr_impact_analysis.md` |
 
 ### Nhánh G — không tự chạy sau Chặng 6
 

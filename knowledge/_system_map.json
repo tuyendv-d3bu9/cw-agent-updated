@@ -90,7 +90,8 @@
     "boundary_command": "npm run boundary -- <slug> [FD-xx]",
     "scaffold_command": "npm run scaffold -- <slug> 02",
     "diff_runs_command": "npm run diff-runs -- <dirA> <dirB> [--min N]",
-    "ids_assign_command": "npm run ids -- <slug> --assign <file>"
+    "ids_assign_command": "npm run ids -- <slug> --assign <file>",
+    "cr_impact_analysis": "qa-system/qa-test-design/skills/cr-impact-analysis.md"
   },
   "specialized_agents": {
     "qa_lead": {
@@ -106,7 +107,7 @@
     "qa_test_design": {
       "path": "qa-system/qa-test-design/AGENT.md",
       "skills_path": "qa-system/qa-test-design/skills/",
-      "role": "05->06: Sinh test case 8 trường, chia lô, rà soát độ phủ"
+      "role": "05->06, 16: Sinh test case 8 trường, chia lô, rà soát độ phủ, phân tích tác động CR / tài liệu cập nhật lên test case"
     },
     "qa_test_data": {
       "path": "qa-system/qa-test-data/AGENT.md",
