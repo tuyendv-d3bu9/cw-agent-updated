@@ -31,7 +31,8 @@ Người dùng hỏi *"xong chưa"* → chạy cổng và dán **kết quả th�
 
 ## Nâng cấp chính hệ thống agent
 
-Thêm skill, dựng agent, sửa skill: dùng `qa-system/qa-lead/skills/system-upgrade-governance.md`
+Thêm skill, dựng agent, sửa skill: **đọc trước và tuân thủ tuyệt đối** `qa-system/templates/skills/LUAT-TAO-SKILL.md` (luật PHẢI/CẤM, cổng dừng chờ duyệt),
+rồi làm theo `qa-system/qa-lead/skills/system-upgrade-governance.md`
 (cây `[A]/[B]/[C]`, 7 điểm neo, bước nghiệm thu chạy-hai-lần). Không tự ứng biến.
 Sau mỗi lần nâng cấp: `npm test` rồi `npm run agent:check`, dán **kết quả thật**. Biên bản nâng cấp
 để **ngoài repo** (người dùng chọn nơi lưu), không commit.

@@ -1,129 +1,52 @@
-# CW QA Agent — Hướng Dẫn Vận Hành
+# CW QA Agent
 
-Hệ thống Agent QA chuyên sâu gồm **8 nhóm chuyên gia**, điều hành tự động theo triết lý **Knowledge-First**, **Zero-CLI**, và chuẩn **FACT**.
-Toàn bộ quy tắc cốt lõi nằm tại `AGENTS.md` (root) và `qa-system/core/QA_STANDARD.md`.
+Bộ AI Agent làm QA từ tài liệu yêu cầu tới test case, chạy được với mọi công cụ AI (Claude Code, Antigravity, Codex,
+Cursor, Gemini CLI…). Nguyên tắc gốc: **AI chỉ được trích (có nguồn) hoặc hỏi (thành câu hỏi cho BA) — không sáng tác.**
+Thiếu thông tin thì ghi `[CHƯA CÓ TRONG TÀI LIỆU]`, và như thế là đạt.
 
----
+## Dùng thế nào
 
-## 1. Bản Đồ Thư Mục Hệ Thống
+Bạn không cần gõ lệnh. Mở thư mục bằng công cụ AI rồi nói:
+
+| Bạn nói | Agent làm |
+|---|---|
+| *"Khởi tạo giúp tôi"* | `npm run init` (dựng `INPUT/`, `knowledge/`, cài pre-commit) |
+| *"Tôi vừa bỏ tài liệu vào INPUT, xử lý giúp"* | Nhận tài liệu, xếp 5 ngăn, dựng task |
+| *"Phân tích tính năng <tên>"* | Lập `00_plan.md`, chạy 01 → 02, dừng ở câu hỏi cho BA |
+| *"BA đã trả lời: …"* | Chép nguyên văn (kèm người + ngày), mở cổng, chạy tiếp 03 → 06 |
+| *"Tiến độ thế nào?"* · *"Test case đạt chuẩn chưa?"* | Chạy `status` / `lint` và đọc kết quả thật |
+
+## Luồng làm việc
 
 ```
-INPUT/<task-slug>/              TÀI LIỆU ĐẦU VÀO 5 NGĂN ĐỐI TÁC:
-  01_business/                  Yêu cầu chiến lược, bài toán kinh doanh, chính sách cấp cao
-  02_ba/                        [BẮT BUỘC] PRD, SRS, User Stories, Use Cases (.docx, .md)
-  03_dev/                       API Swagger/OpenAPI, DB Schema, Technical Specs
-  04_design/                    Figma links, wireframes, screenshots UI
-  05_communication/             Q&A log, biên bản họp, Change Requests (CR)
-
-OUTPUT/<task-slug>/             KHO THIẾT KẾ GỐC & TẦNG THỰC THI (RUNS):
-  00_plan.md                    Kế hoạch tổng thể của tính năng
-  01_ -> 06_                    Báo cáo phân tích, viewpoint, test idea, testcase gốc
-  _index.md                     Bảng điều khiển tổng hợp (Dashboard)
-  runs/                         TẦNG THỰC THI THEO TICKET / VERSION:
-    RUN-XX_<ticket>/            Session chạy độc lập: run_plan.md, run_result.md, evidence/
-
-knowledge/                      BỘ NÃO TRI THỨC VĨNH VIỄN (SSOT)
-  _system_map.json              Bản đồ vệ tinh toàn hệ thống (Agent đọc file này đầu tiên)
-  _project.md                   Quy ước dự án: format mã, tiền tệ VNĐ, timezone, NULL vs rỗng
-  _glossary.md                  Từ điển thuật ngữ nghiệp vụ thống nhất
-  _template.md                  Mẫu chuẩn tạo tri thức tính năng mới
-  features/<feature-slug>.md    Quy tắc đã chốt · câu trả lời BA · giả định đã chốt · domain constant
-
-qa-system/                      HỆ THỐNG 9 CHUYÊN GIA QA (cũng là npm package sau này)
-  qa-lead/AGENT.md              TỔNG CHỈ HUY — Cổng số 0 tiếp nhận & điều phối toàn bộ
-  qa-lead/skills/               system-upgrade-governance: nâng cấp chính hệ thống agent
-  core/QA_STANDARD.md           Luật chung: verdict · guard · FACT · 06W · risk matrix
-  qa-analyst/                   01->04: Tóm tắt yêu cầu, 06W kẽ hở, viewpoint, test idea
-  qa-test-design/               05->06: Test case 8 trường, rà soát độ phủ 3 góc nhìn
-  qa-test-data/                 09->12: Data class, dataset, validation & traceability
-  qa-ui-review/                 08: Phân tích ảnh màn hình (Vision)
-  qa-reporter/                  13: Chuẩn hóa bug report 7 trường & Daily QA summary
-  qa-automation/                Playwright E2E: Gom cụm luồng, sinh POM, chạy test & chụp evidence
-  qa-readiness-evaluator/       Cổng Go/No-Go: đánh giá độ chín test design trước khi sang automation
-  templates/                    Khuôn mẫu + 7 bước dựng agent mới
-  workflows/                    Bản đồ pipeline & các runbook chạy sẵn
-  tools/                        Công cụ nội bộ (xem qa-system/tools/README.md)
-
-automation/                     TẦNG KIỂM THỬ TỰ ĐỘNG PLAYWRIGHT
-  pages/                        Page Object Model: BasePage, ShopPage, CheckoutPage, LoginModal
-  tests/                        Kịch bản test (smoke.spec.ts là bộ mồi đã chạy xanh)
+INPUT/<slug>/ ─► 01 bóc rule ─► 02 tìm kẽ hở ─► [cổng ASK: BA trả lời] ─► 03 viewpoint ─► 04 test idea ─► 05 test case ─► [lint] ─► 06 độ phủ
+                (trích nguyên văn)  (ma trận 06W)                                                                                      điểm dừng
 ```
 
-**Thứ tự quy trình**:
-1. **Cổng 0**: QA Leader kiểm duyệt và chuẩn hóa 5 ngăn `INPUT/<task-slug>/`.
-2. **Thiết kế**: Tạo `00_plan.md` $\to$ Chạy pipeline thiết kế `01 → 06`.
-3. **Thực thi**: Khi có Ticket cần test $\to$ Tạo session `runs/RUN-XX/` $\to$ `qa-automation` chạy Playwright và chụp bằng chứng vào `evidence/`.
+Ba cổng do máy kiểm, không do AI tự kết luận:
 
----
+| Cổng | Lệnh | Chặn khi |
+|---|---|---|
+| ASK | `npm run gate <slug>` | Còn câu hỏi BA chưa chốt (phải có người trả lời + ngày; AI không được tự chốt) |
+| Lint | `npm run lint -- <slug>` | Thiếu trích dẫn, chữ thông báo / con số không có trong nguồn, sai format |
+| Readiness | `npm run readiness -- <slug>` | Chưa đủ chín để sang automation |
 
-## 2. Cách Sử Dụng Với Các AI Agent
+Ngoài ra: hook chặn ghi file khi cổng đóng (Claude Code) và **pre-commit** lint trước mỗi commit (mọi công cụ).
 
-Nhờ đã cấu hình file hiến pháp `AGENTS.md` ở root, bất kỳ AI Agent nào (**Antigravity IDE, Claude Code, Cursor, Codex, Gemini CLI...**) khi mở thư mục dự án lên đều tự động nắm luật:
+## Thư mục
 
-### Lệnh chạy đơn giản:
-```
-Tạo plan và chạy pipeline cho tính năng <task-slug> từ INPUT/<task-slug>.md.
-```
+| Thư mục | Là gì | Ai sửa |
+|---|---|---|
+| `INPUT/<slug>/` | Tài liệu nguồn, 5 ngăn: `01_business` · `02_ba` (bắt buộc) · `03_dev` · `04_design` · `05_communication` | Bạn (agent chỉ đọc) |
+| `OUTPUT/<slug>/` | Kết quả mỗi lần chạy: `00_plan` → `06`, `testcases/`, `runs/` | Agent |
+| `knowledge/` | Tri thức tích luỹ: `_project.md` (quy ước dự án), `features/<slug>.md` (rule, câu hỏi, quyết định của BA) | Agent + con người theo luật |
+| `qa-system/` | Agent, skill, luật chung (`core/QA_STANDARD.md`), tool, workflow | Chỉ qua quy trình nâng cấp |
+| `docs/` | Sổ tay tạo skill (`so-tay-tao-skill.html`) và bài thực hành `skill-lab/` | Giảng viên |
 
-### Quy trình tự động:
-1. Agent tạo ngay file kế hoạch: `OUTPUT/<task-slug>/00_plan.md` để chia nhỏ milestone và chống tràn context.
-2. Agent đọc `knowledge/_project.md`, `knowledge/_glossary.md` và `knowledge/features/<slug>.md`.
-3. Chạy từng bước và cập nhật trạng thái `PASS / FIX / ASK` vào file Plan.
+## Đọc tiếp
 
----
-
-- **Tiếp nhận, convert mọi định dạng thô (.docx, .pdf, .txt) & tự phân loại vào 5 ngăn INPUT (Cổng 0)**:
-  ```bash
-  npm run intake -- <file-hoặc-thư-mục> [--slug <task-slug>]
-  ```
-- **Tự khởi tạo bộ não tri thức ban đầu cho dự án mới (Self-Bootstrap)**:
-  ```bash
-  npm run knowledge:init
-  ```
-- **Chuyển đổi tài liệu .docx từ BA thành .md**:
-  ```bash
-  npm run convert
-  ```
-- **Tạo nhanh file tri thức cho tính năng mới**:
-  ```bash
-  npm run knowledge:new <feature-slug>
-  ```
-- **Gộp các lô test case (batch) thành file đặc tả tổng**:
-  ```bash
-  npm run testcases:merge <task-slug>
-  ```
-- **Xuất test cases ra CSV chuẩn Jira Xray & Redmine**:
-  ```bash
-  npm run testcases:export <task-slug>
-  ```
-- **Đồng bộ hai chiều với Jira qua REST API**:
-  ```bash
-  npm run jira:push <task-slug>   # Đẩy test cases lên Jira
-  npm run jira:pull <task-slug>   # Kéo bug về phân tích rủi ro
-  ```
-- **Quét xung đột tri thức chéo giữa các tính năng**:
-  ```bash
-  npm run knowledge:conflicts
-  ```
-- **Bảng điều phối tiến độ QA Leader (Dashboard)**:
-  ```bash
-  npm run status
-  ```
-- **Đồng bộ bản đồ hệ thống tập trung (System Map)**:
-  ```bash
-  npm run map:sync
-  ```
-- **Kiểm tra toàn vẹn & Phân tích tác động khi sửa Agent (Agent Doctor)**:
-  ```bash
-  npm run agent:check
-  npm run agent:check -- --impact <tên-agent>
-  ```
-
----
-
-## 4. Quản Lý Tri Thức Cho Dự Án Mới (`INPUT` ➔ `knowledge/`)
-
-- **Bước 1**: Dự án mới chỉ cần có `knowledge/_project.md`. Nạp tài liệu BA vào `INPUT/`.
-- **Bước 2**: Agent phân tích `INPUT/`, tự trích xuất quy tắc vào `knowledge/features/<slug>.md` Mục 3 (`CONFIRMED BUSINESS RULES`) và tìm kẽ hở 06W vào Mục 7 (`OPEN QUESTIONS`).
-- **Bước 3**: BA trả lời các kẽ hở $\to$ Cập nhật vào Mục 8 (`GIẢ ĐỊNH ĐÃ CHỐT`).
-- **Bước 4**: Lần sau chạy lại, Agent tự động kế thừa tri thức này mà không cần hỏi lại.
+- Luật cho mọi AI agent: [`AGENTS.md`](AGENTS.md) · riêng Claude Code: [`CLAUDE.md`](CLAUDE.md)
+- Luật nghiệp vụ (verdict, cổng ASK, nhãn, FACT, 06W, mã định danh): [`qa-system/core/QA_STANDARD.md`](qa-system/core/QA_STANDARD.md)
+- Toàn bộ lệnh: [`qa-system/tools/README.md`](qa-system/tools/README.md)
+- Tạo / sửa skill: luật bắt buộc [`qa-system/templates/skills/LUAT-TAO-SKILL.md`](qa-system/templates/skills/LUAT-TAO-SKILL.md),
+  sổ tay [`docs/so-tay-tao-skill.html`](docs/so-tay-tao-skill.html), thực hành [`docs/skill-lab/`](docs/skill-lab/)

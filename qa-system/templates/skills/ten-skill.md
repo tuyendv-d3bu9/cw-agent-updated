@@ -6,6 +6,8 @@ description: >
 
 # Skill: <ten-skill>
 
+<!-- Người/AI viết skill: đọc và tuân thủ `qa-system/templates/skills/LUAT-TAO-SKILL.md` trước. Xoá dòng này khi xong. -->
+
 > Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard & nhãn §2 · FACT §3 · I/O §7 · mã §9 · nguồn §10 · <thêm §4 / §5 / §6 / §11 nếu dùng tới>).
 > Luật đã có ở QA_STANDARD thì **trỏ số mục**, không chép lại.
 >

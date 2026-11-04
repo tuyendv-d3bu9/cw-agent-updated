@@ -9,6 +9,7 @@ description: >
 # Skill: system-upgrade-governance
 
 > Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · FACT §3 · luật knowledge §8) và `AGENTS.md`.
+> **Luật cứng khi tạo/sửa skill** (PHẢI/CẤM, cổng dừng, R1–R13, checklist "xong"): `qa-system/templates/skills/LUAT-TAO-SKILL.md` — nạp trước file này.
 >
 > **Đây là skill tự-quy-chiếu**: đối tượng bị tác động không phải `OUTPUT/`, mà là chính thư mục `qa-system/`.
 > Cùng `workflow-authoring`, nó là skill duy nhất được ghi vào `qa-system/` và `knowledge/_system_map.json`.
@@ -37,6 +38,7 @@ thì skill này bảo đảm **ba điều**:
 
 ## Đầu vào
 
+- `qa-system/templates/skills/LUAT-TAO-SKILL.md` — luật bắt buộc, đọc đầu tiên.
 - Yêu cầu nâng cấp bằng ngôn ngữ tự nhiên của người dùng, **hoặc** một file `.md` người dùng đưa vào.
 - `knowledge/_system_map.json` — **tra đầu tiên** bằng `npm run map -- <từ khoá>` / `npm run json -- knowledge/_system_map.json <đường.dẫn>`, để biết hệ thống hiện có gì (`AGENTS.md` §1.3).
 - `qa-system/core/QA_STANDARD.md` — để skill mới **trỏ tới** đúng mục thay vì chép luật.

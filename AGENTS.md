@@ -13,7 +13,7 @@
 | `INPUT/<slug>/` | Tài liệu nguồn, 5 ngăn `01_business` · `02_ba` · `03_dev` · `04_design` · `05_communication` | **Chỉ đọc** (trừ tool intake) |
 | `OUTPUT/<slug>/` | Deliverable `00`→`15`, `testcases/`, `runs/` | **Nơi duy nhất** được xuất kết quả |
 | `knowledge/` | Tri thức tích luỹ (SSOT) | Đọc/ghi theo QA_STANDARD §8 |
-| `qa-system/` | Agent, skill, tool, template, workflow | Chỉ QA Leader sửa, qua `system-upgrade-governance` |
+| `qa-system/` | Agent, skill, tool, template, workflow | Chỉ QA Leader sửa, qua `system-upgrade-governance` — **đọc và tuân thủ tuyệt đối** `qa-system/templates/skills/LUAT-TAO-SKILL.md` trước khi sửa bất kỳ file nào |
 
 ### 1.1. Cổng 0 — tiếp nhận tài liệu
 - QA Leader tự chạy `npm run intake` (hoặc `intake:bulk` cho khối lớn): chuyển sang `.md`, xếp 5 ngăn, dựng `OUTPUT/<slug>/`, `knowledge/features/<slug>.md`, `00_plan.md`.
