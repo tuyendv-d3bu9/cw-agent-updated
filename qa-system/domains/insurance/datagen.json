@@ -1,0 +1,31 @@
+{
+  "_comment": [
+    "Kiểu dữ liệu sinh cho test ngành bảo hiểm. Mọi giá trị là dữ liệu GIẢ có định dạng tổng hợp, không theo cấu trúc số hợp đồng của đơn vị nào (cấu trúc thật: Unknown).",
+    "Giới hạn, độ dài, định dạng của dự án vẫn chép từ Field Map; tham số trong schema thắng mặc định ở đây."
+  ],
+  "types": {
+    "policy_number_synthetic": {
+      "generator": "code",
+      "defaults": {
+        "prefixes": ["POL-", "TESTPOL-"],
+        "values": ["2026-000001", "2026-000002", "2026-999999", "0000-000000"]
+      }
+    },
+    "claim_number_synthetic": {
+      "generator": "code",
+      "defaults": {
+        "prefixes": ["CLM-", "TESTCLM-"],
+        "values": ["2026-000001", "2026-000002", "2026-999999", "0000-000000"]
+      }
+    },
+    "premium_amount": {
+      "generator": "money",
+      "defaults": { "min": 1, "max": 100000, "step": 1, "locale": "en-US" }
+    },
+    "sum_insured_amount": {
+      "generator": "money",
+      "defaults": { "min": 1000, "max": 10000000, "step": 1000, "locale": "en-US" }
+    }
+  },
+  "enums": {}
+}
