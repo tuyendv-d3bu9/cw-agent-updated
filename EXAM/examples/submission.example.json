@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0.0",
+  "exam_id": "shopgo-refund-v1",
+  "student_id": "example-student",
+  "branch": "exams/example-student",
+  "starter_commit": "3f9c2a7e5b1d4c8a96e0f2b7d3a5c1e8f4b6a9d2",
+  "task_slug": "shopgo-refund",
+  "t1_customized_agent": {
+    "agent_folder": "qa-system/qa-test-design",
+    "decision_class": "C",
+    "changed_files": [
+      "qa-system/qa-test-design/skills/test-case-generation.md",
+      "qa-system/tools/system/lint-deliverables.js",
+      "qa-system/tools/lib/schema.js",
+      "qa-system/tools/__tests__/lint-risk-ref.test.js"
+    ],
+    "anchors": {
+      "N1": "done",
+      "N2": "n/a",
+      "N3": "n/a",
+      "N4": "n/a",
+      "N5": "n/a",
+      "N6": "n/a",
+      "N7": "done"
+    },
+    "anchor_reasons": {
+      "N2": "No skill was added or renamed, so the Skill list in qa-test-design/AGENT.md is unchanged.",
+      "N3": "The skill still reads 01, 03 and 04 and still writes 05; the In/Out columns of WORKFLOW.md section 2 do not change.",
+      "N4": "No new skill path and no new agent, so routing_table and specialized_agents stay as they are.",
+      "N5": "The deliverable produced by the skill is the same file; the qa-lead routing matrix and intent mapping are unaffected.",
+      "N6": "No new deliverable and no new dependency between stages, so PIPELINE_DEPENDENCIES is unchanged."
+    },
+    "tests_added": [
+      "qa-system/tools/__tests__/lint-risk-ref.test.js"
+    ],
+    "decision_record": "EXAM/DECISIONS.md#t1"
+  },
+  "t2_new_agent": {
+    "agent_folder": "qa-system/qa-traceability-auditor",
+    "agent_file": "qa-system/qa-traceability-auditor/AGENT.md",
+    "skills": [
+      "qa-system/qa-traceability-auditor/skills/traceability-audit.md"
+    ],
+    "deliverable_prefix": "17",
+    "example_output": "OUTPUT/shopgo-refund/17_traceability_audit.md",
+    "registrations": [
+      "knowledge/_system_map.json",
+      "qa-system/workflows/WORKFLOW.md",
+      "qa-system/qa-lead/AGENT.md",
+      "qa-system/tools/system/agent-doctor.js",
+      "qa-system/README.md"
+    ],
+    "tests_added": [
+      "qa-system/tools/__tests__/agent-doctor-traceability.test.js"
+    ],
+    "decision_record": "EXAM/DECISIONS.md#t2"
+  },
+  "t3_pipeline": {
+    "input_dir": "INPUT/shopgo-refund",
+    "feature_knowledge": "knowledge/features/shopgo-refund.md",
+    "artifacts": {
+      "00": "OUTPUT/shopgo-refund/00_plan.md",
+      "01": "OUTPUT/shopgo-refund/01_requirement_risk_summary.md",
+      "02": "OUTPUT/shopgo-refund/02_missing_rule_report.md",
+      "03": "OUTPUT/shopgo-refund/03_viewpoint_report.md",
+      "04": "OUTPUT/shopgo-refund/04_test_idea_report.md",
+      "05": {
+        "spec": "OUTPUT/shopgo-refund/05_test_case_spec.md",
+        "blueprint": "OUTPUT/shopgo-refund/05_test_blueprint.json",
+        "batches": [
+          "OUTPUT/shopgo-refund/testcases/batch_01.md",
+          "OUTPUT/shopgo-refund/testcases/batch_02.md"
+        ]
+      },
+      "06": "OUTPUT/shopgo-refund/06_coverage_review.md"
+    },
+    "gate_log": "OUTPUT/shopgo-refund/_gate.log"
+  },
+  "evidence": {
+    "decisions": "EXAM/DECISIONS.md",
+    "ai_use_declaration": "EXAM/AI_USE.md"
+  }
+}
