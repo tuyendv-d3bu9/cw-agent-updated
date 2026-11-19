@@ -19,12 +19,12 @@ Tránh việc mở đi mở lại trình duyệt và lặp lại các bước đ
 
 ## Các bước thực hiện
 1. **Quét Preconditions & Test Steps**:
-   - Nhóm theo trang xuất phát (ví dụ: Trang chủ, Trang danh mục, Trang giỏ hàng).
-   - Nhóm theo trạng thái xác thực: Khách vãng lai (Guest) vs Người dùng đã đăng nhập (Authenticated User).
+   - Nhóm theo trang xuất phát (ví dụ: `<trang-1>`, `<trang-2>`, `<trang-3>`).
+   - Nhóm theo trạng thái xác thực: `<trạng thái-A>` vs `<trạng thái-B>`.
 2. **Gom thành các cụm hành trình (Journey Clusters / Feature Groups)**:
    - Mỗi cụm = một chuỗi màn hình **thật** nối nhau trong `07_web_journey_discovery.md` / ui-map, đặt tên theo
      mục tiêu người dùng của chuỗi đó: `<Cụm A>: <màn 1> → <màn 2> → <màn 3>`. Không dựng cụm từ hình dung về
-     loại sản phẩm; màn hình nào chưa thấy trong DOM snapshot thì không đưa vào cụm.
+     `<loại đối tượng>`; màn hình nào chưa thấy trong DOM snapshot thì không đưa vào cụm.
 3. **Chuẩn hóa thành Gherkin Scenario Outline (Nếu có nhiều bộ data test)**:
    - Thay vì viết lặp nhiều scenario, gộp các test case cùng luồng vào 1 `Scenario Outline` kèm bảng `Examples` (được sinh tự động từ `generate-dataset.js`).
 4. **Sắp xếp thứ tự thực thi trong cụm**:

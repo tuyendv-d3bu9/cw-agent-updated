@@ -14,7 +14,7 @@ import fs from 'fs';
  *
  * Hai biến môi trường quyết định đích đến (agent tự truyền, người dùng không cần gõ):
  *   QA_BASE_URL   — ghi đè URL của SUT (mặc định lấy từ knowledge/_system_map.json)
- *   QA_TASK_SLUG  — task đang chạy, ví dụ `cart-quantity`
+ *   QA_TASK_SLUG  — task đang chạy, ví dụ `<task-slug>`
  *   QA_RUN_ID     — mã lượt chạy, ví dụ `RUN-01_smoke`
  *   QA_DEVICE     — thiết bị chạy, phân tách bằng dấu phẩy: `mobile-ios,tablet` hoặc `all`.
  *                   Không truyền = chỉ `desktop-chrome` (hành vi cũ, không đổi).

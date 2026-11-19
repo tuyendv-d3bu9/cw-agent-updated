@@ -20,9 +20,9 @@
  * Bản cũ của cùng tài liệu (cùng tên bỏ version/ngày, cùng ngăn) ⇒ chuyển sang `<ngăn>/_superseded/`.
  * Exit: 0 xong · 1 có file lỗi / không nhận được gì · 2 chờ người dùng xác nhận gộp.
  * Examples:
- *   node qa-system/tools/intake/intake.js "SRS_Auth.docx" --slug auth-login
+ *   node qa-system/tools/intake/intake.js "SRS_Auth.docx" --slug <feature-a>
  *   node qa-system/tools/intake/intake.js "doc.pdf" --slug qa-standard-guide
- *   node qa-system/tools/intake/intake.js "rules.xlsx" --slug order-mgmt
+ *   node qa-system/tools/intake/intake.js "rules.xlsx" --slug <feature-b>
  */
 
 const fs = require('fs');
@@ -47,7 +47,7 @@ const targetInput = positional[0];
 
 /**
  * Diacritics must be decomposed BEFORE filtering characters. Filtering straight
- * through `[^\w\s-]` turned "Giỏ Hàng Số Lượng" into "gi-hng-s-lng", wiping every
+ * through `[^\w\s-]` turned "<Tên có dấu>" into "<slug-mất-dấu>", wiping every
  * accented vowel and leaving an unreadable slug.
  *
  * `normalize('NFD')` splits letters from their marks; `đ/Đ` has no decomposed
@@ -420,8 +420,8 @@ cho khuyến nghị GO **và** người dùng yêu cầu rõ kèm URL môi trư�
 //
 // Tên task vốn lấy từ TÊN FILE. Cùng một đặc tả mà BA gửi lại dưới tên khác là
 // sinh ra một task thứ hai cho đúng tính năng đó — `spec-function-d` và
-// `function-d-voucher` đã trùng nhau đúng kiểu này, cùng là "Function D: Áp dụng
-// Mã Giảm Giá (Voucher)" của ShopGo. Ba hàm dưới đây nhận diện trước khi ghi.
+// `<task-slug>` đã trùng nhau đúng kiểu này, cùng là "Function D: <tên tính năng>"
+// của <SUT>. Ba hàm dưới đây nhận diện trước khi ghi.
 
 /** Tên tính năng mà tài liệu tự khai, lấy ở heading H1 đầu tiên. */
 function docTitle(markdown) {
@@ -565,8 +565,8 @@ function featureSlug(name) {
   return tokens.join('-') || slugify(name) || `task-${crypto.createHash('sha1').update(String(name)).digest('hex').slice(0, 6)}`;
 }
 
-// Tên file mang tín hiệu BA mạnh (SRS, PRD, user story…) thắng chữ chung chung "spec": "API_Refund_spec" là tài
-// liệu dev, đặt tên task theo nó ra `api-refund-request` thay vì tên tính năng.
+// Tên file mang tín hiệu BA mạnh (SRS, PRD, user story…) thắng chữ chung chung "spec": "API_<name>_spec" là tài
+// liệu dev, đặt tên task theo nó ra `api-<name>-request` thay vì tên tính năng.
 const BA_STRONG = /(?<![a-z])(?:prd|srs|brd|frd|urd|user.?stor(?:y|ies)|use.?case|requirements?|yeu.?cau|dac.?ta)(?![a-z])/i;
 const BA_WEAK = /(?<![a-z])(?:spec|specs|specification)(?![a-z])/i;
 const DEV_NAME = /(?<![a-z])(?:api|swagger|openapi|schema|db|postman)(?![a-z])/i;

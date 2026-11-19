@@ -17,7 +17,7 @@ Khám phá trực tiếp ứng dụng web đang chạy (Staging / Dev / Producti
 
 ## Tham số
 - `url`: Địa chỉ trang web mục tiêu (người dùng cung cấp; không tự đoán).
-- `scope`: Hành trình cần khám phá (ví dụ: `checkout`, `cart`, `login`).
+- `scope`: Hành trình cần khám phá (ví dụ: `<journey-1>`, `<journey-2>`).
 
 ## Đầu vào
 - `url` do người dùng đưa (không tự chọn môi trường) · `OUTPUT/<task-slug>/05_test_case_spec.md`
@@ -77,8 +77,8 @@ Feature: [Tên tính năng được khám phá trên web]
 ## 3. Nhật Ký Hành Trình Khám Phá (Timeline)
 | Bước | URL | Thao tác thử nghiệm | Kết quả chuyển trang / Popup / Toast | Ảnh bằng chứng |
 |---|---|---|---|---|
-| 1 | `/` | Bấm vào sản phẩm đầu tiên | Mở chi tiết sản phẩm | `evidence/step1.png` |
-| 2 | `/cart` | Nhập mã "GIAM50K" & click Áp dụng | Thành công, trừ tiền | `evidence/step2.png` |
+| 1 | `/` | Bấm vào `<phần tử>` đầu tiên | `<kết quả mong đợi>` | `evidence/step1.png` |
+| 2 | `/<route>` | Nhập `<giá trị>` & click `<nút>` | `<kết quả mong đợi>` | `evidence/step2.png` |
 ```
 
 ## Chốt chặn nghiệm thu (Quality Gates)

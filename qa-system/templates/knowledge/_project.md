@@ -45,7 +45,7 @@ Dự án: `<điền>` · Cập nhật lần cuối: `<điền>`
 | Thuộc tính | Cấu hình chuẩn | Ý nghĩa / Ghi chú |
 |---|---|---|
 | Issue Type | `Test` | Loại issue đại diện cho Test Case trong Xray |
-| Summary Format | `[<TC_ID>] <Title>` | Ví dụ: `[AUTH-001] Verify đăng nhập thành công...` |
+| Summary Format | `[<TC_ID>] <Title>` | Ví dụ: `[<MODULE>-001] Verify <hành vi>...` |
 | Manual Steps | `Action`, `Data`, `Expected Result` | 3 cột chuẩn của bảng Manual Test Step trong Xray |
 | Preconditions | `Preconditions` (Text/Wiki) | Tiền điều kiện trước khi thực hiện test |
 | Priority | `High`, `Medium`, `Low` | Theo thang Priority của `QA_STANDARD.md` §11 |
