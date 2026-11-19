@@ -189,6 +189,11 @@ function a2(ctx) {
     : scored('A2a', 3, 0, [ev], 'No changed file declared for T1'));
 
   // b. anchors consistent with the declared class.
+  // No declared file really changed ⇒ T1 was not done: copying anchor values/reasons from the example
+  // must not earn points.
+  if (!okFiles.length) {
+    out.push(notSubmitted('A2b', 4, 'T1 not implemented: none of the declared T1 files was changed'));
+  } else {
   const af = anchorFiles(agent);
   const req = REQUIRED_ANCHORS[cls];
   let ok = 0;
@@ -202,6 +207,7 @@ function a2(ctx) {
   }
   out.push(scored('A2b', 4, C.prop(4, ok, ANCHORS.length), [ev, 'EXAM/submission.json'],
     bad.length ? `${ok}/7 anchors consistent with class ${cls}; check ${bad.join(', ')} (required for ${cls}: ${req.join(', ')})` : `7/7 anchors consistent with class ${cls}`));
+  }
 
   // c. skill structure of the changed skill(s).
   const skills = changedList(ctx, (p, s) => s !== 'D' && p.startsWith(`${agent}/skills/`) && p.endsWith('.md'));
@@ -235,6 +241,10 @@ function a2d(ctx) {
   const fx = ctx.hiddenDir && path.join(ctx.hiddenDir, 'fixtures');
   if (!fx || !fs.existsSync(path.join(fx, 'riskref-valid')) || !fs.existsSync(path.join(fx, 'riskref-invalid'))) {
     return pending('A2d', 3, 'Hidden T1 fixtures not configured');
+  }
+  // The unchanged starter lint trivially "accepts" the valid sample; only a real T1 lint change can score.
+  if (!isChanged(ctx, 'qa-system/tools/system/lint-deliverables.js')) {
+    return notSubmitted('A2d', 3, 'qa-system/tools/system/lint-deliverables.js not changed (T1 requires the Risk Ref lint rule, anchor N7)');
   }
   const lint = (name, slug) => ctx.runStudent({
     label: `a2d-${name}`,
@@ -585,6 +595,7 @@ function a6(ctx) {
   const hidden = ctx.hiddenDir && fs.existsSync(ctx.hiddenDir)
     ? fs.readdirSync(ctx.hiddenDir).filter((f) => /\.test\.js$/.test(f)).sort() : [];
   if (!hidden.length) out.push(pending('A6b', 3, 'Hidden instructor tests not configured'));
+  else if (!tools.length) out.push(notSubmitted('A6b', 3, 'No tool change found; hidden tests target the T1/T2 changes'));
   else {
     const r = ctx.runStudent({
       label: 'a6b',
@@ -607,6 +618,10 @@ function a6(ctx) {
 
   // c. determinism of the student's tools on two runs.
   const slug = ctx.cfg.task_slug;
+  if (!tools.length) {
+    out.push(notSubmitted('A6c', 2, 'No tool change found; determinism is checked on the student\'s tool changes'));
+    return out;
+  }
   const r = ctx.runStudent({
     label: 'a6c',
     prepare: (copy) => C.writeFileSafe(path.join(copy, '.exam-det', 'det.js'), DET_SCRIPT),
