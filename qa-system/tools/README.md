@@ -176,3 +176,21 @@ thì chưa hiểu lỗi.
 
 Quy ước: file `*.test.js`, dùng `helpers.js` để dựng dự án giả trong thư mục tạm —
 test không bao giờ đụng vào `OUTPUT/` hay `knowledge/` thật.
+
+---
+
+## HTML report (`report/`)
+
+Renders the deliverables of one task into a single self-contained HTML file (inline CSS, no scripts, no external
+resources, strict CSP, light/dark, print-friendly, sticky table of contents).
+
+```bash
+npm run report -- <feature-slug> [--out <file>] [--generated-at <text>]
+```
+
+- Default output: `OUTPUT/<slug>/report.html`. Reads `00_plan`, `01`…`06`, `05_test_blueprint.json`, `testcases/*.md`,
+  `15_readiness_metrics.json`, `16`, `_gate.log`, `runs/*/run_result.md`; never modifies them.
+- Missing stages are listed as "not produced"; counts (BR/MR ids, test cases) are computed from the files and cite their source.
+- Deterministic: same inputs give byte-identical HTML. A timestamp appears only with `--generated-at`.
+- Reusable library: `report/html-report.js` exports `renderMarkdown`, `renderReport`, `escapeHtml`, `safeUrl` (pure, no I/O).
+- Tests: `__tests__/html-report.test.js`.
