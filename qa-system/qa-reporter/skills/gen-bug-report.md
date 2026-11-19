@@ -1,111 +1,114 @@
 ---
 name: gen-bug-report
 description: >
-  Chuyển đổi ghi chép lỗi thô (Raw Bug Notes) của Tester thành Bug Report kỹ thuật 7 trường Jira-ready,
-  đối soát Expected Result với Business Rules (BR-xx), đánh giá Severity kỹ thuật và đề xuất Priority.
+  Converts a Tester's raw bug notes into a Jira-ready 7-field technical Bug Report,
+  cross-checks the Expected Result against the Business Rules (BR-xx), assesses technical Severity and proposes a Priority.
 ---
 
 # Skill: gen-bug-report
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT standard · ma trận rủi ro §5).
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict · guards · FACT standard · risk matrix §5).
 >
-> **Skill = LÀM THẾ NÀO.** Quy trình + tham số + format output 7 trường. Tái dùng được.
-> KHÔNG chứa danh tính/quyền hạn (đó là `AGENT.md`), KHÔNG nhắc lại ràng buộc chung (đó là `qa-system/core/QA_STANDARD.md`).
+> **Skill = HOW.** Procedure + parameters + the 7-field output format. Reusable.
+> It does NOT hold identity/permissions (that is `AGENT.md`) and does NOT repeat the shared constraints (those are in `qa-system/core/QA_STANDARD.md`).
+>
+> The output format block and its fixed markers (`(cần bổ sung)` = needs input, `[ĐỀ XUẤT]`, `[GIẢ ĐỊNH]`,
+> `⚠️ CẦN REVIEWER / PM XÁC NHẬN VÀ CHỐT TRƯỚC KHI LOG JIRA` = reviewer/PM must confirm before logging to Jira) stay in Vietnamese; copy them verbatim.
 
-## Mục đích
-Chuyển đổi ghi chép lỗi thô (Raw Bug Notes) của Tester thành Bug Report kỹ thuật chuẩn 7 trường Jira-ready, đối soát hành vi Expected về Business Rule (`BR-xx`) tương ứng từ `knowledge/`, đánh giá mức độ nghiêm trọng kỹ thuật (Severity), đề xuất Priority và chuẩn bị hồ sơ cho Human-Final Review trước khi log vào Jira.
+## Purpose
+Convert a Tester's raw bug notes into a standard Jira-ready 7-field technical Bug Report, cross-check the Expected behaviour against the matching Business Rule (`BR-xx`) from `knowledge/`, assess the technical Severity, propose a Priority and prepare the file for the Human-Final Review before it is logged into Jira.
 
-## Tham số
-- `bug_notes_path`: Đường dẫn file chứa bug notes thô của tester (ví dụ: `INPUT/bug_notes.txt` hoặc file markdown/text bất kỳ). Bắt buộc.
-- `rules_path`: File Business Rules để đối soát Expected (tùy chọn; mặc định `knowledge/features/<feature-slug>.md`).
-- `feature_name`: Tên tính năng/module liên quan (tùy chọn) — dùng để chọn `<feature-slug>`.
+## Parameters
+- `bug_notes_path`: Path of the file containing the tester's raw bug notes (e.g. `INPUT/bug_notes.txt` or any markdown/text file). Mandatory.
+- `rules_path`: The Business Rules file used to cross-check the Expected (optional; default `knowledge/features/<feature-slug>.md`).
+- `feature_name`: Name of the related feature/module (optional) — used to choose `<feature-slug>`.
 
-## Đầu vào
-- File bug notes thô tại `<bug_notes_path>`.
-- File tri thức nghiệp vụ: `knowledge/features/<feature-slug>.md` (§3 BR, §3b FD, §5 AF, §8 quyết định) hoặc `<rules_path>`.
-- `knowledge/_project.md` (quy ước múi giờ, định dạng mã, tiền tệ).
+## Inputs (Đầu vào)
+- The raw bug notes file at `<bug_notes_path>`.
+- The business knowledge file: `knowledge/features/<feature-slug>.md` (§3 BR, §3b FD, §5 AF, §8 decisions) or `<rules_path>`.
+- `knowledge/_project.md` (time zone, code format and currency conventions).
 
-> Nếu thiếu file bug notes bắt buộc → DỪNG và yêu cầu cung cấp, tuyệt đối không tự bịa đặt nội dung.
+> If the mandatory bug notes file is missing → STOP and ask for it; never invent content.
 
-## KHÔNG được (riêng skill này)
-- KHÔNG tự bịa các bước tái hiện (Steps to Reproduce), thông số môi trường (Environment), thiết bị, hệ điều hành, test data, tài khoản hoặc hành vi lỗi nếu bug notes không đề cập. Chỗ nào thiếu bắt buộc ghi rõ `(cần bổ sung)` hoặc gắn nhãn `[GIẢ ĐỊNH]`.
-- KHÔNG tự suy đoán nguyên nhân gốc (Root Cause) khi không có bằng chứng kỹ thuật (như stack trace, network tab log, console error, DB exception) trong bug notes. Chỉ ghi nhận hiện tượng bề mặt và ghi `(cần Dev kiểm tra Root Cause)`.
-- KHÔNG tự quyết định Priority thay cho Team/PM; chỉ được đề xuất dưới dạng `[ĐỀ XUẤT] P1/P2/P3/P4` kèm lý do và ghi rõ cần Reviewer chốt.
-- KHÔNG ghi đè hoặc sửa đổi file bug notes đầu vào.
-- KHÔNG để trống bất kỳ trường nào trong 7 trường bắt buộc.
+## MUST NOT (specific to this skill)
+- NEVER invent Steps to Reproduce, Environment parameters, devices, operating systems, test data, accounts or faulty behaviour that the bug notes do not mention. Every missing item must be marked `(cần bổ sung)` (needs input) or tagged `[GIẢ ĐỊNH]` (assumption).
+- NEVER speculate about the Root Cause without technical evidence (stack trace, network tab log, console error, DB exception) in the bug notes. Record only the surface symptom and write `(cần Dev kiểm tra Root Cause)` (Dev needs to check the root cause).
+- NEVER decide the Priority on behalf of the Team/PM; it may only be proposed as `[ĐỀ XUẤT] P1/P2/P3/P4` with a reason and a clear note that a Reviewer must confirm it.
+- NEVER overwrite or modify the input bug notes file.
+- NEVER leave any of the 7 mandatory fields empty.
 
 ---
 
-## Quy Chuẩn 7 Trường Bắt Buộc (Jira Bug Specification)
+## The 7 Mandatory Fields Standard (Jira Bug Specification)
 
-| # | Tên trường | Nội dung quy chuẩn | Quy tắc bắt buộc |
+| # | Field name | Standard content | Mandatory rule |
 |---|---|---|---|
-| **1** | **Title** | Tóm tắt lỗi theo cú pháp: `[<Module/Function>] <Hành vi lỗi thực tế> khi <Thao tác/Điều kiện>` | Ngắn gọn, súc tích, phản ánh đúng bản chất lỗi. Dùng làm căn cứ sinh file slug. |
-| **2** | **Environment** | Bóc tách: OS, Trình duyệt/Thiết bị, Môi trường (Staging/Dev/UAT), Version/Build, Account test | Chỉ ghi những gì có trong bug notes. Thiếu thông tin nào ghi rõ `(cần bổ sung)` vào mục đó. |
-| **3** | **Steps to Reproduce** | Gồm: Tiền điều kiện (Preconditions) + Các bước đánh số tuần tự (1, 2, 3...) kèm Test Data cụ thể | Bám sát thao tác thực tế từ bug notes. Thiếu data cụ thể ghi `(cần bổ sung test data)`. |
-| **4** | **Actual vs Expected** | Tách bạch 2 vế:<br>- **Actual**: Hiện tượng lỗi quan sát được từ notes.<br>- **Expected**: Hành vi chuẩn của hệ thống, **BẮT BUỘC TRACE VỀ MÃ RULE** | Trích dẫn cụ thể mã rule (ví dụ: `BR-03`, `BR-05` trong `knowledge/features/<feature-slug>.md`). Nếu rule chưa có trong knowledge → `[CHƯA CÓ TRONG TÀI LIỆU]`, không tự viết Expected. |
-| **5** | **Severity** | Thang QA_STANDARD §11: `Critical` / `Major` / `Minor` / `Trivial` | **BẮT BUỘC KÈM LÝ DO KỸ THUẬT**: Phân tích ảnh hưởng luồng chính, crash, rò rỉ dữ liệu, hay chỉ là lỗi UI. |
-| **6** | **Priority** | Format: `[ĐỀ XUẤT] [P1 / P2 / P3 / P4]` + lý do đề xuất mức độ khẩn cấp | Kèm cảnh báo tường minh: `⚠️ CẦN REVIEWER / PM XÁC NHẬN VÀ CHỐT TRƯỚC KHI LOG JIRA`. |
-| **7** | **Evidence** | Logs, Response status/body, chuỗi thông báo lỗi trên UI, đường dẫn screenshot/video | Trích xuất nguyên văn từ bug notes. Nếu tester chưa đính kèm bằng chứng → ghi `(cần bổ sung screenshot/video/log)`. |
+| **1** | **Title** | Bug summary in the form `[<Module/Function>] <actual faulty behaviour> khi <action/condition>` (`khi` = when) | Short, concise, reflecting the true nature of the bug. Used as the basis for the file slug. |
+| **2** | **Environment** | Extract: OS, Browser/Device, Environment (Staging/Dev/UAT), Version/Build, test account | Record only what is in the bug notes. Any missing item is marked `(cần bổ sung)` in that entry. |
+| **3** | **Steps to Reproduce** | Preconditions + sequentially numbered steps (1, 2, 3...) with concrete Test Data | Stick to the actual actions in the bug notes. Missing concrete data ⇒ `(cần bổ sung test data)`. |
+| **4** | **Actual vs Expected** | Two separate parts:<br>- **Actual**: the faulty symptom observed in the notes.<br>- **Expected**: the system's correct behaviour, **MUST TRACE TO A RULE CODE** | Quote the specific rule code (e.g. `BR-03`, `BR-05` in `knowledge/features/<feature-slug>.md`). If the rule is not in knowledge yet → `[CHƯA CÓ TRONG TÀI LIỆU]`; never write the Expected yourself. |
+| **5** | **Severity** | QA_STANDARD §11 scale: `Critical` / `Major` / `Minor` / `Trivial` | **A TECHNICAL REASON IS MANDATORY**: analyse the impact on the main flow, crashes, data leaks, or whether it is only a UI issue. |
+| **6** | **Priority** | Format: `[ĐỀ XUẤT] [P1 / P2 / P3 / P4]` + the reason for the proposed urgency | With the explicit warning: `⚠️ CẦN REVIEWER / PM XÁC NHẬN VÀ CHỐT TRƯỚC KHI LOG JIRA`. |
+| **7** | **Evidence** | Logs, response status/body, error message strings on the UI, screenshot/video paths | Extracted verbatim from the bug notes. If the tester attached no evidence → write `(cần bổ sung screenshot/video/log)`. |
 
 ---
 
-## Các Bước Thực Hiện
+## Steps
 
-### Bước 1: Tiếp nhận và bóc tách dữ kiện thô từ Bug Notes
-1. Đọc nội dung file `<bug_notes_path>`.
-2. Trích xuất toàn bộ các dữ kiện hiện có:
-   - Module / Chức năng bị lỗi.
-   - Môi trường, thiết bị, tài khoản (nếu có).
-   - Thao tác thực hiện và dữ liệu đầu vào đúng như notes ghi.
-   - Hiện tượng lỗi thực tế (Actual result) và thông báo lỗi.
-   - Bằng chứng kỹ thuật đi kèm (log, ảnh, status code).
-3. Đánh dấu danh sách các thông tin bị khuyết để đưa vào mục `(cần bổ sung)`.
+### Step 1: Take in and extract the raw facts from the Bug Notes
+1. Read the content of the `<bug_notes_path>` file.
+2. Extract every fact available:
+   - The faulty module / function.
+   - Environment, device, account (if any).
+   - The actions performed and the input data exactly as the notes record them.
+   - The actual faulty behaviour (Actual result) and the error message.
+   - The attached technical evidence (logs, images, status codes).
+3. Mark the list of missing information to go into the `(cần bổ sung)` entries.
 
-### Bước 2: Tra cứu Business Rules để xây dựng Expected Result
-1. Xác định module nghiệp vụ liên quan từ dữ kiện bước 1.
-2. Tìm kiếm quy tắc nghiệp vụ theo thứ tự ưu tiên:
-   - File được chỉ định tại `rules_path`.
-   - `knowledge/features/<feature-slug>.md` — §3, §3b (chữ thông báo nguyên văn), §5, §8.
-3. Xác định chính xác mã quy tắc (`BR-xx`) quy định hành vi chuẩn trong tình huống này.
-4. Viết Expected Result dựa trên quy tắc đó kèm dẫn xuất nguồn cụ thể (Traceability). Chữ thông báo chỉ chép nguyên văn từ knowledge; không có ⇒ `[CHƯA CÓ TRONG TÀI LIỆU]`.
+### Step 2: Look up the Business Rules to build the Expected Result
+1. Identify the related business module from the Step 1 facts.
+2. Search for business rules in order of priority:
+   - The file given in `rules_path`.
+   - `knowledge/features/<feature-slug>.md` — §3, §3b (verbatim message text), §5, §8.
+3. Identify exactly which rule code (`BR-xx`) defines the correct behaviour in this situation.
+4. Write the Expected Result based on that rule with a specific source reference (Traceability). Message text is only copied verbatim from knowledge; none ⇒ `[CHƯA CÓ TRONG TÀI LIỆU]`.
 
-### Bước 3: Đánh giá Severity kỹ thuật & Đề xuất Priority
-1. **Severity (Độ nghiêm trọng kỹ thuật)**:
-   - `Critical`: Crash, mất/hỏng dữ liệu, chặn hoàn toàn luồng chính, lỗ hổng bảo mật.
-   - `Major`: Chức năng chính sai so với rule (`BR-xx`) mà không có workaround.
-   - `Minor`: Tính năng phụ sai, thông báo sai lệch, hoặc có workaround.
-   - `Trivial`: Lỗi hiển thị, chính tả, căn lề — không ảnh hưởng logic.
-   - *Viết rõ đoạn phân tích lý do kỹ thuật đằng sau mức đánh giá.*
-2. **Priority (Mức độ ưu tiên xử lý)**:
-   - Đưa ra đề xuất `[ĐỀ XUẤT] P1 / P2 / P3 / P4` dựa trên tính cấp bách kinh doanh, phạm vi ảnh hưởng người dùng.
-   - Khóa nhãn: `⚠️ CẦN REVIEWER / PM XÁC NHẬN VÀ CHỐT TRƯỚC KHI LOG JIRA`.
+### Step 3: Assess the technical Severity & propose a Priority
+1. **Severity (technical seriousness)**:
+   - `Critical`: Crash, data loss/corruption, the main flow fully blocked, a security hole.
+   - `Major`: A main function behaves differently from the rule (`BR-xx`) with no workaround.
+   - `Minor`: A secondary feature is wrong, a message is inaccurate, or there is a workaround.
+   - `Trivial`: Display, spelling or alignment issues — no impact on logic.
+   - *Write out the technical reasoning behind the assessed level.*
+2. **Priority (handling priority)**:
+   - Give the proposal `[ĐỀ XUẤT] P1 / P2 / P3 / P4` based on business urgency and the scope of user impact.
+   - Lock label: `⚠️ CẦN REVIEWER / PM XÁC NHẬN VÀ CHỐT TRƯỚC KHI LOG JIRA`.
 
-### Bước 4: Tự kiểm tra tính chuẩn xác (FACT Self-Audit)
-Chạy checklist kiểm tra trước khi tạo file:
-- **F (Factual)**: Mọi thông tin mô tả lỗi đều xuất phát từ bug notes hoặc Business Rules. Tuyệt đối không tự suy đoán root cause khi không có bằng chứng.
-- **A (Accurate)**: Đúng cú pháp Title, đúng mã `BR-xx`, đúng phân biệt Actual vs Expected.
-- **C (Complete)**: Đủ 7 trường bắt buộc + Mục 8 (Giả định & thông tin còn thiếu) + Mục 9 (Human-Final Review Checklist).
-- **T (Testable)**: Steps to reproduce rõ ràng, kiểm chứng được Pass/Fail.
+### Step 4: Self-check accuracy (FACT Self-Audit)
+Run this checklist before creating the file:
+- **F (Factual)**: Every piece of the bug description comes from the bug notes or the Business Rules. Never speculate about the root cause without evidence.
+- **A (Accurate)**: Correct Title syntax, correct `BR-xx` code, a correct distinction between Actual and Expected.
+- **C (Complete)**: All 7 mandatory fields + Section 8 (Assumptions & missing information) + Section 9 (Human-Final Review Checklist).
+- **T (Testable)**: Steps to reproduce are clear and Pass/Fail can be verified.
 
-Xác định Verdict:
-- Nếu các bước tái hiện và lỗi thực tế quá mập mờ không thể xác định ➔ `Verdict: ASK`, dừng và yêu cầu Tester bổ sung.
-- Nếu đủ thông tin cơ bản để tái hiện ➔ `Verdict: PASS`.
+Decide the verdict:
+- If the reproduction steps and the actual bug are too vague to determine ➔ `Verdict: ASK`; stop and ask the Tester for more.
+- If there is enough basic information to reproduce ➔ `Verdict: PASS`.
 
-### Bước 5: Tạo Slug và Xuất file Markdown
-1. Tạo `<slug>` từ trường Title:
-   - Chuyển chữ hoa thành chữ thường.
-   - Bỏ dấu tiếng Việt (ví dụ: `á` ➔ `a`, `đ` ➔ `d`...).
-   - Bỏ toàn bộ ký tự đặc biệt (chỉ giữ `[a-z0-9]`).
-   - Thay khoảng trắng và chuỗi ký tự liên tiếp bằng dấu gạch ngang (`-`).
-   - Giới hạn độ dài tối đa 60 ký tự để tên file gọn gàng.
-2. Tạo thư mục `OUTPUT/reports/` (nếu chưa tồn tại).
-3. Ghi file ra `OUTPUT/reports/bug-report-<slug>.md`. Tuyệt đối không ghi đè file input.
+### Step 5: Create the slug and write the Markdown file
+1. Create `<slug>` from the Title field:
+   - Convert upper case to lower case.
+   - Strip Vietnamese diacritics (e.g. `á` ➔ `a`, `đ` ➔ `d`...).
+   - Remove all special characters (keep only `[a-z0-9]`).
+   - Replace spaces and runs of characters with a hyphen (`-`).
+   - Limit the length to at most 60 characters to keep the file name tidy.
+2. Create the `OUTPUT/reports/` folder (if it does not exist).
+3. Write the file to `OUTPUT/reports/bug-report-<slug>.md`. Never overwrite the input file.
 
 ---
 
-## Format Output
-Ghi ra `OUTPUT/reports/bug-report-<slug>.md`:
+## Output Format
+Write `OUTPUT/reports/bug-report-<slug>.md`:
 
 ````markdown
 # BUG REPORT: <Title>
@@ -171,18 +174,21 @@ Owner: qa-system/qa-reporter/skills/gen-bug-report.md · Nguồn: <bug_notes_pat
 - [ ] **Phê duyệt**: [ ] SẴN SÀNG LOG JIRA / [ ] CẦN CẬP NHẬT THÊM
 ````
 
----
-
-## Ghi Knowledge
-Không ghi knowledge (chỉ đọc knowledge để đối soát).
+(Section 8 = assumptions & missing information — mandatory whenever information is missing or assumptions were made.
+Section 9 = Human-Final Review checklist before logging to Jira: confirmed priority, rule trace checked, information completed, approval.)
 
 ---
 
-## Chốt Chặn
-- [ ] File output nằm tại `OUTPUT/reports/bug-report-<slug>.md`, không ghi đè input.
-- [ ] Tên file đúng dạng kebab-case không dấu.
-- [ ] Đầy đủ 100% 7 trường bắt buộc, không trường nào bị bỏ trống.
-- [ ] Expected Result trích dẫn mã `BR-xx` từ knowledge; chưa có thì `[CHƯA CÓ TRONG TÀI LIỆU]`.
-- [ ] Severity có giải trình lý do kỹ thuật; Priority ở dạng `[ĐỀ XUẤT]` có ghi chú cần Reviewer chốt.
-- [ ] Tuyệt đối không tự bịa thông tin; mọi chỗ thiếu ghi `(cần bổ sung)` và tổng hợp tại Mục 8.
-- [ ] Có checklist Human-Final Review tại Mục 9.
+## Writing knowledge
+Writes no knowledge (reads knowledge only, for cross-checking).
+
+---
+
+## Gates
+- [ ] The output file is at `OUTPUT/reports/bug-report-<slug>.md`; the input is not overwritten.
+- [ ] The file name is kebab-case without diacritics.
+- [ ] All 7 mandatory fields are 100% present; none left empty.
+- [ ] The Expected Result quotes a `BR-xx` code from knowledge; if none exists, `[CHƯA CÓ TRONG TÀI LIỆU]`.
+- [ ] Severity has a technical justification; Priority is in `[ĐỀ XUẤT]` form with a note that a Reviewer must confirm it.
+- [ ] No invented information at all; every gap is marked `(cần bổ sung)` and collected in Section 8.
+- [ ] The Human-Final Review checklist is present in Section 9.

@@ -1,145 +1,148 @@
 ---
 name: gen-daily-summary
 description: >
-  Chuyển đổi dữ liệu sprint thô ở dạng JSON thành Daily QA Summary chuẩn hóa 4 section cố định
-  (Tiến độ hôm nay, Outstanding Issues, Blocker, Next Action) cho đối tượng Dev hoặc PM.
+  Converts raw sprint data in JSON form into a normalised Daily QA Summary with 4 fixed sections
+  (Tiến độ hôm nay / today's progress, Outstanding Issues, Blocker, Next Action) for a Dev or PM audience.
 ---
 
 # Skill: gen-daily-summary
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT standard).
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict · guards · FACT standard).
 >
-> **Skill = LÀM THẾ NÀO.** Quy trình + tham số + format output 4 section. Tái dùng được.
-> KHÔNG chứa danh tính/quyền hạn (đó là `AGENT.md`), KHÔNG nhắc lại ràng buộc chung (đó là `qa-system/core/QA_STANDARD.md`).
+> **Skill = HOW.** Procedure + parameters + the 4-section output format. Reusable.
+> It does NOT hold identity/permissions (that is `AGENT.md`) and does NOT repeat the shared constraints (those are in `qa-system/core/QA_STANDARD.md`).
+>
+> The section names (`Tiến độ hôm nay`, `Outstanding Issues`, `Blocker`, `⏭ Next Action`) and the output format block stay
+> as written; copy them verbatim.
 
-## Mục đích
-Chuyển đổi dữ liệu sprint thô ở dạng JSON thành một Daily QA Summary chuẩn hóa gồm đúng 4 section cố định, được trình bày phù hợp với đối tượng độc giả mục tiêu (`dev` hoặc `pm`), đảm bảo 100% số liệu đối soát trực tiếp từ nguồn và tuân thủ tuyệt đối chuẩn FACT (không bịa số liệu, không nhận định cảm tính, không tự suy diễn blocker hay nhiệm vụ).
+## Purpose
+Convert raw sprint data in JSON form into a normalised Daily QA Summary with exactly 4 fixed sections, presented to suit the target audience (`dev` or `pm`), with 100% of the figures reconciled directly against the source and strict compliance with the FACT standard (no invented figures, no subjective judgements, no inferred blockers or tasks).
 
-## Tham số
-- `sprint_data_path`: Đường dẫn file dữ liệu sprint dạng JSON. Bắt buộc.
-  **Hình dáng bắt buộc của file này**: [`qa-system/templates/sprint-data.example.json`](../../templates/sprint-data.example.json).
-  Chưa có file ⇒ chép template ra `OUTPUT/<slug>/reports/sprint_data_<YYYY-MM-DD>.json` và điền
-  từ `runs/<RUN-ID>/run_result.md` + `jira_defects_summary.md`. **Không tự bịa cấu trúc.**
-- `audience`: Đối tượng đọc báo cáo, nhận một trong hai giá trị hợp lệ:
-  - `dev`: Trình bày thiên về kỹ thuật, giữ nguyên Bug ID, Test Case ID, chi tiết lỗi và các thông số cụ thể.
-  - `pm`: Tập trung vào tiến độ, rủi ro tổng quát và vấn đề cần quyết định; gộp chi tiết kỹ thuật ở mức feature, hạn chế tối đa jargon kỹ thuật nhưng bảo toàn bản chất dữ liệu.
-  - **RÀNG BUỘC ĐẶC BIỆT**: Tham số này là BẮT BUỘC. Nếu người dùng không truyền hoặc truyền giá trị ngoài `dev` / `pm`, skill **BẮT BUỘC DỪNG LẠI HỎI NGƯỜI DÙNG (Verdict: `ASK`)**, tuyệt đối không được tự ý chọn ngầm.
+## Parameters
+- `sprint_data_path`: Path of the sprint data JSON file. Mandatory.
+  **The mandatory shape of this file**: [`qa-system/templates/sprint-data.example.json`](../../templates/sprint-data.example.json).
+  No file yet ⇒ copy the template to `OUTPUT/<slug>/reports/sprint_data_<YYYY-MM-DD>.json` and fill it in
+  from `runs/<RUN-ID>/run_result.md` + `jira_defects_summary.md`. **Never invent a structure.**
+- `audience`: The report's readers; takes one of two valid values:
+  - `dev`: Technical presentation; keep Bug IDs, Test Case IDs, bug details and specific parameters.
+  - `pm`: Focus on progress, overall risks and issues needing a decision; aggregate technical details at the feature level, minimise technical jargon while preserving the substance of the data.
+  - **SPECIAL CONSTRAINT**: This parameter is MANDATORY. If the user does not pass it, or passes a value other than `dev` / `pm`, the skill **MUST STOP AND ASK THE USER (Verdict: `ASK`)**, and must never silently choose one.
 
-## Đầu vào
-- File sprint data JSON hợp lệ tại `<sprint_data_path>`.
-- Tham số `audience` được xác nhận rõ ràng (`dev` hoặc `pm`).
+## Inputs (Đầu vào)
+- A valid sprint data JSON file at `<sprint_data_path>`.
+- An explicitly confirmed `audience` parameter (`dev` or `pm`).
 
-> Nếu thiếu file dữ liệu JSON hoặc không truyền `audience` → DỪNG LẠI với `Verdict: ASK` và yêu cầu cung cấp đầy đủ thông tin, không tự tưởng tượng nội dung hoặc tự chọn đối tượng đọc.
+> JSON data file missing or `audience` not passed → STOP with `Verdict: ASK` and ask for the complete information; never imagine content or choose the audience yourself.
 
-## KHÔNG được (riêng skill này)
-- **KHÔNG tự bịa hoặc thay đổi bất kỳ con số nào**: Mọi số liệu như `executed`, `passed`, `failed`, `blocked`, số lượng bug, và pass rate phải có thể đối chiếu ngược trực tiếp 100% về file JSON nguồn.
-- **KHÔNG đưa nhận định cảm tính vượt quá dữ liệu**: Tuyệt đối không đưa ra các phán đoán như "chất lượng sprint rất tốt", "hệ thống kém ổn định", "tiến độ khả quan". Chỉ mô tả thuần túy số liệu, trạng thái và các rủi ro có thể quan sát trực tiếp từ dữ liệu.
-- **KHÔNG tự tạo Blocker hoặc suy diễn Blocker**: Chỉ ghi nhận vấn đề là Blocker khi trong JSON có dữ liệu xác định rõ ràng là blocker (ví dụ: cờ `is_blocker: true`, thuộc tính `blockers`, hoặc trạng thái blocked được mô tả trực tiếp là blocker). Nếu JSON không cung cấp đủ dữ liệu xác định → ghi rõ `Không có blocker được ghi nhận trong dữ liệu sprint`.
-- **KHÔNG tự thêm task, người thực hiện hoặc kế hoạch không tồn tại trong JSON**: Tại section `⏭ Next Action`, chỉ liệt kê những task và người phụ trách được nêu cụ thể trong dữ liệu JSON. Nếu không có thông tin người phụ trách → chỉ ghi nhận task và để người phụ trách là `(chưa phân công trong dữ liệu)`.
-- **KHÔNG tự chọn `audience`**: Khi người dùng không truyền tham số `audience`, không được tự tiện mặc định thành `dev` hoặc `pm`.
-- **KHÔNG làm thay đổi bản chất dữ liệu khi điều chỉnh cho `pm`**: Khi gộp chi tiết lỗi theo mức feature cho PM, phải giữ đúng số lượng bug, mức độ nghiêm trọng và nguyên nhân cốt lõi từ dữ liệu gốc.
+## MUST NOT (specific to this skill)
+- **NEVER invent or change any number**: Every figure such as `executed`, `passed`, `failed`, `blocked`, the number of bugs and the pass rate must be traceable 100% directly back to the source JSON file.
+- **NEVER give subjective judgements beyond the data**: Absolutely no judgements like "sprint quality is very good", "the system is unstable", "progress looks promising". Only describe the figures, statuses and the risks directly observable in the data.
+- **NEVER create or infer Blockers**: Record an issue as a Blocker only when the JSON has data that clearly identifies it as a blocker (e.g. an `is_blocker: true` flag, a `blockers` property, or a blocked status directly described as a blocker). If the JSON does not provide enough data to tell → write `Không có blocker được ghi nhận trong dữ liệu sprint` (no blocker recorded in the sprint data).
+- **NEVER add tasks, assignees or plans that do not exist in the JSON**: In the `⏭ Next Action` section, list only the tasks and assignees explicitly given in the JSON data. If there is no assignee information → record only the task and set the assignee to `(chưa phân công trong dữ liệu)` (not assigned in the data).
+- **NEVER choose the `audience` yourself**: When the user does not pass the `audience` parameter, never default it to `dev` or `pm`.
+- **NEVER change the substance of the data when adapting it for `pm`**: When aggregating bug details at the feature level for the PM, keep the exact number of bugs, the severity levels and the core causes from the original data.
 
 ---
 
-## Cấu Trúc 4 Section Chuẩn Hóa Bắt Buộc
+## The Mandatory 4-Section Structure
 
-Daily QA Summary bắt buộc phải chứa đúng 4 section sau đây theo đúng thứ tự:
+The Daily QA Summary must contain exactly the following 4 sections, in this order:
 
-### 1. `Tiến độ hôm nay`
-- Thể hiện các chỉ số thực thi: `Executed`, `Passed`, `Failed`, `Blocked`.
-- Liệt kê danh sách các tính năng (`Features` / `Modules`) đã cover trong ngày.
-- **Pass Rate**: Tự động tính toán theo công thức bắt buộc:
+### 1. `Tiến độ hôm nay` (today's progress)
+- Shows the execution metrics: `Executed`, `Passed`, `Failed`, `Blocked`.
+- Lists the features (`Features` / `Modules`) covered during the day.
+- **Pass Rate**: computed automatically with the mandatory formula:
   $$\text{Pass Rate} = \frac{\text{passed}}{\text{executed}} \times 100\%$$
-  - Bắt buộc ghi rõ ràng cách tính và phép tính cụ thể: `Pass Rate = passed / executed = <passed> / <executed> = <tỷ_lệ>%`.
-  - Guard chia cho 0: Nếu `executed == 0`, ghi rõ `0% (0/0 test cases executed)` để tránh lỗi chia cho 0.
-- Tất cả số liệu phải khớp chính xác với JSON.
+  - The calculation and its concrete arithmetic must be written out: `Pass Rate = passed / executed = <passed> / <executed> = <rate>%`.
+  - Division-by-zero guard: if `executed == 0`, write `0% (0/0 test cases executed)` to avoid dividing by zero.
+- Every figure must match the JSON exactly.
 
 ### 2. `Outstanding Issues`
-- Liệt kê các bug chưa fix (Open, In Progress, Reopened), đang verify (Ready for QA, In QA) hoặc các vấn đề bị blocked kèm `Severity` (nếu thông tin có trong JSON).
-- **Phân hóa theo Audience**:
-  - **Với `audience = dev`**:
-    - Giữ nguyên Bug ID (ví dụ: `BUG-102`, `JIRA-405`), Test Case ID liên quan (`TC-012`).
-    - Ghi chi tiết lỗi kỹ thuật: thông báo lỗi, endpoint, step gây lỗi, môi trường cụ thể nếu có.
-  - **Với `audience = pm`**:
-    - Gộp các chi tiết kỹ thuật thành mức feature/module hoặc vấn đề tổng quát.
-    - Hạn chế thuật ngữ chuyên sâu (jargon kỹ thuật như stack trace, memory leak, null pointer) thành mô tả ảnh hưởng chức năng dễ hiểu.
-    - Không làm mất số lượng bug hoặc làm sai lệch bản chất dữ liệu.
+- Lists the unfixed bugs (Open, In Progress, Reopened), those being verified (Ready for QA, In QA) or blocked issues, with `Severity` (if the information is in the JSON).
+- **Differentiated by Audience**:
+  - **For `audience = dev`**:
+    - Keep the Bug IDs (e.g. `BUG-102`, `JIRA-405`) and the related Test Case IDs (`TC-012`).
+    - Record the technical bug details: error message, endpoint, the step causing the bug, the specific environment if any.
+  - **For `audience = pm`**:
+    - Aggregate technical details into feature/module level or general issues.
+    - Turn specialist terms (technical jargon such as stack trace, memory leak, null pointer) into easy-to-understand descriptions of the functional impact.
+    - Never lose the bug count or distort the substance of the data.
 
 ### 3. `Blocker`
-- Nêu rõ các vấn đề đang trực tiếp chặn đứng tiến độ kiểm thử hoặc phát triển, cùng hành động (`Action`) cần thực hiện ngay lập tức để giải phóng điểm nghẽn.
-- Nếu không có dữ liệu blocker trong JSON: Ghi rõ ràng `Không ghi nhận blocker nào trong dữ liệu sprint hiện tại.` Tuyệt đối không suy diễn bug thường thành blocker.
+- State clearly the issues directly halting test or development progress, with the `Action` needed immediately to clear the bottleneck.
+- If the JSON has no blocker data: write clearly `Không ghi nhận blocker nào trong dữ liệu sprint hiện tại.` (no blocker recorded in the current sprint data). Never turn an ordinary bug into a blocker by inference.
 
 ### 4. `⏭ Next Action`
-- Thể hiện kế hoạch tiếp theo cho ngày làm việc tiếp theo.
-- Bao gồm: Ai sẽ làm gì (`Task` + `Người phụ trách / Assignee`) nếu thông tin người phụ trách có trong JSON.
-- Nếu JSON không có thông tin người phụ trách: Ghi rõ `(chưa chỉ định người phụ trách trong dữ liệu)`. Không được tự bịa tên nhân sự hay tự nghĩ ra task ngoài JSON.
+- Shows the plan for the next working day.
+- Includes: who will do what (`Task` + `Người phụ trách / Assignee`) if assignee information is in the JSON.
+- If the JSON has no assignee information: write `(chưa chỉ định người phụ trách trong dữ liệu)` (no assignee specified in the data). Never invent staff names or make up tasks outside the JSON.
 
 ---
 
-## Các Bước Thực Hiện
+## Steps
 
-### Bước 1: Tiếp nhận và xác thực đầu vào (Input Validation & Audience Gate)
-1. Kiểm tra tham số `sprint_data_path`: Đọc nội dung file JSON. Nếu file không tồn tại hoặc lỗi cú pháp JSON ➔ Trả về `Verdict: ASK` yêu cầu cung cấp file hợp lệ.
-2. Kiểm tra tham số `audience`:
-   - Nếu `audience` rỗng hoặc không thuộc `['dev', 'pm']`:
-     - **DỪNG LẠI NGAY LẬP TỨC**.
-     - Đưa ra phản hồi yêu cầu người dùng xác nhận đối tượng: *"Vui lòng chọn đối tượng đọc báo cáo (audience): `dev` (Kỹ thuật/Chi tiết) hoặc `pm` (Tiến độ/Tổng quan rủi ro)."*
-     - Đặt `Verdict: ASK`.
-3. Bóc tách các trường dữ liệu trong JSON:
-   - Thông tin sprint: Tên sprint, ngày báo cáo, dự án.
-   - Thống kê test execution: `executed`, `passed`, `failed`, `blocked`, danh sách feature.
-   - Danh sách defect/issue: ID, title, status, severity, feature/module, technical details, related test cases.
-   - Danh sách blocker (nếu có): mô tả, tác động, action cần thiết.
-   - Kế hoạch kế tiếp (nếu có): task, assignee, target date.
+### Step 1: Take in and validate the input (Input Validation & Audience Gate)
+1. Check the `sprint_data_path` parameter: read the JSON file. If the file does not exist or has a JSON syntax error ➔ return `Verdict: ASK` asking for a valid file.
+2. Check the `audience` parameter:
+   - If `audience` is empty or not in `['dev', 'pm']`:
+     - **STOP IMMEDIATELY**.
+     - Reply asking the user to confirm the audience: *"Please choose the report's audience: `dev` (technical/detailed) or `pm` (progress/risk overview)."*
+     - Set `Verdict: ASK`.
+3. Extract the data fields from the JSON:
+   - Sprint information: sprint name, report date, project.
+   - Test execution statistics: `executed`, `passed`, `failed`, `blocked`, the list of features.
+   - The defect/issue list: ID, title, status, severity, feature/module, technical details, related test cases.
+   - The blocker list (if any): description, impact, required action.
+   - The next plan (if any): task, assignee, target date.
 
-### Bước 2: Tính toán chỉ số & Xử lý logic
-1. Tính `Pass Rate`:
-   - Lấy số `passed` và `executed` từ JSON.
-   - Kiểm tra `executed > 0`: `pass_rate_percent = ((passed / executed) * 100).toFixed(2)` (hoặc làm tròn 1 chữ số thập phân nếu chia hết).
-   - Thiết lập chuỗi diễn giải: `pass_rate_formula = passed / executed = ${passed} / ${executed} = ${pass_rate_percent}%`.
-   - Nếu `executed === 0`: Chuỗi diễn giải `0% (0 / 0 test cases executed)`.
-2. Phân loại Outstanding Issues:
-   - Lọc các issue có trạng thái chưa hoàn tất (`Open`, `In Progress`, `Reopened`, `In QA`, `Blocked`...).
-   - Nếu `audience == 'dev'`: Giữ cấu trúc bảng chi tiết với cột `Bug ID`, `Feature`, `Severity`, `Trạng thái`, `Chi tiết kỹ thuật / Test Case ID`.
-   - Nếu `audience == 'pm'`: Nhóm issues theo `Feature / Nhóm chức năng`, mô tả tóm tắt tác động nghiệp vụ, giữ nguyên số lượng bug và mức độ severity tương ứng.
-3. Xác định Blocker:
-   - Chỉ trích xuất các item được định danh là blocker trong JSON.
-   - Nếu mảng blocker rỗng hoặc không tồn tại: Đánh dấu `Không có blocker`.
-4. Bóc tách Next Action:
-   - Trích xuất danh sách công việc tiếp theo từ trường tương ứng trong JSON.
-   - Ánh xạ rõ ràng Task ↔ Assignee (nếu có).
+### Step 2: Compute the metrics & apply the logic
+1. Compute the `Pass Rate`:
+   - Take `passed` and `executed` from the JSON.
+   - Check `executed > 0`: `pass_rate_percent = ((passed / executed) * 100).toFixed(2)` (or round to 1 decimal place if it divides evenly).
+   - Build the explanation string: `pass_rate_formula = passed / executed = ${passed} / ${executed} = ${pass_rate_percent}%`.
+   - If `executed === 0`: the explanation string is `0% (0 / 0 test cases executed)`.
+2. Classify the Outstanding Issues:
+   - Filter the issues whose status is not finished (`Open`, `In Progress`, `Reopened`, `In QA`, `Blocked`...).
+   - If `audience == 'dev'`: keep the detailed table structure with the columns `Bug ID`, `Feature`, `Severity`, `Trạng thái` (status), `Chi tiết kỹ thuật / Test Case ID` (technical details / test case ID).
+   - If `audience == 'pm'`: group the issues by `Feature / Nhóm chức năng` (feature / functional group), summarise the business impact, and keep the bug counts and the corresponding severity levels.
+3. Identify Blockers:
+   - Extract only the items identified as blockers in the JSON.
+   - If the blocker array is empty or missing: mark `Không có blocker` (no blocker).
+4. Extract the Next Action:
+   - Extract the list of next tasks from the matching JSON field.
+   - Map Task ↔ Assignee explicitly (if available).
 
-### Bước 3: FACT Self-Audit (Tự đối soát trước khi xuất file)
-Thực hiện checklist đối chiếu 100% với JSON:
-- [ ] **Factual (Trung thực số liệu)**:
-  - Giá trị `executed` trong báo cáo có bằng đúng JSON không?
-  - Giá trị `passed`, `failed`, `blocked` có khớp từng đơn vị không?
-  - Tổng số bug trong Outstanding Issues có đúng bằng số bug chưa hoàn tất trong JSON không?
-  - Không có blocker hay task nào bị tự suy diễn thêm?
-- [ ] **Accurate (Độ chính xác)**:
-  - Công thức tính Pass Rate có ghi rõ `passed / executed` kèm các giá trị thành phần không?
-  - Kết quả phép tính phần trăm có chính xác về mặt số học không?
-  - Các mã định danh (`Bug ID`, `TC-xx`) và tên feature có viết đúng nguyên văn không?
-- [ ] **Complete (Đầy đủ cấu trúc)**:
-  - Đủ đúng 4 section cố định: `Tiến độ hôm nay`, `Outstanding Issues`, `Blocker`, `⏭ Next Action`?
-  - Có mục Human-Final Review Checklist ở cuối file không?
-- [ ] **Testable (Khách quan & Kiểm chứng được)**:
-  - Có nhận định cảm tính nào ("chất lượng tốt", "chất lượng xấu") bị lọt vào văn bản không? Nếu có, loại bỏ ngay.
+### Step 3: FACT Self-Audit (self-reconciliation before writing the file)
+Run a checklist reconciling 100% against the JSON:
+- [ ] **Factual (truthful figures)**:
+  - Does the `executed` value in the report equal the JSON exactly?
+  - Do `passed`, `failed`, `blocked` match to the unit?
+  - Does the total number of bugs in Outstanding Issues equal the number of unfinished bugs in the JSON?
+  - No blocker or task inferred and added?
+- [ ] **Accurate (precision)**:
+  - Does the Pass Rate formula state `passed / executed` with its component values?
+  - Is the percentage arithmetically correct?
+  - Are the identifiers (`Bug ID`, `TC-xx`) and feature names written verbatim?
+- [ ] **Complete (full structure)**:
+  - Exactly the 4 fixed sections: `Tiến độ hôm nay`, `Outstanding Issues`, `Blocker`, `⏭ Next Action`?
+  - Is there a Human-Final Review Checklist at the end of the file?
+- [ ] **Testable (objective & verifiable)**:
+  - Has any subjective judgement ("good quality", "bad quality") slipped into the text? If so, remove it immediately.
 
-### Bước 4: Xuất bản file Markdown
-1. Tạo thư mục `OUTPUT/reports/` (nếu chưa tồn tại).
-2. Ghi file báo cáo ra đường dẫn:
+### Step 4: Publish the Markdown file
+1. Create the `OUTPUT/reports/` folder (if it does not exist).
+2. Write the report file to the path:
    ```
    OUTPUT/reports/daily-summary-<audience>.md
    ```
-   *(với `<audience>` là `dev` hoặc `pm`)*.
-3. Thông báo kết quả kèm bản tóm tắt ngắn gọn và nhắc nhở Human-Final review đặc biệt lưu ý section `Blocker`.
+   *(where `<audience>` is `dev` or `pm`)*.
+3. Report the result with a short summary and remind the Human-Final reviewer to pay special attention to the `Blocker` section.
 
 ---
 
-## Format Output Chuẩn
+## Standard Output Format
 
-Ghi ra file `OUTPUT/reports/daily-summary-<audience>.md`:
+Write the file `OUTPUT/reports/daily-summary-<audience>.md`:
 
 ````markdown
 # DAILY QA SUMMARY · <Tên Sprint / Ngày>
@@ -208,20 +211,24 @@ Audience: <dev | pm>
 - [ ] **Phê duyệt phát hành**: [ ] SẴN SÀNG GỬI / [ ] CẦN CẬP NHẬT
 ````
 
+(Use the DEV table or the PM table according to `audience`; use the blocker block or the "no blocker" line according to the JSON.
+The ⚠️ Human-Final note on the Blocker section and the section 5 checklist — figures, pass-rate formula, blockers, next actions,
+release approval — must always be kept.)
+
 ---
 
-## Ghi Knowledge
-Không ghi knowledge (chỉ đọc dữ liệu sprint thô để tổng hợp báo cáo).
+## Writing knowledge
+Writes no knowledge (reads only the raw sprint data to compile the report).
 
 ---
 
-## Chốt Chặn Nghiệm Thu (Quality Gates)
-- [ ] File output bắt buộc ghi tại `OUTPUT/reports/daily-summary-<audience>.md`.
-- [ ] Nếu không có tham số `audience`, skill bắt buộc dừng lại hỏi người dùng (Verdict: `ASK`), không tự chọn.
-- [ ] Đủ đúng 4 section cố định: `Tiến độ hôm nay`, `Outstanding Issues`, `Blocker`, `⏭ Next Action`.
-- [ ] Pass Rate ghi rõ công thức `passed / executed` và kết quả tính toán chính xác, có guard cho trường hợp mẫu số bằng 0.
-- [ ] Nội dung phân hóa đúng chuẩn cho `dev` (giữ ID, chi tiết kỹ thuật) và `pm` (mức feature, hạn chế jargon, giữ nguyên bản chất).
-- [ ] Section Blocker không bị suy diễn; ghi rõ nếu không có blocker trong JSON.
-- [ ] Section Next Action không bị tự bịa task hay nhân sự ngoài JSON.
-- [ ] 100% số liệu đối chiếu khớp hoàn toàn với file JSON nguồn.
-- [ ] Tuyệt đối không chứa nhận định cảm tính chủ quan ("tốt/xấu").
+## Acceptance gates (Quality Gates)
+- [ ] The output file must be written at `OUTPUT/reports/daily-summary-<audience>.md`.
+- [ ] Without an `audience` parameter, the skill must stop and ask the user (Verdict: `ASK`), never choose by itself.
+- [ ] Exactly the 4 fixed sections: `Tiến độ hôm nay`, `Outstanding Issues`, `Blocker`, `⏭ Next Action`.
+- [ ] The Pass Rate states the formula `passed / executed` and a correct result, with a guard for a zero denominator.
+- [ ] The content is correctly differentiated for `dev` (IDs and technical details kept) and `pm` (feature level, minimal jargon, substance preserved).
+- [ ] The Blocker section is not inferred; it states clearly when the JSON has no blocker.
+- [ ] The Next Action section contains no invented tasks or staff outside the JSON.
+- [ ] 100% of the figures reconcile exactly with the source JSON file.
+- [ ] Absolutely no subjective judgements ("good/bad").

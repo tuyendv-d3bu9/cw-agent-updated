@@ -1,104 +1,105 @@
 ---
 name: workflow-authoring
 description: >
-  Biến một mô tả quy trình bằng lời thành file workflow chuẩn (có cụm kích hoạt, các bước,
-  cổng kiểm), kiểm hợp lệ bằng máy; và khi người dùng nói một câu ngắn thì tìm đúng workflow rồi chạy.
+  Turns a process described in words into a standard workflow file (with triggers, steps
+  and gates), validated by machine; and when the user says a short phrase, finds the right workflow and runs it.
 ---
 
 # Skill: workflow-authoring
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT).
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict · guards · FACT).
 >
-> **Skill = LÀM THẾ NÀO.** Quy trình + tham số + format output. Tái dùng được.
-> KHÔNG chứa danh tính/quyền hạn (đó là `AGENT.md`), KHÔNG nhắc lại ràng buộc chung
-> (đó là `qa-system/core/QA_STANDARD.md`).
+> **Skill = HOW.** Procedure + parameters + output format. Reusable.
+> It does NOT hold identity/permissions (that is `AGENT.md`) and does NOT repeat the shared constraints
+> (those are in `qa-system/core/QA_STANDARD.md`).
 
-## Mục đích
-Người dùng không viết file. Họ **mô tả** một quy trình bằng lời; skill này dựng ra workflow chuẩn.
-Sau đó họ chỉ cần **một câu ngắn** là workflow chạy. Hai chế độ:
+## Purpose
+The user does not write files. They **describe** a process in words; this skill builds a standard workflow from it.
+After that, **one short phrase** is enough to run the workflow. Two modes:
 
-| Chế độ | Người dùng nói | Kết quả |
+| Mode | The user says | Result |
 |---|---|---|
-| **TẠO** | *"Mỗi khi BA gửi tài liệu mới tôi muốn: phân tích, hỏi BA, rồi mới viết test case"* | File `qa-system/workflows/run-<tên>.md`, đã `validate` xanh |
-| **CHẠY** | *"BA gửi tài liệu mới"* | Workflow được tìm ra, ghi checklist vào `00_plan.md`, chạy từng bước |
+| **CREATE** | *"Whenever the BA sends new documents I want to: analyse, ask the BA, and only then write test cases"* | File `qa-system/workflows/run-<name>.md`, `validate` green |
+| **RUN** | *"The BA sent new documents"* | The workflow is found, a checklist is written into `00_plan.md`, each step is run |
 
-## Công cụ (agent tự chạy ngầm, người dùng không gõ)
+## Tools (the agent runs them silently; the user does not type them)
 ```bash
-npm run workflow -- list                       # có những workflow nào
-npm run workflow -- new run-<tên>              # dựng bản nháp từ khuôn
-npm run workflow -- validate [run-<tên>]       # kiểm hợp lệ, exit 1 nếu có lỗi
-npm run workflow -- find "<câu người dùng>"    # câu ngắn -> workflow nào
-npm run workflow -- show run-<tên> --slug <slug>
-npm run workflow -- start run-<tên> --slug <slug>   # ghi checklist vào 00_plan.md
+npm run workflow -- list                       # which workflows exist
+npm run workflow -- new run-<name>             # build a draft from the template
+npm run workflow -- validate [run-<name>]      # validate, exit 1 on errors
+npm run workflow -- find "<user phrase>"       # short phrase -> which workflow
+npm run workflow -- show run-<name> --slug <slug>
+npm run workflow -- start run-<name> --slug <slug>   # write the checklist into 00_plan.md
 ```
 
-## Đầu vào
-- Chế độ TẠO: mô tả bằng lời của người dùng.
-- Chế độ CHẠY: câu ngắn của người dùng, và `task-slug` (tự suy từ `OUTPUT/` nếu chỉ có một task).
-- `knowledge/_system_map.json` — danh sách agent và skill có thật. **Không quét mò thư mục.**
-- Khuôn: `qa-system/templates/workflows/workflow.md`.
+## Inputs (Đầu vào)
+- CREATE mode: the user's description in words.
+- RUN mode: the user's short phrase, and the `task-slug` (inferred from `OUTPUT/` if there is only one task).
+- `knowledge/_system_map.json` — the list of agents and skills that really exist. **Never scan folders blindly.**
+- Template: `qa-system/templates/workflows/workflow.md`.
 
-> Mô tả quá mơ hồ để dựng được bước nào → hỏi lại **tối đa 3 câu**, mỗi câu một ý
-> (đầu ra mong muốn là gì · có chỗ nào phải dừng chờ con người không · có chạm tới automation không).
-> Đủ để dựng thì **dựng luôn**, nêu rõ phần đã tự giả định, đừng hỏi thừa.
+> The description is too vague to build any step → ask back **at most 3 questions**, one point each
+> (what is the desired output · is there any point where it must stop and wait for a human · does it touch automation).
+> If there is enough to build, **build it right away**, state clearly what you assumed, and do not ask unnecessary questions.
 
-## KHÔNG được (riêng skill này)
-- **KHÔNG bịa** agent hay skill. Chỉ dùng cái có trong `_system_map.json`; `validate` sẽ bắt nếu bịa.
-- **KHÔNG bỏ cổng.** Bước từ Chặng 3 trở đi bắt buộc có cổng `ask` ở trước. Bước `qa-automation` bắt buộc
-  có `readiness` **và** `confirm` ở trước. Người dùng yêu cầu bỏ → giải thích rồi từ chối (`AGENTS.md` §1.5, §1.6).
-- **KHÔNG tự chạy ngay sau khi tạo.** Tạo xong chỉ trình bày, chờ người dùng nói cụm kích hoạt hoặc xác nhận.
-- **KHÔNG ghi đè** workflow đã có. Trùng tên hoặc trùng cụm kích hoạt → đổi tên hoặc hỏi người dùng.
-- **KHÔNG đặt cụm kích hoạt chung chung** (ví dụ "chạy đi", "làm test"). Mỗi cụm tối thiểu 2 từ có nghĩa, gắn với mục tiêu riêng.
-- **KHÔNG đoán khi `find` trả `AMBIGUOUS`.** Nêu các ứng viên và hỏi người dùng chọn một.
-- **KHÔNG tự sửa thân của runbook `format: legacy`** khi chỉ được yêu cầu chạy nó.
+## MUST NOT (specific to this skill)
+- **NEVER invent** agents or skills. Use only those in `_system_map.json`; `validate` catches invented ones.
+- **NEVER drop a gate.** Any step from Stage 3 onwards must have an `ask` gate before it. A `qa-automation` step must
+  have `readiness` **and** `confirm` before it. If the user asks to drop one → explain and refuse (`AGENTS.md` §1.5, §1.6).
+- **NEVER run it right after creating it.** Once created, only present it and wait for the user to say a trigger or confirm.
+- **NEVER overwrite** an existing workflow. Same name or same trigger → rename it or ask the user.
+- **NEVER use generic triggers** (e.g. "run it", "do testing"). Each trigger has at least 2 meaningful words, tied to a specific goal.
+  Users may speak Vietnamese or English: give **both** a Vietnamese and an English phrasing of each trigger (both must stay unique).
+- **NEVER guess when `find` returns `AMBIGUOUS`.** List the candidates and ask the user to choose one.
+- **NEVER edit the body of a `format: legacy` runbook** when you were only asked to run it.
 
-## Các bước — chế độ TẠO
-1. **Đọc mô tả**, gạch ra: mục tiêu · các việc theo thứ tự · chỗ phải dừng chờ con người.
-2. **Đối chiếu tài nguyên**: với mỗi việc, tìm agent + skill tương ứng trong `_system_map.json`.
-   Việc nào chưa có skill → ghi vào mục "Chưa có sẵn" và báo người dùng, **không** bịa.
-3. **Chọn tên** `run-<từ-khoá>` ngắn, rồi `npm run workflow -- list` để chắc chưa trùng.
-4. **Dựng nháp**: `npm run workflow -- new run-<tên>`.
-5. **Điền file**: `title`, `description`, `triggers` (2–4 câu người dùng thật sự sẽ nói), `steps`.
-   - Mỗi bước là `agent`+`skill` **hoặc** `tool`. Dùng `output` để chỉ file kết quả.
-   - Đặt `gate` đúng chỗ: `ask` trước Chặng 3 · `lint` trước khi nghiệm thu · `readiness` + `confirm` trước automation.
-   - **Luôn bọc giá trị chữ trong dấu nháy kép** — dấu `:` không bọc làm hỏng cả file.
-6. **Kiểm**: `npm run workflow -- validate run-<tên>`. Đỏ → đọc thông báo, sửa, kiểm lại. Không dừng khi còn đỏ.
-7. **Trình bày** cho người dùng bảng bước + cụm kích hoạt (xem Format output) và hỏi họ có muốn chỉnh không.
-8. **Nghiệm thu hệ thống**: `npm run agent:check` phải xanh (nó kiểm toàn bộ workflow).
+## Steps — CREATE mode
+1. **Read the description** and pick out: the goal · the tasks in order · the points where it must stop and wait for a human.
+2. **Match resources**: for each task, find the matching agent + skill in `_system_map.json`.
+   A task with no skill yet → record it under "Not available yet" and tell the user; do **not** invent one.
+3. **Choose a short name** `run-<keyword>`, then `npm run workflow -- list` to make sure it is not taken.
+4. **Build the draft**: `npm run workflow -- new run-<name>`.
+5. **Fill in the file**: `title`, `description`, `triggers` (2–4 phrases users will really say), `steps`.
+   - Each step is `agent`+`skill` **or** `tool`. Use `output` to point at the result file.
+   - Put each `gate` in the right place: `ask` before Stage 3 · `lint` before acceptance · `readiness` + `confirm` before automation.
+   - **Always wrap text values in double quotes** — an unwrapped `:` breaks the whole file.
+6. **Check**: `npm run workflow -- validate run-<name>`. Red → read the message, fix, check again. Never stop while it is still red.
+7. **Present** the step table + triggers to the user (see Output format) and ask whether they want any changes.
+8. **System acceptance**: `npm run agent:check` must be green (it checks every workflow).
 
-## Các bước — chế độ CHẠY
-1. `npm run workflow -- find "<câu>" --json` → đọc `status`.
-   - `match` → sang bước 2.
-   - `ambiguous` → nêu ứng viên, hỏi người dùng chọn.
-   - `none` → nói thẳng không có workflow khớp, đề nghị tạo mới từ một mô tả.
-2. Xác định `task-slug`: chỉ có một task trong `OUTPUT/` thì dùng nó, nhiều thì hỏi.
-3. Workflow `format: legacy` → đọc file và làm theo, kết thúc tại đây.
-4. `npm run workflow -- start <tên> --slug <slug>` → checklist vào `00_plan.md`.
-5. **Làm từng bước theo thứ tự**. Với mỗi bước:
-   - Có `gate` → chạy lệnh cổng **trước**. Exit khác `0` → **DỪNG**, dán kết quả thật, không đi tiếp.
-   - `confirm` → hỏi người dùng xác nhận rõ ràng; với automation phải kèm URL môi trường.
-   - Chạy skill, ghi file kết quả, tick `[x]` trong `00_plan.md`.
-6. Dừng ở bất kỳ `ASK` / `FIX` nào theo `QA_STANDARD` §1, không tự vượt.
+## Steps — RUN mode
+1. `npm run workflow -- find "<phrase>" --json` → read `status`.
+   - `match` → go to step 2.
+   - `ambiguous` → list the candidates, ask the user to choose.
+   - `none` → say plainly that no workflow matches, and offer to create one from a description.
+2. Determine the `task-slug`: if there is only one task in `OUTPUT/`, use it; if several, ask.
+3. A `format: legacy` workflow → read the file and follow it; stop here.
+4. `npm run workflow -- start <name> --slug <slug>` → checklist into `00_plan.md`.
+5. **Do each step in order**. For each step:
+   - Has a `gate` → run the gate command **first**. Exit other than `0` → **STOP**, paste the real result, do not continue.
+   - `confirm` → ask the user for explicit confirmation; for automation it must come with the environment URL.
+   - Run the skill, write the result file, tick `[x]` in `00_plan.md`.
+6. Stop at any `ASK` / `FIX` per `QA_STANDARD` §1; never push past it yourself.
 
-## Format output (chế độ TẠO)
+## Output format (CREATE mode)
 ```markdown
-**Đã tạo workflow `run-<tên>`** — <title>
+**Created workflow `run-<name>`** — <title>
 
-| # | Việc | Chuyên gia / skill | Cổng trước bước | Ra |
+| # | Task | Specialist / skill | Gate before the step | Output |
 |---|---|---|---|---|
 | 1 | … | qa-analyst / requirement-risk-summary | — | 01_… |
 
-**Nói câu nào để chạy**: "<cụm 1>" · "<cụm 2>"
-**Tự giả định**: <những chỗ mô tả không nói rõ mà bạn đã chọn>
-**Chưa có sẵn**: <việc nào chưa có skill, hoặc "không">
-**Kiểm hợp lệ**: <dán kết quả thật của validate>
+**Say this to run it**: "<trigger 1>" · "<trigger 2>"
+**Assumed**: <the points the description left open that you chose>
+**Not available yet**: <tasks with no skill yet, or "none">
+**Validation**: <paste the real result of validate>
 ```
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] `npm run workflow -- validate run-<tên>` trả exit `0`, kết quả thật được dán vào báo cáo.
-- [ ] Không còn dấu giữ chỗ `<...>` nào trong file.
-- [ ] Mọi `agent`/`skill` có trong `_system_map.json`, không bịa.
-- [ ] Bước từ Chặng 3 có cổng `ask` trước; bước automation có `readiness` + `confirm` trước.
-- [ ] Có ít nhất 2 cụm kích hoạt, không trùng workflow khác.
-- [ ] `npm run agent:check` vẫn xanh.
-- [ ] Chưa tự chạy workflow vừa tạo.
+## Acceptance gates (Quality Gates)
+- [ ] `npm run workflow -- validate run-<name>` exits `0`, with the real result pasted into the report.
+- [ ] No `<...>` placeholder is left in the file.
+- [ ] Every `agent`/`skill` is in `_system_map.json`; nothing invented.
+- [ ] Steps from Stage 3 onwards have an `ask` gate before them; automation steps have `readiness` + `confirm` before them.
+- [ ] At least 2 triggers, not shared with another workflow.
+- [ ] `npm run agent:check` is still green.
+- [ ] The newly created workflow has not been run automatically.

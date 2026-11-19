@@ -1,206 +1,206 @@
 ---
 name: system-upgrade-governance
 description: >
-  Điều phối việc NÂNG CẤP CHÍNH HỆ THỐNG AGENT: nhận yêu cầu nâng cấp (hoặc file skill.md do người
-  dùng đưa), quyết định thêm skill vào agent đã có / dựng agent mới / tinh chỉnh tại chỗ, lan truyền
-  thay đổi ra đủ 7 điểm neo của hệ thống, rồi chạy cổng nghiệm thu để bảo đảm luồng cũ không vỡ.
+  Orchestrates UPGRADES OF THE AGENT SYSTEM ITSELF: takes an upgrade request (or a skill.md file the user
+  provides), decides whether to add a skill to an existing agent / build a new agent / refine in place, propagates
+  the change to all 7 anchor points of the system, then runs the acceptance gate to make sure existing flows do not break.
 ---
 
 # Skill: system-upgrade-governance
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · FACT §3 · luật knowledge §8) và `AGENTS.md`.
-> **Luật cứng khi tạo/sửa skill** (PHẢI/CẤM, cổng dừng, R1–R13, checklist "xong"): `qa-system/templates/skills/LUAT-TAO-SKILL.md` — nạp trước file này.
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict §1 · guards §2 · FACT §3 · knowledge rules §8) and `AGENTS.md`.
+> **Hard rules for creating/editing a skill** (MUST/FORBIDDEN, stop gates, R1–R13, the "done" checklist): `qa-system/templates/skills/LUAT-TAO-SKILL.md` — load it before this file.
 >
-> **Đây là skill tự-quy-chiếu**: đối tượng bị tác động không phải `OUTPUT/`, mà là chính thư mục `qa-system/`.
-> Cùng `workflow-authoring`, nó là skill duy nhất được ghi vào `qa-system/` và `knowledge/_system_map.json`.
+> **This is a self-referential skill**: what it acts on is not `OUTPUT/` but the `qa-system/` folder itself.
+> Together with `workflow-authoring`, it is the only skill allowed to write into `qa-system/` and `knowledge/_system_map.json`.
 
-## Mục đích
+## Purpose
 
-Khi người dùng nói những câu như:
+When the user says things like:
 
-- *"QA Leader, hãy giúp tôi nâng cấp skill `<tên>`"*
-- *"Tôi có file `skill.md` này, xem thử nên thêm agent mới hay thêm vào agent đã có"*
-- *"Tôi muốn hệ thống biết làm thêm việc `<X>`"*
-- *"Thêm cho tôi một agent chuyên về `<Y>`"*
+- *"QA Leader, help me upgrade skill `<name>`"*
+- *"I have this `skill.md` file — should it become a new agent or go into an existing one?"*
+- *"I want the system to also be able to do `<X>`"*
+- *"Add an agent specialised in `<Y>` for me"*
 
-thì skill này bảo đảm **ba điều**:
+this skill guarantees **three things**:
 
-1. Thay đổi được đặt **đúng tầng, đúng chỗ** (không nhét luật chung vào skill, không nhét tri thức vào agent).
-2. Thay đổi được **lan truyền đủ** ra mọi nơi hệ thống đang tham chiếu tới nó — không sót điểm nào.
-3. Sau nâng cấp, **luồng cũ vẫn chạy** — có bằng chứng kiểm chứng được, không phải cảm tính.
+1. The change is placed **at the right layer, in the right place** (no shared rules stuffed into a skill, no knowledge stuffed into an agent).
+2. The change is **fully propagated** to every place in the system that references it — no point missed.
+3. After the upgrade, **the existing flows still run** — with verifiable evidence, not a feeling.
 
-## Tham số
+## Parameters
 
-- `che_do` ∈ `PHAN_TICH` | `THI_CONG` | `NGHIEM_THU` — mặc định chạy tuần tự cả ba.
-  - `PHAN_TICH`: chỉ ra quyết định A/B/C + bảng tác động, **chưa sửa file nào**.
-  - `THI_CONG`: thực hiện sửa/tạo file theo quyết định đã chốt.
-  - `NGHIEM_THU`: chỉ chạy cổng kiểm tra §5.
+- `che_do` (mode) ∈ `PHAN_TICH` (analyse) | `THI_CONG` (build) | `NGHIEM_THU` (accept) — by default all three run in sequence.
+  - `PHAN_TICH`: only produce the A/B/C decision + the impact table; **no file is modified yet**.
+  - `THI_CONG`: modify/create the files according to the confirmed decision.
+  - `NGHIEM_THU`: only run the §5 check gates.
 
-## Đầu vào
+## Inputs (Đầu vào)
 
-- `qa-system/templates/skills/LUAT-TAO-SKILL.md` — luật bắt buộc, đọc đầu tiên.
-- Yêu cầu nâng cấp bằng ngôn ngữ tự nhiên của người dùng, **hoặc** một file `.md` người dùng đưa vào.
-- `knowledge/_system_map.json` — **tra đầu tiên** bằng `npm run map -- <từ khoá>` / `npm run json -- knowledge/_system_map.json <đường.dẫn>`, để biết hệ thống hiện có gì (`AGENTS.md` §1.3).
-- `qa-system/core/QA_STANDARD.md` — để skill mới **trỏ tới** đúng mục thay vì chép luật.
-- `qa-system/templates/README.md` — 4 tầng kiến trúc và 7 bước dựng agent mới.
-- `qa-system/templates/AGENT.md` · `qa-system/templates/skills/ten-skill.md` — khuôn mẫu bắt buộc dùng.
-- `qa-system/workflows/WORKFLOW.md` — bản đồ pipeline hiện hành.
+- `qa-system/templates/skills/LUAT-TAO-SKILL.md` — the mandatory rules, read first.
+- The user's upgrade request in natural language, **or** a `.md` file the user provides.
+- `knowledge/_system_map.json` — **look it up first** with `npm run map -- <keyword>` / `npm run json -- knowledge/_system_map.json <path>`, to know what the system currently has (`AGENTS.md` §1.3).
+- `qa-system/core/QA_STANDARD.md` — so that the new skill **points to** the right sections instead of copying rules.
+- `qa-system/templates/README.md` — the 4 architecture layers and the 7 steps for building a new agent.
+- `qa-system/templates/AGENT.md` · `qa-system/templates/skills/ten-skill.md` — the templates that must be used.
+- `qa-system/workflows/WORKFLOW.md` — the current pipeline map.
 
-> Thiếu `_system_map.json` → DỪNG, chạy `npm run map:sync` trước. Không được đoán cấu trúc hệ thống.
+> `_system_map.json` missing → STOP, run `npm run map:sync` first. Never guess the system's structure.
 
-## KHÔNG được (riêng skill này)
+## MUST NOT (specific to this skill)
 
-- **Không sửa `qa-system/core/QA_STANDARD.md`** trừ khi thay đổi thực sự áp cho **≥ 2 skill**. Đây là hiến pháp tầng luật chung; sửa bừa là làm vỡ mọi agent cùng lúc.
-- **Không tạo agent mới khi chỉ cần thêm một skill.** Lạm phát agent làm ma trận điều phối của QA Leader mất khả năng đọc.
-- **Không sửa file rồi bỏ dở việc khai báo.** Sửa xong phần nội dung mà chưa lan truyền đủ 7 điểm neo §4 thì coi như **chưa hoàn thành**, verdict là `FIX`.
-- **Không tự ý đánh số `NN` trùng** với số đã dùng. Trước khi cấp số phải liệt kê dãy đang dùng.
-- **Không xoá skill/agent cũ** để "dọn cho gọn". Chỉ thêm và sửa. Việc gỡ bỏ là quyết định của con người (§6).
-- Không chép lại luật đã có ở `qa-system/core/QA_STANDARD.md` (verdict, cổng ASK, nhãn, FACT, 06W, chuỗi biên, knowledge, mã, thang đo) — chỉ trỏ tới số mục.
-- Không đưa ví dụ của một miền nghiệp vụ cụ thể (voucher, đăng nhập…) vào skill lõi: model sẽ chép ví dụ thành dữ kiện. Ví dụ phải trung tính (`<field>`, `BR-01`).
+- **Do not modify `qa-system/core/QA_STANDARD.md`** unless the change really applies to **≥ 2 skills**. It is the constitution of the shared-rule layer; careless edits break every agent at once.
+- **Do not create a new agent when adding a skill is enough.** Agent inflation makes the QA Leader's dispatch matrix unreadable.
+- **Do not edit a file and then abandon the declarations.** Editing the content without propagating to all 7 anchor points of §4 counts as **not done**; the verdict is `FIX`.
+- **Do not assign an `NN` number that is already used.** Before assigning a number, list the sequence in use.
+- **Do not delete old skills/agents** "to tidy up". Only add and modify. Removal is a human decision (§6).
+- Do not copy rules that already exist in `qa-system/core/QA_STANDARD.md` (verdict, ASK gate, labels, FACT, 06W, boundary chain, knowledge, IDs, scales) — only point to the section number.
+- Do not put examples from a specific business domain (vouchers, login…) into a core skill: the model will copy the examples as facts. Examples must be neutral (`<field>`, `BR-01`).
 
 ---
 
-## 1. Bước 1 — Phân loại yêu cầu (Cây quyết định A / B / C)
+## 1. Step 1 — Classify the request (A / B / C decision tree)
 
-Trả lời lần lượt 3 câu hỏi, dừng ở câu đầu tiên có đáp án:
+Answer the 3 questions in turn and stop at the first one that gives an answer:
 
 ```
- (1) Yêu cầu chỉ thay đổi HÀNH VI của một skill đang tồn tại
-     (thêm trường output, siết luật, đổi format, bổ sung bước)?
+ (1) Does the request only change the BEHAVIOUR of an existing skill
+     (add an output field, tighten a rule, change a format, add a step)?
         │
-        └─ ĐÚNG ──────────────────────────────────► [C] TINH CHỈNH TẠI CHỖ
-        └─ SAI  ──► xuống (2)
+        └─ YES ───────────────────────────────────► [C] REFINE IN PLACE
+        └─ NO  ──► go to (2)
 
- (2) Có agent nào đang sở hữu ĐÚNG miền chuyên môn của nhiệm vụ mới này không?
-     (tra bảng `specialized_agents` trong _system_map.json)
+ (2) Is there an agent that owns EXACTLY the specialist domain of this new task?
+     (look up the `specialized_agents` table in _system_map.json)
         │
-        ├─ KHÔNG ─────────────────────────────────► [B] DỰNG AGENT MỚI
-        └─ CÓ   ──► xuống (3)
+        ├─ NO  ───────────────────────────────────► [B] BUILD A NEW AGENT
+        └─ YES ──► go to (3)
 
- (3) Nếu giao việc này cho agent đó, nó có bị vượt quá MỘT vai trò không?
-     Kiểm 3 dấu hiệu vượt vai trò:
-       · Phải đọc loại artifact hoàn toàn khác (ví dụ: ảnh, code, log runtime)
-       · Phải ghi vào phân vùng khác với phân vùng nó đang ghi
-       · Mô tả "Là ai" trong AGENT.md phải viết thêm một mệnh đề "và cũng..."
+ (3) If this task were given to that agent, would it exceed ONE role?
+     Check the 3 signs of exceeding a role:
+       · It would have to read a completely different type of artifact (e.g. images, code, runtime logs)
+       · It would have to write into a different area from the one it writes now
+       · The "Who it is" description in AGENT.md would need an extra "and also..." clause
         │
-        ├─ CÓ (≥1 dấu hiệu) ──────────────────────► [B] DỰNG AGENT MỚI
-        └─ KHÔNG ─────────────────────────────────► [A] THÊM SKILL VÀO AGENT ĐÃ CÓ
+        ├─ YES (≥1 sign) ─────────────────────────► [B] BUILD A NEW AGENT
+        └─ NO ────────────────────────────────────► [A] ADD A SKILL TO AN EXISTING AGENT
 ```
 
-**Xuất ra bảng quyết định** (bắt buộc, kể cả khi người dùng đã chỉ định sẵn muốn làm gì):
+**Produce the decision table** (mandatory, even when the user has already said what they want):
 
-| Mục | Nội dung |
+| Item | Content |
 |---|---|
-| Yêu cầu gốc | *nguyên văn câu người dùng nói* |
-| Miền chuyên môn | *ví dụ: kiểm thử khả năng tiếp cận (accessibility)* |
-| Agent ứng viên | *tên agent gần nhất, hoặc `KHÔNG CÓ`* |
-| Câu (1) / (2) / (3) | *Đúng / Sai kèm lý do một dòng* |
-| **Kết luận** | **`[A]` / `[B]` / `[C]`** |
-| Lý do chốt | *1–2 câu* |
+| Original request | *the user's words, verbatim* |
+| Specialist domain | *e.g. accessibility testing* |
+| Candidate agent | *the closest agent name, or `KHÔNG CÓ` (none)* |
+| Question (1) / (2) / (3) | *Yes / No with a one-line reason* |
+| **Conclusion** | **`[A]` / `[B]` / `[C]`** |
+| Final reason | *1–2 sentences* |
 
-> Nếu người dùng yêu cầu `[B]` nhưng cây quyết định ra `[A]` (hoặc ngược lại): **nêu khuyến nghị và lý do, rồi làm theo ý người dùng**. Đây là quyết định thuộc về con người (§6).
+> If the user asks for `[B]` but the decision tree gives `[A]` (or vice versa): **state the recommendation and the reason, then do what the user wants**. This decision belongs to humans (§6).
 
-## 2. Bước 2 — Đặt đúng tầng (Tự kiểm 3 câu)
+## 2. Step 2 — Put it at the right layer (3-question self-check)
 
-Trước khi viết một dòng nào, trả lời 3 câu của `qa-system/templates/README.md`:
+Before writing a single line, answer the questions of `qa-system/templates/README.md`:
 
-| Câu hỏi | Nếu ĐÚNG thì nội dung thuộc về |
+| Question | If YES, the content belongs in |
 |---|---|
-| Ràng buộc này **mọi** skill đều phải tuân? | `qa-system/core/QA_STANDARD.md` — **không** viết vào skill |
-| Bảng chuẩn này có **≥ 2 skill** dùng? | `qa-system/core/QA_STANDARD.md` rồi trỏ tới |
-| Đây là **dữ kiện của một tính năng cụ thể**? | `knowledge/features/<slug>.md` — **không** nhét vào skill |
-| Còn lại (quy trình, tham số, format output của riêng việc này) | `qa-system/qa-<agent>/skills/<ten-skill>.md` |
-| Danh tính, quyền hạn, ranh giới, bàn giao | `qa-system/qa-<agent>/AGENT.md` |
+| Must **every** skill obey this constraint? | `qa-system/core/QA_STANDARD.md` — **not** in the skill |
+| Is this standard table used by **≥ 2 skills**? | `qa-system/core/QA_STANDARD.md`, then point to it |
+| Is this a **fact about one specific feature**? | `knowledge/features/<slug>.md` — **not** stuffed into the skill |
+| Everything else (procedure, parameters, output format specific to this task) | `qa-system/qa-<agent>/skills/<skill-name>.md` |
+| Identity, permissions, boundaries, handover | `qa-system/qa-<agent>/AGENT.md` |
 
-> Sai tầng là lỗi hay gặp nhất khi nâng cấp hệ thống. Bước này không được bỏ qua.
+> The wrong layer is the most common mistake when upgrading the system. This step must not be skipped.
 
-## 3. Bước 3 — Cấp số thứ tự `NN` cho deliverable mới
+## 3. Step 3 — Assign the sequence number `NN` to a new deliverable
 
-Chỉ áp dụng khi skill mới **sinh ra một file deliverable mới** trong `OUTPUT/<task-slug>/`.
+Applies only when the new skill **produces a new deliverable file** in `OUTPUT/<task-slug>/`.
 
-1. Liệt kê tiền tố đang dùng từ bảng §2 của `qa-system/workflows/WORKFLOW.md` (gồm `NN_` và `G<n>_`).
-2. Cấp số **kế tiếp chưa dùng** (sau số lớn nhất). Không chèn giữa, không tái sử dụng, không để hai deliverable chung một số.
-3. Biến thể của một bước đã có (ví dụ bản rút gọn của `06`) dùng hậu tố chữ: `06b_`.
-4. Nếu tool đọc file này (gate, lint, readiness…), kiểm tool trước khi đặt/đổi tên — đổi tên mà không sửa tool là làm gãy cổng.
+1. List the prefixes in use from table §2 of `qa-system/workflows/WORKFLOW.md` (including `NN_` and `G<n>_`).
+2. Assign the **next unused number** (after the highest one). Do not insert in between, do not reuse, never let two deliverables share a number.
+3. A variant of an existing step (e.g. a shortened version of `06`) uses a letter suffix: `06b_`.
+4. If a tool reads this file (gate, lint, readiness…), check the tool before naming/renaming it — renaming without updating the tool breaks the gate.
 
-## 4. Bước 4 — Lan truyền ra 7 điểm neo (phần dễ quên nhất)
+## 4. Step 4 — Propagate to the 7 anchor points (the part most easily forgotten)
 
-Đây là khác biệt giữa "sửa được file" và "hệ thống vẫn chạy". Đánh dấu từng dòng sau khi làm xong.
+This is the difference between "the file was edited" and "the system still runs". Tick each row once it is done.
 
-| # | Điểm neo | Phải cập nhật gì | `[A]` | `[B]` | `[C]` |
+| # | Anchor point | What must be updated | `[A]` | `[B]` | `[C]` |
 |---|---|---|:---:|:---:|:---:|
-| **N1** | `qa-system/qa-<agent>/skills/<ten>.md` | Nội dung skill, theo khuôn `qa-system/templates/skills/ten-skill.md`. Có frontmatter `name` + `description`, có mục `Format output`, có `Chốt chặn nghiệm thu` | ✅ | ✅ | ✅ |
-| **N2** | `qa-system/qa-<agent>/AGENT.md` | Thêm dòng vào `## Skill sở hữu` **và** bảng kỹ năng nếu agent đó có. Tên phải **khớp chính xác** tên file trong `skills/` | ✅ | ✅ | — |
-| **N3** | `qa-system/workflows/WORKFLOW.md` | Bảng §2 (`# · Agent · Skill · Vào · Ra`). Thêm §1 nếu mở nhánh mới. Thêm bảng runbook §5 nếu có runbook mới | ✅ | ✅ | ⚠️ nếu đổi Vào/Ra |
-| **N4** | `knowledge/_system_map.json` | `routing_table` (đường dẫn tắt tới skill) **và** `specialized_agents` (chỉ khi `[B]`) | ✅ | ✅ | — |
-| **N5** | `qa-system/qa-lead/AGENT.md` | Dòng mới trong **Ma trận Điều phối §2** + dòng mới trong **Bảng ánh xạ ngôn ngữ tự nhiên §5** (người dùng nói gì thì kích hoạt cái này) | ✅ | ✅ | ⚠️ nếu đổi đầu ra |
-| **N6** | `qa-system/tools/system/agent-doctor.js` | Thêm node vào `PIPELINE_DEPENDENCIES`: `skill`, `produces`, `consumed_by` | ⚠️ nếu sinh deliverable mới | ✅ | — |
-| **N7** | `qa-system/tools/system/lint-deliverables.js` · `qa-system/tools/lib/schema.js` | Luật kiểm và parser cho format mới — chỉ khi tool phải đọc deliverable đó; kèm ca test trong `__tests__/` | ⚠️ | ⚠️ | ⚠️ nếu đổi format tool đọc |
+| **N1** | `qa-system/qa-<agent>/skills/<name>.md` | The skill content, following the template `qa-system/templates/skills/ten-skill.md`. Frontmatter `name` + `description`, an output format section, and an acceptance gates section | ✅ | ✅ | ✅ |
+| **N2** | `qa-system/qa-<agent>/AGENT.md` | Add a line under `## Skill sở hữu` (owned skills) **and** to the capability table if the agent has one. The name must **match exactly** the file name in `skills/` | ✅ | ✅ | — |
+| **N3** | `qa-system/workflows/WORKFLOW.md` | Table §2 (`# · Agent · Skill · In · Out`). Add to §1 if a new branch opens. Add to the runbook table §5 if there is a new runbook | ✅ | ✅ | ⚠️ if In/Out changes |
+| **N4** | `knowledge/_system_map.json` | `routing_table` (shortcut path to the skill) **and** `specialized_agents` (only for `[B]`) | ✅ | ✅ | — |
+| **N5** | `qa-system/qa-lead/AGENT.md` | A new row in the **Dispatch matrix §2** + a new row in the **Intent mapping table §5** (what the user says to trigger this) | ✅ | ✅ | ⚠️ if the output changes |
+| **N6** | `qa-system/tools/system/agent-doctor.js` | Add a node to `PIPELINE_DEPENDENCIES`: `skill`, `produces`, `consumed_by` | ⚠️ if a new deliverable is produced | ✅ | — |
+| **N7** | `qa-system/tools/system/lint-deliverables.js` · `qa-system/tools/lib/schema.js` | Check rules and parser for the new format — only when a tool must read that deliverable; with test cases in `__tests__/` | ⚠️ | ⚠️ | ⚠️ if a tool-read format changes |
 
-Riêng `[B]` — dựng agent mới — làm **đủ 7 bước** của `qa-system/templates/README.md`, và bổ sung:
+For `[B]` only — building a new agent — do **all 7 steps** of `qa-system/templates/README.md`, plus:
 
-| # | Việc thêm của `[B]` |
+| # | Extra work for `[B]` |
 |---|---|
-| B-a | Tạo `qa-system/qa-<tên>/` và `qa-system/qa-<tên>/skills/` |
-| B-b | `AGENT.md` copy từ `qa-system/templates/AGENT.md`, **thay hết** placeholder `<…>` |
-| B-c | `AGENT.md` **bắt buộc** có mục `Human-Final` — nêu rõ quyết định nào không giao cho agent |
-| B-d | Mục `Knowledge` mặc định là **không ghi** — ai ghi mục nào theo bảng QA_STANDARD §8 |
-| B-e | Cập nhật `qa-system/README.md` (bảng thư mục) |
-| B-f | Nếu agent mở nhánh mới → khai vào bảng §1 của `WORKFLOW.md` |
+| B-a | Create `qa-system/qa-<name>/` and `qa-system/qa-<name>/skills/` |
+| B-b | `AGENT.md` copied from `qa-system/templates/AGENT.md`, with **every** `<…>` placeholder replaced |
+| B-c | `AGENT.md` **must** have a `Human-Final` section — stating which decisions are never delegated to the agent |
+| B-d | The `Knowledge` section defaults to **writes nothing** — who writes which section follows the QA_STANDARD §8 table |
+| B-e | Update `qa-system/README.md` (the folder table) |
+| B-f | If the agent opens a new branch → declare it in table §1 of `WORKFLOW.md` |
 
-## 5. Bước 5 — Cổng nghiệm thu "hệ thống vẫn chạy mượt"
+## 5. Step 5 — Acceptance gate "the system still runs smoothly"
 
-Chạy đủ các kiểm tra, ghi lại kết quả thật (không được ghi "OK" mà chưa chạy):
+Run every check and record the real results (never write "OK" without running it):
 
-| # | Kiểm tra | Lệnh | Đạt khi |
+| # | Check | Command | Passes when |
 |---|---|---|---|
-| G1 | Toàn vẹn cấu trúc | `npm run agent:check` | Không có lỗi cấu trúc; mọi skill khai trong `AGENT.md` đều tồn tại file thật |
-| G2 | Bán kính ảnh hưởng | `npm run agent:check -- --impact <agent>` | Liệt kê được đúng danh sách bước bị ảnh hưởng; mỗi bước đó đã được rà lại |
-| G3 | Đồng bộ bản đồ | `npm run map:sync` | `_system_map.json` cập nhật, mở lại thấy có mục mới |
-| G3b | Test tool nội bộ | `npm test` | Toàn bộ ca xanh. Nếu nâng cấp đụng vào `qa-system/tools/`, phải **thêm ca test tái hiện được** thay đổi đó |
-| G4 | Smoke luồng cũ | Chạy lại **một chặng cũ bất kỳ không liên quan** tới thay đổi | Ra đúng deliverable như trước, verdict không đổi |
-| G5 | Nghiệm thu skill (bắt buộc cho skill mới/sửa) | Xem §5.1 | Đủ 5 điều kiện |
+| G1 | Structural integrity | `npm run agent:check` | No structural errors; every skill declared in `AGENT.md` has a real file |
+| G2 | Blast radius | `npm run agent:check -- --impact <agent>` | The list of affected steps is correct; each of those steps has been reviewed again |
+| G3 | Map sync | `npm run map:sync` | `_system_map.json` updated; reopening it shows the new entry |
+| G3b | Internal tool tests | `npm test` | Every case green. If the upgrade touches `qa-system/tools/`, **add a test case that reproduces** the change |
+| G4 | Smoke test of an old flow | Re-run **any old stage unrelated** to the change | Produces the same deliverable as before; the verdict is unchanged |
+| G5 | Skill acceptance (mandatory for a new/edited skill) | See §5.1 | All 5 conditions met |
 
-### 5.1. Nghiệm thu skill mới hoặc skill đã sửa
+### 5.1. Acceptance of a new or edited skill
 
-| # | Điều kiện | Cách kiểm |
+| # | Condition | How to check |
 |---|---|---|
-| a | **Trỏ, không chép** luật của QA_STANDARD | Không có bảng verdict / nhãn / FACT / 06W / luật ghi knowledge chép lại; chỉ có `QA_STANDARD §n` |
-| b | **Khai đủ đầu vào**, gồm knowledge | Mục "Đầu vào" có deliverable cần đọc + `knowledge/_project.md` + `knowledge/features/<slug>.md` (QA_STANDARD §7) |
-| c | **Output đọc được bằng máy** | Dòng meta dòng 2 đúng QA_STANDARD §7; mọi bảng có cột nguồn / mã trace (§9); mã lấy từ `npm run ids -- <slug>` |
-| d | **Chạy hai lần cho cùng một kết quả** | Chạy skill **2 lần** trên cùng một đầu vào mẫu (phiên mới mỗi lần). So bằng `npm run diff-runs -- <OUTPUT lần 1> <OUTPUT lần 2>` (tập mã, câu trích, câu hỏi, con số, verdict). Mọi khác biệt phải giải thích được; không giải thích được ⇒ skill còn chỗ cho model tự sáng tác ⇒ `FIX` |
-| e | **Không ví dụ theo miền** trong skill lõi | Ví dụ dùng chỗ giữ chỗ trung tính, không có giá trị/thông báo của một dự án thật |
+| a | **Points to, never copies** QA_STANDARD rules | No copied verdict / label / FACT / 06W / knowledge-writing table; only `QA_STANDARD §n` |
+| b | **Declares all inputs**, including knowledge | The "Đầu vào" (inputs) section lists the deliverables to read + `knowledge/_project.md` + `knowledge/features/<slug>.md` (QA_STANDARD §7) |
+| c | **Machine-readable output** | The line-2 meta line follows QA_STANDARD §7; every table has a source / trace-code column (§9); codes come from `npm run ids -- <slug>` |
+| d | **Two runs give the same result** | Run the skill **twice** on the same sample input (a fresh session each time). Compare with `npm run diff-runs -- <OUTPUT run 1> <OUTPUT run 2>` (code sets, quotes, questions, numbers, verdict). Every difference must be explainable; an unexplainable one ⇒ the skill still leaves room for the model to invent ⇒ `FIX` |
+| e | **No domain-specific examples** in a core skill | Examples use neutral placeholders, with no values/messages from a real project |
 
-**Kiểm tra thủ công bắt buộc** (công cụ không bắt được):
+**Mandatory manual checks** (the tools cannot catch these):
 
-- [ ] Mở `AGENT.md` — danh sách `## Skill sở hữu` khớp **từng dòng** với tên file trong `skills/`
-- [ ] Mọi đường dẫn viết đúng hoa/thường: `OUTPUT/` · `INPUT/` · `qa-system/qa-*/` · `qa-system/workflows/`
-- [ ] Không còn placeholder `<…>` sót lại trong file mới
-- [ ] Skill mới ghi **đúng một** file output, có dòng meta `Owner · Nguồn · Verdict`
-- [ ] Người dùng gõ câu tự nhiên tương ứng thì QA Leader định tuyến đúng tới skill mới (thử 1 câu thật)
+- [ ] Open `AGENT.md` — the `## Skill sở hữu` list matches the file names in `skills/` **line by line**
+- [ ] Every path uses the correct case: `OUTPUT/` · `INPUT/` · `qa-system/qa-*/` · `qa-system/workflows/`
+- [ ] No `<…>` placeholder left in the new file
+- [ ] The new skill writes **exactly one** output file, with the meta line `Owner · Nguồn · Verdict`
+- [ ] When the user types the matching natural phrase, the QA Leader routes correctly to the new skill (try 1 real phrase)
 
-Lệnh rà đường dẫn sai nhanh:
+Quick command to find wrong paths:
 
 ```bash
 grep -rn "output/\|_shared/\|agents/qa-\|workflow/[a-z]" --include=*.md qa-system knowledge | grep -v "workflows/"
 ```
 
-Không in ra gì là sạch.
+No output means clean.
 
-## 6. Human-Final — không tự quyết
+## 6. Human-Final — not decided by the agent
 
-Skill này **đề xuất**, người dùng **quyết**:
+This skill **proposes**, the user **decides**:
 
-- Chọn `[A]` hay `[B]` khi ranh giới mập mờ — ranh giới vai trò agent là quyết định thiết kế của con người.
-- **Gỡ bỏ** hoặc thay thế skill/agent đang có.
-- Sửa `qa-system/core/QA_STANDARD.md` — đụng vào hiến pháp tầng luật chung.
-- Đổi thứ tự các chặng trong pipeline chính.
-- Chấp nhận nâng cấp khi cổng nghiệm thu §5 chưa xanh hết.
+- Choosing `[A]` or `[B]` when the boundary is blurred — an agent's role boundary is a human design decision.
+- **Removing** or replacing an existing skill/agent.
+- Modifying `qa-system/core/QA_STANDARD.md` — it touches the constitution of the shared-rule layer.
+- Changing the order of the stages in the main pipeline.
+- Accepting an upgrade while the §5 acceptance gates are not all green.
 
-## Format output
+## Output format
 
-Biên bản nâng cấp **không** nằm trong repo. Hỏi người dùng lưu ở đâu (mặc định: thư mục tạm/ngoài repo,
-không commit) và trình bày nội dung trong hội thoại theo khuôn:
+The upgrade record is **not** kept in the repo. Ask the user where to store it (default: a temporary folder / outside the repo,
+not committed) and present it in the conversation using this template (headings and status words kept as written):
 
 ````markdown
 # BIÊN BẢN NÂNG CẤP HỆ THỐNG · <ten-nang-cap>
@@ -248,11 +248,14 @@ Owner: qa-system/qa-lead/skills/system-upgrade-governance.md · Ngày: <YYYY-MM-
 - <…>
 ````
 
-## Chốt chặn nghiệm thu (Quality Gates)
+(Sections: 1 original request · 2 decision table (A/B/C tree) · 3 layer placement · 4 propagation to the 7 anchor points ·
+5 acceptance gates with real results · 6 remaining risks & decisions for humans. Status words: `ĐÃ XONG` = done, `KHÔNG ÁP DỤNG` = not applicable.)
 
-- [ ] Có bảng quyết định A/B/C với lý do tường minh cho **cả 3 câu** của cây quyết định — không kết luận suông.
-- [ ] Mọi điểm neo trong bảng §4 áp dụng cho nhánh đã chọn đều ở trạng thái `ĐÃ XONG` hoặc `KHÔNG ÁP DỤNG` **kèm lý do**; còn dòng nào trống → `Verdict: FIX`.
-- [ ] Cổng `G1`–`G5` có **kết quả thật** đã chạy, không phải dự đoán; cổng nào đỏ → `Verdict: FIX`.
-- [ ] Tên skill trong `## Skill sở hữu` khớp chính xác tên file trên đĩa.
-- [ ] Biên bản đã trình bày cho người dùng và lưu ở nơi họ chọn — không ghi vào repo nếu họ không yêu cầu.
-- [ ] Không có nội dung nào đặt sai tầng theo bảng tự kiểm §2.
+## Acceptance gates (Quality Gates)
+
+- [ ] There is an A/B/C decision table with an explicit reason for **all 3 questions** of the decision tree — no bare conclusion.
+- [ ] Every anchor point in the §4 table that applies to the chosen branch is `ĐÃ XONG` or `KHÔNG ÁP DỤNG` **with a reason**; any empty row → `Verdict: FIX`.
+- [ ] Gates `G1`–`G5` have **real results** from actual runs, not predictions; any red gate → `Verdict: FIX`.
+- [ ] The skill names under `## Skill sở hữu` exactly match the file names on disk.
+- [ ] The record has been presented to the user and stored where they chose — never written into the repo unless they ask.
+- [ ] No content is placed at the wrong layer according to the §2 self-check table.
