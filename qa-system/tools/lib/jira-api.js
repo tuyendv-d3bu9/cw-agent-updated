@@ -177,7 +177,7 @@ async function createMeta(cfg, projectKey) {
   const issueTypes = (project?.issuetypes || []).map((it) => ({
     id: it.id,
     name: it.name,
-    // Loại subtask BẮT BUỘC có `parent`. Tự chọn phải nó là mỗi issue tạo ra đều lỗi.
+    // The subtask type REQUIRES `parent`. Auto-picking it makes every created issue fail.
     subtask: Boolean(it.subtask),
     fields: Object.keys(it.fields || {}),
     required: Object.entries(it.fields || {})
@@ -190,13 +190,13 @@ async function createMeta(cfg, projectKey) {
 /**
  * Pick the configured issue type, else anything sensible the project does offer.
  *
- * Hai cái bẫy ở đây, cả hai đều đã sập thật trên project SG:
- *   1. `/task/i` khớp cả "Subtask", mà "Subtask" đứng trước "Task" trong danh sách
- *      createmeta trả về — nên fallback chọn phải Subtask.
- *   2. Subtask bắt buộc có trường `parent`. Tạo subtask không parent thì issue nào
- *      cũng lỗi, và lỗi chỉ lộ ra giữa vòng lặp 36 test case.
- * Vì vậy fallback KHÔNG BAO GIỜ tự chọn loại subtask. Muốn dùng subtask thì phải
- * gọi đích danh qua JIRA_TEST_ISSUE_TYPE, và người gọi tự lo trường `parent`.
+ * Two traps here, both of which really broke on project SG:
+ *   1. `/task/i` also matches "Subtask", and "Subtask" comes before "Task" in the
+ *      createmeta list — so the fallback picked Subtask.
+ *   2. Subtask requires a `parent` field. Creating a subtask without a parent fails
+ *      for every issue, and the failure only shows up midway through a 36-test-case loop.
+ * Therefore the fallback NEVER auto-picks a subtask type. To use a subtask it must
+ * be named explicitly via JIRA_TEST_ISSUE_TYPE, and the caller supplies `parent`.
  */
 function pickIssueType(issueTypes, wanted) {
   if (!issueTypes.length) return null;
@@ -208,7 +208,7 @@ function pickIssueType(issueTypes, wanted) {
   const standalone = issueTypes.filter((it) => !it.subtask);
   if (!standalone.length) return null;
 
-  // Thứ tự ưu tiên rõ ràng, không dựa vào thứ tự Jira trả về.
+  // Explicit priority order, not relying on the order Jira returns.
   for (const preferred of ['test', 'test case', 'task', 'story']) {
     const hit = standalone.find((it) => it.name.toLowerCase() === preferred);
     if (hit) return hit;

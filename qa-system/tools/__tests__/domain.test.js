@@ -213,7 +213,7 @@ test('dataset — pack thêm kiểu mới và enum có tên; enum không có ⇒
   rows.forEach((row) => assert.match(row.r, /^REF-[12]$/));
   assert.deepStrictEqual(rows.map((row) => row.s), ['Open', 'Closed', 'Open', 'Closed']);
   assert.throws(() => G.generateDataset({ s: { type: 'enum', enum: 'nope' } }, 1, { datagen }), /enum "nope"/);
-  assert.throws(() => G.resolveSpec({ type: 'x' }, { types: { x: { generator: 'nope' } } }), /engine không có/);
+  assert.throws(() => G.resolveSpec({ type: 'x' }, { types: { x: { generator: 'nope' } } }), /non-existent engine/);
 });
 
 // ─────────────────── Tương thích: provenance ───────────────────
@@ -252,14 +252,14 @@ test('validatePack — pack tốt / JSON hỏng / thiếu file / mã BR trong pa
   const fails = (dir) => D.validatePack(dir, { engines: ENGINES }).filter((p) => p.level === 'FAIL').map((p) => `${p.file}: ${p.msg}`).join(' | ');
 
   assert.strictEqual(fails(makePack('good')), '');
-  assert.match(fails(makePack('badjson', { 'datagen.json': '{ "types": ' })), /datagen\.json: JSON không đọc được/);
-  assert.match(fails(makePack('missing', { 'risks.md': null })), /risks\.md: Thiếu file bắt buộc/);
-  assert.match(fails(makePack('fact', { 'rule-patterns.md': '| x | BR-01 luôn đúng |' })), /rule-patterns\.md: Chứa mã sự thật BR-01/);
+  assert.match(fails(makePack('badjson', { 'datagen.json': '{ "types": ' })), /datagen\.json: unreadable JSON/);
+  assert.match(fails(makePack('missing', { 'risks.md': null })), /risks\.md: Missing required file/);
+  assert.match(fails(makePack('fact', { 'rule-patterns.md': '| x | BR-01 luôn đúng |' })), /rule-patterns\.md: Contains fact ids BR-01/);
   assert.match(fails(makePack('fact2', { 'vocab.md': 'xem FD-12' })), /FD-12/);
-  assert.match(fails(makePack('nosrc', { 'README.md': '# pack\nkhông có nguồn\n' })), /README\.md: Cần ít nhất một URL/);
+  assert.match(fails(makePack('nosrc', { 'README.md': '# pack\nkhông có nguồn\n' })), /README\.md: Needs at least one source URL/);
   assert.strictEqual(fails(makePack('unk', { 'README.md': '# pack\nNguồn: Unknown\n' })), '');
-  assert.match(fails(makePack('eng', { 'datagen.json': JSON.stringify({ types: { x: { generator: 'magic' } } }) })), /engine có thật/);
-  assert.match(fails(makePack('topic', { 'conflict_topics.json': JSON.stringify({ topics: { x: { category: 'c' } } }) })), /topics\.x cần/);
+  assert.match(fails(makePack('eng', { 'datagen.json': JSON.stringify({ types: { x: { generator: 'magic' } } }) })), /not a real engine/);
+  assert.match(fails(makePack('topic', { 'conflict_topics.json': JSON.stringify({ topics: { x: { category: 'c' } } }) })), /topics\.x needs/);
 });
 
 // ─────────────────── lint — `[DOMAIN]` không phải nguồn của BR/FD ───────────────────

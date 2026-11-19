@@ -179,7 +179,7 @@ test('#58 02 says ASK but every MR is settled in knowledge ⇒ open (stale verdi
     write('knowledge/features/t.md', knowledgeDoc({ q7: [{ id: 'MR-01', question: 'Mức sàn?', answer: '200k', status: 'Confirmed' }] }));
     const s = evaluate('t');
     ok(s);
-    assert.match(s.advisories.join(' '), /Mọi MR của 02 đã chốt trong knowledge/);
+    assert.match(s.advisories.join(' '), /Every MR of 02 is settled in knowledge/);
   } finally { t.cleanup(); }
 });
 
@@ -311,7 +311,7 @@ test('cổng nói rõ vì sao một câu Confirmed chưa được tính (thiếu
     ] }));
     const s = evaluate('t');
     assert.strictEqual(s.blocked, true);
-    assert.match(s.pending.find((q) => q.id === 'MR-01').state, /thiếu Người trả lời hoặc Ngày/);
+    assert.match(s.pending.find((q) => q.id === 'MR-01').state, /missing Người trả lời or Ngày/);
     assert.match(s.pending.find((q) => q.id === 'MR-02').state, /AI\/agent/);
   } finally { t.cleanup(); }
 });
@@ -372,6 +372,6 @@ test('cổng nói rõ câu TREO: ai đã trả lời, ngày nào, trả lời g�
     const r = evaluate('t');
     assert.strictEqual(r.blocked, true);
     const p = r.pending.find((x) => x.id === 'MR-07');
-    assert.match(p.state, /BA Lan đã trả lời ngày 2026-11-04 nhưng chưa đủ để chốt: "Tuỳ trường hợp, sẽ báo sau\."/);
+    assert.match(p.state, /BA Lan answered on 2026-11-04 but not enough to settle: "Tuỳ trường hợp, sẽ báo sau\."/);
   } finally { t.cleanup(); }
 });

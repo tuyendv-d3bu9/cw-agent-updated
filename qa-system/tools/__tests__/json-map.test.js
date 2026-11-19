@@ -43,7 +43,7 @@ test('json tool — cắt kết quả dài và nói rõ đã cắt', (t) => {
   write('knowledge/big.json', JSON.stringify({ a: 'x'.repeat(5000) }));
   const r = jsonTool.run(['knowledge/big.json']);
   assert.ok(r.out.length < 1800);
-  assert.match(r.out, /đã cắt/);
+  assert.match(r.out, /truncated/);
   assert.ok(jsonTool.run(['knowledge/big.json', '--max', '9000']).out.length > 4000);
 });
 
@@ -56,7 +56,7 @@ test('map tool — mọi từ khoá phải khớp, bỏ dấu, giới hạn số
   assert.match(mapTool.run(['lint']).out, /lint_command → npm run lint/);
   assert.strictEqual(mapTool.run(['lint', 'tool']).out.split('\n').length, 1);
   assert.match(mapTool.run(['thiet', 'ke']).out, /Thiết kế/);
-  assert.match(mapTool.run(['gate']).out, /còn 8 mục khớp nữa/);
+  assert.match(mapTool.run(['gate']).out, /8 more matching entries/);
   assert.strictEqual(mapTool.run(['khongco']).code, 1);
   assert.strictEqual(mapTool.run([]).code, 2);
 });

@@ -14,11 +14,11 @@
  * conversion and filing succeeded; failures stay in place and make the run exit non-zero.
  *
  * Usage:
- *   npm run intake -- <file-or-dir> [--slug <task-slug> | --into <task-có-sẵn>]
+ *   npm run intake -- <file-or-dir> [--slug <task-slug> | --into <existing-task>]
  *
- * Tài liệu sắp vào một task ĐÃ CÓ tài liệu ⇒ dừng, exit 2, chờ xác nhận (`--into <slug>`).
- * Bản cũ của cùng tài liệu (cùng tên bỏ version/ngày, cùng ngăn) ⇒ chuyển sang `<ngăn>/_superseded/`.
- * Exit: 0 xong · 1 có file lỗi / không nhận được gì · 2 chờ người dùng xác nhận gộp.
+ * A document about to enter a task that ALREADY has documents ⇒ stop, exit 2, wait for confirmation (`--into <slug>`).
+ * An old version of the same document (same name minus version/date, same bin) ⇒ moved to `<bin>/_superseded/`.
+ * Exit: 0 done · 1 failed files / nothing taken in · 2 waiting for the user to confirm a merge.
  * Examples:
  *   node qa-system/tools/intake/intake.js "SRS_Auth.docx" --slug <feature-a>
  *   node qa-system/tools/intake/intake.js "doc.pdf" --slug qa-standard-guide
@@ -35,11 +35,11 @@ const versioning = require('./versioning');
 const args = process.argv.slice(2);
 const slugIndex = args.indexOf('--slug');
 const intoIndex = args.indexOf('--into');
-// `--into` = cố ý gộp vào task đã có. `--force` = cố ý chấp nhận tạo bản thứ hai.
+// `--into` = deliberately merge into an existing task. `--force` = deliberately accept creating a second copy.
 const intoSlug = intoIndex !== -1 ? args[intoIndex + 1] : null;
 let targetSlug = intoSlug || (slugIndex !== -1 ? args[slugIndex + 1] : null);
 const FORCE = args.includes('--force');
-// Người dùng đã chỉ đích danh task (--into / --slug) ⇒ đã xác nhận, không hỏi lại.
+// The user named the task explicitly (--into / --slug) ⇒ already confirmed, do not ask again.
 const CONFIRMED = intoSlug !== null || slugIndex !== -1;
 const valueArgs = new Set([slugIndex + 1, intoIndex + 1].filter((i) => i > 0));
 const positional = args.filter((a, idx) => !a.startsWith('--') && !valueArgs.has(idx));
@@ -65,15 +65,15 @@ function slugify(text) {
     .replace(/^-+|-+$/g, '');
 }
 
-// ───────────────────────── Phân ngăn (classification) ─────────────────────────
+// ───────────────────────── Bin classification ─────────────────────────
 //
-// Chấm điểm trên cả 5 ngăn, KHÔNG dừng ở từ khoá đầu tiên khớp:
-//   1. Tên file + tiêu đề (H1) là tín hiệu mạnh nhất, xét trước.
-//   2. CR / Q&A / biên bản / meeting → 05_communication thắng chữ chung chung "đặc tả".
-//   3. Khớp theo ranh giới từ (Unicode): "revision" không còn chứa "vision".
-//   4. Chuẩn hoá NFC: chữ Việt dựng sẵn hay tổ hợp đều khớp như nhau.
-// Không chắc (hoà điểm / điểm thấp / không có tín hiệu) → vẫn xếp vào ngăn đoán tốt nhất
-// nhưng gắn `unsure` để intake liệt kê cho người dùng xác nhận.
+// Score all 5 bins, do NOT stop at the first matching keyword:
+//   1. File name + title (H1) are the strongest signal, considered first.
+//   2. CR / Q&A / minutes / meeting → 05_communication beats the generic word "đặc tả" (spec).
+//   3. Match on Unicode word boundaries: "revision" no longer contains "vision".
+//   4. NFC normalisation: precomposed or combining Vietnamese letters match alike.
+// Not sure (tie / low score / no signal) → still filed in the best-guess bin
+// but flagged `unsure` so intake lists it for the user to confirm.
 
 const BINS = ['01_business', '02_ba', '03_dev', '04_design', '05_communication'];
 
@@ -120,7 +120,7 @@ const norm = (s) => String(s || '').normalize('NFC').toLowerCase();
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const termRe = (t) => new RegExp(`(?<![\\p{L}\\p{N}])${escapeRe(t)}(?![\\p{L}\\p{N}])`, 'iu');
 
-/** Chữ có khớp thuật ngữ không — ranh giới từ Unicode; cụm nhiều từ khớp cả bản bỏ dấu. */
+/** Whether the text matches a term — Unicode word boundary; multi-word phrases also match the accent-stripped form. */
 function hasTerm(text, plain, term, { anyAccent = false } = {}) {
   if (termRe(term).test(text)) return true;
   if (anyAccent || term.includes(' ')) return termRe(deaccent(term)).test(plain);
@@ -154,62 +154,62 @@ function classifyDetailed(content, filename) {
     head[bin] = 0;
     hits[bin] = [];
     for (const t of [...sig.terms, ...sig.headOnly]) {
-      if (hasTerm(fileTextPlain, fileTextPlain, deaccent(t), { anyAccent: true })) { head[bin] += 5; hits[bin].push(`tên file:"${t}"`); }
-      if (hasTerm(title, titlePlain, t)) { head[bin] += 3; hits[bin].push(`tiêu đề:"${t}"`); }
+      if (hasTerm(fileTextPlain, fileTextPlain, deaccent(t), { anyAccent: true })) { head[bin] += 5; hits[bin].push(`file name:"${t}"`); }
+      if (hasTerm(title, titlePlain, t)) { head[bin] += 3; hits[bin].push(`title:"${t}"`); }
     }
     for (const t of sig.terms) {
       if (hasTerm(body, bodyPlain, t)) {
         const strong = (sig.strongContent || []).includes(t);
         score[bin] += strong ? 2 : 1;
         if (strong) strong05 = true;
-        hits[bin].push(`nội dung:"${t}"`);
+        hits[bin].push(`content:"${t}"`);
       }
     }
     for (const re of sig.regex) {
-      if (re.test(fileText)) { head[bin] += 5; hits[bin].push(`tên file:${re.source}`); }
+      if (re.test(fileText)) { head[bin] += 5; hits[bin].push(`file name:${re.source}`); }
       if (re.test(String(content))) {
         score[bin] += 2;
         if (bin === '05_communication') strong05 = true;
-        hits[bin].push(`nội dung:${re.source}`);
+        hits[bin].push(`content:${re.source}`);
       }
     }
   }
-  if (['.json', '.yaml', '.yml', '.sql'].includes(ext)) { head['03_dev'] += 10; hits['03_dev'].push(`đuôi ${ext}`); }
+  if (['.json', '.yaml', '.yml', '.sql'].includes(ext)) { head['03_dev'] += 10; hits['03_dev'].push(`extension ${ext}`); }
 
   const rank = (m) => BINS.slice().sort((a, b) => m[b] - m[a] || (a === '02_ba' ? -1 : b === '02_ba' ? 1 : 0));
   const why = (bin) => hits[bin].slice(0, 4).join(', ');
 
-  // 1. Tên file / tiêu đề. 05 có tín hiệu ở đây thì thắng (CR/biên bản nói về spec, không phải spec).
+  // 1. File name / title. If 05 has a signal here it wins (a CR/minutes talks about a spec, it is not the spec).
   if (head['05_communication'] > 0) {
     return { bin: '05_communication', unsure: false, reason: why('05_communication'), scores: { head, content: score } };
   }
   const hr = rank(head);
   if (head[hr[0]] > 0) {
     const unsure = head[hr[0]] < 2 * head[hr[1]];
-    return { bin: hr[0], unsure, reason: why(hr[0]) + (unsure ? ` (sát với ${hr[1]})` : ''), scores: { head, content: score } };
+    return { bin: hr[0], unsure, reason: why(hr[0]) + (unsure ? ` (close to ${hr[1]})` : ''), scores: { head, content: score } };
   }
 
-  // 2. Nội dung.
+  // 2. Content.
   const cr = rank(score);
   let bin = cr[0];
   const top = score[bin];
-  if (top === 0) return { bin: '02_ba', unsure: true, reason: 'không có tín hiệu nào — mặc định 02_ba', scores: { head, content: score } };
+  if (top === 0) return { bin: '02_ba', unsure: true, reason: 'no signal at all — defaulting to 02_ba', scores: { head, content: score } };
   let unsure = !(top >= 2 && top >= score[cr[1]] + 2);
   if (strong05 && bin !== '05_communication') {
     unsure = unsure || score[bin] > score['05_communication'];
     bin = '05_communication';
   }
-  return { bin, unsure, reason: why(bin) + (unsure ? ' (điểm thấp/sát nhau)' : ''), scores: { head, content: score } };
+  return { bin, unsure, reason: why(bin) + (unsure ? ' (low score / close scores)' : ''), scores: { head, content: score } };
 }
 
-/** Giữ API cũ: chỉ trả về tên ngăn. */
+/** Keeps the old API: returns only the bin name. */
 function classifyDocument(content, filename) {
   return classifyDetailed(content, filename).bin;
 }
 
-// ───────────────────────── Nhận một file ─────────────────────────
+// ───────────────────────── Taking in one file ─────────────────────────
 
-/** Sổ kết quả của một lượt intake. */
+/** Result ledger of one intake run. */
 function newReport() {
   return { filed: [], assets: [], failed: [], skipped: [], unsure: [], pending: [], written: new Set() };
 }
@@ -220,7 +220,7 @@ function ensureBins(slug) {
 
 const fileSha = (p) => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 
-/** Liệt kê ảnh/file thiết kế trong 04_design/_assets/ thành một file .md để agent biết chúng tồn tại. */
+/** List images/design files in 04_design/_assets/ into one .md file so the agent knows they exist. */
 function writeAssetIndex(slug) {
   const dir = path.join(PATHS.INPUT, slug, '04_design', '_assets');
   if (!fs.existsSync(dir)) return null;
@@ -243,7 +243,7 @@ function writeAssetIndex(slug) {
   return idx;
 }
 
-/** Đưa ảnh/file thiết kế vào 04_design/_assets/ nguyên vẹn. `move` = xoá bản gốc sau khi chép xong. */
+/** Put images/design files into 04_design/_assets/ intact. `move` = delete the original after copying. */
 function fileAsset(filePath, slug, { move = false } = {}) {
   ensureBins(slug);
   const dir = path.join(PATHS.INPUT, slug, '04_design', '_assets');
@@ -253,20 +253,20 @@ function fileAsset(filePath, slug, { move = false } = {}) {
   const srcSha = fileSha(filePath);
   let dest = path.join(dir, base + ext);
   for (let n = 2; fs.existsSync(dest); n++) {
-    if (fileSha(dest) === srcSha) break; // đã có y hệt
+    if (fileSha(dest) === srcSha) break; // an identical copy already exists
     dest = path.join(dir, `${base}-${n}${ext}`);
   }
   if (!fs.existsSync(dest)) fs.copyFileSync(filePath, dest);
-  if (fileSha(dest) !== srcSha) throw new Error(`chép ${path.basename(filePath)} không khớp sha256`);
+  if (fileSha(dest) !== srcSha) throw new Error(`copy of ${path.basename(filePath)} does not match sha256`);
   if (move && path.resolve(dest) !== path.resolve(filePath)) fs.unlinkSync(filePath);
   writeAssetIndex(slug);
   return dest;
 }
 
 /**
- * Nhận MỘT file vào INPUT/<slug>/. Trả về `true` CHỈ KHI đã chuyển đổi + ghi xong (hoặc đã cất ảnh);
- * mọi nhánh khác trả `false`. Với `consume: true` (file rời trong INPUT/), bản gốc chỉ bị xoá sau khi
- * thành công; lỗi thì file nằm nguyên chỗ cũ và được ghi vào `report.failed`.
+ * Take ONE file into INPUT/<slug>/. Returns `true` ONLY when converted + written (or the image was stored);
+ * every other branch returns `false`. With `consume: true` (a loose file in INPUT/), the original is deleted only after
+ * success; on error the file stays where it was and is recorded in `report.failed`.
  */
 async function processFile(filePath, userSlug, report = newReport(), { consume = false } = {}) {
   const name = path.basename(filePath);
@@ -276,18 +276,18 @@ async function processFile(filePath, userSlug, report = newReport(), { consume =
     return false;
   };
   try {
-    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) return fail('không tìm thấy file');
+    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) return fail('file not found');
 
     const ext = path.extname(filePath).toLowerCase();
     const baseName = path.basename(filePath, ext);
     const slug = userSlug || featureSlug(baseName);
-    console.log(`\n📥 [GATE 0] Nhận tài liệu: "${name}" → task [ ${slug} ]`);
+    console.log(`\n📥 [GATE 0] Taking in document: "${name}" → task [ ${slug} ]`);
 
     const kind = fileKind(filePath);
     if (kind.kind === 'asset') {
       const dest = fileAsset(filePath, slug, { move: consume });
       report.assets.push({ file: filePath, dest: path.relative(PATHS.ROOT, dest), slug });
-      console.log(`   🖼️  Ảnh/thiết kế giữ nguyên → ${path.relative(PATHS.ROOT, dest)}`);
+      console.log(`   🖼️  Image/design kept as is → ${path.relative(PATHS.ROOT, dest)}`);
       return true;
     }
     if (kind.kind !== 'convert' && ext !== '.doc') return fail(kind.reason);
@@ -296,15 +296,15 @@ async function processFile(filePath, userSlug, report = newReport(), { consume =
     try {
       markdown = await convertDocumentToMarkdown(filePath);
     } catch (err) {
-      return fail(`chuyển đổi lỗi — ${err.message}`);
+      return fail(`conversion failed — ${err.message}`);
     }
-    if (!stripMetadata(markdown).trim()) return fail('chuyển đổi ra nội dung rỗng');
+    if (!stripMetadata(markdown).trim()) return fail('conversion produced empty content');
 
     if (!FORCE) {
       const dup = findDuplicate(markdown, slug);
       if (dup) {
         console.error(duplicateNotice(dup, slug, name));
-        report.skipped.push({ file: filePath, reason: `trùng với ${dup.file} (task ${dup.slug})` });
+        report.skipped.push({ file: filePath, reason: `duplicate of ${dup.file} (task ${dup.slug})` });
         return false;
       }
     }
@@ -312,46 +312,46 @@ async function processFile(filePath, userSlug, report = newReport(), { consume =
     const cls = classifyDetailed(markdown, name);
     ensureBins(slug);
     let destPath = path.join(PATHS.INPUT, slug, cls.bin, `${slugify(baseName)}.md`);
-    // Hai file nguồn trùng tên gốc trong cùng một lượt (spec.docx + spec.pdf) không được ghi đè nhau.
-    // Trùng tên trong cùng lượt: thêm đuôi, rồi số thứ tự — file thứ ba không được ghi đè file thứ hai.
+    // Two source files with the same base name in one run (spec.docx + spec.pdf) must not overwrite each other.
+    // Same name within a run: add a suffix, then a sequence number — a third file must not overwrite the second.
     for (let n = 2; report.written.has(destPath); n++) {
       destPath = path.join(PATHS.INPUT, slug, cls.bin, `${slugify(baseName)}-${n === 2 ? ext.slice(1) : `${ext.slice(1)}-${n}`}.md`);
     }
     fs.writeFileSync(destPath, markdown, 'utf8');
-    if (fs.readFileSync(destPath, 'utf8') !== markdown) return fail('ghi file đích không khớp');
+    if (fs.readFileSync(destPath, 'utf8') !== markdown) return fail('written target file does not match');
     report.written.add(destPath);
 
     const entry = { file: filePath, dest: path.relative(PATHS.ROOT, destPath), slug, bin: cls.bin, reason: cls.reason };
     report.filed.push(entry);
     if (cls.unsure) report.unsure.push(entry);
-    console.log(`   -> Ngăn: [ ${cls.bin} ]${cls.unsure ? '  ⚠️ CHƯA CHẮC' : ''} (${cls.reason})`);
+    console.log(`   -> Bin: [ ${cls.bin} ]${cls.unsure ? '  ⚠️ UNSURE' : ''} (${cls.reason})`);
     console.log(`   ✅ ${entry.dest}`);
 
-    if (consume) fs.unlinkSync(filePath); // chỉ xoá sau khi đã ghi xong
+    if (consume) fs.unlinkSync(filePath); // delete only after writing is done
     return true;
   } catch (err) {
     return fail(err.message);
   }
 }
 
-/** Tóm tắt cuối lượt: file lỗi (vẫn nằm nguyên chỗ), file xếp ngăn chưa chắc, file trùng. */
+/** End-of-run summary: failed files (left in place), uncertain bin placements, duplicate files. */
 function printSummary(report) {
   const rel = (p) => path.relative(PATHS.ROOT, p) || p;
-  console.log('\n──────── TÓM TẮT INTAKE ────────');
-  console.log(`   Đã nhận: ${report.filed.length} tài liệu · ${report.assets.length} ảnh/thiết kế`);
+  console.log('\n──────── INTAKE SUMMARY ────────');
+  console.log(`   Taken in: ${report.filed.length} document(s) · ${report.assets.length} image/design file(s)`);
   if (report.pending.length) {
-    console.log(`\n   ⏸️  ${report.pending.length} file CHỜ XÁC NHẬN gộp vào task đã có (chưa nhận, giữ nguyên chỗ cũ).`);
+    console.log(`\n   ⏸️  ${report.pending.length} file(s) AWAITING CONFIRMATION to merge into an existing task (not taken in, left in place).`);
   }
   if (report.unsure.length) {
-    console.log(`\n   ⚠️ ${report.unsure.length} tài liệu xếp ngăn CHƯA CHẮC — cần người dùng xác nhận:`);
+    console.log(`\n   ⚠️ ${report.unsure.length} document(s) binned with UNCERTAINTY — user confirmation needed:`);
     report.unsure.forEach((u) => console.log(`      - ${path.basename(u.file)} → ${u.bin} (${u.reason})`));
   }
   if (report.skipped.length) {
-    console.log(`\n   ⏭️  ${report.skipped.length} file bị bỏ qua (giữ nguyên chỗ cũ):`);
+    console.log(`\n   ⏭️  ${report.skipped.length} file(s) skipped (left in place):`);
     report.skipped.forEach((s) => console.log(`      - ${rel(s.file)}: ${s.reason}`));
   }
   if (report.failed.length) {
-    console.log(`\n   ❌ ${report.failed.length} file KHÔNG nhận được (giữ nguyên chỗ cũ, chưa xoá):`);
+    console.log(`\n   ❌ ${report.failed.length} file(s) NOT taken in (left in place, not deleted):`);
     report.failed.forEach((f) => console.log(`      - ${rel(f.file)}: ${f.reason}`));
   }
   console.log('');
@@ -374,7 +374,7 @@ function scaffoldTask(slug) {
     const tpl = path.join(PATHS.KNOWLEDGE, '_template.md');
     if (fs.existsSync(tpl)) {
       ensureDir(PATHS.FEATURES);
-      // Template là khung rỗng; chỉ thay chỗ giữ tên slug, không thêm dữ liệu mẫu.
+      // The template is an empty skeleton; only the slug placeholder is replaced, no sample data added.
       fs.writeFileSync(kPath, fs.readFileSync(tpl, 'utf-8').replace(/<feature-slug>/g, slug), 'utf-8');
       created.push(path.relative(PATHS.ROOT, kPath));
     }
@@ -416,14 +416,14 @@ cho khuyến nghị GO **và** người dùng yêu cầu rõ kèm URL môi trư�
  * Prefers a PRD/SRS-style document because it describes the feature itself;
  * a business document usually spans a whole quarter and would overstate scope.
  */
-// ────────────────── Chống đẻ trùng task ──────────────────
+// ────────────────── Preventing duplicate tasks ──────────────────
 //
-// Tên task vốn lấy từ TÊN FILE. Cùng một đặc tả mà BA gửi lại dưới tên khác là
-// sinh ra một task thứ hai cho đúng tính năng đó — `spec-function-d` và
-// `<task-slug>` đã trùng nhau đúng kiểu này, cùng là "Function D: <tên tính năng>"
-// của <SUT>. Ba hàm dưới đây nhận diện trước khi ghi.
+// The task name comes from the FILE NAME. The same spec re-sent by the BA under another name
+// spawns a second task for the same feature — `spec-function-d` and
+// `<task-slug>` collided exactly this way, both being "Function D: <feature name>"
+// of <SUT>. The three functions below detect it before writing.
 
-/** Tên tính năng mà tài liệu tự khai, lấy ở heading H1 đầu tiên. */
+/** The feature name the document declares, taken from the first H1 heading. */
 function docTitle(markdown) {
   for (const line of String(markdown).split('\n')) {
     const m = line.match(/^#\s+(.+?)\s*$/);
@@ -432,7 +432,7 @@ function docTitle(markdown) {
   return '';
 }
 
-/** Chuẩn hoá tiêu đề để so sánh: bỏ dấu, bỏ ký hiệu markdown, gộp khoảng trắng. */
+/** Normalise a title for comparison: strip accents, markdown symbols, collapse whitespace. */
 function normalizeTitle(title) {
   return String(title)
     .replace(/[*_`#]/g, '')
@@ -444,14 +444,14 @@ function normalizeTitle(title) {
     .trim();
 }
 
-/** Vân tay nội dung — bỏ qua khác biệt về khoảng trắng và hoa thường. */
+/** Content fingerprint — ignores whitespace and case differences. */
 function docFingerprint(markdown) {
-  // Bỏ khối metadata (tên file, sha256 bản gốc) — cùng nội dung khác tên file vẫn là một tài liệu.
+  // Drop the metadata block (file name, sha256 of the original) — the same content under another file name is still one document.
   const normalized = stripMetadata(markdown).replace(/\s+/g, ' ').trim().toLowerCase();
   return crypto.createHash('sha1').update(normalized).digest('hex');
 }
 
-/** Mọi tài liệu đã nằm trong INPUT/<task>/, kèm task sở hữu nó. */
+/** Every document already in INPUT/<task>/, with the task that owns it. */
 function ingestedDocs() {
   if (!fs.existsSync(PATHS.INPUT)) return [];
   const out = [];
@@ -462,8 +462,8 @@ function ingestedDocs() {
     if (!fs.statSync(taskDir).isDirectory()) continue;
 
     for (const category of fs.readdirSync(taskDir)) {
-      // Chỉ 5 ngăn chuẩn mới là tài liệu đã nạp. Thư mục kho (vd INPUT/RAWS/de-bai/) không phải task —
-      // tính nó vào thì file đề bài bị báo "trùng với chính nó".
+      // Only the 5 standard bins hold ingested documents. A storage folder (e.g. INPUT/RAWS/de-bai/) is not a task —
+      // counting it would report the brief file as "a duplicate of itself".
       if (!BINS.includes(category)) continue;
       const catDir = path.join(taskDir, category);
       if (!fs.existsSync(catDir) || !fs.statSync(catDir).isDirectory()) continue;
@@ -490,18 +490,18 @@ function ingestedDocs() {
 }
 
 /**
- * Tài liệu này đã thuộc về task nào chưa?
+ * Does this document already belong to some task?
  *
- * @returns null, hoặc
- *   { kind: 'same-document', slug, file }  — y nguyên nội dung, đã nhận rồi
- *   { kind: 'same-feature',  slug, file }  — khác nội dung nhưng cùng tên tính năng
+ * @returns null, or
+ *   { kind: 'same-document', slug, file }  — identical content, already taken in
+ *   { kind: 'same-feature',  slug, file }  — different content but the same feature name
  */
 function findDuplicate(markdown, targetSlug) {
   const hash = docFingerprint(markdown);
   const title = normalizeTitle(docTitle(markdown));
 
   for (const doc of ingestedDocs()) {
-    if (doc.slug === targetSlug) continue; // cùng task thì là cập nhật, không phải trùng
+    if (doc.slug === targetSlug) continue; // the same task means an update, not a duplicate
     if (doc.hash === hash) return { kind: 'same-document', ...doc };
   }
 
@@ -513,35 +513,35 @@ function findDuplicate(markdown, targetSlug) {
   return null;
 }
 
-/** Thông điệp dừng — nêu rõ trùng ở đâu và hai lối đi, thay vì lặng lẽ tạo task mới. */
+/** Stop message — states where the duplicate is and the two ways forward, instead of silently creating a new task. */
 function duplicateNotice(dup, proposedSlug, fileName) {
   const what =
     dup.kind === 'same-document'
-      ? `Tài liệu này đã được nhận vào rồi, nội dung y hệt.`
-      : `Tính năng này đã có task rồi — cùng tiêu đề với tài liệu đã nhận.`;
+      ? `This document was already taken in, with identical content.`
+      : `This feature already has a task — same title as an already-ingested document.`;
 
   return [
     ``,
-    `⛔ DỪNG — không đẻ thêm task trùng.`,
+    `⛔ STOP — not creating a duplicate task.`,
     ``,
     `   ${what}`,
-    `   Tài liệu đến : ${fileName}`,
-    `   Đã có ở      : ${dup.file}`,
-    `   Thuộc task   : [ ${dup.slug} ]`,
-    `   Định tạo mới : [ ${proposedSlug} ]   <- sẽ thành bản trùng thứ hai`,
+    `   Incoming doc : ${fileName}`,
+    `   Already at   : ${dup.file}`,
+    `   In task      : [ ${dup.slug} ]`,
+    `   Would create : [ ${proposedSlug} ]   <- would become a second duplicate`,
     ``,
-    `   Chọn một trong hai:`,
-    `     • Gộp vào task đã có:  npm run intake -- "${fileName}" --into ${dup.slug}`,
-    `     • Vẫn tạo task riêng:  npm run intake -- "${fileName}" --slug <tên-khác> --force`,
+    `   Choose one:`,
+    `     • Merge into the existing task:  npm run intake -- "${fileName}" --into ${dup.slug}`,
+    `     • Still create a separate task:  npm run intake -- "${fileName}" --slug <other-name> --force`,
     ``,
   ].join('\n');
 }
 
 /**
- * Tên task theo TÍNH NĂNG, không theo bản tài liệu: bỏ loại tài liệu (srs, prd, đặc tả…),
- * version (v1, v1.2, rev3, final, draft) và ngày. Nhờ vậy "SRS_Doi_mat_khau_v1" và
- * "SRS Đổi mật khẩu v2 (2026-10-28)" cùng về task `doi-mat-khau`.
- * Xác định và không bao giờ rỗng: bỏ hết thì quay về slug đầy đủ của tên file.
+ * The task name follows the FEATURE, not the document version: drops document type (srs, prd, đặc tả…),
+ * version (v1, v1.2, rev3, final, draft) and date. So "SRS_Doi_mat_khau_v1" and
+ * "SRS Đổi mật khẩu v2 (2026-10-28)" land in the same task `doi-mat-khau`.
+ * Deterministic and never empty: if everything is stripped, fall back to the full slug of the file name.
  */
 const DOC_TYPE_TOKENS = new Set([
   'srs', 'prd', 'brd', 'urd', 'frd', 'fsd', 'trd', 'spec', 'specs', 'specification', 'final', 'draft',
@@ -561,12 +561,12 @@ function featureSlug(name) {
     tokens = out;
   }
   tokens = tokens.filter((t) => !DOC_TYPE_TOKENS.has(t));
-  // Tên toàn ký tự không Latin (中文, ไทย…) cho slug rỗng — dùng mã băm để các file khác nhau không dồn vào một task `task`.
+  // A name of only non-Latin characters (中文, ไทย…) yields an empty slug — use a hash so different files do not pile into one task `task`.
   return tokens.join('-') || slugify(name) || `task-${crypto.createHash('sha1').update(String(name)).digest('hex').slice(0, 6)}`;
 }
 
-// Tên file mang tín hiệu BA mạnh (SRS, PRD, user story…) thắng chữ chung chung "spec": "API_<name>_spec" là tài
-// liệu dev, đặt tên task theo nó ra `api-<name>-request` thay vì tên tính năng.
+// A file name with a strong BA signal (SRS, PRD, user story…) beats the generic word "spec": "API_<name>_spec" is a
+// dev document, naming the task after it gives `api-<name>-request` instead of the feature name.
 const BA_STRONG = /(?<![a-z])(?:prd|srs|brd|frd|urd|user.?stor(?:y|ies)|use.?case|requirements?|yeu.?cau|dac.?ta)(?![a-z])/i;
 const BA_WEAK = /(?<![a-z])(?:spec|specs|specification)(?![a-z])/i;
 const DEV_NAME = /(?<![a-z])(?:api|swagger|openapi|schema|db|postman)(?![a-z])/i;
@@ -630,7 +630,7 @@ async function main() {
       return;
     }
     for (const f of loose) {
-      // consume: bản rời chỉ bị xoá bên trong processFile, SAU KHI đã nhận thành công.
+      // consume: a loose file is deleted only inside processFile, AFTER successful intake.
       if ((await processFile(f, slug, report, { consume: true })) === true) slugs.add(slug);
     }
   } else {
@@ -655,8 +655,8 @@ async function main() {
         continue;
       }
       for (const f of group) {
-        // File rời nằm ngay INPUT/ (người dùng chỉ đích danh sau khi xác nhận --into) được dọn như khi quét,
-        // nếu không lần intake sau gặp lại nó và hỏi lại. File ở nơi khác thì để nguyên.
+        // A loose file directly in INPUT/ (named by the user after confirming --into) is cleaned up as in a scan,
+        // otherwise the next intake meets it again and asks again. Files elsewhere are left alone.
         const consume = path.resolve(path.dirname(f)) === path.resolve(PATHS.INPUT);
         if ((await processFile(f, slug, report, { consume })) === true) slugs.add(slug);
       }
@@ -676,14 +676,14 @@ async function main() {
       created.forEach((c) => console.log(`      ${c}`));
     }
     if (report.failed.length) {
-      console.log(`\nTask [ ${slug} ] đã dựng nhưng THIẾU ${report.failed.length} tài liệu lỗi ở trên — xử lý chúng trước khi phân tích.\n`);
+      console.log(`\nTask [ ${slug} ] was built but is MISSING ${report.failed.length} failed document(s) listed above — fix them before analysing.\n`);
     } else {
       console.log(`\nTask [ ${slug} ] is ready. Next: ask the QA Leader to analyse feature ${slug}.\n`);
     }
   }
 
   const ingested = report.filed.length + report.assets.length;
-  // exit 2 = có tài liệu chờ người dùng xác nhận gộp; exit 1 = có file lỗi / không nhận được gì.
+  // exit 2 = documents waiting for the user to confirm a merge; exit 1 = failed files / nothing taken in.
   if (report.failed.length > 0) process.exitCode = 1;
   else if (report.pending.length > 0) process.exitCode = 2;
   else if (ingested === 0) process.exitCode = 1;

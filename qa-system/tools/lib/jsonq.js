@@ -1,12 +1,12 @@
 /**
- * jsonq.js — Truy vấn một nhánh của JSON mà không cần nạp cả file.
+ * jsonq.js — Query one branch of a JSON file without loading the whole file.
  *
- * Cú pháp đường dẫn (cách nhau bằng dấu chấm):
- *   a.b.c            khoá lồng nhau
- *   items[0]         phần tử thứ n của mảng (âm = đếm từ cuối)
- *   items[status=FAILED]   mọi phần tử có trường status bằng FAILED (so khớp chuỗi, không phân biệt hoa thường)
- *   items[*]         mọi phần tử
- *   a.b[*].name      lấy trường name của từng phần tử
+ * Path syntax (dot-separated):
+ *   a.b.c            nested keys
+ *   items[0]         n-th array element (negative = count from the end)
+ *   items[status=FAILED]   every element whose status field equals FAILED (string match, case-insensitive)
+ *   items[*]         every element
+ *   a.b[*].name      take the name field of each element
  */
 
 function parsePath(path) {
@@ -55,7 +55,7 @@ function step(values, seg) {
   return next;
 }
 
-/** @returns {{found: boolean, value: any}}  value là mảng khi đường dẫn có [*] / [k=v], ngược lại là giá trị đơn. */
+/** @returns {{found: boolean, value: any}}  value is an array when the path has [*] / [k=v], otherwise a single value. */
 function query(root, path) {
   const segs = parsePath(path);
   if (segs.length === 0) return { found: true, value: root };
@@ -68,7 +68,7 @@ function query(root, path) {
   return { found: true, value: multi ? cur : cur[0] };
 }
 
-/** Mô tả ngắn một giá trị: các khoá (object) hoặc số phần tử + khoá của phần tử đầu (mảng). */
+/** Short description of a value: its keys (object) or element count + keys of the first element (array). */
 function describe(value) {
   if (Array.isArray(value)) {
     const first = value.find(isObj);

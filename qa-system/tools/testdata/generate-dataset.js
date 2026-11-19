@@ -19,12 +19,12 @@
  * - enum: Pick from value list
  * - negative / invalid: Edge cases (empty, whitespace, null, special chars, injection)
  *
- * Engine trung tính cho pack ngành (qa-system/domains/<id>/datagen.json):
- * - code: ghép `prefixes` + `values` · money: `min`/`max`/`step`, định dạng theo `locale` + `unit`
- * - bank_account: tên ngân hàng / số tài khoản từ danh sách `banks`
- * - enum với `enum: "<tên>"`: lấy danh sách giá trị từ `enums` của pack
- * Pack khai `types.<tên> = { generator, defaults }`. Không chọn ngành ⇒ mọi kiểu cũ ở trên chạy như trước
- * (voucher_code, bank_vn, currency_vnd vẫn ở đây cho dự án cũ — không gỡ).
+ * Neutral engines for domain packs (qa-system/domains/<id>/datagen.json):
+ * - code: joins `prefixes` + `values` · money: `min`/`max`/`step`, formatted by `locale` + `unit`
+ * - bank_account: bank name / account number from the `banks` list
+ * - enum với `enum: "<tên>"`: takes the value list from the pack `enums`
+ * A pack declares `types.<name> = { generator, defaults }`. No domain selected ⇒ every old type above runs as before
+ * (voucher_code, bank_vn, currency_vnd stay here for old projects — not removed).
  * 
  * Usage:
  *   node qa-system/tools/testdata/generate-dataset.js --slug <task-slug> --schema <schema.json> --count 50 --format md --seed 42
@@ -89,8 +89,8 @@ const VN_MIDDLE_NAMES = ['Văn', 'Thị', 'Đức', 'Hồng', 'Minh', 'Thanh', '
 const VN_LAST_NAMES = ['Anh', 'Bình', 'Cường', 'Dũng', 'Giang', 'Hương', 'Huy', 'Khoa', 'Linh', 'Mai', 'Nam', 'Phong', 'Quân', 'Sơn', 'Tú', 'Uyên', 'Vy'];
 
 // ───────────── SEEDED RANDOM ─────────────
-// Cùng seed + cùng schema ⇒ cùng bộ dữ liệu. Không seed thì mỗi lần chạy một khác,
-// và hai lần chạy của cùng một chặng không so sánh được với nhau.
+// Same seed + same schema ⇒ same dataset. Without a seed every run differs,
+// and two runs of the same stage cannot be compared with each other.
 let rand = Math.random;
 
 function mulberry32(a) {
@@ -310,8 +310,8 @@ function generateField(spec, index) {
       const day = String(Math.floor(rand() * 28) + 1).padStart(2, '0');
       return spec.format === 'DD/MM/YYYY' ? `${day}/${month}/${year}` : `${year}-${month}-${day}`;
 
-    // Engine trung tính — pack ngành trỏ kiểu của mình vào đây (resolveSpec). Thứ tự gọi rand() giữ y
-    // như voucher_code / currency_vnd / bank_vn để cùng seed ra cùng giá trị.
+    // Neutral engines — a domain pack points its types here (resolveSpec). The order of rand() calls stays exactly
+    // as voucher_code / currency_vnd / bank_vn so the same seed gives the same values.
     case 'code':
       return `${randomItem(spec.prefixes || [])}${randomItem(spec.values || [])}`;
 
@@ -365,7 +365,7 @@ function generateField(spec, index) {
   }
 }
 
-// Tên engine mà `generator` của một kiểu trong pack được phép trỏ tới (agent-doctor kiểm).
+// Engine names a pack type `generator` may point to (checked by agent-doctor).
 const ENGINES = [
   'code', 'money', 'bank_account', 'enum', 'boundary', 'negative', 'email', 'date', 'date_vn',
   'name', 'person', 'vietnamese_name', 'phone', 'phone_vn', 'address', 'address_vn', 'location',
@@ -373,22 +373,22 @@ const ENGINES = [
 ];
 
 /**
- * Kiểu của pack ngành ⇒ engine + tham số. Tham số của schema thắng mặc định của pack theo đúng phép `||`
- * mà generator cũ dùng (`spec.min || 10000`), nên pack ecommerce-retail cho ra đúng giá trị cũ.
- * Chưa chọn ngành (datagen rỗng) ⇒ trả nguyên spec, không đổi gì.
+ * A domain pack type ⇒ engine + parameters. Schema parameters beat pack defaults using exactly the `||` semantics
+ * of the old generator (`spec.min || 10000`), so the ecommerce-retail pack yields the old values.
+ * No domain selected (empty datagen) ⇒ returns the spec as is, changes nothing.
  */
 function resolveSpec(spec, datagen) {
   if (!datagen) return spec;
   let out = spec;
   const def = datagen.types && datagen.types[spec.type];
   if (def) {
-    if (!ENGINES.includes(def.generator)) throw new Error(`Kiểu "${spec.type}" của pack ngành trỏ tới engine không có: "${def.generator}"`);
+    if (!ENGINES.includes(def.generator)) throw new Error(`Type "${spec.type}" of the domain pack points to a non-existent engine: "${def.generator}"`);
     out = { ...spec, type: def.generator };
     for (const [k, v] of Object.entries(def.defaults || {})) out[k] = spec[k] || v;
   }
   if (out.type === 'enum' && out.enum && !out.values) {
     const values = datagen.enums && datagen.enums[out.enum];
-    if (!Array.isArray(values)) throw new Error(`enum "${out.enum}" không có trong pack ngành đã chọn — khai \`values\` trong schema hoặc chọn pack có enum này`);
+    if (!Array.isArray(values)) throw new Error(`enum "${out.enum}" is not in the selected domain pack — declare \`values\` in the schema or choose a pack that has this enum`);
     out = { ...out, values };
   }
   return out;
@@ -470,7 +470,7 @@ function main() {
   }
   if (seed === null || Number.isNaN(seed)) {
     seed = Date.now() % 2147483647;
-    console.error(`[Warn] Không có --seed. Dùng seed ${seed} — ghi seed này vào deliverable để chạy lại ra đúng bộ dữ liệu.`);
+    console.error(`[Warn] No --seed. Using seed ${seed} — record this seed in the deliverable to reproduce the same dataset.`);
   }
 
   let schema = null;
@@ -487,8 +487,8 @@ function main() {
     process.exit(1);
   }
 
-  // Pack ngành đã chọn ở knowledge/_sut.json (nếu có) thêm kiểu/enum; không chọn ⇒ datagen rỗng, chạy như cũ.
-  // Không chọn ngành và không có knowledge/_domain.md ⇒ datagen = null, đi đúng đường cũ từng byte.
+  // The domain pack selected in knowledge/_sut.json (if any) adds types/enums; none selected ⇒ empty datagen, runs as before.
+  // No domain and no knowledge/_domain.md ⇒ datagen = null, takes the old path byte for byte.
   const domain = loadDomain();
   const datagen = domain.ids.length || domain.override ? domain.datagen : null;
   const dataset = generateDataset(schema, count, { seed, datagen });

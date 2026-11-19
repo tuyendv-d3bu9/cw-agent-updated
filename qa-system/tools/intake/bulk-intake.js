@@ -13,7 +13,7 @@
  * - Intake Manifest generation in JSON & Markdown.
  *
  * Usage:
- *   npm run intake:bulk [-- <source-dir>] [--slug <target-slug> | --into <task-có-sẵn>] [--dry-run] [--concurrency 4]
+ *   npm run intake:bulk [-- <source-dir>] [--slug <target-slug> | --into <existing-task>] [--dry-run] [--concurrency 4]
  * Examples:
  *   node qa-system/tools/intake/bulk-intake.js INPUT/raw_specs/ --dry-run
  *   node qa-system/tools/intake/bulk-intake.js INPUT/raw_specs/ --slug core-system
@@ -32,7 +32,7 @@ const versioning = require('./versioning');
 // Parse CLI arguments
 const args = process.argv.slice(2);
 const isDryRun = args.includes('--dry-run');
-// Cố ý chấp nhận tạo bản thứ hai cho cùng một tính năng.
+// Deliberately accepts creating a second copy for the same feature.
 const FORCE = args.includes('--force');
 
 function getArgValue(flag, defaultValue) {
@@ -40,11 +40,11 @@ function getArgValue(flag, defaultValue) {
   return idx !== -1 && args[idx + 1] ? args[idx + 1] : defaultValue;
 }
 
-// `--into` = xác nhận gộp vào task đã có; `--slug` = đặt tên task. Cả hai đều là người dùng đã chỉ đích danh.
+// `--into` = confirm merging into an existing task; `--slug` = name the task. Both are explicit user choices.
 const customSlug = getArgValue('--into', null) || getArgValue('--slug', null);
 const concurrency = parseInt(getArgValue('--concurrency', '4'), 10);
 const chunkSize = parseInt(getArgValue('--chunk', '10'), 10);
-// Chỉ bỏ giá trị của các cờ CÓ GIÁ TRỊ — `--dry-run <path>` từng nuốt mất đường dẫn.
+// Only drop the values of flags that TAKE a value — `--dry-run <path>` used to swallow the path.
 const VALUE_FLAGS = new Set(['--slug', '--into', '--concurrency', '--chunk']);
 const positional = args.filter((a, idx) => !a.startsWith('--') && !(idx > 0 && VALUE_FLAGS.has(args[idx - 1])));
 const targetSource = positional[0] || PATHS.INPUT;
@@ -134,11 +134,11 @@ async function main() {
 
   console.log(`\n📊 Found ${allFiles.length} file(s) to process. Starting batch analysis...\n`);
 
-  // Cùng cách gom của intake.js: mặc định MỘT task cho cả lượt, đặt tên theo tài liệu BA.
-  // Tách mỗi file một task thì CR/biên bản rời khỏi spec mà nó sửa.
+  // Same grouping as intake.js: by default ONE task for the whole run, named after the BA document.
+  // Splitting one task per file would separate a CR/minutes from the spec it amends.
   const groupSlug = customSlug || pickSlug(allFiles);
   if (!customSlug) {
-    console.log(`🏷️ Gom tất cả vào một task: [ ${groupSlug} ] — khác tính năng thì chạy lại từng nhóm với --slug <task>.\n`);
+    console.log(`🏷️ Grouping everything into one task: [ ${groupSlug} ] — for different features, re-run each group with --slug <task>.\n`);
   }
   const ask = customSlug ? null : versioning.needsConfirmation(groupSlug);
   if (ask) {
@@ -206,7 +206,7 @@ async function main() {
     for (let i = 0; i < Math.min(uniqueFiles.length, 30); i++) {
       const f = uniqueFiles[i];
       const slug = groupSlug;
-      // Cùng bộ phân ngăn với lần chạy thật: chuyển đổi trong bộ nhớ (không ghi đĩa) rồi chấm điểm nội dung.
+      // Same bin classifier as the real run: convert in memory (no disk writes), then score the content.
       let category;
       const kind = fileKind(f.originalPath);
       if (kind.kind === 'asset') category = '04_design/_assets';
@@ -226,7 +226,7 @@ async function main() {
       console.log(`| ... and ${uniqueFiles.length - 30} more file(s)`);
     }
     console.log(`-----------------------------------------------------------------------------------------`);
-    console.log(`   (\`?\` = xếp ngăn chưa chắc, cần người dùng xác nhận)`);
+    console.log(`   (\`?\` = bin uncertain, needs user confirmation)`);
     console.log(`\n💡 To execute conversion and intake, run WITHOUT --dry-run:`);
     console.log(`   npm run intake:bulk -- "${path.relative(PATHS.ROOT, targetSource)}"${customSlug ? ' --slug ' + customSlug : ''}\n`);
     return;
@@ -247,7 +247,7 @@ async function main() {
     try {
       const kind = fileKind(item.originalPath);
       if (kind.kind === 'asset') {
-        const dest = fileAsset(item.originalPath, slug); // chép, không xoá bản gốc
+        const dest = fileAsset(item.originalPath, slug); // copy, never delete the original
         affectedSlugs.add(slug);
         console.log(`   [${idx + 1}/${total}] 🖼️ Asset: "${item.filename}" -> ${path.relative(PATHS.ROOT, dest)}`);
         return { filename: item.filename, hash: item.hash, slug, category: '04_design/_assets', destPath: path.relative(PATHS.ROOT, dest), sizeKb: item.sizeKb, status: 'SUCCESS' };
@@ -256,7 +256,7 @@ async function main() {
 
       const markdownContent = await convertDocumentToMarkdown(item.originalPath);
 
-      // Cổng chống trùng — giống intake đơn lẻ, chặn trước khi ghi.
+      // Duplicate gate — same as single intake, blocks before writing.
       const dup = FORCE ? null : findDuplicate(markdownContent, slug);
       if (dup) {
         console.error(duplicateNotice(dup, slug, item.filename));
@@ -311,7 +311,7 @@ async function main() {
   const results = await runWorkerQueue(uniqueFiles, processOneDocument, concurrency);
   manifestItems.push(...results);
 
-  // Bản cũ của cùng tài liệu → _superseded/. Chạy tuần tự SAU hàng đợi song song để không tranh chấp file.
+  // Old versions of the same document → _superseded/. Run sequentially AFTER the parallel queue to avoid file contention.
   const versions = versioning.applySupersede(
     manifestItems
       .filter((m) => m.status === 'SUCCESS' && m.destPath && m.destPath.endsWith('.md'))
@@ -398,14 +398,14 @@ async function main() {
   console.log(`   - JSON: ${path.relative(PATHS.ROOT, manifestJsonPath)}`);
   console.log(`   - MD:   ${path.relative(PATHS.ROOT, manifestMdPath)}`);
   if (manifest.failedCount > 0) {
-    console.error(`\n❌ ${manifest.failedCount} file KHÔNG nhận được (bản gốc giữ nguyên chỗ cũ):`);
+    console.error(`\n❌ ${manifest.failedCount} file(s) NOT taken in (originals left in place):`);
     manifestItems.filter((m) => m.status === 'FAILED').forEach((m) => console.error(`   - ${m.filename}: ${m.error}`));
     process.exitCode = 1;
   }
   if (unsure.length) {
-    console.log(`\n⚠️ ${unsure.length} tài liệu xếp ngăn chưa chắc — xem manifest, nhờ người dùng xác nhận.`);
+    console.log(`\n⚠️ ${unsure.length} document(s) binned with uncertainty — see the manifest and ask the user to confirm.`);
   }
-  console.log(`\n${manifest.failedCount ? '⚠️ [BULK INTAKE XONG, CÓ LỖI]' : '🎉 [BULK INTAKE COMPLETED]'} ${manifest.successCount}/${uniqueFiles.length} file đã vào INPUT/.\n`);
+  console.log(`\n${manifest.failedCount ? '⚠️ [BULK INTAKE DONE WITH ERRORS]' : '🎉 [BULK INTAKE COMPLETED]'} ${manifest.successCount}/${uniqueFiles.length} file(s) went into INPUT/.\n`);
 }
 
 if (require.main === module) {

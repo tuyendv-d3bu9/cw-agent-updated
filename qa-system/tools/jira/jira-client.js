@@ -298,7 +298,7 @@ async function pushTestCases(slug, cfg) {
       console.log(`   ✅ ${res.data.key}`);
       results.push({ ...tc, key: res.data.key, url: `${cfg.host}/browse/${res.data.key}`, status: 'Tạo mới' });
     } else {
-      console.error(`   ❌ Lỗi ${tc.id}: ${describeError(res)}`);
+      console.error(`   ❌ Error ${tc.id}: ${describeError(res)}`);
       results.push({ ...tc, key: 'ERROR', url: '', status: `Lỗi ${res.statusCode}` });
     }
 
@@ -306,7 +306,7 @@ async function pushTestCases(slug, cfg) {
   }
 
   if (DRY_RUN) {
-    console.log('\n[dry-run] bảng ánh xạ KHÔNG được ghi — chạy lại không kèm --dry-run để ghi thật.');
+    console.log('\n[dry-run] mapping table NOT written — re-run without --dry-run to write it.');
     return;
   }
   writeMapping(slug, projectKey, cfg.host, results);
@@ -341,13 +341,13 @@ function writeMapping(slug, projectKey, host, results) {
  * Columns: # | TC ID | Title | Status | Actual Result | Evidence | Defect ID
  */
 /**
- * Đọc bảng kết quả trong run_result.md THEO TÊN CỘT, không theo vị trí cột.
+ * Read the result table in run_result.md BY COLUMN NAME, not by column position.
  *
- * Bản cũ đếm cột cứng (cells[1] là TC ID, cells[3] là trạng thái...) theo đúng khuôn
- * `templates/run/run_result.md`. Nhưng file thật mà agent sinh ra có bảy cột và thứ tự
- * khác hẳn — thêm cột "Jira Key" và "Dữ liệu Kiểm Thử". Hậu quả: parser không khớp được
- * dòng nào, `jira:sync` báo "No result rows to sync" rồi thoát êm, không ai biết là hỏng.
- * Dò theo tên cột thì cả hai khuôn đều đọc được, và khuôn mới mai này cũng vậy.
+ * The old version hard-counted columns (cells[1] is TC ID, cells[3] is status...) following the
+ * `templates/run/run_result.md` template. But the real file the agent generates has seven columns in a
+ * very different order — with extra "Jira Key" and "Dữ liệu Kiểm Thử" columns. Result: the parser matched
+ * no row, `jira:sync` said "No result rows to sync" and exited quietly, nobody knew it was broken.
+ * Matching by column name reads both layouts, and any future layout too.
  */
 const COLUMN_ALIASES = {
   tcId: [/^tc[\s_-]*id$/i, /^test\s*case\s*id$/i, /^m[aã]\s*ca/i],
@@ -382,7 +382,7 @@ function parseRunResult(content) {
     const cells = splitRow(line);
     if (cells.length < 3) continue;
 
-    // Dòng kẻ ngăn cách (|---|:--:|) đóng luôn bảng trước đó.
+    // A separator row (|---|:--:|) also closes the previous table.
     if (cells.every((c) => /^:?-{2,}:?$/.test(c))) continue;
 
     const looksLikeHeader = mapHeader(cells);
@@ -396,7 +396,7 @@ function parseRunResult(content) {
     if (!/^[A-Z][A-Z0-9_]*-\d+$/i.test(tcId)) continue;
 
     const cell = (k) => (idx[k] !== undefined ? cells[idx[k]] || '' : '');
-    // Ô bằng chứng có thể là [tên](đường dẫn), hoặc chỉ mỗi tên file.
+    // The evidence cell may be [name](path), or just a file name.
     const ev = cell('evidence');
     const evidence = (ev.match(/\(([^)]+)\)/) || [])[1] || ev.replace(/[[\]]/g, '').trim();
 
@@ -440,12 +440,12 @@ function mergeDeviceRows(rows) {
 }
 
 /**
- * Tìm file bằng chứng thật trên đĩa.
+ * Find the real evidence file on disk.
  *
- * run_result.md hiện đang chứa đường dẫn tuyệt đối kiểu
- * `file:///c:/Users/.../cw-agent-antigravity/OUTPUT/...` — máy khác, thư mục khác, repo
- * khác. Bám theo đó thì không bao giờ tìm ra file. Nên chỉ lấy TÊN FILE rồi dò trong
- * thư mục evidence của chính lượt chạy đó.
+ * run_result.md currently contains absolute paths like
+ * `file:///c:/Users/.../cw-agent-antigravity/OUTPUT/...` — another machine, another folder, another repo
+ * another repo. Following them never finds the file. So take only the FILE NAME and look it up in
+ * the evidence folder of that very run.
  */
 function resolveEvidence(runDir, ref) {
   const all = resolveEvidenceFiles(runDir, ref);
@@ -453,12 +453,12 @@ function resolveEvidence(runDir, ref) {
 }
 
 /**
- * Toàn bộ ảnh bằng chứng của một ca.
+ * All evidence images of one case.
  *
- * Bằng chứng nay ghi THEO TỪNG BƯỚC, mỗi ca một thư mục `evidence/<TC_ID>/` chứa
- * nhiều ảnh đánh số, chứ không còn một tấm duy nhất. Hàm này nhận cả ba dạng tham
- * chiếu: thư mục, một file cụ thể, hoặc đường dẫn tuyệt đối của máy khác — dạng
- * cuối cùng vì run_result.md từng chứa `file:///c:/Users/.../OUTPUT/...`.
+ * Evidence is now recorded PER STEP, one folder `evidence/<TC_ID>/` per case holding
+ * several numbered images instead of a single one. This function accepts all three reference
+ * forms: a folder, a specific file, or an absolute path from another machine — the
+ * last one because run_result.md used to contain `file:///c:/Users/.../OUTPUT/...`.
  */
 function resolveEvidenceFiles(runDir, ref) {
   if (!ref) return [];
@@ -480,7 +480,7 @@ function resolveEvidenceFiles(runDir, ref) {
     }
   }
 
-  // Còn lại: chỉ tin cái TÊN, rồi dò trong thư mục evidence của chính lượt chạy.
+  // Otherwise: trust only the NAME, then look it up in the evidence folder of that very run.
   const name = path.basename(decodeURIComponent(cleaned.replace(/^file:\/+/, '')));
   const evDir = path.join(runDir, 'evidence');
   if (!fs.existsSync(evDir)) return [];
@@ -587,9 +587,9 @@ async function syncRunResults(slug, runId, cfg) {
   const rows = mergeDeviceRows(parseRunResult(fs.readFileSync(resultPath, 'utf-8')));
   const mapping = parseMapping(fs.readFileSync(mappingPath, 'utf-8'));
 
-  // Đối số thứ 5 là MỘT test case cần sync riêng, ví dụ `sync <slug> <run> VCHR-003`.
-  // Cờ đứng ở đúng vị trí đó (`--dry-run`) từng bị hiểu là tên test case, lọc sạch
-  // mọi dòng rồi báo "No result rows to sync" — im lặng và sai.
+  // The 5th argument is ONE test case to sync alone, e.g. `sync <slug> <run> VCHR-003`.
+  // A flag in that position (`--dry-run`) used to be read as a test case name, filtering out
+  // every row and reporting "No result rows to sync" — silent and wrong.
   const argAt5 = process.argv[5];
   const onlyTc = argAt5 && !argAt5.startsWith('--') ? argAt5 : null;
   const targets = onlyTc ? rows.filter((r) => r.tcId === onlyTc) : rows;
@@ -629,13 +629,13 @@ async function syncRunResults(slug, runId, cfg) {
 
     if (row.evidence && evFiles.length === 0) {
       console.warn(
-        `   không tìm thấy bằng chứng "${row.evidence}" trong ` +
+        `   evidence "${row.evidence}" not found in ` +
           `${path.relative(PATHS.ROOT, path.join(runDir, 'evidence'))}`
       );
     }
 
-    // Tên ảnh gắn tiền tố mã ca: trong Jira mọi tệp nằm chung một chỗ, để nguyên
-    // `01_mo_man_thanh_toan.png` thì 32 ca sẽ đụng tên nhau hết.
+    // Image names get the case id as prefix: in Jira all files live in one place, leaving
+    // `01_mo_man_thanh_toan.png` as is would make 32 cases collide on names.
     let daDinh = 0;
     let boQua = 0;
     for (const file of evFiles) {
@@ -648,8 +648,8 @@ async function syncRunResults(slug, runId, cfg) {
         daDinh++;
         continue;
       }
-      // Jira thỉnh thoảng ngốn hơn 60s cho một tệp rồi bỏ cuộc. Một lần timeout
-      // mà làm sập cả lượt 185 ảnh thì quá đắt — thử lại một lần trước khi bỏ qua.
+      // Jira sometimes spends over 60s on one file and then gives up. One timeout
+      // killing a whole 185-image run is too costly — retry once before skipping.
       let r = null;
       for (let lan = 1; lan <= 2; lan++) {
         try {
@@ -657,21 +657,21 @@ async function syncRunResults(slug, runId, cfg) {
           break;
         } catch (err) {
           if (lan === 2) {
-            console.warn(`   đính ${ten} thất bại sau 2 lần — ${err.message}`);
+            console.warn(`   attaching ${ten} failed after 2 tries — ${err.message}`);
             r = null;
             break;
           }
-          console.warn(`   ${ten}: ${err.message} — thử lại`);
+          console.warn(`   ${ten}: ${err.message} — retrying`);
           await sleep(2000);
         }
       }
       if (r && r.statusCode === 200) daDinh++;
-      else if (r) console.warn(`   đính ${ten} thất bại — ${describeError(r)}`);
-      await sleep(120); // giữ dưới ngưỡng rate limit của Jira
+      else if (r) console.warn(`   attaching ${ten} failed — ${describeError(r)}`);
+      await sleep(120); // stay under the Jira rate limit
     }
     if (evFiles.length) {
-      const nhan = DRY_RUN ? '[dry-run] sẽ đính' : 'đã đính';
-      console.log(`   ${nhan} ${daDinh}/${evFiles.length} ảnh${boQua ? ` · ${boQua} ảnh đã có từ trước` : ''}`);
+      const nhan = DRY_RUN ? '[dry-run] would attach' : 'attached';
+      console.log(`   ${nhan} ${daDinh}/${evFiles.length} image(s)${boQua ? ` · ${boQua} image(s) already present` : ''}`);
     }
 
     // Result comment. The marker line is what the next run reads to stay quiet.
@@ -718,7 +718,7 @@ async function syncRunResults(slug, runId, cfg) {
   }
 
   if (DRY_RUN) {
-    console.log(`\n[dry-run] ${path.relative(PATHS.ROOT, mappingPath)} KHÔNG được ghi — bỏ --dry-run để ghi thật.`);
+    console.log(`\n[dry-run] ${path.relative(PATHS.ROOT, mappingPath)} NOT written — drop --dry-run to write it.`);
     return;
   }
 
@@ -859,7 +859,7 @@ async function main() {
   process.exitCode = 1;
 }
 
-// Chỉ chạy khi gọi trực tiếp, để test nạp được các hàm thuần bên dưới.
+// Runs only when invoked directly, so tests can load the pure functions below.
 if (require.main === module) {
   main().catch((err) => {
     console.error(err.message);

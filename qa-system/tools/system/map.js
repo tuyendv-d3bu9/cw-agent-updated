@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * map.js — Tra bản đồ hệ thống (knowledge/_system_map.json) theo từ khoá, thay cho việc đọc cả file.
+ * map.js — Look up the system map (knowledge/_system_map.json) by keyword instead of reading the whole file.
  *
- *   npm run map -- <từ khoá> [từ khoá …]     mọi từ khoá đều phải khớp (khoá hoặc giá trị, bỏ dấu, không phân biệt hoa thường)
- *   npm run map -- --sections                các mục cấp 1 và số dòng của từng mục
+ *   npm run map -- <keyword> [keyword …]     every keyword must match (key or value, accent-folded, case-insensitive)
+ *   npm run map -- --sections                top-level sections and the line count of each
  *
- * Ví dụ: `npm run map -- lint` → lệnh và file của cổng lint. Tốn vài chục token thay vì cả file.
+ * Example: `npm run map -- lint` → command and files of the lint gate. Costs a few dozen tokens instead of the whole file.
  */
 const fs = require('fs');
 const path = require('path');
@@ -31,19 +31,19 @@ function search(map, words) {
 
 function run(argv) {
   const file = path.join(PATHS.KNOWLEDGE, '_system_map.json');
-  if (!fs.existsSync(file)) return { code: 1, out: 'Chưa có knowledge/_system_map.json — chạy `npm run map:sync`.' };
+  if (!fs.existsSync(file)) return { code: 1, out: 'knowledge/_system_map.json not found — run `npm run map:sync`.' };
   const map = JSON.parse(fs.readFileSync(file, 'utf-8'));
 
   if (argv.includes('--sections')) {
-    return { code: 0, out: Object.entries(map).map(([k, v]) => `${k}: ${v !== null && typeof v === 'object' ? Object.keys(v).length + ' mục' : typeof v}`).join('\n') };
+    return { code: 0, out: Object.entries(map).map(([k, v]) => `${k}: ${v !== null && typeof v === 'object' ? Object.keys(v).length + ' entries' : typeof v}`).join('\n') };
   }
   const words = argv.filter((a) => !a.startsWith('--')).map(fold).filter(Boolean);
-  if (words.length === 0) return { code: 2, out: 'Cách dùng: npm run map -- <từ khoá> [từ khoá …]   (hoặc --sections)' };
+  if (words.length === 0) return { code: 2, out: 'Usage: npm run map -- <keyword> [keyword …]   (or --sections)' };
 
   const hits = search(map, words);
-  if (hits.length === 0) return { code: 1, out: `Không thấy mục nào khớp "${words.join(' ')}". Thử từ khoá ngắn hơn, hoặc --sections.` };
+  if (hits.length === 0) return { code: 1, out: `No entry matches "${words.join(' ')}". Try a shorter keyword, or --sections.` };
   const shown = hits.slice(0, 12);
-  const more = hits.length > shown.length ? `\n… còn ${hits.length - shown.length} mục khớp nữa — thêm từ khoá để thu hẹp.` : '';
+  const more = hits.length > shown.length ? `\n… ${hits.length - shown.length} more matching entries — add a keyword to narrow down.` : '';
   return { code: 0, out: shown.map((h) => `${h.key} → ${h.value}`).join('\n') + more };
 }
 

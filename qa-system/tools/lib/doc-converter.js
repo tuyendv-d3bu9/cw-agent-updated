@@ -1,17 +1,17 @@
 /**
- * doc-converter.js — Đổi tài liệu nguồn sang Markdown sạch, KHÔNG làm mất thông tin.
+ * doc-converter.js — Convert source documents to clean Markdown WITHOUT losing information.
  *
- *   fileKind(path)                    'convert' | 'asset' | 'reject' | 'unsupported' (+ lý do)
- *   convertDocumentToMarkdown(path)   Markdown = metadata nguồn + nội dung + Annotations
- *   htmlToMarkdown(html)              HTML → Markdown, giữ bảng (gộp ô được lặp/đánh dấu)
- *   stripMetadata(md)                 Bỏ khối metadata (để băm/so trùng không phụ thuộc tên file)
- *   parseSourceMetadata(md)           Đọc lại khối metadata
+ *   fileKind(path)                    'convert' | 'asset' | 'reject' | 'unsupported' (+ reason)
+ *   convertDocumentToMarkdown(path)   Markdown = source metadata + content + Annotations
+ *   htmlToMarkdown(html)              HTML → Markdown, keeping tables (merged cells repeated/marked)
+ *   stripMetadata(md)                 Strip the metadata block (so hashing/dedup does not depend on the file name)
+ *   parseSourceMetadata(md)           Read the metadata block back
  *
- * Nguyên tắc (QA_STANDARD §10.2):
- *   - Comment, tracked changes, header/footer, ghi chú ô Excel, sheet ẩn... KHÔNG được trộn vào
- *     nội dung như sự thật. Chúng nằm ở mục cuối `## Annotations / Pending changes`.
- *   - Ảnh không bao giờ thành base64; thay bằng `[IMAGE: <alt hoặc tên file>]`.
- *   - Định dạng không đọc được → ném lỗi rõ ràng. Không đọc mò nhị phân ra "văn bản".
+ * Principles (QA_STANDARD §10.2):
+ *   - Comments, tracked changes, header/footer, Excel cell notes, hidden sheets... must NOT be mixed into
+ *     the content as truth. They go in the last section `## Annotations / Pending changes`.
+ *   - Images never become base64; replaced by `[IMAGE: <alt or file name>]`.
+ *   - Unreadable format → throw a clear error. Never read binary as "text".
  */
 
 const fs = require('fs');
@@ -25,25 +25,25 @@ const pdfParse = require('pdf-parse');
 const yaml = require('js-yaml');
 const JSZip = require('jszip');
 
-// ───────────────────────── Loại file ─────────────────────────
+// ───────────────────────── File kinds ─────────────────────────
 
-/** Đuôi được chuyển thành chữ. */
+/** Extensions converted to text. */
 const SUPPORTED_EXTENSIONS = [
   '.docx', '.pdf', '.xlsx', '.xls', '.csv', '.md', '.txt', '.pptx', '.html', '.htm',
-  // Tài liệu kỹ thuật dạng chữ (03_dev)
+  // Technical documents in text form (03_dev)
   '.json', '.yaml', '.yml', '.sql', '.log',
 ];
 
-/** Ảnh / file thiết kế: giữ nguyên, chuyển vào 04_design/_assets/. */
+/** Images / design files: kept as is, moved to 04_design/_assets/. */
 const ASSET_EXTENSIONS = [
   '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.tif', '.tiff',
   '.fig', '.sketch', '.xd',
 ];
 
-/** Định dạng cũ: từ chối kèm hướng dẫn, không đoán. */
+/** Legacy formats: rejected with a hint, never guessed. */
 const REJECTED_EXTENSIONS = {
-  '.ppt': 'PowerPoint cũ (.ppt) không đọc được. Mở bằng PowerPoint/Keynote, "Save As" .pptx rồi thả lại.',
-  '.doc': 'Word cũ (.doc) không đọc được an toàn. Mở bằng Word, "Save As" .docx rồi thả lại.',
+  '.ppt': 'Legacy PowerPoint (.ppt) cannot be read. Open it in PowerPoint/Keynote, "Save As" .pptx and drop it again.',
+  '.doc': 'Legacy Word (.doc) cannot be read safely. Open it in Word, "Save As" .docx and drop it again.',
 };
 
 class UnsupportedDocumentError extends Error {
@@ -61,17 +61,17 @@ function fileKind(filePath) {
   return {
     kind: 'unsupported',
     ext,
-    reason: `Định dạng "${ext || '(không đuôi)'}" không được hỗ trợ. Hỗ trợ: ${SUPPORTED_EXTENSIONS.join(' ')}; ảnh/thiết kế: ${ASSET_EXTENSIONS.join(' ')}.`,
+    reason: `Format "${ext || '(no extension)'}" is not supported. Supported: ${SUPPORTED_EXTENSIONS.join(' ')}; images/design: ${ASSET_EXTENSIONS.join(' ')}.`,
   };
 }
 
-// ───────────────────────── Tiện ích chung ─────────────────────────
+// ───────────────────────── Shared helpers ─────────────────────────
 
 function sha256File(filePath) {
   return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
 
-/** Metadata file (cho bulk-intake: chống trùng theo nội dung). Không dùng mtime để băm. */
+/** File metadata (for bulk-intake: dedup by content). mtime is not used for hashing. */
 function getFileMetadata(filePath) {
   const stat = fs.statSync(filePath);
   const full = sha256File(filePath);
@@ -115,7 +115,7 @@ function renderMdTable(rows) {
   return out.join('\n');
 }
 
-/** Ảnh nhúng base64 trong Markdown/HTML → placeholder. */
+/** Base64 images embedded in Markdown/HTML → placeholder. */
 function replaceDataUris(text) {
   return String(text)
     .replace(/!\[([^\]]*)\]\(data:[^)]*\)/gi, (m, alt) => `[IMAGE: ${alt.trim() || 'ảnh nhúng'}]`)
@@ -139,7 +139,7 @@ function imgPlaceholder(tag) {
   return `[IMAGE: ${(alt && alt.trim()) || name || 'không có mô tả'}]`;
 }
 
-/** Nội dung inline (dùng trong ô bảng và đoạn văn). */
+/** Inline content (used in table cells and paragraphs). */
 function inlineToText(html) {
   return decodeEntities(
     String(html)
@@ -149,9 +149,9 @@ function inlineToText(html) {
       .replace(/<li\b[^>]*>/gi, '• ')
       .replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, '**$2**')
       .replace(/<(em|i)\b[^>]*>([\s\S]*?)<\/\1>/gi, '*$2*')
-      // Chữ gạch ngang = giá trị đã bị gạch/thay thế. Hiển thị {--…--} để KHÔNG bị đọc như giá trị đang hiệu lực.
+      // Strikethrough text = a value that was struck out/replaced. Shown as {--…--} so it is NOT read as a value in force.
       .replace(/<(s|del|strike)\b[^>]*>([\s\S]*?)<\/\1>/gi, '{--$2--}')
-      // Chỉ số trên/dưới đổi nghĩa con số: 10^6 không được thành "106".
+      // Super/subscripts change the meaning of numbers: 10^6 must not become "106".
       .replace(/<sup\b[^>]*>([\s\S]*?)<\/sup>/gi, '^($1)')
       .replace(/<sub\b[^>]*>([\s\S]*?)<\/sub>/gi, '_($1)')
       .replace(/<[^>]+>/g, '')
@@ -163,9 +163,9 @@ function inlineToText(html) {
 }
 
 /**
- * Dựng lưới thật của một bảng HTML, tính rowspan/colspan.
- * Gộp dọc (rowspan): LẶP giá trị ở các dòng dưới — mỗi dòng tự đủ nghĩa (field → ràng buộc → lỗi).
- * Gộp ngang (colspan): giá trị ở ô đầu, các ô còn lại ghi `(gộp ←)`.
+ * Build the real grid of an HTML table, honouring rowspan/colspan.
+ * Vertical merge (rowspan): REPEAT the value in the rows below — each row is self-contained (field → constraint → error).
+ * Horizontal merge (colspan): value in the first cell, the others are marked `(gộp ←)`.
  */
 function tableHtmlToRows(tableHtml) {
   const grid = [];
@@ -201,11 +201,11 @@ function tableHtmlToRows(tableHtml) {
     .map((row) => Array.from({ length: row.length }, (_, i) => (row[i] === undefined ? '' : row[i])));
 }
 
-/** Thay mọi <table> (kể cả lồng nhau) bằng bảng Markdown; bảng lồng → chữ phẳng trong ô cha. */
+/** Replace every <table> (including nested) with a Markdown table; nested table → flat text in the parent cell. */
 function convertTables(html, tokens) {
   let s = String(html);
   for (let guard = 0; guard < 10000; guard++) {
-    const re = /<table\b[^>]*>((?:(?!<table\b)[\s\S])*?)<\/table>/i; // bảng trong cùng
+    const re = /<table\b[^>]*>((?:(?!<table\b)[\s\S])*?)<\/table>/i; // innermost table
     const m = re.exec(s);
     if (!m) break;
     const before = s.slice(0, m.index);
@@ -293,11 +293,11 @@ function htmlToMarkdown(html) {
   return out.trim();
 }
 
-/** Hậu xử lý Markdown của nguồn chữ (.md/.txt/...). */
+/** Post-process Markdown from text sources (.md/.txt/...). */
 function cleanMarkdown(raw) {
   if (!raw) return '';
   let md = replaceDataUris(raw);
-  // Bảng HTML nhúng trong Markdown → bảng Markdown (giữ gộp ô)
+  // HTML table embedded in Markdown → Markdown table (keeping merged cells)
   if (/<table\b/i.test(md)) {
     const tokens = [];
     md = convertTables(md, tokens).replace(/\u0000T(\d+)\u0000/g, (_, i) => `\n\n${tokens[+i]}\n\n`);
@@ -334,7 +334,7 @@ function parseSourceMetadata(md) {
   return out;
 }
 
-/** Bỏ khối metadata (SOURCE_METADATA và TRACEABILITY_METADATA cũ). */
+/** Strip the metadata block (SOURCE_METADATA and the old TRACEABILITY_METADATA). */
 function stripMetadata(md) {
   return String(md)
     .replace(/<!-- (?:SOURCE_METADATA|TRACEABILITY_METADATA)[\s\S]*?-->\s*/g, '')
@@ -371,7 +371,7 @@ function assemble({ meta, body, annotations = [], warnings = [], alwaysAnnotatio
     .join('\n\n') + '\n';
 }
 
-/** Đoán version từ chữ (header, tiêu đề, đầu tài liệu). */
+/** Guess the version from text (header, title, top of the document). */
 function guessVersion(text) {
   const t = String(text);
   const m = t.match(/(?:phiên bản|phien ban|version|ver\.?)\s*[:#]?\s*v?(\d+(?:\.\d+)*)/i)
@@ -382,7 +382,7 @@ function guessVersion(text) {
 
 const FROM_BODY = '(trích từ thân tài liệu)';
 
-/** "28/10/2026", "2026-10-28", "28-10-2026", "28.10.2026" → "2026-10-28"; không nhận ra → null. */
+/** "28/10/2026", "2026-10-28", "28-10-2026", "28.10.2026" → "2026-10-28"; unrecognised → null. */
 function normalizeDate(s) {
   const t = String(s).trim();
   let m = t.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
@@ -393,8 +393,8 @@ function normalizeDate(s) {
 }
 
 /**
- * Metadata khai NGAY TRONG THÂN tài liệu (dòng "Version: 1.2", ô bảng "| Ngày | 28/10/2026 |"…).
- * Chỉ đọc phần đầu tài liệu; mỗi giá trị gắn nhãn `(trích từ thân tài liệu)`.
+ * Metadata declared INSIDE THE BODY of the document (a "Version: 1.2" line, a table cell "| Ngày | 28/10/2026 |"…).
+ * Reads only the top of the document; each value is labelled `(trích từ thân tài liệu)`.
  */
 function bodyMetadata(body) {
   const text = String(body).replace(/<!--[\s\S]*?-->/g, '');
@@ -403,7 +403,7 @@ function bodyMetadata(body) {
   const field = (labels) => new RegExp(`(?:^|\\|\\s*|\\n|·\\s*)\\s*(?:${labels})${SEP}([^\\n|·]+)`, 'imu');
   const out = {};
   const h1 = text.match(/^#\s+(.+?)\s*$/m);
-  // H1 do chính converter tự đặt (Data Sheet:, Document:, Presentation:) không phải tiêu đề của tác giả.
+  // An H1 set by the converter itself (Data Sheet:, Document:, Presentation:) is not the author title.
   if (h1 && !/^(Data Sheet|Document|Presentation|Data Configuration):/.test(h1[1])) out.title = `${h1[1].replace(/[*_`]/g, '').trim()} ${FROM_BODY}`;
   const v = head.match(field('phiên bản|phien ban|version|ver\\.?'));
   if (v) {
@@ -442,7 +442,7 @@ async function readCoreProps(zip) {
 
 // ───────────────────────── DOCX ─────────────────────────
 
-/** Chữ của một đoạn XML Word. mode: 'before' (bỏ ins, giữ del), 'after' (bỏ del), 'all'. */
+/** Text of a Word XML fragment. mode: 'before' (bỏ ins, giữ del), 'after' (bỏ del), 'all'. */
 function wordText(xml, mode = 'after') {
   let s = String(xml).replace(/<w:(ins|del|moveFrom|moveTo)\b[^>]*\/>/g, '');
   if (mode === 'before') s = s.replace(/<w:(ins|moveTo)\b[^>]*>[\s\S]*?<\/w:\1>/g, '');
@@ -481,8 +481,8 @@ function docxTrackedChanges(docXml) {
 }
 
 /**
- * Đánh dấu tracked change ngay trong thân bài bằng CriticMarkup: `{--cũ--}{++mới++}`.
- * Mammoth mặc định chấp nhận âm thầm phần chèn và bỏ phần xoá — mất dấu "chưa duyệt".
+ * Mark tracked changes inline in the body with CriticMarkup: `{--old--}{++new++}`.
+ * Mammoth by default silently accepts insertions and drops deletions — losing the "not yet approved" trace.
  */
 function markTrackedChanges(docXml) {
   const run = (t) => `<w:r><w:t xml:space="preserve">${t.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</w:t></w:r>`;
@@ -506,7 +506,7 @@ async function docxComments(zip, docXml) {
       if (!anchors[m[1]]) anchors[m[1]] = wordText(p, 'after');
     }
   }
-  // Đoạn văn bị comment trỏ đúng vào (giữa RangeStart và RangeEnd)
+  // The paragraph a comment points at (between RangeStart and RangeEnd)
   const exact = {};
   for (const m of String(docXml).matchAll(/<w:commentRangeStart\b[^>]*w:id="(\d+)"[^>]*\/>([\s\S]*?)<w:commentRangeEnd\b[^>]*w:id="\1"/g)) {
     exact[m[1]] = wordText(m[2], 'after');
@@ -542,7 +542,7 @@ async function docxHeadersFooters(zip) {
   return items;
 }
 
-/** Danh sách ảnh theo thứ tự xuất hiện: alt (descr/title) và tên file media. */
+/** Images in order of appearance: alt (descr/title) and media file name. */
 async function docxImageInfo(zip, docXml) {
   const relsF = zip.file('word/_rels/document.xml.rels');
   const rels = {};
@@ -565,7 +565,7 @@ async function docxImageInfo(zip, docXml) {
   return infos;
 }
 
-/** Chữ ẩn trong docx (w:vanish): mammoth vẫn xuất như chữ thường, nên phải báo ra để người dùng xác nhận. */
+/** Hidden text in docx (w:vanish): mammoth still emits it as normal text, so it must be reported for the user to confirm. */
 function docxHiddenText(docXml) {
   const out = [];
   for (const m of String(docXml).matchAll(/<w:r\b[^>]*>([\s\S]*?)<\/w:r>/g)) {
@@ -582,7 +582,7 @@ async function docxParts(filePath) {
   const buffer = fs.readFileSync(filePath);
   const zip = await JSZip.loadAsync(buffer);
   const docFile = zip.file('word/document.xml');
-  if (!docFile) throw new Error('File .docx hỏng: không có word/document.xml');
+  if (!docFile) throw new Error('Corrupt .docx file: no word/document.xml');
   const docXml = await docFile.async('string');
 
   const tracked = docxTrackedChanges(docXml);
@@ -640,12 +640,12 @@ function sheetToParts(sheet, name, { hidden = 0, raw = false } = {}) {
   const merges = Array.isArray(sheet['!merges']) ? sheet['!merges'] : [];
 
   const rows0 = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw, rawNumbers: false, dateNF: 'yyyy-mm-dd', blankrows: true });
-  // Dòng header thật = dòng đầu tiên có ≥ 2 ô có chữ (bỏ dòng tiêu đề gộp ô ở trên).
+  // The real header row = the first row with ≥ 2 non-empty cells (skipping a merged title row above).
   let headerIdx = rows0.findIndex((r) => nonEmpty(r) >= 2);
   if (headerIdx === -1) headerIdx = rows0.findIndex((r) => nonEmpty(r) >= 1);
   if (headerIdx === -1) return { md: '', annotations: [] };
 
-  // Lặp giá trị ô gộp — chỉ trong vùng bảng (bỏ gộp của dòng tiêu đề).
+  // Repeat merged-cell values — only within the table area (ignoring merges of the title row).
   const range = XLSX.utils.decode_range(ref);
   for (const mg of merges) {
     if (mg.s.r - range.s.r < headerIdx) continue;
@@ -729,8 +729,8 @@ function excelParts(filePath) {
 }
 
 /**
- * Đọc file văn bản: UTF-8 (có/không BOM) và UTF-16 có BOM. Byte không hợp lệ ⇒ NÉM LỖI (không đọc bừa):
- * file UTF-16 không BOM hay Windows-1258 từng bị giải mã thành chữ rác, vẫn được nhận vào INPUT/, bản gốc bị xoá.
+ * Read a text file: UTF-8 (with/without BOM) and UTF-16 with BOM. Invalid bytes ⇒ THROW (never read blindly):
+ * UTF-16 without BOM or Windows-1258 files used to be decoded into garbage, still taken into INPUT/, and the original deleted.
  */
 function readText(filePath) {
   const buf = fs.readFileSync(filePath);
@@ -740,11 +740,11 @@ function readText(filePath) {
     const text = new TextDecoder('utf-8', { fatal: true }).decode(buf);
     return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
   } catch {
-    throw new Error(`${path.basename(filePath)} không đọc được bằng UTF-8 (có thể UTF-16 không BOM hoặc Windows-1258) — lưu lại dạng UTF-8 rồi nhận lại`);
+    throw new Error(`${path.basename(filePath)} cannot be read as UTF-8 (possibly UTF-16 without BOM or Windows-1258) — re-save it as UTF-8 and take it in again`);
   }
 }
 
-/** CSV luôn đọc như UTF-8 (bỏ BOM). Giữ giá trị nguyên văn (không đổi "001" → 1). */
+/** CSV is always read as UTF-8 (BOM stripped). Values kept verbatim (never "001" → 1). */
 function csvParts(filePath) {
   const text = readText(filePath);
   const workbook = XLSX.read(text, { type: 'string', raw: true });
@@ -772,7 +772,7 @@ async function pdfParts(filePath) {
       try {
         const i = await parser.getInfo();
         info = (i && i.info) || {};
-      } catch { /* metadata không bắt buộc */ }
+      } catch { /* metadata is optional */ }
     } finally {
       if (parser.destroy) await parser.destroy();
     }
@@ -926,7 +926,7 @@ async function pptxParts(filePath) {
   };
 }
 
-// ───────────────────────── DOC (macOS textutil, chỉ khi ra UTF-8 sạch) ─────────────────────────
+// ───────────────────────── DOC (macOS textutil, only when it yields clean UTF-8) ─────────────────────────
 
 function docParts(filePath) {
   if (process.platform !== 'darwin') throw new UnsupportedDocumentError(REJECTED_EXTENSIONS['.doc']);
@@ -955,13 +955,13 @@ function docParts(filePath) {
   }
 }
 
-// ───────────────────────── Điểm vào ─────────────────────────
+// ───────────────────────── Entry point ─────────────────────────
 
 async function convertParts(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   if (ext === '.doc') return docParts(filePath);
   const kind = fileKind(filePath);
-  if (kind.kind !== 'convert') throw new UnsupportedDocumentError(kind.reason || `Không chuyển được file ${kind.kind}: ${path.basename(filePath)}`);
+  if (kind.kind !== 'convert') throw new UnsupportedDocumentError(kind.reason || `Cannot convert ${kind.kind} file: ${path.basename(filePath)}`);
 
   switch (ext) {
     case '.docx': return docxParts(filePath);
@@ -995,15 +995,15 @@ async function convertParts(filePath) {
 }
 
 /**
- * Tài liệu → Markdown. Kết quả luôn mở đầu bằng khối SOURCE_METADATA (tên file, sha256 bản gốc,
- * và title/version/ngày nếu file có), để §10.2 xác định được bản nào mới hơn.
- * `options.withStamp` giữ cho tương thích — metadata giờ luôn có.
+ * Document → Markdown. The result always starts with a SOURCE_METADATA block (file name, sha256 of the original,
+ * and title/version/date if the file has them), so §10.2 can tell which version is newer.
+ * `options.withStamp` is kept for compatibility — metadata is now always present.
  */
 async function convertDocumentToMarkdown(filePath, options = {}) { // eslint-disable-line no-unused-vars
   if (!fs.existsSync(filePath)) throw new Error(`File does not exist: ${filePath}`);
   const parts = await convertParts(filePath);
   const meta = { ...parts.meta };
-  // Trường nào file không khai (core.xml, thuộc tính PDF/Excel…) thì lấy từ thân tài liệu nếu có.
+  // Any field the file does not declare (core.xml, PDF/Excel properties…) is taken from the document body if present.
   const fromBody = bodyMetadata(parts.body);
   for (const k of ['title', 'version', 'date', 'status']) {
     if ((meta[k] === undefined || meta[k] === null || String(meta[k]).trim() === '') && fromBody[k]) meta[k] = fromBody[k];

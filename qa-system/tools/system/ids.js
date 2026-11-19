@@ -6,9 +6,9 @@
  * already present in knowledge/features/<slug>.md and OUTPUT/<slug>/**. Skills
  * call this before allocating BR/FD/AF/OQ/MR/RK/TI (and VP-9x, test cases).
  *
- * `--assign <file>`: agent chỉ ghi MÃ TẠM (`BR-?`, `MR-?`…), tool đánh số thật theo thứ tự xuất hiện trong file,
- * tiếp nối số đang dùng. Cùng một nhãn (`BR-?a`) ⇒ cùng một số, nên tham chiếu chéo trong file vẫn đúng.
- * Nhờ vậy số và thứ tự mã không còn phụ thuộc việc model tự đếm — hai lần chạy cùng thứ tự dòng ra cùng mã.
+ * `--assign <file>`: the agent writes only TEMPORARY ids (`BR-?`, `MR-?`…); the tool assigns real numbers in order of appearance in the file,
+ * continuing from the numbers in use. The same label (`BR-?a`) ⇒ the same number, so cross-references inside the file stay correct.
+ * So id numbers and order no longer depend on the model counting by itself — two runs with the same line order yield the same ids.
  *
  * Usage:
  *   node qa-system/tools/system/ids.js <slug> [--json]
@@ -23,16 +23,16 @@ const { PATHS } = require('../lib/paths');
 const TEMP_ID = /(?<![A-Za-z0-9-])(BR|FD|AF|OQ|MR|RK|TI)-\?([A-Za-z0-9]{0,8})(?![A-Za-z0-9])/g;
 
 /**
- * Thay mã tạm bằng mã thật. Trả về { text, map, changed }.
- * `file` là đường dẫn trong repo; ghi đè tại chỗ trừ khi dryRun.
+ * Replace temporary ids with real ones. Returns { text, map, changed }.
+ * `file` is a path inside the repo; overwritten in place unless dryRun.
  */
 function assign(slug, file, { dryRun = false } = {}) {
   const full = path.resolve(PATHS.ROOT, file);
-  if (full !== PATHS.ROOT && !full.startsWith(PATHS.ROOT + path.sep)) throw new Error(`${file} nằm ngoài repo`);
-  if (!fs.existsSync(full)) throw new Error(`không có file ${file}`);
+  if (full !== PATHS.ROOT && !full.startsWith(PATHS.ROOT + path.sep)) throw new Error(`${file} is outside the repo`);
+  if (!fs.existsSync(full)) throw new Error(`file not found: ${file}`);
   const text = fs.readFileSync(full, 'utf-8');
 
-  const max = nextIds(slug).max; // đã tính cả mã thật có sẵn trong chính file này
+  const max = nextIds(slug).max; // already counts real ids present in this very file
   const counters = { ...max };
   const labelled = new Map(); // "BR|a" -> "BR-05"
   const map = [];
@@ -63,11 +63,11 @@ function main() {
     process.exit(1);
   }
   if (ai !== -1) {
-    if (!file) { console.error('--assign cần đường dẫn file'); process.exit(1); }
+    if (!file) { console.error('--assign needs a file path'); process.exit(1); }
     try {
       const r = assign(slug, file, { dryRun: args.includes('--dry-run') });
-      if (r.map.length === 0) { console.log(`Không có mã tạm (BR-?, MR-? …) trong ${r.file}.`); return; }
-      console.log(`${args.includes('--dry-run') ? '[dry-run] ' : ''}${r.file}: đánh ${r.map.length} mã`);
+      if (r.map.length === 0) { console.log(`No temporary ids (BR-?, MR-? …) in ${r.file}.`); return; }
+      console.log(`${args.includes('--dry-run') ? '[dry-run] ' : ''}${r.file}: assigned ${r.map.length} ids`);
       r.map.forEach(([a, b]) => console.log(`   ${a} → ${b}`));
     } catch (e) { console.error(e.message); process.exit(1); }
     return;

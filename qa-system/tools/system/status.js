@@ -46,22 +46,22 @@ function taskStatus(slug) {
   let nextAction;
   let stopReason = '';
   if (gate && gate.blocked && gate.phase !== 'pre-stage-2') {
-    status = 'BLOCKED — chờ BA/PO trả lời (ASK)';
+    status = 'BLOCKED — waiting for BA/PO answers (ASK)';
     stopReason = gate.reasons.join(' · ');
-    nextAction = `BA/PO trả lời các câu hỏi ở knowledge/features/${slug}.md §7 (hoặc quyết định ở §8), rồi chạy lại cổng`;
+    nextAction = `BA/PO answer the questions in knowledge/features/${slug}.md §7 (or decide in §8), then re-run the gate`;
   } else if (plan === null && files.present === 0) {
-    status = 'CHƯA BẮT ĐẦU';
-    nextAction = 'Tạo 00_plan.md';
+    status = 'NOT STARTED';
+    nextAction = 'Create 00_plan.md';
   } else if (total > 0 && done >= total) {
     status = 'COMPLETED';
-    nextAction = 'Các chặng đã xong, sẵn sàng nghiệm thu.';
+    nextAction = 'All stages done, ready for acceptance.';
   } else {
     status = 'IN-PROGRESS';
     const notPass = files.stages.find((x) => x.exists && x.verdict !== 'PASS');
     const missing = files.stages.find((x) => !x.exists);
     nextAction = notPass
-      ? `Chặng ${notPass.stage} có verdict ${notPass.verdict || 'không đọc được'} — xử lý rồi chạy lại`
-      : missing ? `Chạy Chặng ${missing.stage}` : `Kích hoạt chặng ${done + 1}`;
+      ? `Stage ${notPass.stage} has verdict ${notPass.verdict || 'unreadable'} — fix and re-run`
+      : missing ? `Run Stage ${missing.stage}` : `Activate stage ${done + 1}`;
   }
 
   let batches = 0;

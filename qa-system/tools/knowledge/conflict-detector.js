@@ -1,30 +1,30 @@
 #!/usr/bin/env node
 /**
- * conflict-detector.js — Dò mâu thuẫn GIỮA các file tri thức tính năng (knowledge/features/*.md).
+ * conflict-detector.js — Detect contradictions BETWEEN feature knowledge files (knowledge/features/*.md).
  *
  *   parseFeatureFile(path)          { slug, title, content, text, rules, constants }
  *   phraseStance(text, topic)       'allow' | 'deny' | 'both' | null
- *   detectConflicts(features, o)    Danh sách xung đột (chủ đề + hằng số §9)
- *   loadTopics(file, base)          Chủ đề gốc (mặc định, hoặc của pack ngành) + knowledge/_conflict_topics.json nếu có
- *   baseTopics(domain)              Chủ đề gốc: pack ngành đã chọn, hoặc DEFAULT_TOPICS khi chưa chọn ngành
+ *   detectConflicts(features, o)    List of conflicts (topics + §9 constants)
+ *   loadTopics(file, base)          Base topics (default, or from the domain pack) + knowledge/_conflict_topics.json if present
+ *   baseTopics(domain)              Base topics: the selected domain pack, or DEFAULT_TOPICS when no domain is selected
  *
- * Đây là HEURISTIC từ khoá — không chứng minh được hai tính năng "nhất quán". Không phát hiện
- * gì chỉ có nghĩa là heuristic không bắt được, KHÔNG phải PASS.
+ * This is a keyword HEURISTIC — it cannot prove two features are "consistent". Finding
+ * nothing only means the heuristic caught nothing, NOT PASS.
  *
- * Hai loại phát hiện:
- *   1. Chủ đề chính sách (cộng dồn, guest, hoàn huỷ, phí ship… — cấu hình được): cụm PHỦ ĐỊNH được
- *      khớp trước và xoá khỏi văn bản, rồi mới tìm cụm CHO PHÉP. "không cộng dồn" không còn bị
- *      đếm luôn là "cộng dồn".
- *   2. Hằng số §9 cùng tên ở hai tính năng mà con số khác nhau (3 lần vs 5 lần) → xung đột.
+ * Two kinds of findings:
+ *   1. Policy topics (stacking, guest, cancel/refund, shipping fee… — configurable): NEGATIVE phrases are
+ *      matched first and removed from the text, then ALLOW phrases are searched. "không cộng dồn" is no longer
+ *      counted as "cộng dồn".
+ *   2. §9 constants with the same name in two features but different numbers (3 times vs 5 times) → conflict.
  *
  * Usage:
- *   conflict-detector.js [task-slug]   Có slug: chỉ so tính năng đó với các tính năng khác và ghi
- *                                      OUTPUT/<slug>/01_conflict_warning.md (nếu OUTPUT/<slug>/ có).
- * Exit: 0 = heuristic không thấy xung đột · 1 = có xung đột (hoặc lỗi).
+ *   conflict-detector.js [task-slug]   With a slug: compare only that feature against the others and write
+ *                                      OUTPUT/<slug>/01_conflict_warning.md (if OUTPUT/<slug>/ exists).
+ * Exit: 0 = heuristic saw no conflict · 1 = conflicts found (or error).
  *
- * Tuỳ biến chủ đề cho dự án: tạo knowledge/_conflict_topics.json dạng
+ * Customising topics for a project: create knowledge/_conflict_topics.json in the form
  *   { "replaceDefaults": false, "topics": { "<key>": { "category": "...", "allow": [...], "deny": [...] } } }
- * File này luôn chồng lên chủ đề gốc, dù chủ đề gốc là mặc định hay của pack ngành
+ * This file always overlays the base topics, whether those are the default or from a domain pack
  * (knowledge/_sut.json → "domain", xem qa-system/domains/README.md).
  */
 
@@ -33,8 +33,8 @@ const path = require('path');
 const { PATHS } = require('../lib/paths');
 const { loadDomain } = require('../lib/domain');
 
-// Chủ đề mặc định (thương mại điện tử) — dùng khi dự án CHƯA chọn ngành, để dự án cũ chạy y như trước.
-// Bản dữ liệu của cùng bộ chủ đề nằm ở qa-system/domains/ecommerce-retail/conflict_topics.json; test giữ hai bên bằng nhau.
+// Default topics (e-commerce) — used when the project has NOT selected a domain, so old projects run as before.
+// The data copy of the same topic set lives in qa-system/domains/ecommerce-retail/conflict_topics.json; a test keeps the two equal.
 const DEFAULT_TOPICS = {
   stacking: {
     category: 'Cộng dồn khuyến mãi / quyền lợi',
@@ -58,7 +58,7 @@ const DEFAULT_TOPICS = {
   },
 };
 
-/** Chủ đề gốc: chưa chọn ngành (`conflictTopics` null) ⇒ đúng DEFAULT_TOPICS cũ; có ngành ⇒ chủ đề của pack. */
+/** Base topics: no domain selected (`conflictTopics` null) ⇒ exactly the old DEFAULT_TOPICS; a domain ⇒ the pack topics. */
 function baseTopics(domain) {
   return domain && domain.conflictTopics ? domain.conflictTopics : DEFAULT_TOPICS;
 }
@@ -75,8 +75,8 @@ const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const phraseRe = (p) => new RegExp(`(?<![\\p{L}\\p{N}])${escapeRe(norm(p))}(?![\\p{L}\\p{N}])`, 'giu');
 
 /**
- * Lập trường của một đoạn chữ về một chủ đề. Cụm phủ định khớp trước, được XOÁ khỏi chữ,
- * rồi mới tìm cụm cho phép trong phần còn lại.
+ * The stance of a text on a topic. Negative phrases match first and are REMOVED from the text,
+ * then allow phrases are searched in the rest.
  */
 function phraseStance(text, topic) {
   let t = norm(text);
@@ -96,7 +96,7 @@ function phraseStance(text, topic) {
   return null;
 }
 
-/** Bảng dưới một heading "## <n>." → mảng object theo tên cột. */
+/** Table under a "## <n>." heading → array of objects keyed by column name. */
 function sectionTable(content, sectionNo) {
   const lines = String(content).split('\n');
   const start = lines.findIndex((l) => new RegExp(`^##\\s+${sectionNo}\\b\\.?`).test(l));
@@ -118,7 +118,7 @@ function sectionTable(content, sectionNo) {
   return out;
 }
 
-/** Số trong một giá trị: "500.000 ₫" → 500000, "5 lần, khoá 15 phút" → [5, 15]. */
+/** Numbers in a value: "500.000 ₫" → 500000, "5 lần, khoá 15 phút" → [5, 15]. */
 function numbersIn(value) {
   return (String(value).match(/\d[\d.,]*/g) || [])
     .map((n) => {
@@ -142,7 +142,7 @@ function parseConstants(content) {
     .filter((c) => c.key && !/^<.*>$/.test(c.key) && !/<điền>/.test(c.value));
 }
 
-/** Chữ dùng để dò chủ đề: bỏ blockquote hướng dẫn, comment HTML, dòng còn `<điền>`. */
+/** Text used to detect topics: drops instruction blockquotes, HTML comments, lines still holding `<điền>`. */
 function analysableText(content) {
   return String(content)
     .replace(/<!--[\s\S]*?-->/g, '')
@@ -225,25 +225,25 @@ function main() {
   const featuresDir = PATHS.FEATURES;
 
   if (!fs.existsSync(featuresDir)) {
-    console.error('❌ Không có thư mục knowledge/features/.');
+    console.error('❌ No knowledge/features/ directory.');
     process.exit(1);
   }
   const files = fs.readdirSync(featuresDir).filter((f) => f.endsWith('.md') && f !== 'README.md');
   if (files.length < 2) {
-    console.log(`ℹ️ Chỉ có ${files.length} file tri thức tính năng — chưa có gì để so chéo.`);
+    console.log(`ℹ️ Only ${files.length} feature knowledge file(s) — nothing to cross-compare yet.`);
     return;
   }
 
   const features = files.map((f) => parseFeatureFile(path.join(featuresDir, f)));
   const target = targetSlug && features.some((f) => f.slug === targetSlug) ? targetSlug : null;
-  console.log(`🔍 So chéo ${features.length} tính năng${target ? ` (trọng tâm: ${target})` : ''}:`);
-  features.forEach((f) => console.log(`  - [${f.slug}] ${f.title} · ${f.rules.length} BR · ${f.constants.length} hằng số §9`));
+  console.log(`🔍 Cross-comparing ${features.length} feature(s)${target ? ` (focus: ${target})` : ''}:`);
+  features.forEach((f) => console.log(`  - [${f.slug}] ${f.title} · ${f.rules.length} BR · ${f.constants.length} §9 constants`));
 
   const conflicts = detectConflicts(features, { topics: loadTopics(undefined, baseTopics(loadDomain({ root: PATHS.ROOT }))), target });
   if (!conflicts.length) {
-    console.log('\nKhông phát hiện xung đột bằng heuristic.');
+    console.log('\nNo conflict detected by the heuristic.');
   } else {
-    console.warn(`\n⚠️ ${conflicts.length} điểm có thể mâu thuẫn — cần BA xác nhận:`);
+    console.warn(`\n⚠️ ${conflicts.length} possible contradiction(s) — BA confirmation needed:`);
     conflicts.forEach((c, k) => console.warn(`  [${k + 1}] ${c.type}: ${c.description}`));
   }
 

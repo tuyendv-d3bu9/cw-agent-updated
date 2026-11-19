@@ -1,15 +1,15 @@
 /**
- * versioning.js — Một tính năng, nhiều bản tài liệu.
+ * versioning.js — One feature, many document versions.
  *
- * Tên task theo TÍNH NĂNG (bỏ version/ngày), nên bản v2 rơi vào đúng task của v1. Hai việc phải làm
- * khi điều đó xảy ra, nếu không "gộp theo tính năng" gây hại nhiều hơn lợi:
+ * Tasks are named by FEATURE (version/date dropped), so v2 lands in the same task as v1. Two things must happen
+ * when that happens, otherwise "grouping by feature" does more harm than good:
  *
- *   1. Không gộp im lặng — tài liệu vào một task ĐÃ CÓ tài liệu thì dừng, chờ người dùng xác nhận
- *      (`--into <slug>`). Nhận diện nhầm thì hai tính năng khác nhau bị trộn.
- *   2. Bản cũ không nằm lẫn với bản mới — chuyển sang `<ngăn>/_superseded/`. Chặng 01, digest và
- *      lint không đọc thư mục đó, nên không lấy nhầm giá trị cũ và không tốn context gấp đôi.
+ *   1. No silent merging — a document entering a task that ALREADY has documents stops and waits for user confirmation
+ *      (`--into <slug>`). A misdetection would mix two different features.
+ *   2. Old versions do not sit beside new ones — moved to `<bin>/_superseded/`. Stage 01, digest and
+ *      lint do not read that folder, so old values are not picked up and context is not doubled.
  *
- * Không xác định được bản nào mới hơn ⇒ KHÔNG đoán: giữ cả hai, báo ra (QA_STANDARD §10.2 ⇒ hỏi).
+ * Cannot tell which version is newer ⇒ do NOT guess: keep both and report (QA_STANDARD §10.2 ⇒ ask).
  */
 
 const fs = require('fs');
@@ -20,36 +20,36 @@ const { parseSourceMetadata } = require('../lib/doc-converter');
 const SUPERSEDED_DIR = '_superseded';
 const BINS = ['01_business', '02_ba', '03_dev', '04_design', '05_communication'];
 
-/** Bỏ ngày và version khỏi tên — dùng chung cho tên task và khoá nhận diện "cùng một tài liệu". */
+/** Strip date and version from a name — shared by task names and the "same document" identity key. */
 function stripVersionDate(name) {
   return String(name)
     .normalize('NFC')
-    // ngày: 2026-10-28, 2026_10_28, 28-10-2026, 28.10.2026, 20261028
+    // date: 2026-10-28, 2026_10_28, 28-10-2026, 28.10.2026, 20261028
     .replace(/(?<!\d)\d{4}[-_.]\d{1,2}[-_.]\d{1,2}(?!\d)/g, ' ')
     .replace(/(?<!\d)\d{1,2}[-_.]\d{1,2}[-_.]\d{4}(?!\d)/g, ' ')
     .replace(/(?<!\d)(?:19|20)\d{6}(?!\d)/g, ' ')
     // version: v1, v1.2, ver2, version 3, rev3, r2, phiên bản 2
     .replace(/(?<![\p{L}\p{N}])(?:v|ver|version|rev|revision|r|phiên bản|phien ban)[\s._-]?\d+(?:[._]\d+)*(?![\p{L}\p{N}])/giu, ' ')
-    .replace(/\(\s*\d+\s*\)/g, ' '); // "(1)" của bản sao
+    .replace(/\(\s*\d+\s*\)/g, ' '); // "(1)" of a copy
 }
 
 const deaccent = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'd');
 
-/** Khoá "cùng một tài liệu": tên file bỏ version/ngày, GIỮ loại tài liệu (srs ≠ cr). */
+/** "Same document" key: file name minus version/date, KEEPING the document type (srs ≠ cr). */
 const STATE_TOKENS = new Set(['final', 'draft', 'copy', 'nhap', 'moi', 'new', 'old', 'cu']);
 
 function docKey(stem) {
   return deaccent(stripVersionDate(stem))
     .toLowerCase()
     .split(/[^a-z0-9]+/)
-    .filter((t) => t && !STATE_TOKENS.has(t)) // "final", "draft", "bản nháp" là trạng thái bản, không phải tên tài liệu
+    .filter((t) => t && !STATE_TOKENS.has(t)) // "final", "draft", "bản nháp" are version states, not document names
     .join('-');
 }
 
-/** Version ghi trên tên file (v2, rev3, phiên bản 1.2) — tín hiệu do người đặt tên chủ ý ghi. */
+/** Version written in the file name (v2, rev3, phiên bản 1.2) — a signal the author deliberately wrote. */
 function versionFromName(stem) {
   const m = deaccent(String(stem)).match(/(?<![a-z0-9])(?:v|ver|version|rev|revision|r|phien ban)[\s._-]?(\d+(?:[._-]\d{1,3})*)(?![a-z0-9])/i);
-  // Tên file đã slugify biến "v1.2" thành "v1-2"; nhóm sau tối đa 3 chữ số để không nuốt ngày 20261028.
+  // A slugified file name turns "v1.2" into "v1-2"; the trailing group is at most 3 digits so it does not swallow the date 20261028.
   return m ? m[1].replace(/[_-]/g, '.') : null;
 }
 
@@ -72,13 +72,13 @@ function cmpVersion(a, b) {
   return 0;
 }
 
-/** Thông tin bản của một file .md đã convert: ngày + version (metadata trước, tên file sau). */
+/** Version info of a converted .md file: date + version (metadata first, file name second). */
 function versionInfo(mdPath) {
   let meta = {};
   try {
     meta = parseSourceMetadata(fs.readFileSync(mdPath, 'utf-8')) || {};
   } catch {
-    /* file không đọc được ⇒ coi như không có thông tin */
+    /* unreadable file ⇒ treated as having no information */
   }
   const stem = path.basename(mdPath, '.md');
   return {
@@ -88,9 +88,9 @@ function versionInfo(mdPath) {
 }
 
 /**
- * 1 nếu `a` mới hơn `b`, -1 nếu cũ hơn, 0 nếu không phân định được.
- * Version thắng ngày: version là thứ người soạn chủ ý ghi, còn ngày trong metadata thường là ngày LƯU file
- * (một bản v1 mở lại rồi lưu sẽ có ngày muộn hơn v2). Chỉ khi thiếu version ở một bên mới dùng ngày.
+ * 1 if `a` is newer than `b`, -1 if older, 0 if undecidable.
+ * Version beats date: the version is deliberately written by the author, while the metadata date is usually the file SAVE date
+ * (a v1 reopened and saved gets a later date than v2). Date is used only when one side lacks a version.
  */
 function compareDocs(a, b) {
   if (a.version && b.version) {
@@ -101,7 +101,7 @@ function compareDocs(a, b) {
   return 0;
 }
 
-/** Task đã có tài liệu nghiệp vụ nào chưa (bỏ README, _assets, _superseded). */
+/** Whether the task already has business documents (ignoring README, _assets, _superseded). */
 function taskHasDocs(slug) {
   const root = path.join(PATHS.INPUT, slug);
   if (!fs.existsSync(root)) return false;
@@ -113,9 +113,9 @@ function taskHasDocs(slug) {
 }
 
 /**
- * Task ĐÃ CÓ tài liệu mà tên gần với `slug` (bộ từ của tên này nằm trọn trong tên kia).
- * Tài liệu gửi bổ sung thường mang thêm chữ ("QA_BA_tra_loi_hoan_tien" → `qa-ba-tra-loi-hoan-tien`): so trùng khít
- * thì bỏ lọt và lặng lẽ tạo task mới, câu trả lời của BA không bao giờ tới task `hoan-tien`.
+ * A task that ALREADY has documents and whose name is close to `slug` (the word set of one name is contained in the other).
+ * Supplementary documents often carry extra words ("QA_BA_tra_loi_hoan_tien" → `qa-ba-tra-loi-hoan-tien`): an exact match
+ * would miss it and silently create a new task, so the BA reply would never reach the `hoan-tien` task.
  */
 function relatedTasks(slug) {
   if (!fs.existsSync(PATHS.INPUT)) return [];
@@ -134,7 +134,7 @@ function relatedTasks(slug) {
 }
 
 /**
- * Tài liệu sắp vào đâu cần người dùng xác nhận: chính task `slug` đã có tài liệu, hoặc một task tên gần.
+ * Where a document is about to go needs user confirmation: the `slug` task already has documents, or a task with a close name does.
  * @returns {{slug: string, related: boolean} | null}
  */
 function needsConfirmation(slug) {
@@ -143,24 +143,24 @@ function needsConfirmation(slug) {
   return rel.length ? { slug: rel[0], related: true, proposed: slug, others: rel.slice(1) } : null;
 }
 
-/** Thông điệp dừng khi tài liệu sắp vào một task đã có. */
+/** Stop message when a document is about to enter an existing task. */
 function confirmNotice(slug, files, { intakeCmd = 'npm run intake --', proposed = null } = {}) {
   const names = files.map((f) => path.basename(f));
   const quoted = names.length === 1 ? ` "${names[0]}"` : '';
   return [
     '',
     proposed
-      ? `⏸️  CẦN XÁC NHẬN — tên tài liệu gần với task đã có [ ${slug} ] (tên đề xuất mới: ${proposed}). Chưa nhận, file vẫn nằm nguyên chỗ cũ.`
-      : `⏸️  CẦN XÁC NHẬN — task [ ${slug} ] đã có tài liệu. Chưa nhận, file vẫn nằm nguyên chỗ cũ.`,
+      ? `⏸️  CONFIRMATION NEEDED — the document name is close to the existing task [ ${slug} ] (new proposed name: ${proposed}). Not taken in, the file stays where it was.`
+      : `⏸️  CONFIRMATION NEEDED — task [ ${slug} ] already has documents. Not taken in, the file stays where it was.`,
     '',
-    '   Tài liệu đến:',
+    '   Incoming document:',
     ...names.map((n) => `     • ${n}`),
     '',
-    `   Đây là bản mới / tài liệu bổ sung của CÙNG tính năng [ ${slug} ]?`,
-    `     • Đúng   → ${intakeCmd}${quoted} --into ${slug}`,
-    `     • Không  → ${intakeCmd}${quoted} --slug <tên-tính-năng-khác>`,
+    `   Is this a new version / supplementary document of the SAME feature [ ${slug} ]?`,
+    `     • Yes    → ${intakeCmd}${quoted} --into ${slug}`,
+    `     • No     → ${intakeCmd}${quoted} --slug <other-feature-name>`,
     '',
-    '   (Agent: hỏi người dùng câu trên bằng lời, KHÔNG tự chọn.)',
+    '   (Agent: ask the user the question above in words, do NOT choose yourself.)',
     '',
   ].join('\n');
 }
@@ -244,11 +244,11 @@ function applySupersede(newPaths) {
 
 function printVersioning({ superseded, unclear }) {
   if (superseded.length) {
-    console.log(`\n   🗂️  ${superseded.length} bản cũ chuyển sang _superseded/ (agent không đọc nữa):`);
-    superseded.forEach((s) => console.log(`      - ${s.file}  ← thay bởi ${path.basename(s.replacedBy)} (${s.reason})`));
+    console.log(`\n   🗂️  ${superseded.length} old version(s) moved to _superseded/ (the agent no longer reads them):`);
+    superseded.forEach((s) => console.log(`      - ${s.file}  ← replaced by ${path.basename(s.replacedBy)} (${s.reason})`));
   }
   if (unclear.length) {
-    console.log(`\n   ⚠️ ${unclear.length} cặp bản KHÔNG xác định được bản nào mới hơn — giữ cả hai, cần người dùng chỉ ra bản đang dùng:`);
+    console.log(`\n   ⚠️ ${unclear.length} pair(s) where it is UNCLEAR which version is newer — both kept, the user must say which one is current:`);
     unclear.forEach((u) => console.log(`      - ${u.a}  vs  ${u.b}`));
   }
 }

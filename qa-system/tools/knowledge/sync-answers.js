@@ -74,8 +74,8 @@ function plan(report, knowledgeText) {
   const out = { append: [], update: [], decide: [], skip: [] };
   for (const q of extractQuestions(report)) {
     const existing = k.questions.find((r) => r.id === q.id && S.questionKey(r.question) === S.questionKey(q.question));
-    // BA đã trả lời nhưng chưa đủ để chốt (TREO): vẫn chép sang knowledge, nếu không lần chạy sau tưởng câu này chưa ai hỏi.
-    // Chỉ TREO, và người trả lời là người thật: dòng "Confirmed" thiếu người/ngày hay do AI ghi thì KHÔNG chép (audit #6).
+    // BA answered but not enough to settle (TREO): still copy into knowledge, otherwise the next run thinks nobody asked.
+    // Only TREO, and only with a real human answerer: a "Confirmed" row missing person/date or written by AI is NOT copied (audit #6).
     const partial = !q.resolved && q.status === 'TREO' && q.answer && !S.isBlank(q.answer) &&
       q.answeredBy && !S.isBlank(q.answeredBy) && !S.isAiName(q.answeredBy) &&
       (S.normText(q.answer) !== S.normText(existing ? existing.answer || '' : '') || (q.status || '') !== (existing ? existing.status || '' : ''));

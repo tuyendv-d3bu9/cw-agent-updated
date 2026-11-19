@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * diff-runs.js — Hai lần chạy cùng một đầu bài giống nhau bao nhiêu?
+ * diff-runs.js — How similar are two runs of the same task?
  *
- *   node qa-system/tools/system/diff-runs.js <thư-mục-task-A> <thư-mục-task-B> [--min <phần-trăm>] [--json]
+ *   node qa-system/tools/system/diff-runs.js <task-dir-A> <task-dir-B> [--min <percent>] [--json]
  *
- * Mỗi thư mục là một OUTPUT/<slug>/ (của hai lần chạy, hoặc hai bản sao repo). So bằng SỐ, không bằng cảm nhận:
- *   • bộ mã (BR/FD/AF/OQ/RK/MR/TI/TC): số lượng và độ trùng (Jaccard)
- *   • nội dung: câu trích nguyên văn của 01, câu hỏi MR, con số và chuỗi trích ở Test Data/Expected
- *   • verdict từng chặng
- * `--min 80` ⇒ exit 1 khi có chỉ số nội dung dưới 80%. Dùng cho bước nghiệm thu skill: chạy hai lần, so, giải thích mọi khác biệt.
+ * Each directory is an OUTPUT/<slug>/ (from two runs, or two repo copies). Compared by NUMBERS, not impressions:
+ *   • id sets (BR/FD/AF/OQ/RK/MR/TI/TC): counts and overlap (Jaccard)
+ *   • content: verbatim quotes of 01, MR questions, numbers and quoted strings in Test Data/Expected
+ *   • per-stage verdicts
+ * `--min 80` ⇒ exit 1 when any content metric is below 80%. Used for skill acceptance: run twice, compare, explain every difference.
  */
 const fs = require('fs');
 const path = require('path');
@@ -26,7 +26,7 @@ function readTestCases(dir) {
     .flatMap((f) => S.parseTestCases(fs.readFileSync(path.join(bdir, f), 'utf-8')).cases);
 }
 
-/** Hình dạng một lần chạy: các tập để so. */
+/** Shape of one run: the sets to compare. */
 function shape(dir) {
   const t01 = read(dir, '01_requirement_risk_summary.md');
   const d01 = S.read01(t01) || { BR: [], FD: [], AF: [], OQ: [], RK: [] };
@@ -59,8 +59,8 @@ function shape(dir) {
       if (S.hasLabel(v)) labels += 1;
     }
   }
-  // Ma trận 06W: câu hỏi là văn tự do nên hai lần viết không bao giờ trùng chữ — so theo Ô (đối tượng × W).
-  // `ô có kẽ hở` = các ô mang MR; `phán quyết ô` = loại kết quả của từng ô (MR · Nguồn · Không áp dụng).
+  // 06W matrix: questions are free text so two runs never match word for word — compare by CELL (object × W).
+  // `ô có kẽ hở` = cells carrying an MR; `phán quyết ô` = result kind of each cell (MR · Nguồn · Không áp dụng).
   const gapCells = new Set();
   const cellVerdicts = new Set();
   const m02 = t02 ? S.sectionAt(t02, '1') : null;
@@ -117,24 +117,24 @@ function main() {
   const mi = args.indexOf('--min');
   const min = mi !== -1 ? Number(args[mi + 1]) : null;
   const dirs = args.filter((x, i) => !x.startsWith('--') && !(mi !== -1 && i === mi + 1));
-  if (dirs.length !== 2) { console.error('Usage: diff-runs.js <thư-mục-task-A> <thư-mục-task-B> [--min N] [--json]'); process.exit(1); }
-  for (const d of dirs) if (!fs.existsSync(d) || !fs.statSync(d).isDirectory()) { console.error(`Không có thư mục: ${d}`); process.exit(1); }
+  if (dirs.length !== 2) { console.error('Usage: diff-runs.js <task-dir-A> <task-dir-B> [--min N] [--json]'); process.exit(1); }
+  for (const d of dirs) if (!fs.existsSync(d) || !fs.statSync(d).isDirectory()) { console.error(`Directory not found: ${d}`); process.exit(1); }
 
   const r = compare(dirs[0], dirs[1]);
   if (args.includes('--json')) console.log(JSON.stringify(r, null, 2));
   else {
-    console.log(`\nSo hai lần chạy\n   A: ${dirs[0]}\n   B: ${dirs[1]}\n`);
-    console.log('Bộ mã                A     B   trùng');
+    console.log(`\nComparing two runs\n   A: ${dirs[0]}\n   B: ${dirs[1]}\n`);
+    console.log('Id sets              A     B   match');
     r.ids.forEach((x) => console.log(`   ${x.family.padEnd(4)}            ${String(x.a).padStart(4)}  ${String(x.b).padStart(4)}   ${String(x.overlap).padStart(3)}%`));
-    console.log('\nNội dung                         A     B   trùng');
+    console.log('\nContent                          A     B   match');
     r.content.forEach((x) => console.log(`   ${x.metric.padEnd(24)} ${String(x.a).padStart(5)} ${String(x.b).padStart(5)}   ${String(x.overlap).padStart(3)}%`));
-    console.log(`\nNhãn "chưa có trong tài liệu" ở TC: A=${r.labels.a} B=${r.labels.b}`);
+    console.log(`\n"Not in the document" labels in TC: A=${r.labels.a} B=${r.labels.b}`);
     console.log('Verdict: ' + r.verdicts.map((v) => `${v.stage}:${v.a}${v.same ? '' : `≠${v.b}`}`).join('  '));
-    console.log('\n(Khác biệt nào cũng phải giải thích được bằng một câu trong skill; không giải thích được ⇒ skill còn chỗ để model tự quyết.)\n');
+    console.log('\n(Every difference must be explainable by one sentence in the skill; if not ⇒ the skill still leaves room for the model to decide.)\n');
   }
   if (min !== null) {
     const low = r.content.filter((x) => x.overlap < min);
-    if (low.length) { console.error(`⛔ Dưới ${min}%: ${low.map((x) => `${x.metric} ${x.overlap}%`).join(', ')}`); process.exit(1); }
+    if (low.length) { console.error(`⛔ Below ${min}%: ${low.map((x) => `${x.metric} ${x.overlap}%`).join(', ')}`); process.exit(1); }
   }
 }
 

@@ -44,8 +44,8 @@ const LOCK_FILE = '_gate.lock';
 const LOG_FILE = '_gate.log';
 
 const STALE_NOTE =
-  'Mọi MR của 02 đã chốt trong knowledge — sửa dòng meta của 02 thành Verdict: PASS (không cần chạy lại Chặng 2). ' +
-  'Chạy lại Chặng 01 để nâng MR đã chốt thành BR và cập nhật §9.';
+  'Every MR of 02 is settled in knowledge — change the meta line of 02 to Verdict: PASS (no need to re-run Stage 2). ' +
+  'Re-run Stage 01 to promote settled MRs to BR and update §9.';
 
 /** `rel` is relative to OUTPUT/<slug>/. Stage 03-06 files, plus anything under testcases/. */
 function isLockedPath(rel) {
@@ -73,14 +73,14 @@ function evaluate(slug) {
     const key = `${q.id}|${S.questionKey(q.question)}`;
     if (seen.has(key)) return;
     seen.add(key);
-    // Nói rõ VÌ SAO chưa tính là đã chốt — agent cần biết phải hỏi người dùng điều gì.
+    // Say WHY it is not yet counted as settled — the agent needs to know what to ask the user.
     let why = '';
     if (q.status === 'Confirmed' && q.answer && !q.resolved) {
-      why = S.isAiName(q.answeredBy) ? ' — người trả lời là AI/agent, phải là BA/PO' : ' — thiếu Người trả lời hoặc Ngày (hỏi người dùng: ai trả lời, hôm nào)';
-    } else if (q.status === 'Confirmed' && !q.answer) why = ' — Confirmed nhưng ô Phản hồi chính thức trống';
-    else if (q.status === 'Rejected' && !q.resolved) why = ' — Rejected phải có lý do hoặc người quyết định';
+      why = S.isAiName(q.answeredBy) ? ' — the answerer is an AI/agent, must be BA/PO' : ' — missing Người trả lời or Ngày (ask the user: who answered, on what date)';
+    } else if (q.status === 'Confirmed' && !q.answer) why = ' — Confirmed but the Phản hồi chính thức cell is empty';
+    else if (q.status === 'Rejected' && !q.resolved) why = ' — Rejected needs a reason or a decision-maker';
     else if (q.status === 'TREO' && q.answer && !S.isBlank(q.answer)) {
-      why = ` — ${q.answeredBy || 'BA/PO'} đã trả lời${q.date ? ` ngày ${q.date}` : ''} nhưng chưa đủ để chốt: "${String(q.answer).slice(0, 80)}" — hỏi lại đúng giá trị còn thiếu`;
+      why = ` — ${q.answeredBy || 'BA/PO'} answered${q.date ? ` on ${q.date}` : ''} but not enough to settle: "${String(q.answer).slice(0, 80)}" — ask again for the exact missing value`;
     }
     pending.push({ id: q.id, question: q.question || '(no question recorded)', risk: q.w || '', state: (q.statusRaw || '(blank)') + why, source });
   };

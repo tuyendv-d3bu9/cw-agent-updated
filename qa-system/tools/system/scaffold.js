@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * scaffold.js — Dựng khung deliverable để số dòng / thứ tự / ô cố định do MÁY quyết, không phải model.
+ * scaffold.js — Build the deliverable skeleton so row count / order / fixed cells are decided by the MACHINE, not the model.
  *
  *   node qa-system/tools/system/scaffold.js <slug> 02 [--stdout] [--force]
  *
- * 02 (ma trận 06W): mỗi BR/FD/AF của 01 một dòng, theo thứ tự cố định (BR, FD, AF; mã tăng dần). Ô nào
- * KHÔNG áp dụng cho loại đối tượng đó (QA_STANDARD §4, bảng áp dụng) đã điền sẵn `Không áp dụng`; ô cần
- * phán đoán để `<điền>` — lint báo lỗi cho tới khi agent điền (MR-xx / Nguồn: … / Không áp dụng).
- * Nhờ vậy cùng một bản 01 luôn cho cùng một khung: số câu hỏi không còn dao động theo việc model "nghĩ ra" bao nhiêu ô.
+ * 02 (06W matrix): one row per BR/FD/AF of 01, in a fixed order (BR, FD, AF; ids ascending). A cell that does
+ * NOT apply to that object type (QA_STANDARD §4, applicability table) is pre-filled with `Không áp dụng`; a cell that needs
+ * judgement is left as `<điền>` — lint reports errors until the agent fills it (MR-xx / Nguồn: … / Không áp dụng).
+ * So the same 01 always yields the same skeleton: the number of questions no longer fluctuates with how many cells the model "comes up with".
  */
 const fs = require('fs');
 const path = require('path');
@@ -17,7 +17,7 @@ const S = require('../lib/schema');
 const FILL = '<điền>';
 const NA = 'Không áp dụng';
 
-/** W nào MỞ (cần phán đoán) với từng loại đối tượng; còn lại cố định là "Không áp dụng". QA_STANDARD §4. */
+/** Which W is OPEN (needs judgement) for each object type; the rest are fixed as "Không áp dụng". QA_STANDARD §4. */
 const APPLICABLE = {
   BR: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'],
   FD: ['W1', 'W3'],
@@ -28,9 +28,9 @@ const W = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'];
 function build(slug) {
   const dir = taskDir(slug);
   const p01 = path.join(dir, '01_requirement_risk_summary.md');
-  if (!fs.existsSync(p01)) throw new Error(`Chưa có OUTPUT/${slug}/01_requirement_risk_summary.md`);
+  if (!fs.existsSync(p01)) throw new Error(`OUTPUT/${slug}/01_requirement_risk_summary.md not found`);
   const d01 = S.read01(fs.readFileSync(p01, 'utf-8'));
-  if (!d01 || d01.BR.length + d01.FD.length + d01.AF.length === 0) throw new Error('01 không có BR/FD/AF nào để dựng ma trận');
+  if (!d01 || d01.BR.length + d01.FD.length + d01.AF.length === 0) throw new Error('01 has no BR/FD/AF to build a matrix from');
 
   const row = (id) => {
     const fam = id.split('-')[0];
@@ -68,18 +68,18 @@ function main() {
   const args = process.argv.slice(2);
   const pos = args.filter((a) => !a.startsWith('-'));
   const [slug, stage] = pos;
-  if (!slug || stage !== '02') { console.error('Usage: scaffold.js <slug> 02 [--stdout] [--force]   (hiện hỗ trợ chặng 02)'); process.exit(1); }
+  if (!slug || stage !== '02') { console.error('Usage: scaffold.js <slug> 02 [--stdout] [--force]   (only stage 02 is supported)'); process.exit(1); }
   let text;
   try { text = build(slug); } catch (e) { console.error(e.message); process.exit(1); }
   if (args.includes('--stdout')) { console.log(text); return; }
   const out = path.join(taskDir(slug), '02_missing_rule_report.md');
   if (fs.existsSync(out) && !args.includes('--force')) {
-    console.error(`${path.relative(process.cwd(), out)} đã có — không ghi đè (dùng --force nếu chắc chắn, hoặc --stdout để xem khung).`);
+    console.error(`${path.relative(process.cwd(), out)} already exists — not overwritten (use --force if sure, or --stdout to preview the skeleton).`);
     process.exit(1);
   }
   fs.writeFileSync(out, text, 'utf-8');
   const rows = (text.match(/^\| (?:BR|FD|AF)-/gm) || []).length;
-  console.log(`Đã dựng ${path.relative(process.cwd(), out)} — ${rows} dòng ma trận. Điền các ô ${FILL}, rồi chạy: npm run lint -- ${slug}`);
+  console.log(`Built ${path.relative(process.cwd(), out)} — ${rows} matrix rows. Fill the ${FILL} cells, then run: npm run lint -- ${slug}`);
 }
 
 if (require.main === module) main();

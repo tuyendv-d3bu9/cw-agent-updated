@@ -298,7 +298,7 @@ try {
   }
   console.log(`   ${checked} script(s) targeting qa-system/tools/ checked`);
 } catch (e) {
-  fail('package.json', `Không đọc được: ${e.message}`);
+  fail('package.json', `Cannot read: ${e.message}`);
 }
 
 // ─── E. ASK gate state per task ───
@@ -381,8 +381,8 @@ try {
 }
 
 // ─── I. Domain packs ───
-// Pack ngành là checklist dùng chung mọi dự án: thiếu file, JSON hỏng, không có nguồn, hay lẫn mã BR/FD
-// (giả làm sự thật) đều phải chặn ở đây, trước khi một dự án chọn pack đó (QA_STANDARD §10.3).
+// Domain packs are checklists shared by every project: a missing file, broken JSON, no source, or BR/FD ids
+// (posing as truth) must be blocked here, before a project selects that pack (QA_STANDARD §10.3).
 console.log('\n--- Cross-checking domain packs (qa-system/domains/) ---');
 try {
   const { listPacks, validatePack, loadDomain } = require('../lib/domain');

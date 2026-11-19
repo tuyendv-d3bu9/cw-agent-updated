@@ -89,8 +89,8 @@ test('version lấy từ tên file khi metadata không có', () => {
 test('confirmNotice — nêu đúng hai lối đi và dặn agent không tự chọn', () => {
   const msg = V.confirmNotice('doi-mat-khau', ['/x/INPUT/SRS v2.docx']);
   assert.match(msg, /--into doi-mat-khau/);
-  assert.match(msg, /--slug <tên-tính-năng-khác>/);
-  assert.match(msg, /KHÔNG tự chọn/);
+  assert.match(msg, /--slug <other-feature-name>/);
+  assert.match(msg, /do NOT choose yourself/);
 });
 
 test('needsConfirmation — Q&A của BA mang thêm chữ vẫn dừng hỏi gộp vào task đã có (không lặng lẽ tạo task mới)', (t) => {
@@ -102,7 +102,7 @@ test('needsConfirmation — Q&A của BA mang thêm chữ vẫn dừng hỏi g�
   assert.strictEqual(ask.slug, 'hoan-tien');
   assert.strictEqual(ask.related, true);
   assert.strictEqual(V.needsConfirmation('doi-mat-khau'), null, 'tên không liên quan thì không hỏi');
-  assert.match(V.confirmNotice('hoan-tien', ['/x/QA.md'], { proposed: 'qa-ba-tra-loi-hoan-tien' }), /gần với task đã có \[ hoan-tien \]/);
+  assert.match(V.confirmNotice('hoan-tien', ['/x/QA.md'], { proposed: 'qa-ba-tra-loi-hoan-tien' }), /close to the existing task \[ hoan-tien \]/);
 });
 
 test('needsConfirmation — task trùng tên có tài liệu vẫn hỏi như cũ; task chưa có tài liệu không tính', (t) => {

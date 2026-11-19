@@ -47,5 +47,5 @@ test('ids --assign — mã tạm được đánh số tiếp nối, theo thứ t
   const out = fs.readFileSync(f, 'utf-8');
   assert.match(out, /\| BR-09 \| a \|\n\| BR-10 \| b \|\n\| FD-01 \| c \| thấy lại FD-01 \|/);
   assert.strictEqual(assign('t', 'OUTPUT/t/01_x.md').changed, false, 'chạy lại không đổi gì');
-  assert.throws(() => assign('t', '../../etc/passwd'), /ngoài repo/);
+  assert.throws(() => assign('t', '../../etc/passwd'), /outside the repo/);
 });

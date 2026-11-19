@@ -70,92 +70,92 @@ function writeFile(dest, content, note = '') {
 
 // ───────────────────── Signpost content (user-facing) ─────────────────────
 
-const INPUT_README = `# INPUT/ — Tài liệu nguồn · **CỦA BẠN**
+const INPUT_README = `# INPUT/ — Source documents · **YOURS**
 
-Kéo thả tài liệu của BA vào đây (\`.docx\` \`.pdf\` \`.xlsx\` \`.md\`…), rồi nói với agent:
+Drag the BA documents here (\`.docx\` \`.pdf\` \`.xlsx\` \`.md\`…), then tell the agent:
 
-> *"Tôi vừa bỏ tài liệu vào INPUT, xử lý giúp"*
+> *"I just put documents into INPUT, please process them"*
 
-Agent tự chuyển sang Markdown sạch, phân vào 5 ngăn, và dựng sẵn khung làm việc.
-**Bạn không cần tự tạo thư mục.**
+The agent converts them to clean Markdown, files them into 5 bins, and scaffolds the workspace.
+**You do not need to create folders yourself.**
 
-| Ngăn | Chứa gì |
+| Bin | Holds |
 |---|---|
-| \`01_business/\` | Định hướng, chính sách, bài toán kinh doanh |
-| \`02_ba/\` | **Bắt buộc có.** PRD, SRS, User Story, Use Case |
+| \`01_business/\` | Direction, policy, business problem |
+| \`02_ba/\` | **Required.** PRD, SRS, User Story, Use Case |
 | \`03_dev/\` | API Swagger/OpenAPI, DB schema, tech spec |
-| \`04_design/\` | Figma, wireframe, ảnh màn hình |
-| \`05_communication/\` | Q&A với BA, biên bản họp, Change Request |
+| \`04_design/\` | Figma, wireframe, screenshots |
+| \`05_communication/\` | Q&A with the BA, meeting minutes, Change Requests |
 
-> Agent **chỉ đọc** thư mục này, không bao giờ sửa tài liệu gốc của bạn.
+> The agent **only reads** this folder and never edits your original documents.
 `;
 
-const OUTPUT_README = `# OUTPUT/ — Kết quả · **CỦA BẠN**
+const OUTPUT_README = `# OUTPUT/ — Results · **YOURS**
 
-Mỗi tính năng một thư mục \`OUTPUT/<tên-task>/\`:
+One folder per feature, \`OUTPUT/<task-name>/\`:
 
-| File | Là gì |
+| File | What it is |
 |---|---|
-| \`00_plan.md\` | Bản đồ tiến độ. Agent tick \`[x]\` vào đây sau mỗi chặng. |
-| \`01_\` → \`06_\` | Sáu chặng thiết kế kiểm thử |
-| \`09_\` → \`12_\` | Dữ liệu kiểm thử (khi cần) |
-| \`15_readiness_*\` | Đánh giá sẵn sàng trước khi làm automation |
-| \`runs/RUN-XX/\` | Kết quả chạy test + **ảnh bằng chứng** để nộp bài |
+| \`00_plan.md\` | Progress map. The agent ticks \`[x]\` here after each stage. |
+| \`01_\` → \`06_\` | The six test-design stages |
+| \`09_\` → \`12_\` | Test data (when needed) |
+| \`15_readiness_*\` | Readiness assessment before automation |
+| \`runs/RUN-XX/\` | Test run results + **evidence screenshots** for submission |
 
-Muốn biết đang ở đâu, nói: *"Tiến độ thế nào rồi?"*
+To see where you are, say: *"What is the progress?"*
 
-> ⚠️ \`OUTPUT/\` là **sản phẩm bàn giao, giữ lâu dài**: bằng chứng chạy test, test case,
-> bảng ánh xạ Jira. Nhiều công cụ đọc lại nó — \`jira:sync\` đính ảnh evidence lên Jira,
-> \`lint\` và \`readiness\` chấm điểm trên chính các file này. Xoá là mất, không chạy lại được.
+> ⚠️ \`OUTPUT/\` is the **deliverable, kept long term**: test run evidence, test cases,
+> the Jira mapping table. Many tools read it back — \`jira:sync\` attaches evidence images to Jira,
+> \`lint\` and \`readiness\` score these very files. Delete it and it is gone; it cannot be re-run.
 >
-> Chỉ chứa thư mục task, mỗi tính năng một thư mục. Không có thư mục nào bắt đầu bằng \`_\`:
-> khuôn mẫu ở \`qa-system/templates/\`, biên bản nâng cấp ở \`qa-system/_upgrades/\`,
-> bản chạy nháp ở \`.scratch/\`.
+> Holds only task folders, one per feature. No folder starts with \`_\`:
+> templates live in \`qa-system/templates/\`, upgrade records in \`qa-system/_upgrades/\`,
+> scratch runs in \`.scratch/\`.
 >
-> Quy tắc nghiệp vụ BA đã chốt thì nằm ở \`knowledge/\`, không nằm đây.
+> Business rules settled by the BA live in \`knowledge/\`, not here.
 `;
 
-const KNOWLEDGE_README = `# knowledge/ — Bộ nhớ dự án · **DÙNG CHUNG**
+const KNOWLEDGE_README = `# knowledge/ — Project memory · **SHARED**
 
-Đây là thứ **duy nhất sống lâu hơn \`OUTPUT/\`**. Xoá \`OUTPUT/\` rồi chạy lại thì
-agent vẫn nhớ; xoá \`knowledge/\` thì phải đi hỏi lại BA từ đầu.
+This is the **only thing that outlives \`OUTPUT/\`**. Delete \`OUTPUT/\` and re-run and
+the agent still remembers; delete \`knowledge/\` and the BA must be asked again from scratch.
 
-| File | Ai điền |
+| File | Who fills it |
 |---|---|
-| \`_project.md\` | Con người — quy ước dự án: tiền tệ, timezone, môi trường test |
-| \`_glossary.md\` | Con người — từ điển thuật ngữ nghiệp vụ |
-| \`_sut.json\` | Con người — hệ thống đang kiểm thử; \`domain\` = pack ngành (trống = không chọn) |
-| \`_domain.md\` | Con người, tuỳ chọn — bổ sung riêng của dự án cho pack ngành |
-| \`_system_map.json\` | Agent tự đồng bộ — bản đồ định tuyến, đừng sửa tay |
-| \`features/<task>.md\` | Agent ghi, **bạn duyệt** — quy tắc đã chốt, câu trả lời của BA |
+| \`_project.md\` | Human — project conventions: currency, timezone, test environment |
+| \`_glossary.md\` | Human — business glossary |
+| \`_sut.json\` | Human — the system under test; \`domain\` = domain pack (empty = none selected) |
+| \`_domain.md\` | Human, optional — project-specific additions to the domain pack |
+| \`_system_map.json\` | Agent syncs it — routing map, do not edit by hand |
+| \`features/<task>.md\` | Agent writes, **you review** — settled rules, BA answers |
 
-Khi BA trả lời một câu hỏi treo, nói với agent:
-*"BA đã chốt: [nội dung]"* — agent tự ghi vào đúng mục.
+When the BA answers a pending question, tell the agent:
+*"The BA settled: [content]"* — the agent writes it into the right section.
 `;
 
 const BIN_README = (bin, desc) => `# ${bin}
 
 ${desc}
 
-> Đây là thư mục mẫu. Khi bạn thả tài liệu vào \`INPUT/\`, agent sẽ tạo
-> \`INPUT/<tên-task>/${bin}/\` riêng cho từng tính năng.
+> This is a sample folder. When you drop documents into \`INPUT/\`, the agent creates
+> a separate \`INPUT/<task-name>/${bin}/\` for each feature.
 `;
 
 const BINS = [
-  ['01_business', 'Định hướng, chính sách, bài toán kinh doanh cấp cao.'],
-  ['02_ba', '**Bắt buộc có.** PRD, SRS, User Story, Use Case — tài liệu mô tả tính năng.'],
+  ['01_business', 'Direction, policy, high-level business problem.'],
+  ['02_ba', '**Required.** PRD, SRS, User Story, Use Case — documents describing the feature.'],
   ['03_dev', 'API Swagger/OpenAPI, DB schema, technical spec.'],
-  ['04_design', 'Link Figma, wireframe, ảnh chụp màn hình.'],
-  ['05_communication', 'Q&A với BA, biên bản họp, Change Request.'],
+  ['04_design', 'Figma links, wireframes, screenshots.'],
+  ['05_communication', 'Q&A with the BA, meeting minutes, Change Requests.'],
 ];
 
 // ───────────────────── Scaffold steps ─────────────────────
 
 function stepInput() {
-  ensureDir(PATHS.INPUT, 'nơi bạn thả tài liệu của BA');
-  writeFile(path.join(PATHS.INPUT, 'README.md'), INPUT_README, 'biển chỉ dẫn');
+  ensureDir(PATHS.INPUT, 'where you drop BA documents');
+  writeFile(path.join(PATHS.INPUT, 'README.md'), INPUT_README, 'signpost');
   const tpl = path.join(PATHS.INPUT, '_template');
-  ensureDir(tpl, 'khuôn 5 ngăn cho task mới');
+  ensureDir(tpl, '5-bin template for a new task');
   for (const [bin, desc] of BINS) {
     ensureDir(path.join(tpl, bin));
     writeFile(path.join(tpl, bin, 'README.md'), BIN_README(bin, desc));
@@ -163,24 +163,24 @@ function stepInput() {
 }
 
 function stepOutput() {
-  ensureDir(PATHS.OUTPUT, 'nơi agent ghi kết quả');
-  writeFile(path.join(PATHS.OUTPUT, 'README.md'), OUTPUT_README, 'biển chỉ dẫn');
+  ensureDir(PATHS.OUTPUT, 'where the agent writes results');
+  writeFile(path.join(PATHS.OUTPUT, 'README.md'), OUTPUT_README, 'signpost');
 
-  // Khuôn một lượt chạy nằm ở `qa-system/templates/run/`, không dựng vào đây nữa.
-  // Trước kia nó ở `OUTPUT/_template_run/` và init TỰ SINH bản rút gọn 2 dòng,
-  // nghèo hơn hẳn bản thật trong repo — dự án mới vì thế nhận khuôn thiếu.
-  // OUTPUT/ giờ chỉ chứa thư mục task, không chứa gì bắt đầu bằng `_`.
+  // The run template lives in `qa-system/templates/run/`; it is no longer built here.
+  // It used to be in `OUTPUT/_template_run/` and init GENERATED a 2-line stub,
+  // far poorer than the real one in the repo — so new projects received a deficient template.
+  // OUTPUT/ now holds only task folders, nothing starting with `_`.
 }
 
 function stepKnowledge() {
-  ensureDir(PATHS.KNOWLEDGE, 'bộ nhớ dự án');
-  ensureDir(PATHS.FEATURES, 'tri thức từng tính năng');
-  writeFile(path.join(PATHS.KNOWLEDGE, 'README.md'), KNOWLEDGE_README, 'biển chỉ dẫn');
+  ensureDir(PATHS.KNOWLEDGE, 'project memory');
+  ensureDir(PATHS.FEATURES, 'per-feature knowledge');
+  writeFile(path.join(PATHS.KNOWLEDGE, 'README.md'), KNOWLEDGE_README, 'signpost');
 
   const seed = path.join(PATHS.TEMPLATES, 'knowledge');
   if (!fs.existsSync(seed)) return;
   for (const f of fs.readdirSync(seed)) {
-    ensureFile(path.join(seed, f), path.join(PATHS.KNOWLEDGE, f), 'từ template');
+    ensureFile(path.join(seed, f), path.join(PATHS.KNOWLEDGE, f), 'from template');
   }
 }
 
@@ -188,26 +188,26 @@ function stepAutomation() {
   const src = path.join(PATHS.TEMPLATES, 'automation');
   if (!fs.existsSync(src)) return;
 
-  ensureDir(PATHS.AUTOMATION, 'bộ nối với hệ thống đang kiểm thử');
-  // Đệ quy: template có thư mục con `utils/` (evidence.ts, devices.js); copyFileSync trên thư mục sẽ lỗi.
+  ensureDir(PATHS.AUTOMATION, 'connector to the system under test');
+  // Recursive: the template has a `utils/` subfolder (evidence.ts, devices.js); copyFileSync on a directory fails.
   const copyTree = (from, to) => {
     for (const f of fs.readdirSync(from)) {
       const s = path.join(from, f);
       if (fs.statSync(s).isDirectory()) copyTree(s, path.join(to, f));
-      else ensureFile(s, path.join(to, f), 'từ template');
+      else ensureFile(s, path.join(to, f), 'from template');
     }
   };
   copyTree(src, PATHS.AUTOMATION);
   // The two directories the qa-automation agent writes code into.
-  ensureDir(path.join(PATHS.AUTOMATION, 'pages'), 'Page Object Model — agent sinh ra');
-  ensureDir(path.join(PATHS.AUTOMATION, 'tests'), 'kịch bản test — agent sinh ra');
+  ensureDir(path.join(PATHS.AUTOMATION, 'pages'), 'Page Object Model — generated by the agent');
+  ensureDir(path.join(PATHS.AUTOMATION, 'tests'), 'test scripts — generated by the agent');
 }
 
 // ───────────────────── Dependencies ─────────────────────
 
 function run(cmd, label) {
   process.stdout.write(`  ${label}… `);
-  if (dryRun) { console.log('(bỏ qua, đang --dry-run)'); return true; }
+  if (dryRun) { console.log('(skipped, --dry-run)'); return true; }
   try {
     execSync(cmd, { cwd: PATHS.ROOT, stdio: 'pipe' });
     console.log('✅');
@@ -220,13 +220,13 @@ function run(cmd, label) {
 }
 
 function stepInstall() {
-  if (noInstall) { console.log('  (bỏ qua cài đặt theo yêu cầu --no-install)'); return true; }
+  if (noInstall) { console.log('  (install skipped by --no-install)'); return true; }
 
   let ok = true;
   if (!fs.existsSync(path.join(PATHS.ROOT, 'node_modules'))) {
-    ok = run('npm install', 'Cài thư viện Node') && ok;
+    ok = run('npm install', 'Install Node dependencies') && ok;
   } else {
-    console.log('  Cài thư viện Node… ✅ (đã có sẵn)');
+    console.log('  Install Node dependencies… ✅ (already present)');
   }
 
   const cache =
@@ -238,9 +238,9 @@ function stepInstall() {
 
   const hasBrowser = fs.existsSync(cache) && fs.readdirSync(cache).some((d) => d.startsWith('chromium'));
   if (!hasBrowser) {
-    ok = run('npx playwright install chromium', 'Tải trình duyệt Playwright (~150 MB)') && ok;
+    ok = run('npx playwright install chromium', 'Download Playwright browser (~150 MB)') && ok;
   } else {
-    console.log('  Trình duyệt Playwright… ✅ (đã có sẵn)');
+    console.log('  Playwright browser… ✅ (already present)');
   }
   return ok;
 }
@@ -249,10 +249,10 @@ function stepInstall() {
 
 function main() {
   console.log(`\n${line('━')}`);
-  console.log(`  KHỞI TẠO HỆ THỐNG QA AGENT${dryRun ? '   (--dry-run: không ghi gì)' : ''}`);
+  console.log(`  QA AGENT SYSTEM INITIALISATION${dryRun ? '   (--dry-run: writes nothing)' : ''}`);
   console.log(line('━'));
 
-  console.log('\n  Bước 1/4 — Dựng khung thư mục');
+  console.log('\n  Step 1/4 — Build the folder skeleton');
   stepInput();
   stepOutput();
   stepKnowledge();
@@ -261,40 +261,40 @@ function main() {
   if (created.length) {
     created.forEach((c) => console.log(`     + ${c.what.padEnd(34)} ${c.note}`));
   } else {
-    console.log('     ✅ Khung đã đầy đủ, không có gì phải tạo thêm.');
+    console.log('     ✅ Skeleton complete, nothing more to create.');
   }
   if (skipped.length) {
-    console.log(`     (giữ nguyên ${skipped.length} mục đã có — lệnh này không bao giờ ghi đè)`);
+    console.log(`     (kept ${skipped.length} existing item(s) — this command never overwrites)`);
   }
 
-  console.log('\n  Bước 2/4 — Cài thư viện');
+  console.log('\n  Step 2/4 — Install dependencies');
   const installOk = stepInstall();
 
   if (!dryRun) {
     try {
       const h = require('./precommit').install();
-      console.log(`     ${h.ok ? '✅' : 'ℹ️ '} Git pre-commit (chặn commit deliverable bịa/sai định dạng, mọi công cụ AI): ${h.note}`);
+      console.log(`     ${h.ok ? '✅' : 'ℹ️ '} Git pre-commit (blocks commits of fabricated/misformatted deliverables, for every AI tool): ${h.note}`);
     } catch (e) {
-      console.log(`     ℹ️  Không cài được git pre-commit: ${e.message}`);
+      console.log(`     ℹ️  Could not install git pre-commit: ${e.message}`);
     }
   }
 
-  console.log('\n  Bước 3/4 — Tự kiểm hệ thống');
-  const checkOk = dryRun ? true : run('npm run --silent agent:check', 'Kiểm toàn vẹn agent');
+  console.log('\n  Step 3/4 — System self-check');
+  const checkOk = dryRun ? true : run('npm run --silent agent:check', 'Agent integrity check');
 
-  console.log('\n  Bước 4/4 — Xong\n');
+  console.log('\n  Step 4/4 — Done\n');
   console.log(line());
   if (dryRun) {
-    console.log('  Đây là bản xem trước. Bỏ `--dry-run` để dựng thật.');
+    console.log('  This is a preview. Drop `--dry-run` to build for real.');
   } else if (installOk && checkOk) {
-    console.log('  ✅ Hệ thống sẵn sàng.\n');
-    console.log('  Bước tiếp theo:');
-    console.log('    1. Kéo tài liệu của BA vào thư mục INPUT/');
-    console.log('    2. Nói với agent: "Tôi vừa bỏ tài liệu vào INPUT, xử lý giúp"');
-    console.log('\n  Quên mình đang làm gì thì gõ: npm start');
+    console.log('  ✅ System ready.\n');
+    console.log('  Next steps:');
+    console.log('    1. Drag the BA documents into the INPUT/ folder');
+    console.log('    2. Tell the agent: "I just put documents into INPUT, please process them"');
+    console.log('\n  If you forget what you were doing, run: npm start');
   } else {
-    console.log('  ⚠️  Khung đã dựng xong nhưng có bước chưa thành công ở trên.');
-    console.log('     Xem dòng ❌ và xử lý, rồi chạy lại `npm run init`.');
+    console.log('  ⚠️  The skeleton is built but a step above did not succeed.');
+    console.log('     See the ❌ line, fix it, then re-run `npm run init`.');
   }
   console.log(`${line()}\n`);
 

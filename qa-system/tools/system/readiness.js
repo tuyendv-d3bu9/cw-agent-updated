@@ -158,7 +158,7 @@ function collect(slug) {
     },
     testCases: { total: cases.length, traced: traced.length, tracePct, untraced: cases.filter((c) => !traced.includes(c)).map((c) => c.id) },
     askGate: { blocked: gate.blocked, pending: gate.pending, reasons: gate.reasons, advisories: gate.advisories },
-    // GO không được dựa trên một spec mà lint không chấp nhận (trước đây `Expected: TBD` vẫn ra GO).
+    // GO must not rest on a spec that lint rejects (previously `Expected: TBD` still yielded GO).
     lint: lintSummary(slug),
     riskyCases,
     // Data branch (Chặng 9-12) counts only once it was started: Mode 1 stops at 06.

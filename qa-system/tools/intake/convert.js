@@ -8,7 +8,7 @@
  *   - PDF (.pdf)
  *   - OpenAPI / Swagger / Postman / Config (.json, .yaml, .yml)
  *   - PowerPoint (.pptx), HTML (.html), Markdown/plain text (.md, .txt, .log)
- *   (.ppt/.doc cũ bị từ chối kèm hướng dẫn "Save As"; ảnh không chuyển được thành chữ)
+ *   (legacy .ppt/.doc are rejected with a "Save As" hint; images cannot be converted to text)
  *
  * Usage:
  *   convert.js <file>                One document -> INPUT/

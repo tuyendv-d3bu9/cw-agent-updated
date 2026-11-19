@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * digest-plan.js — Chia tài liệu của một task thành lô vừa context, chỉ lấy file mới hoặc đã đổi.
+ * digest-plan.js — Split a task documents into context-sized batches, taking only new or changed files.
  *
- *   listDocs(slug)          Mọi file .md trong INPUT/<slug>/ kèm sha256 và số ký tự.
- *   readStamps(dir)         Tài liệu nào đã được chưng cất, ở lô nào, với hash nào.
- *   plan(docs, stamps, o)   Lô cần chạy + thẻ cũ phải bỏ khi gộp.
+ *   listDocs(slug)          Every .md file in INPUT/<slug>/ with sha256 and character count.
+ *   readStamps(dir)         Which documents were already digested, in which batch, with which hash.
+ *   plan(docs, stamps, o)   Batches to run + old cards to drop when merging.
  *
- * Nạp 200 tài liệu vào một lượt phân tích thì tràn token, hoặc agent chỉ đọc lướt.
- * Skill `knowledge-digest` chạy từng lô do tool này chia, mỗi tài liệu ra một thẻ có
- * dòng `### DOC: <đường dẫn> · sha256:<12 hex>`. Chính dòng đó là sổ theo dõi: lần
- * sau chỉ tài liệu có hash chưa thấy trong thẻ nào mới phải chạy lại. Không có file
- * sổ riêng để lệch với thẻ thật.
+ * Loading 200 documents into one analysis pass overflows tokens, or the agent only skims.
+ * The `knowledge-digest` skill runs each batch this tool splits; each document yields a card with
+ * a line `### DOC: <path> · sha256:<12 hex>`. That line is the ledger: next
+ * time only documents whose hash appears in no card need re-running. There is no
+ * separate ledger file that could drift from the real cards.
  *
  * Usage:
  *   digest-plan.js <slug> [--budget 60000]   Ghi OUTPUT/<slug>/00_digest_plan.md
@@ -21,14 +21,14 @@ const path = require('path');
 const crypto = require('crypto');
 const { PATHS, taskDir } = require('../lib/paths');
 
-const DEFAULT_BUDGET = 60000; // ký tự mỗi lô, cỡ 15–20k token
+const DEFAULT_BUDGET = 60000; // characters per batch, about 15–20k tokens
 const STAMP = /^###\s+DOC:\s+(\S+)\s+·\s+sha256:([0-9a-f]{12})/;
 
 const rel = (p) => path.relative(PATHS.ROOT, p).split(path.sep).join('/');
 
 /**
- * Nội dung dùng để BĂM: bỏ khối metadata (TRACEABILITY_METADATA cũ có `Modified:` = mtime,
- * SOURCE_METADATA có ngày sửa) — chạm file mà không đổi chữ thì sha không được đổi.
+ * Content used for HASHING: drops the metadata block (the old TRACEABILITY_METADATA has `Modified:` = mtime,
+ * SOURCE_METADATA has a modified date) — touching a file without changing the text must not change the sha.
  */
 function hashableText(text) {
   return String(text)
@@ -36,7 +36,7 @@ function hashableText(text) {
     .replace(/\r\n/g, '\n');
 }
 
-/** Số ký tự tính vào ngân sách: ảnh base64 (data: URI) và placeholder ảnh không tốn context đọc. */
+/** Characters counted toward the budget: base64 images (data: URI) and image placeholders cost no reading context. */
 function budgetChars(text) {
   return hashableText(text)
     .replace(/!\[[^\]]*\]\(data:[^)]*\)/g, '')
@@ -46,14 +46,14 @@ function budgetChars(text) {
 }
 
 /**
- * Cắt tài liệu quá ngân sách thành các phần theo heading — không bao giờ cắt giữa bảng
- * hay khối code. Một mục vẫn quá ngân sách thì cắt tiếp ở dòng trống ngoài bảng; một bảng
- * đơn lẻ quá ngân sách thì giữ nguyên (phần đó vượt ngân sách, ghi chú rõ).
- * @returns [{ from, to, heading, chars }] (dòng 1-based, bao gồm cả hai đầu)
+ * Cut an over-budget document into parts by heading — never cutting in the middle of a table
+ * or code block. A section still over budget is cut further at a blank line outside a table; a single
+ * over-budget table is kept whole (that part exceeds the budget, noted explicitly).
+ * @returns [{ from, to, heading, chars }] (1-based lines, both ends inclusive)
  */
 function splitByHeading(text, budget) {
   const lines = String(text).split('\n');
-  const cuts = new Set([0]); // chỉ số dòng có thể bắt đầu phần mới
+  const cuts = new Set([0]); // line indexes where a new part may start
   const softCuts = new Set();
   let inFence = false;
   for (let i = 0; i < lines.length; i++) {
@@ -66,9 +66,9 @@ function splitByHeading(text, budget) {
   }
   const len = (a, b) => budgetChars(lines.slice(a, b).join('\n'));
   const starts = [...cuts].sort((a, b) => a - b);
-  // Các mục theo heading
+  // Sections by heading
   let sections = starts.map((s, k) => [s, k + 1 < starts.length ? starts[k + 1] : lines.length]);
-  // Mục quá ngân sách → cắt ở dòng trống ngoài bảng
+  // Section over budget → cut at a blank line outside a table
   sections = sections.flatMap(([a, b]) => {
     if (len(a, b) <= budget) return [[a, b]];
     const pts = [a, ...[...softCuts].filter((x) => x > a && x < b).sort((x, y) => x - y), b];
@@ -80,7 +80,7 @@ function splitByHeading(text, budget) {
     out.push([cur, b]);
     return out;
   });
-  // Gộp tham lam các mục liền nhau cho vừa ngân sách
+  // Greedily merge adjacent sections to fit the budget
   const parts = [];
   for (const [a, b] of sections) {
     const last = parts[parts.length - 1];
@@ -95,13 +95,13 @@ function splitByHeading(text, budget) {
 
 function listDocs(slug) {
   const root = path.join(PATHS.INPUT, slug);
-  if (!fs.existsSync(root)) throw new Error(`Không có INPUT/${slug}/`);
+  if (!fs.existsSync(root)) throw new Error(`INPUT/${slug}/ not found`);
 
   const docs = [];
   (function walk(dir) {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
       const p = path.join(dir, e.name);
-      if (e.isDirectory()) { if (e.name !== '_superseded') walk(p); } // bản cũ đã bị thay — không chưng cất
+      if (e.isDirectory()) { if (e.name !== '_superseded') walk(p); } // replaced old version — not digested
       else if (e.name.endsWith('.md') && e.name !== 'README.md') {
         const text = fs.readFileSync(p, 'utf-8');
         const sha = crypto.createHash('sha256').update(hashableText(text)).digest('hex').slice(0, 12);
@@ -112,13 +112,13 @@ function listDocs(slug) {
   return docs.sort((a, b) => a.path.localeCompare(b.path));
 }
 
-/** path → { sha, batch } của lần chưng cất gần nhất (lô số lớn hơn thắng). */
+/** path → { sha, batch } of the latest digest (the higher batch number wins). */
 function readStamps(digestDir) {
   const stamps = new Map();
   if (!fs.existsSync(digestDir)) return { stamps, lastBatch: 0 };
 
-  // Sắp theo SỐ: sort chữ đặt batch_100 trước batch_99 → lô mới bị lô cũ ghi đè thẻ và
-  // lastBatch tính sai, lô kế tiếp đè lên batch_100.
+  // Sort by NUMBER: a text sort puts batch_100 before batch_99 → a new batch gets its cards overwritten by an old one and
+  // lastBatch is miscalculated, the next batch overwrites batch_100.
   const num = (f) => parseInt(f.match(/\d+/)[0], 10);
   const files = fs.readdirSync(digestDir).filter((f) => /^batch_\d+\.md$/.test(f)).sort((a, b) => num(a) - num(b));
   for (const f of files) {
@@ -148,8 +148,8 @@ function plan(docs, { stamps, lastBatch }, { budget = DEFAULT_BUDGET } = {}) {
     if (!present.has(p)) stale.push({ path: p, batch: old.batch, reason: 'Đã gỡ khỏi INPUT' });
   }
 
-  // Tài liệu to hơn ngân sách: TOOL tự cắt theo heading (không cắt giữa bảng), mỗi phần là một
-  // mục trong lô, ghi rõ dòng từ–đến. Không giao cho LLM tự cắt.
+  // A document larger than the budget: the TOOL cuts it by heading (never mid-table), each part is one
+  // entry in the batch with explicit from–to lines. Never left to the LLM to cut.
   const units = [];
   for (const d of todo) {
     const { text, ...doc } = d;
@@ -235,7 +235,7 @@ function main() {
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, '00_digest_plan.md'), render(slug, p, budget), 'utf-8');
 
-  console.log(`[digest] ${slug}: ${p.total} tài liệu · ${p.fresh} không đổi · ${p.todo} cần chạy trong ${p.batches.length} lô · ${p.stale.length} thẻ cũ phải bỏ`);
+  console.log(`[digest] ${slug}: ${p.total} documents · ${p.fresh} unchanged · ${p.todo} to run in ${p.batches.length} batch(es) · ${p.stale.length} old card(s) to drop`);
   console.log(`         → OUTPUT/${slug}/00_digest_plan.md`);
 }
 

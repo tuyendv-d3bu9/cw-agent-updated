@@ -130,7 +130,7 @@ const TOOLS = [
       properties: {
         summary: {
           type: 'string',
-          description: 'Title/Summary of the bug (e.g., "[<Module>] <mô tả lỗi>").'
+          description: 'Title/Summary of the bug (e.g., "[<Module>] <bug description>").'
         },
         description: {
           type: 'string',

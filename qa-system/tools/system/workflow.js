@@ -283,8 +283,8 @@ function buildPlan(wf, slug = '<slug>') {
     const gates = asList(s.gate).map((g) => ({ gate: g, command: GATE_COMMAND[g](slug) }));
     const base = { n: i + 1, gates, note: s.note || '' };
 
-    // `args` khi tool không nhận slug ở vị trí đầu, hoặc cần cờ: `{slug}` được thay bằng slug thật.
-    // Cờ phải đứng sau `--`, không thì npm nuốt mất (`npm run x --write` không tới được script).
+    // `args` when the tool does not take the slug as its first argument, or needs a flag: `{slug}` is replaced by the real slug.
+    // Flags must come after `--`, otherwise npm swallows them (`npm run x --write` không tới được script).
     if (s.tool) {
       const run = typeof s.args === 'string'
         ? `npm run ${s.tool} -- ${s.args.replace(/\{slug\}/g, slug)}`

@@ -1,19 +1,19 @@
 /**
- * domain.js — Nạp "pack ngành" (domain pack) mà dự án đã chọn. Một loader duy nhất cho mọi tool.
+ * domain.js — Loads the "domain pack" the project selected. One single loader for every tool.
  *
- *   loadDomain({ root, domainsDir })  Đọc knowledge/_sut.json → `domain`, gộp các pack + knowledge/_domain.md
- *   listPacks(domainsDir)             Các pack id có trên đĩa (bỏ thư mục bắt đầu bằng `_`)
- *   validatePack(dir, opts)           Kiểm một pack: đủ file, JSON đọc được, README có nguồn, không chứa mã FACT
- *   parseOverride(text)               Tách các mục của knowledge/_domain.md
+ *   loadDomain({ root, domainsDir })  Reads knowledge/_sut.json → `domain`, merges the packs + knowledge/_domain.md
+ *   listPacks(domainsDir)             Pack ids present on disk (skips folders starting with `_`)
+ *   validatePack(dir, opts)           Validates a pack: required files, readable JSON, README has a source, no FACT ids
+ *   parseOverride(text)               Splits the sections of knowledge/_domain.md
  *
- * Vì sao có file này: trước đây chủ đề xung đột, kiểu dữ liệu sinh và đơn vị tiền tệ đều cứng theo
- * thương mại điện tử nằm rải rác trong ba tool. Gom về một chỗ thì mọi tool đọc CÙNG một lựa chọn ngành,
- * và dự án không chọn ngành nào vẫn chạy đúng như cũ (mọi tool tự rơi về giá trị mặc định cũ khi `ids` rỗng).
+ * Why this file exists: conflict topics, generated data types and currency units used to be hard-wired to
+ * e-commerce, scattered across three tools. Gathered in one place, every tool reads the SAME domain choice,
+ * and a project that selects no domain behaves exactly as before (every tool falls back to the old defaults when `ids` is empty).
  *
- * Luật nền (QA_STANDARD §10): pack là CHECKLIST, không phải nguồn sự thật. Loader chỉ trả đường dẫn và
- * cấu hình máy đọc; không biến nội dung pack thành BR/FD.
+ * Base rule (QA_STANDARD §10): a pack is a CHECKLIST, not a source of truth. The loader returns only paths and
+ * machine-readable config; it never turns pack content into BR/FD.
  *
- * Thuần: chỉ đọc file, không ghi, không in, không giữ trạng thái giữa các lần gọi.
+ * Pure: only reads files — no writes, no printing, no state kept between calls.
  */
 
 const fs = require('fs');
@@ -23,9 +23,9 @@ const REQUIRED_FILES = ['README.md', 'vocab.md', 'risks.md', 'rule-patterns.md',
 const MD_KEYS = { 'vocab.md': 'vocab', 'risks.md': 'risks', 'rule-patterns.md': 'rulePatterns' };
 const PACK_ID = /^[a-z0-9][a-z0-9-]*$/;
 
-// Mã sự thật của QA_STANDARD §9.1. Pack chứa một mã như vậy là đang giả làm nguồn sự thật.
+// Fact ids of QA_STANDARD §9.1. A pack containing such an id is posing as a source of truth.
 const FACT_ID = /\b(?:BR|FD|AF|OQ|MR|RK|TI)-\d+\b/g;
-// Ô còn là khuôn: `<to be filled …>`, `<điền>` — coi như chưa khai (QA_STANDARD §8 luật đọc).
+// A cell that is still a template: `<to be filled …>`, `<điền>` — treated as undeclared (QA_STANDARD §8 reading rule).
 const PLACEHOLDER = /<\s*(?:to be filled|điền)[^>]*>/iu;
 
 const posix = (p) => p.split(path.sep).join('/');
@@ -35,7 +35,7 @@ function readJson(file) {
   try {
     return JSON.parse(readText(file));
   } catch (e) {
-    throw new Error(`${file}: JSON không đọc được — ${e.message}`);
+    throw new Error(`${file}: unreadable JSON — ${e.message}`);
   }
 }
 
@@ -47,14 +47,14 @@ function listPacks(domainsDir) {
     .sort();
 }
 
-/** `domain` của _sut.json: chuỗi hoặc mảng. Rỗng / khuôn `<…>` = chưa chọn ngành. */
+/** `domain` of _sut.json: a string or an array. Empty / template `<…>` = no domain selected. */
 function selectedIds(sut) {
   const raw = sut && sut.domain;
   if (raw === undefined || raw === null || raw === '') return [];
   const list = Array.isArray(raw) ? raw : [raw];
   const ids = [];
   for (const v of list) {
-    if (typeof v !== 'string') throw new Error(`knowledge/_sut.json: "domain" phải là chuỗi hoặc mảng chuỗi, gặp ${JSON.stringify(v)}`);
+    if (typeof v !== 'string') throw new Error(`knowledge/_sut.json: "domain" must be a string or an array of strings, got ${JSON.stringify(v)}`);
     const id = v.trim();
     if (!id || /^<.*>$/.test(id)) continue;
     if (!ids.includes(id)) ids.push(id);
@@ -63,8 +63,8 @@ function selectedIds(sut) {
 }
 
 /**
- * Phần chữ có nội dung thật của một mục: bỏ chú thích HTML, dòng hướng dẫn `>`, dòng còn khuôn,
- * dòng tiêu đề và dòng kẻ của bảng (một bảng chỉ có tiêu đề là bảng rỗng).
+ * The real content text of a section: drops HTML comments, `>` instruction lines, template lines,
+ * table header and rule lines (a table with only a header is an empty table).
  */
 function meaningful(text) {
   const out = [];
@@ -85,15 +85,15 @@ function fencedJson(body, where) {
   try {
     return JSON.parse(m[1]);
   } catch (e) {
-    throw new Error(`${where}: khối \`\`\`json không đọc được — ${e.message}`);
+    throw new Error(`${where}: unreadable \`\`\`json block — ${e.message}`);
   }
 }
 
 const SECTION_KEYS = { vocab: 'vocab', risks: 'risks', 'rule-patterns': 'rulePatterns', datagen: 'datagen', units: 'units' };
 
 /**
- * knowledge/_domain.md: các mục `## vocab` · `## risks` · `## rule-patterns` (markdown tự do) và
- * `## datagen` · `## units` (một khối ```json cùng định dạng với file của pack). Mục chỉ còn khuôn ⇒ bỏ qua.
+ * knowledge/_domain.md: the sections `## vocab` · `## risks` · `## rule-patterns` (free markdown) and
+ * `## datagen` · `## units` (a ```json block in the same format as the pack file). A section that is only a template ⇒ ignored.
  */
 function parseOverride(text, where = 'knowledge/_domain.md') {
   const out = { vocab: null, risks: null, rulePatterns: null, datagen: null, units: null };
@@ -112,14 +112,14 @@ function parseOverride(text, where = 'knowledge/_domain.md') {
 
 const sameJson = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-/** Gộp datagen của nhiều nguồn. Cùng tên mà khác định nghĩa ⇒ báo lỗi, không tự chọn bên nào. */
+/** Merge datagen from several sources. Same name with different definitions ⇒ error, never picks a side. */
 function mergeDatagen(target, src, from, { override = false } = {}) {
   for (const kind of ['types', 'enums']) {
     for (const [name, def] of Object.entries((src && src[kind]) || {})) {
       if (name.startsWith('_')) continue;
       const prev = target[kind][name];
       if (prev && !override && !sameJson(prev.def, def)) {
-        throw new Error(`datagen.${kind}.${name} được định nghĩa khác nhau ở ${prev.from} và ${from} — sửa một bên hoặc khai trong knowledge/_domain.md`);
+        throw new Error(`datagen.${kind}.${name} is defined differently in ${prev.from} and ${from} — fix one side or declare it in knowledge/_domain.md`);
       }
       target[kind][name] = { def, from };
     }
@@ -136,8 +136,8 @@ function unitsOf(json) {
  * @returns {{ids: string[], packs: Array<{id, dir, readme}>, conflictTopics: object|null,
  *           datagen: {types: object, enums: object}, units: string[],
  *           files: {vocab: string[], risks: string[], rulePatterns: string[]}, override: object|null}}
- *   conflictTopics = null khi chưa chọn ngành ⇒ tool dùng chủ đề mặc định cũ.
- *   Đường dẫn trong `packs`/`files` là tương đối so với `root`, dấu `/`.
+ *   conflictTopics = null when no domain is selected ⇒ tools use the old default topics.
+ *   Paths in `packs`/`files` are relative to `root`, with `/` separators.
  */
 function loadDomain(opts = {}) {
   const root = opts.root || require('./paths').PATHS.ROOT;
@@ -152,8 +152,8 @@ function loadDomain(opts = {}) {
   const available = listPacks(domainsDir);
   const unknown = ids.filter((id) => !available.includes(id));
   if (unknown.length) {
-    throw new Error(`knowledge/_sut.json chọn ngành không có trong qa-system/domains/: ${unknown.join(', ')}. ` +
-      `Các pack đang có: ${available.join(', ') || '(chưa có pack nào)'}. Không tự đoán pack gần nhất.`);
+    throw new Error(`knowledge/_sut.json selects a domain that is not in qa-system/domains/: ${unknown.join(', ')}. ` +
+      `Available packs: ${available.join(', ') || '(no pack yet)'}. Do not guess the closest pack.`);
   }
 
   const result = {
@@ -178,7 +178,7 @@ function loadDomain(opts = {}) {
     const topicsFile = path.join(dir, 'conflict_topics.json');
     const topics = fs.existsSync(topicsFile) ? readJson(topicsFile).topics || {} : {};
     for (const [key, topic] of Object.entries(topics)) {
-      // Hai pack trùng khoá chủ đề: giữ cả hai, khoá thứ hai mang tiền tố pack — không ghi đè lặng lẽ.
+      // Two packs share a topic key: keep both, the second key gets the pack prefix — no silent overwrite.
       result.conflictTopics[key in result.conflictTopics ? `${id}:${key}` : key] = topic;
     }
 
@@ -188,7 +188,7 @@ function loadDomain(opts = {}) {
     if (fs.existsSync(unitsFile)) addUnits(unitsOf(readJson(unitsFile)));
   }
 
-  // knowledge/_domain.md là của dự án ⇒ thắng pack khi trùng tên (người dự án đã viết ra, không phải máy đoán).
+  // knowledge/_domain.md belongs to the project ⇒ wins over a pack on a name clash (the project wrote it, not a machine guess).
   if (fs.existsSync(overrideFile)) {
     const ov = parseOverride(readText(overrideFile), rel(overrideFile));
     const has = Object.values(ov).some((v) => v !== null);
@@ -206,11 +206,11 @@ function loadDomain(opts = {}) {
   return result;
 }
 
-// ───────────────────────── Kiểm một pack (agent-doctor) ─────────────────────────
+// ───────────────────────── Validate a pack (agent-doctor) ─────────────────────────
 
 /**
- * @param {string} dir  thư mục pack
- * @param {{template?: boolean, engines?: string[]}} opts  template: cho phép khuôn `<to be filled>`, bỏ kiểm URL
+ * @param {string} dir  pack directory
+ * @param {{template?: boolean, engines?: string[]}} opts  template: allow `<to be filled>` placeholders, skip the URL check
  * @returns {Array<{level: 'FAIL'|'WARN', file: string, msg: string}>}
  */
 function validatePack(dir, { template = false, engines = null } = {}) {
@@ -219,10 +219,10 @@ function validatePack(dir, { template = false, engines = null } = {}) {
   const warn = (file, msg) => out.push({ level: 'WARN', file, msg });
   const id = path.basename(dir);
 
-  if (!template && !PACK_ID.test(id)) fail('.', `Tên pack "${id}" phải là chữ thường, số, gạch nối`);
+  if (!template && !PACK_ID.test(id)) fail('.', `Pack name "${id}" must be lowercase letters, digits, hyphens`);
 
   for (const f of REQUIRED_FILES) {
-    if (!fs.existsSync(path.join(dir, f))) fail(f, 'Thiếu file bắt buộc');
+    if (!fs.existsSync(path.join(dir, f))) fail(f, 'Missing required file');
   }
 
   for (const f of fs.existsSync(dir) ? fs.readdirSync(dir) : []) {
@@ -231,35 +231,35 @@ function validatePack(dir, { template = false, engines = null } = {}) {
     const text = readText(full);
 
     const ids = [...new Set(text.match(FACT_ID) || [])];
-    if (ids.length) fail(f, `Chứa mã sự thật ${ids.slice(0, 5).join(', ')} — pack là checklist, không phải nguồn BR/FD (QA_STANDARD §10)`);
-    if (!template && PLACEHOLDER.test(text)) warn(f, 'Còn ô khuôn `<to be filled …>` — điền nguồn hoặc ghi `Unknown`');
+    if (ids.length) fail(f, `Contains fact ids ${ids.slice(0, 5).join(', ')} — a pack is a checklist, not a BR/FD source (QA_STANDARD §10)`);
+    if (!template && PLACEHOLDER.test(text)) warn(f, 'Still has a `<to be filled …>` placeholder — fill in the source or write `Unknown`');
 
     if (!f.endsWith('.json')) continue;
     let json;
-    try { json = JSON.parse(text); } catch (e) { fail(f, `JSON không đọc được — ${e.message}`); continue; }
+    try { json = JSON.parse(text); } catch (e) { fail(f, `unreadable JSON — ${e.message}`); continue; }
 
     if (f === 'conflict_topics.json') {
       const topics = json.topics;
-      if (!topics || typeof topics !== 'object' || Array.isArray(topics)) { fail(f, 'Cần khoá "topics" là object'); continue; }
+      if (!topics || typeof topics !== 'object' || Array.isArray(topics)) { fail(f, 'Key "topics" must be an object'); continue; }
       for (const [k, t] of Object.entries(topics)) {
         if (!t || typeof t.category !== 'string' || !Array.isArray(t.allow) || !Array.isArray(t.deny)) {
-          fail(f, `topics.${k} cần "category" (chuỗi), "allow" và "deny" (mảng)`);
+          fail(f, `topics.${k} needs "category" (string), "allow" and "deny" (arrays)`);
         }
       }
     } else if (f === 'datagen.json') {
       for (const kind of ['types', 'enums']) {
-        if (json[kind] !== undefined && (typeof json[kind] !== 'object' || Array.isArray(json[kind]))) fail(f, `"${kind}" phải là object`);
+        if (json[kind] !== undefined && (typeof json[kind] !== 'object' || Array.isArray(json[kind]))) fail(f, `"${kind}" must be an object`);
       }
       for (const [name, def] of Object.entries(json.types || {})) {
         if (name.startsWith('_')) continue;
-        if (!def || typeof def.generator !== 'string') { fail(f, `types.${name} cần "generator" (tên engine của generate-dataset)`); continue; }
-        if (engines && !engines.includes(def.generator)) fail(f, `types.${name}.generator "${def.generator}" không phải engine có thật (${engines.join(', ')})`);
+        if (!def || typeof def.generator !== 'string') { fail(f, `types.${name} needs "generator" (a generate-dataset engine name)`); continue; }
+        if (engines && !engines.includes(def.generator)) fail(f, `types.${name}.generator "${def.generator}" is not a real engine (${engines.join(', ')})`);
       }
       for (const [name, vals] of Object.entries(json.enums || {})) {
-        if (!name.startsWith('_') && !Array.isArray(vals)) fail(f, `enums.${name} phải là mảng`);
+        if (!name.startsWith('_') && !Array.isArray(vals)) fail(f, `enums.${name} must be an array`);
       }
     } else if (f === 'units.json') {
-      if (!Array.isArray(json.units) || json.units.some((u) => typeof u !== 'string')) fail(f, 'Cần khoá "units" là mảng chuỗi');
+      if (!Array.isArray(json.units) || json.units.some((u) => typeof u !== 'string')) fail(f, 'Key "units" must be an array of strings');
     }
   }
 
@@ -267,7 +267,7 @@ function validatePack(dir, { template = false, engines = null } = {}) {
   if (!template && fs.existsSync(readme)) {
     const text = readText(readme);
     if (!/https?:\/\/\S+/.test(text) && !/\bUnknown\b/.test(text)) {
-      fail('README.md', 'Cần ít nhất một URL nguồn (http/https) hoặc ghi rõ `Unknown` — không tự đặt nguồn');
+      fail('README.md', 'Needs at least one source URL (http/https) or an explicit `Unknown` — never invent a source');
     }
   }
   return out;

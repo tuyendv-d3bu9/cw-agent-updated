@@ -136,7 +136,7 @@ test('5 a table split by a blank line is warned about', () => {
     fullTask();
     const s01 = summary01({ br: ['BR-01'] }).replace(/(\| BR-01 \|[^\n]*\n)/, '$1\n| BR-02 | đk | kq | 02_ba/spec.md §1 | Mã voucher hết hạn thì hiển thị thông báo lỗi |\n');
     write('OUTPUT/t/01_requirement_risk_summary.md', s01);
-    assert.match(lint('t').warns.map((w) => w.msg).join(' '), /bảng bị ngắt bởi dòng trống/);
+    assert.match(lint('t').warns.map((w) => w.msg).join(' '), /table split by a blank line/);
   } finally { t.cleanup(); }
 });
 
@@ -183,8 +183,8 @@ test('7 a Mode-1 task (no data branch) can reach GO without 12_; once 09-11 exis
 
 test('8 stale-verdict note has the exact wording', () => {
   assert.strictEqual(STALE_NOTE,
-    'Mọi MR của 02 đã chốt trong knowledge — sửa dòng meta của 02 thành Verdict: PASS (không cần chạy lại Chặng 2). ' +
-    'Chạy lại Chặng 01 để nâng MR đã chốt thành BR và cập nhật §9.');
+    'Every MR of 02 is settled in knowledge — change the meta line of 02 to Verdict: PASS (no need to re-run Stage 2). ' +
+    'Re-run Stage 01 to promote settled MRs to BR and update §9.');
   const t = useTempProject();
   try {
     write('OUTPUT/t/02_missing_rule_report.md', report02({ verdict: 'ASK', questions: [{ id: 'MR-01', question: 'q?' }] }));
@@ -203,9 +203,9 @@ test('8 an answer/decision that is still a template slot (<…>) does not count,
     }));
     const s = evaluate('t');
     assert.ok(s.blocked);
-    assert.match(s.advisories.join(' '), /câu trả lời của BA chưa phải chữ cụ thể — giữ MR ở TREO và hỏi lại/);
-    assert.match(errText(), /MR-01: câu trả lời của BA chưa phải chữ cụ thể/);
-    assert.match(errText(), /MR-02: câu trả lời của BA chưa phải chữ cụ thể/);
+    assert.match(s.advisories.join(' '), /the BA answer is not concrete text yet — keep the MR at TREO and ask again/);
+    assert.match(errText(), /MR-01: the BA answer is not concrete text yet/);
+    assert.match(errText(), /MR-02: the BA answer is not concrete text yet/);
     // An HTML payload in an answer is not a template slot.
     assert.ok(!S.hasAnglePlaceholder("Chặn <script>alert(1)</script>"));
   } finally { t.cleanup(); }
@@ -222,7 +222,7 @@ test('9 status falls back to the 01-06 files when 00_plan.md has no ticks', () =
     const { taskStatus } = require('../system/status');
     const st = taskStatus('t');
     assert.deepStrictEqual([st.done, st.total, st.source], [5, 6, 'files']);
-    assert.match(st.nextAction, /Chặng 04 có verdict FIX/);
+    assert.match(st.nextAction, /Stage 04 has verdict FIX/);
     const { tasks } = require('../system/start');
     const row = tasks().find((x) => x.slug === 't');
     assert.deepStrictEqual([row.done, row.total, row.fromFiles], [5, 6, true]);

@@ -157,7 +157,7 @@ test('#5/#6 fileKind — ảnh là asset, .ppt/.doc bị từ chối, .zip khôn
 test('#5 không đọc mò file nhị phân không hỗ trợ', async () => {
   const file = out('a.zip');
   fs.writeFileSync(file, 'PK\u0003\u0004');
-  await assert.rejects(convertDocumentToMarkdown(file), /không được hỗ trợ/);
+  await assert.rejects(convertDocumentToMarkdown(file), /is not supported/);
 });
 
 test('htmlToMarkdown — colspan đánh dấu gộp, rowspan lặp; danh sách và heading', () => {
@@ -235,7 +235,7 @@ test('readText — UTF-8 (có/không BOM) và UTF-16 có BOM đọc đúng; byte
   assert.strictEqual(readText(w('b.txt', Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(vi)]))), vi);
   assert.strictEqual(readText(w('c.txt', Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(vi, 'utf16le')]))), vi);
   // Windows-1258 / byte không phải UTF-8: không được giải mã thành chữ rác.
-  assert.throws(() => readText(w('d.txt', Buffer.from([0x4d, 0x61, 0xe2, 0x74, 0x20, 0x6b, 0x68, 0xe2, 0x75]))), /không đọc được bằng UTF-8/);
+  assert.throws(() => readText(w('d.txt', Buffer.from([0x4d, 0x61, 0xe2, 0x74, 0x20, 0x6b, 0x68, 0xe2, 0x75]))), /cannot be read as UTF-8/);
 });
 
 test('định dạng có nghĩa: chữ gạch ngang, chỉ số trên/dưới, bảng — không bị đọc như giá trị đang hiệu lực', () => {

@@ -111,11 +111,11 @@ function context(slug, dir) {
   for (const q of k.questions) if (/^MR-/.test(q.id) && S.resolvedInKnowledge(q, k)) mrResolved.add(q.id);
   for (const d of k.decisions) if (d.valid) d.related.filter((x) => x.startsWith('MR-')).forEach((x) => mrResolved.add(x));
 
-  // MR có thật = có trong bảng câu hỏi của 02 hoặc trong knowledge §7 (nhãn [CHƯA CÓ… – MR-xx] phải trỏ vào đây).
+  // A real MR = present in the question table of 02 or in knowledge §7 (a [CHƯA CÓ… – MR-xx] label must point here).
   const mrKnown = new Set(k.questions.filter((q) => /^MR-/.test(q.id)).map((q) => q.id));
   if (t02) for (const q of S.read02Questions(t02)) if (/^MR-/.test(q.id)) mrKnown.add(q.id);
 
-  // Đơn vị thêm của pack ngành đã chọn. Chưa chọn ⇒ [] ⇒ lint đếm con số y như trước.
+  // Extra units from the selected domain pack. None selected ⇒ [] ⇒ lint counts numbers exactly as before.
   const { units } = loadDomain({ root: PATHS.ROOT });
   const sources = P.buildSources({ t01, k, units });
 
@@ -196,8 +196,8 @@ function lintTestCases(ctx, R, FIELDS) {
         R.error(rel, id, `Priority "${S.stripMd(values.Priority)}" is not High / Medium / Low (optionally followed by [ĐỀ XUẤT]) — QA_STANDARD §11`);
       }
 
-      // Nguồn gốc giá trị: chuỗi trong ngoặc kép / con số ở Expected & Test Data phải có trong nguồn đã kiểm;
-      // [GIẢ ĐỊNH] không được nằm trong ô giá trị; nhãn [CHƯA CÓ… – MR-xx] phải trỏ tới MR có thật.
+      // Value provenance: quoted strings / numbers in Expected & Test Data must exist in the verified sources;
+      // [GIẢ ĐỊNH] must not sit in a value cell; a [CHƯA CÓ… – MR-xx] label must point to a real MR.
       for (const f of P.checkTestCase((name) => S.tcField(tc, name), ctx.sources, ctx.mrKnown)) {
         (f.level === 'error' ? R.error : R.warn)(rel, id, f.msg);
       }
@@ -289,7 +289,7 @@ function inputFiles(ctx) {
     if (!fs.existsSync(d)) return;
     for (const e of fs.readdirSync(d, { withFileTypes: true })) {
       const p = path.join(d, e.name);
-      // _superseded/ = bản cũ đã bị thay: trích dẫn phải lấy từ bản đang dùng.
+      // _superseded/ = replaced old versions: quotes must come from the current version.
       if (e.isDirectory()) { if (e.name !== '_superseded') walk(p, base); }
       else if (/\.(md|txt|csv)$/i.test(e.name) && !/^readme\.md$/i.test(e.name)) {
         files.push({ rel: path.relative(base, p).split(path.sep).join('/'), norm: S.normText(fs.readFileSync(p, 'utf-8')) });
@@ -298,8 +298,8 @@ function inputFiles(ctx) {
   };
   const input = path.join(PATHS.INPUT, ctx.slug);
   walk(input, input);
-  // 00_knowledge_digest*.md cố ý KHÔNG nằm trong tập nguồn: nó do agent viết ra từ INPUT/, không ai dò lại.
-  // Trích dẫn qua digest vẫn dò được vì tài liệu gốc vẫn ở INPUT/.
+  // 00_knowledge_digest*.md is deliberately NOT in the source set: the agent wrote it from INPUT/, nobody re-checks it.
+  // Quotes via the digest can still be traced because the original documents remain in INPUT/.
   return files;
 }
 
@@ -343,7 +343,7 @@ function lint01(ctx, R) {
           if (!/^knowledge\s*§\s*8/i.test(src)) {
             R.error(name, where, '"Trích nguyên văn" is empty — only allowed when Nguồn is `knowledge §8 #n`');
           } else {
-            // `knowledge §8 #n` phải trỏ tới một dòng §8 CÓ THẬT và hợp lệ (người phê duyệt + ngày).
+            // `knowledge §8 #n` must point to a REAL, valid §8 row (approver + date).
             const num = (src.match(/#\s*(\d+)/) || [])[1];
             const d = num ? ctx.k.decisions.find((x) => String(x.num).replace(/\D/g, '') === num) : null;
             if (!num) R.error(name, where, 'Nguồn `knowledge §8` needs the row number: `knowledge §8 #n`');
@@ -366,7 +366,7 @@ function lint01(ctx, R) {
           continue;
         }
 
-        // Câu trích có thật chưa đủ: các con số của dòng phải nằm TRONG câu trích, và chữ thông báo phải có trong nguồn.
+        // A real quote is not enough: the numbers of the row must be INSIDE the quote, and message text must exist in the source.
         const rowText = ['condition', 'behavior', 'constraint'].map((c) => S.stripMd(S.cell(t, r, c))).join(' ');
         const missingNums = P.numbersMissingFromQuote(rowText, S.stripMd(quote), ctx.sources.unitRe);
         if (missingNums.length) {
@@ -479,7 +479,7 @@ function lintEmptyCells(dir, R) {
     let firstLine = 0;
     for (const t of S.parseTables(read(path.join(dir, name)))) {
       if (t.idLikeHeader) {
-        R.warn(name, `line ${t.line}`, `Table starts with a data-like row "${S.stripMd(t.headers[0])}" — bảng bị ngắt bởi dòng trống? (rows after a blank line lose their header)`);
+        R.warn(name, `line ${t.line}`, `Table starts with a data-like row "${S.stripMd(t.headers[0])}" — table split by a blank line? (rows after a blank line lose their header)`);
       }
       if (t.headers.length < 2) continue;
       for (const r of t.rows) {
@@ -505,7 +505,7 @@ function lintKnowledge(ctx, R) {
   for (const d of ctx.k.decisions) {
     if (d.placeholder) R.error(name, `line ${d.line}`, `§8 ${d.related.join(', ') || '#' + d.num}: ${S.NOT_CONCRETE_HINT}`);
   }
-  // BR/FD/AF đã ghi vào knowledge cũng không được lấy pack ngành làm nguồn.
+  // BR/FD/AF already written to knowledge must not take a domain pack as their source either.
   for (const num of ['3', '3b', '5']) {
     const sec = S.sectionAt(ctx.k.text, num);
     if (!sec) continue;

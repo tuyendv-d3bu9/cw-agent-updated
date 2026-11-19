@@ -48,34 +48,34 @@ const has = (p) => fs.existsSync(path.join(PATHS.ROOT, p));
 
 const ZONES = [
   {
-    title: 'CỦA BẠN — cứ thoải mái thêm, sửa, xoá',
+    title: 'YOURS — add, edit, delete freely',
     icon: '📥',
     rows: [
-      ['INPUT/', 'Thả tài liệu BA/PRD/API/Figma vào đây. Kéo thả là đủ.'],
-      ['OUTPUT/', 'Kết quả agent sinh ra. Đọc, sửa, nộp bài từ đây.'],
+      ['INPUT/', 'Drop BA/PRD/API/Figma documents here. Drag and drop is enough.'],
+      ['OUTPUT/', 'Agent-generated results. Read, edit, submit from here.'],
     ],
   },
   {
-    title: 'DÙNG CHUNG — bạn và agent cùng ghi',
+    title: 'SHARED — you and the agent both write',
     icon: '🧠',
     rows: [
-      ['knowledge/', 'Tri thức tích luỹ: quy tắc đã chốt, câu trả lời của BA.'],
-      ['', 'Thứ duy nhất sống lâu hơn OUTPUT/. Mất là phải hỏi lại BA.'],
+      ['knowledge/', 'Accumulated knowledge: settled rules, BA answers.'],
+      ['', 'The only thing that outlives OUTPUT/. Lose it and the BA must be asked again.'],
     ],
   },
   {
-    title: 'MÁY MÓC — chỉ đụng khi cố ý nâng cấp hệ thống',
+    title: 'MACHINERY — touch only when deliberately upgrading the system',
     icon: '⚙️',
     rows: [
-      ['qa-system/', `${agentCount() || 'Các'} agent QA + skill + công cụ. Sửa ở đây = nâng cấp hệ thống.`],
-      ['automation/', 'Code Playwright cho hệ thống đang kiểm thử. Chỉ cần khi làm automation.'],
+      ['qa-system/', `${agentCount() || 'The'} QA agents + skills + tools. Editing here = upgrading the system.`],
+      ['automation/', 'Playwright code for the system under test. Only needed for automation.'],
     ],
   },
   {
-    title: 'ĐỌC THÔI — không cần sửa',
+    title: 'READ-ONLY — no need to edit',
     icon: '📖',
     rows: [
-      ['AGENTS.md', 'Hiến pháp cho mọi AI Agent. Agent tự đọc, bạn không cần.'],
+      ['AGENTS.md', 'Constitution for every AI agent. Agents read it themselves; you need not.'],
     ],
   },
 ];
@@ -86,8 +86,8 @@ function environment() {
   const checks = [];
   checks.push({
     ok: has('node_modules'),
-    label: 'Thư viện đã cài',
-    fix: 'Agent sẽ tự chạy `npm install`',
+    label: 'Dependencies installed',
+    fix: 'The agent will run `npm install` itself',
   });
 
   // Playwright caches browsers outside the repo; this is the slowest setup step.
@@ -102,8 +102,8 @@ function environment() {
     fs.existsSync(cache) && fs.readdirSync(cache).some((d) => d.startsWith('chromium'));
   checks.push({
     ok: hasBrowser,
-    label: 'Trình duyệt Playwright',
-    fix: 'Agent sẽ tự chạy `npx playwright install chromium` (~150 MB)',
+    label: 'Playwright browser',
+    fix: 'The agent will run `npx playwright install chromium` itself (~150 MB)',
   });
 
   return checks;
@@ -129,8 +129,8 @@ function tasks() {
     let gateBlocked = false;
     try {
       const g = require('./gate').evaluate(slug);
-      // Chưa qua Chặng 2 thì cổng đóng theo thiết kế (fail-closed) nhưng chưa có câu hỏi nào
-      // để chờ BA — đó là "đang làm dở", không phải "bị chặn".
+      // Before Stage 2 the gate is closed by design (fail-closed) but there is no question yet
+      // to wait on the BA — that is "in progress", not "blocked".
       gateBlocked = g.blocked && g.phase !== 'pre-stage-2';
     } catch {
       /* treat a gate error as open; never block viewing progress */
@@ -146,30 +146,30 @@ function nextStep(list) {
 
   if (loose.length) {
     return [
-      `Có ${loose.length} tài liệu rời đang nằm trong INPUT/ chưa được tiếp nhận.`,
-      `Nói với agent:  "Tôi vừa bỏ tài liệu vào INPUT, xử lý giúp"`,
+      `${loose.length} loose document(s) in INPUT/ have not been taken in yet.`,
+      `Tell the agent:  "I just put documents into INPUT, please process them"`,
     ];
   }
 
   if (list.length === 0) {
     return [
-      'Chưa có task nào. Bắt đầu bằng cách kéo tài liệu của BA vào thư mục INPUT/.',
-      `Rồi nói với agent:  "Tôi vừa bỏ tài liệu vào INPUT, xử lý giúp"`,
+      'No task yet. Start by dragging the BA documents into the INPUT/ folder.',
+      `Then tell the agent:  "I just put documents into INPUT, please process them"`,
     ];
   }
 
   const blocked = list.find((t) => t.gateBlocked);
   if (blocked) {
     return [
-      `Task "${blocked.slug}" đang bị CHẶN vì còn câu hỏi chưa được BA trả lời.`,
-      `Nói với agent:  "Cho tôi xem các câu hỏi đang treo của ${blocked.slug}"`,
+      `Task "${blocked.slug}" is BLOCKED: questions are still unanswered by the BA.`,
+      `Tell the agent:  "Show me the pending questions of ${blocked.slug}"`,
     ];
   }
 
   const doing = list.find((t) => t.total > 0 && t.done < t.total) || list[0];
   return [
-    `Task "${doing.slug}" đang làm dở (${doing.done}/${doing.total} chặng).`,
-    `Nói với agent:  "Tiếp tục"`,
+    `Task "${doing.slug}" is in progress (${doing.done}/${doing.total} stages).`,
+    `Tell the agent:  "Continue"`,
   ];
 }
 
@@ -179,33 +179,33 @@ function main() {
   const list = tasks();
 
   console.log(`\n${line('━')}`);
-  console.log('  HỆ THỐNG QA AGENT — BẮT ĐẦU TỪ ĐÂU');
+  console.log('  QA AGENT SYSTEM — WHERE TO START');
   console.log(line('━'));
 
-  console.log('\n  Bạn KHÔNG cần gõ lệnh terminal. Chỉ cần nói chuyện với agent');
-  console.log('  bằng tiếng Việt bình thường. Agent tự chạy mọi thứ ở hậu trường.\n');
+  console.log('\n  You do NOT need to type terminal commands. Just talk to the agent');
+  console.log('  in plain language. The agent runs everything behind the scenes.\n');
 
   // Next action first: it is the most urgent question.
   console.log(line());
-  console.log('  👉 LÀM GÌ TIẾP');
+  console.log('  👉 WHAT TO DO NEXT');
   console.log(line());
   nextStep(list).forEach((l) => console.log(`  ${l}`));
 
   // Current tasks.
   if (list.length) {
     console.log(`\n${line()}`);
-    console.log('  📋 CÔNG VIỆC HIỆN CÓ');
+    console.log('  📋 CURRENT WORK');
     console.log(line());
     for (const t of list) {
-      const bar = t.total ? `${t.done}/${t.total} chặng${t.fromFiles ? ' (đếm theo file 01–06 đạt PASS)' : ''}` : 'chưa có kế hoạch';
-      const flag = t.gateBlocked ? '  ⛔ đang bị chặn (chờ BA trả lời)' : '';
+      const bar = t.total ? `${t.done}/${t.total} stages${t.fromFiles ? ' (counted from files 01–06 with PASS)' : ''}` : 'no plan yet';
+      const flag = t.gateBlocked ? '  ⛔ blocked (waiting for BA answers)' : '';
       console.log(`  • ${t.slug.padEnd(30)} ${bar}${flag}`);
     }
   }
 
   // Ownership map: the part that actually answers "what am I allowed to touch".
   console.log(`\n${line()}`);
-  console.log('  🗺️  THƯ MỤC NÀO LÀ CỦA AI');
+  console.log('  🗺️  WHOSE FOLDER IS WHICH');
   console.log(line());
   for (const z of ZONES) {
     console.log(`\n  ${z.icon} ${z.title}`);
@@ -219,10 +219,10 @@ function main() {
   const missing = env.filter((c) => !c.ok);
   if (missing.length) {
     console.log(`\n${line()}`);
-    console.log('  ⚠️  MÔI TRƯỜNG CHƯA SẴN SÀNG');
+    console.log('  ⚠️  ENVIRONMENT NOT READY');
     console.log(line());
     missing.forEach((c) => console.log(`  • ${c.label} — ${c.fix}`));
-    console.log('\n  Nói với agent: "Chuẩn bị môi trường giúp tôi"');
+    console.log('\n  Tell the agent: "Please set up the environment"');
   }
 
   console.log(`\n${line('━')}\n`);

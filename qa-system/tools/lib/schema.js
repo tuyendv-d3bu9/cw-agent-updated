@@ -25,7 +25,7 @@ const { PATHS, taskDir, featureKnowledge } = require('./paths');
 
 // ───────────────────────────── Text ─────────────────────────────
 
-// Một chỗ chuẩn hoá mọi file: NFC + bỏ BOM + CRLF/CR về LF (`.` không khớp `\r` nên file CRLF từng bị coi là thiếu trường).
+// One place normalises every file: NFC + strip BOM + CRLF/CR to LF (`.` does not match `\r`, so CRLF files used to look like they lacked fields).
 const nfc = (s) => String(s == null ? '' : s).normalize('NFC').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
 
 /** Removes markdown decoration (bold, italics, code ticks, escapes) and trims. */
@@ -99,7 +99,7 @@ function quoteMatch(quote, haystackNorm) {
     let end = anchor + parts[0].length;
     let ok = true;
     for (const p of parts.slice(1)) {
-      // Chỉ nhìn trong cửa sổ MAX_GAP — không quét hết file cho mỗi mỏ neo.
+      // Only look inside the MAX_GAP window — do not scan the whole file for every anchor.
       const win = haystackNorm.slice(end, end + MAX_GAP + p.length);
       const at = win.indexOf(p);
       if (at === -1) { ok = false; break; }
@@ -283,8 +283,8 @@ const PENDING_MARKERS = ['chưa', 'chờ', 'một phần', 'tạm', 'tbd', 'not 
 function normalizeStatus(raw) {
   const t = normKey(raw);
   if (!t) return null;
-  // 0. Dấu hỏi hoặc từ chờ/chưa/một phần ở BẤT KỲ đâu ⇒ chưa chốt, dù đứng sau chữ "Confirmed".
-  //    ("Confirmed? chưa chắc", "Confirmed – chờ BA ký", "Đã xác nhận một phần" từng mở cổng.)
+  // 0. A question mark or a waiting/not-yet/partial word ANYWHERE ⇒ not settled, even after the word "Confirmed".
+  //    ("Confirmed? not sure", "Confirmed – waiting for BA sign-off", "Partially confirmed" used to open the gate.)
   if (/\?/.test(t) || PENDING_MARKERS.some((w) => hasWord(t, w))) return hasWord(t, 'treo') ? 'TREO' : 'New';
   // 1. A canonical word at the very start decides ("Confirmed (BA An)").
   for (const [canon, words] of STATUS_LEAD) {
@@ -300,7 +300,7 @@ function normalizeStatus(raw) {
   return null;
 }
 
-/** Người trả lời / phê duyệt phải là con người: AI, agent, bot không được tự chốt thay BA/PO (QA_STANDARD §1.4). */
+/** The answerer / approver must be a human: AI, agent, bot must not settle in place of BA/PO (QA_STANDARD §1.4). */
 function isAiName(raw) {
   const t = normText(raw).replace(/^[\s("'*_`]+/, '');
   if (!t) return false;
@@ -613,7 +613,7 @@ function hasAnglePlaceholder(text) {
   return false;
 }
 
-const NOT_CONCRETE_HINT = 'câu trả lời của BA chưa phải chữ cụ thể — giữ MR ở TREO và hỏi lại';
+const NOT_CONCRETE_HINT = 'the BA answer is not concrete text yet — keep the MR at TREO and ask again';
 
 /** Rows of a question table (§9.4) in `text`: {id, rawId, question, answer, answeredBy, date, status, statusRaw, resolved, line}. */
 function readQuestionRows(text, offset = 0) {
@@ -754,7 +754,7 @@ function readKnowledgeDefs(text) {
   const out = { BR: [], FD: [], AF: [], OQ: [], RK: [] };
   if (!text) return out;
   const found = { BR: new Set(), FD: new Set(), AF: new Set() };
-  // Chỉ §3/§3b/§5 — KHÔNG đọc §10 (ma trận truy vết, cột "Mã") hay §7: mã ở đó không phải định nghĩa rule.
+  // Only §3/§3b/§5 — do NOT read §10 (traceability matrix, "Mã" column) or §7: ids there are not rule definitions.
   for (const n of ['3', '3b', '5']) {
     const body = sectionBody(text, n);
     if (!body) continue;
@@ -763,7 +763,7 @@ function readKnowledgeDefs(text) {
       if (i === -1) continue;
       const si = col(t, 'status');
       for (const r of t.rows) {
-        // Có cột Trạng thái thì chỉ tính dòng Confirmed (Rejected/Draft không phải rule đang có hiệu lực).
+        // With a Trạng thái column only Confirmed rows count (Rejected/Draft are not rules in force).
         if (si !== -1 && normalizeStatus(r.cells[si]) !== 'Confirmed' && !isBlank(r.cells[si])) continue;
         for (const f of ['BR', 'FD', 'AF']) { const id = canonicalId(r.cells[i], f); if (id) found[f].add(id); }
       }

@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * boundary.js — Các điểm biên của từng field, do MÁY tính từ ràng buộc trong 01 §3b (FD).
+ * boundary.js — Boundary points of each field, computed by the MACHINE from the constraints in 01 §3b (FD).
  *
- * Trước đây skill bảo "điểm biên tính từ min/max" nhưng không nói tính thế nào, nên mỗi lần chạy model tự
- * tính một kiểu (và tự đặt ngưỡng khi nguồn không có). Tool này đọc min/max trong bảng FD, tính đủ chuỗi biên
- * QA_STANDARD §6 (min-1, min, min+1, giữa, max-1, max, max+1) — agent CHÉP kết quả, không tự tính.
- * Thiếu min hoặc max trong nguồn ⇒ điểm đó là nhãn [CHƯA CÓ TRONG TÀI LIỆU], không bao giờ tự đặt ngưỡng.
+ * The skill used to say "boundary points come from min/max" without saying how, so each run the model
+ * computed them differently (and invented thresholds when the source had none). This tool reads min/max from the FD table and computes the full boundary series
+ * of QA_STANDARD §6 (min-1, min, min+1, middle, max-1, max, max+1) — the agent COPIES the result, never computes.
+ * Missing min or max in the source ⇒ that point is the label [CHƯA CÓ TRONG TÀI LIỆU], a threshold is never invented.
  *
  * Usage:
  *   node qa-system/tools/system/boundary.js <slug> [FD-xx] [--json]
@@ -19,7 +19,7 @@ const { parseNumber } = require('../lib/provenance');
 const LABEL = '[CHƯA CÓ TRONG TÀI LIỆU]';
 const NUM = '(\\d[\\d.,]*)';
 
-/** Đọc min/max từ ô ràng buộc. @returns {{min:number|null, max:number|null, kind:'length'|'numeric'|'unknown'}} */
+/** Read min/max from the constraint cell. @returns {{min:number|null, max:number|null, kind:'length'|'numeric'|'unknown'}} */
 function parseConstraint(constraint, type = '') {
   const c = S.stripMd(constraint).toLowerCase();
   const num = (s) => (s == null ? null : parseNumber(s.replace(/[.,]$/, '')));
@@ -41,7 +41,7 @@ function parseConstraint(constraint, type = '') {
   return { min, max, kind };
 }
 
-/** Các điểm biên. Mỗi điểm: {name, value|null, note}. */
+/** The boundary points. Each point: {name, value|null, note}. */
 function points({ min, max, kind }) {
   const out = [];
   const add = (name, value, note = '') => out.push({ name, value, note });
@@ -68,7 +68,7 @@ function points({ min, max, kind }) {
     add('rỗng', 0, 'chuỗi rỗng — hợp lệ hay không do FD "Bắt buộc"');
     if (min === null || min > 1) add('1 ký tự', 1, 'một ký tự');
   }
-  // Bỏ trùng giá trị (vd min+1 = max) nhưng giữ nhãn đầu tiên.
+  // Drop duplicate values (e.g. min+1 = max) but keep the first label.
   const seen = new Set();
   return out.filter((p) => { if (p.value === null) return true; if (seen.has(p.value)) return false; seen.add(p.value); return true; });
 }
@@ -80,7 +80,7 @@ function describeValue(value, kind) {
 
 function compute(slug, only) {
   const p = path.join(taskDir(slug), '01_requirement_risk_summary.md');
-  if (!fs.existsSync(p)) throw new Error(`Chưa có OUTPUT/${slug}/01_requirement_risk_summary.md`);
+  if (!fs.existsSync(p)) throw new Error(`OUTPUT/${slug}/01_requirement_risk_summary.md not found`);
   const text = fs.readFileSync(p, 'utf-8');
   const sec = S.sectionAt(text, '3b');
   const result = [];
@@ -112,11 +112,11 @@ function main() {
   let res;
   try { res = compute(slug, only ? only.toUpperCase() : null); } catch (e) { console.error(e.message); process.exit(1); }
   if (args.includes('--json')) { console.log(JSON.stringify(res, null, 2)); return; }
-  if (res.length === 0) { console.log(`Không có FD nào${only ? ` tên ${only}` : ''} trong 01 §3b.`); return; }
-  console.log(`\nĐiểm biên · task [ ${slug} ] — máy tính từ ràng buộc trong 01 §3b; agent chép, không tự tính\n`);
+  if (res.length === 0) { console.log(`No FD${only ? ` named ${only}` : ''} in 01 §3b.`); return; }
+  console.log(`\nBoundary points · task [ ${slug} ] — computed from the constraints in 01 §3b; the agent copies, never computes\n`);
   for (const f of res) {
-    console.log(`${f.id} · ${f.field}  (ràng buộc: "${f.constraint}"; kiểu đọc được: ${f.kind}; min=${f.min ?? '—'} max=${f.max ?? '—'})`);
-    if (f.min === null && f.max === null) console.log(`   ${LABEL}: ràng buộc không nêu min/max ⇒ không dựng chuỗi biên, để Chặng 2 hỏi (MR).`);
+    console.log(`${f.id} · ${f.field}  (constraint: "${f.constraint}"; detected kind: ${f.kind}; min=${f.min ?? '—'} max=${f.max ?? '—'})`);
+    if (f.min === null && f.max === null) console.log(`   ${LABEL}: the constraint states no min/max ⇒ no boundary series built, let Stage 2 ask (MR).`);
     for (const pt of f.points) console.log(`   ${pt.name.padEnd(7)} ${pt.display}${pt.note ? `   — ${pt.note}` : ''}`);
     console.log('');
   }

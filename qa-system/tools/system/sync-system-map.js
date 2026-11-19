@@ -76,8 +76,8 @@ if (fs.existsSync(outputDir)) {
   });
 }
 
-// Danh mục pack ngành: đọc từ đĩa để bản đồ không lệch khi thêm pack (qa-system/domains/README.md §5).
-// Dự án chọn pack nào nằm ở knowledge/_sut.json, không ở đây — bản đồ là của khung.
+// Domain pack catalogue: read from disk so the map never drifts when a pack is added (qa-system/domains/README.md §5).
+// Which pack a project selects lives in knowledge/_sut.json, not here — the map belongs to the framework.
 const { listPacks } = require('../lib/domain');
 const domainsDir = path.join(PATHS.SYSTEM, 'domains');
 mapData.domains_index = {

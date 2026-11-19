@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * precommit.js — Lint chạy trước mỗi `git commit`, cho MỌI công cụ AI.
+ * precommit.js — Lint that runs before every `git commit`, for EVERY AI tool.
  *
- * Hook PreToolUse chỉ có ở Claude Code; Antigravity, Codex, Cursor… ghi file thẳng. Git thì đứng chung cho tất cả:
- * nội dung bịa (chữ thông báo/con số không có nguồn, trích dẫn không có thật…) không vào được lịch sử.
+ * The PreToolUse hook exists only in Claude Code; Antigravity, Codex, Cursor… write files directly. Git is common to all:
+ * fabricated content (unsourced message text/numbers, fake quotes…) cannot enter history.
  *
- *   node qa-system/tools/system/precommit.js            kiểm các task có file đang staged (hook gọi lệnh này)
- *   node qa-system/tools/system/precommit.js install    cài .git/hooks/pre-commit (npm run init gọi sẵn)
+ *   node qa-system/tools/system/precommit.js            checks tasks that have staged files (the hook calls this)
+ *   node qa-system/tools/system/precommit.js install    installs .git/hooks/pre-commit (npm run init already calls it)
  *
- * Bỏ qua có chủ đích: `git commit --no-verify` hoặc QA_SKIP_PRECOMMIT=1 — khi đó nội dung chưa được kiểm.
+ * Deliberate bypass: `git commit --no-verify` or QA_SKIP_PRECOMMIT=1 — the content is then unchecked.
  */
 const fs = require('fs');
 const path = require('path');
@@ -17,7 +17,7 @@ const { PATHS, listTaskSlugs } = require('../lib/paths');
 
 const MARK = '# qa-system:managed-pre-commit';
 
-/** Task nào có file đang staged: OUTPUT/<slug>/**, INPUT/<slug>/**, knowledge/features/<slug>.md. */
+/** Which tasks have staged files: OUTPUT/<slug>/**, INPUT/<slug>/**, knowledge/features/<slug>.md. */
 function slugsFromPaths(files, known) {
   const out = new Set();
   const byLower = new Map(known.map((s) => [s.toLowerCase(), s]));
@@ -54,17 +54,17 @@ function check(files = stagedFiles()) {
 
 function install() {
   const gitDir = path.join(PATHS.ROOT, '.git');
-  if (!fs.existsSync(gitDir) || !fs.statSync(gitDir).isDirectory()) return { ok: false, note: 'không phải git repo — bỏ qua' };
+  if (!fs.existsSync(gitDir) || !fs.statSync(gitDir).isDirectory()) return { ok: false, note: 'not a git repo — skipped' };
   const hook = path.join(gitDir, 'hooks', 'pre-commit');
   const body = `#!/bin/sh\n${MARK}\nnode "$(git rev-parse --show-toplevel)/qa-system/tools/system/precommit.js" || exit 1\n`;
   if (fs.existsSync(hook)) {
     const cur = fs.readFileSync(hook, 'utf-8');
-    if (cur.includes(MARK)) { fs.writeFileSync(hook, body, { mode: 0o755 }); return { ok: true, note: 'đã cập nhật hook pre-commit' }; }
-    return { ok: false, note: 'đã có pre-commit khác — không ghi đè. Thêm dòng: node qa-system/tools/system/precommit.js || exit 1' };
+    if (cur.includes(MARK)) { fs.writeFileSync(hook, body, { mode: 0o755 }); return { ok: true, note: 'pre-commit hook updated' }; }
+    return { ok: false, note: 'another pre-commit already exists — not overwritten. Add the line: node qa-system/tools/system/precommit.js || exit 1' };
   }
   fs.mkdirSync(path.dirname(hook), { recursive: true });
   fs.writeFileSync(hook, body, { mode: 0o755 });
-  return { ok: true, note: 'đã cài hook pre-commit' };
+  return { ok: true, note: 'pre-commit hook installed' };
 }
 
 function main() {
@@ -74,20 +74,20 @@ function main() {
     process.exit(r.ok ? 0 : 1);
   }
   if (process.env.QA_SKIP_PRECOMMIT === '1') {
-    console.error('⚠️  QA_SKIP_PRECOMMIT=1 — bỏ qua kiểm lint trước commit. Nội dung deliverable CHƯA được kiểm.');
+    console.error('⚠️  QA_SKIP_PRECOMMIT=1 — pre-commit lint skipped. Deliverable content is NOT checked.');
     return;
   }
   const { slugs, failed } = check();
   if (slugs.length === 0) return;
-  if (failed.length === 0) { console.log(`✅ lint sạch: ${slugs.join(', ')}`); return; }
+  if (failed.length === 0) { console.log(`✅ lint clean: ${slugs.join(', ')}`); return; }
 
-  console.error('\n⛔ Commit bị chặn — lint báo lỗi ở deliverable đang staged (nội dung không có nguồn hoặc sai định dạng):');
+  console.error('\n⛔ Commit blocked — lint reports errors in staged deliverables (unsourced content or wrong format):');
   for (const f of failed) {
-    console.error(`\n   Task [ ${f.slug} ] — ${f.errors.length} lỗi:`);
+    console.error(`\n   Task [ ${f.slug} ] — ${f.errors.length} errors:`);
     f.errors.slice(0, 8).forEach((e) => console.error(`     - ${e.file} [${e.where}] ${e.msg}`));
-    if (f.errors.length > 8) console.error(`     … còn ${f.errors.length - 8} lỗi. Chạy: npm run lint -- ${f.slug}`);
+    if (f.errors.length > 8) console.error(`     … ${f.errors.length - 8} more errors. Run: npm run lint -- ${f.slug}`);
   }
-  console.error('\n   Sửa rồi commit lại. (Bỏ qua có chủ đích: git commit --no-verify — nội dung sẽ KHÔNG được kiểm.)\n');
+  console.error('\n   Fix and commit again. (Deliberate bypass: git commit --no-verify — content will NOT be checked.)\n');
   process.exit(1);
 }
 

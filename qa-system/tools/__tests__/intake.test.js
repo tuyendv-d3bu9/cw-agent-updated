@@ -200,7 +200,7 @@ test('thông điệp dừng nêu đủ: trùng ở đâu, task nào, và hai l�
     'spec-function-d',
     'spec-function-d.md'
   );
-  assert.match(notice, /DỪNG/);
+  assert.match(notice, /STOP/);
   assert.match(notice, /function-d-voucher/);
   assert.match(notice, /spec-function-d/);
   assert.match(notice, /--into function-d-voucher/);

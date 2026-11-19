@@ -233,9 +233,9 @@ function denyMessage(slug, what, state) {
 }
 
 /** Pure decision: returns the hook's stdout string for a payload object. */
-// ───────────────────────────── Bảo vệ câu trả lời của BA ─────────────────────────────
+// ───────────────────────────── Protecting the BA answers ─────────────────────────────
 
-/** Áp các chỉnh sửa của Write/Edit/MultiEdit lên nội dung hiện có. null = không dựng lại được (cho qua). */
+/** Apply the Write/Edit/MultiEdit changes to the existing content. null = cannot be reconstructed (let it pass). */
 function applyEdits(tool, input, before) {
   if (tool === 'Write') return typeof input.content === 'string' ? input.content : null;
   const edits = tool === 'MultiEdit' ? input.edits : [{ old_string: input.old_string, new_string: input.new_string, replace_all: input.replace_all }];
@@ -259,10 +259,10 @@ function knowledgeRows(text) {
 }
 
 /**
- * Agent KHÔNG được tự chốt câu hỏi: ghi §7 thành Confirmed/Rejected hay thêm quyết định hợp lệ vào §8,
- * xoá câu hỏi chưa chốt khỏi knowledge hay khỏi 02. Con đường duy nhất: người dùng chuyển lời BA → chép nguyên văn
- * vào 02 §3 (kèm Người trả lời + Ngày) → `npm run knowledge:sync -- <slug> --write` (tool ghi, không qua hook này).
- * @returns {string|null} lý do chặn, hoặc null.
+ * The agent must NOT settle questions itself: write §7 as Confirmed/Rejected, add a valid decision to §8,
+ * or delete an unsettled question from knowledge or from 02. The only route: the user relays the BA reply → copy it verbatim
+ * into 02 §3 (with Người trả lời + Ngày) → `npm run knowledge:sync -- <slug> --write` (the tool writes, not through this hook).
+ * @returns {string|null} the block reason, or null.
  */
 function answerViolation(tool, input, cwd) {
   if (!['Write', 'Edit', 'MultiEdit'].includes(tool)) return null;
@@ -275,17 +275,17 @@ function answerViolation(tool, input, cwd) {
   if (!isKnowledge && !is02) return null;
 
   let before = '';
-  try { before = fs.readFileSync(path.resolve(cwd, fp), 'utf-8'); } catch { /* file mới */ }
+  try { before = fs.readFileSync(path.resolve(cwd, fp), 'utf-8'); } catch { /* new file */ }
   const after = applyEdits(tool, input, before);
   if (after === null) return null;
 
-  const route = 'Đường duy nhất: người dùng chuyển lời BA/PO → chép NGUYÊN VĂN vào 02 §3 (Phản hồi chính thức, Người trả lời, Ngày, Trạng thái) → `npm run knowledge:sync -- <slug> --write`.';
+  const route = 'The only route: the user relays the BA/PO reply → copy it VERBATIM into 02 §3 (Phản hồi chính thức, Người trả lời, Ngày, Trạng thái) → `npm run knowledge:sync -- <slug> --write`.';
 
   if (is02) {
     const b = S.read02Questions(before);
     const a = new Set(S.read02Questions(after).map((q) => q.id));
     const dropped = b.filter((q) => !q.resolved && !a.has(q.id)).map((q) => q.id);
-    if (dropped.length) return `Không được xoá câu hỏi chưa chốt khỏi 02 (${dropped.join(', ')}) — xoá câu hỏi là cách mở cổng ASK mà không hỏi BA. ${route}`;
+    if (dropped.length) return `Must not delete unsettled questions from 02 (${dropped.join(', ')}) — deleting a question is a way to open the ASK gate without asking the BA. ${route}`;
     return null;
   }
 
@@ -295,15 +295,15 @@ function answerViolation(tool, input, cwd) {
   const was = new Map(B.q.map((q) => [key(q), q]));
   const nowKeys = new Set(A.q.map(key));
   const removed = B.q.filter((q) => !q.resolved && !nowKeys.has(key(q))).map((q) => q.id);
-  if (removed.length) return `Không được xoá câu hỏi chưa chốt khỏi knowledge §7 (${removed.join(', ')}). ${route}`;
-  // Chặn theo TRẠNG THÁI agent ghi, không chỉ theo "đã chốt hợp lệ": dòng "Confirmed · Claude" không mở được cổng
-  // (schema loại người trả lời là AI) nhưng vẫn làm bẩn knowledge — người đọc sau tưởng câu đã được BA chốt.
+  if (removed.length) return `Must not delete unsettled questions from knowledge §7 (${removed.join(', ')}). ${route}`;
+  // Block by the STATE the agent writes, not only by "validly settled": a "Confirmed · Claude" row cannot open the gate
+  // (the schema rejects AI answerers) but still pollutes knowledge — later readers think the BA settled it.
   const claims = (q) => q && (q.resolved || q.status === 'Confirmed' || q.status === 'Rejected');
   const newlyResolved = A.q.filter((q) => claims(q) && !claims(was.get(key(q)))).map((q) => q.id);
-  if (newlyResolved.length) return `Agent không được tự chốt câu hỏi ở knowledge §7 (${newlyResolved.join(', ')}). ${route}`;
+  if (newlyResolved.length) return `The agent must not settle questions in knowledge §7 itself (${newlyResolved.join(', ')}). ${route}`;
   const decNow = new Set(B.d.filter((d) => d.valid).map((d) => `${d.num}|${d.decision}`));
   const newDec = A.d.filter((d) => d.valid && !decNow.has(`${d.num}|${d.decision}`)).map((d) => `#${d.num}`);
-  if (newDec.length) return `Agent không được tự thêm quyết định vào knowledge §8 (${newDec.join(', ')}). ${route}`;
+  if (newDec.length) return `The agent must not add decisions to knowledge §8 itself (${newDec.join(', ')}). ${route}`;
   return null;
 }
 
@@ -315,7 +315,7 @@ function decide(payload) {
   try {
     const why = answerViolation(tool, input, cwd);
     if (why) return emitDeny(why);
-  } catch { /* không dựng được ⇒ không chặn nhầm; các cổng khác vẫn chạy */ }
+  } catch { /* cannot be reconstructed ⇒ no false block; the other gates still run */ }
 
   /** [{slug, what}] the call would touch. */
   const touches = [];

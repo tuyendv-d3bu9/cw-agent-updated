@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * domain.js — Dự án đang chọn pack ngành nào, và pack đó gồm những file nào cho từng chặng.
+ * domain.js — Which domain pack the project selected, and which files that pack provides per stage.
  *
- *   npm run domain            Ngành đã chọn (knowledge/_sut.json → domain), file skill cần đọc, pack đang có
- *   npm run domain -- --json  Như trên, dạng JSON (kết quả của loadDomain)
+ *   npm run domain            Selected domain (knowledge/_sut.json → domain), skill files to read, available packs
+ *   npm run domain -- --json  Same as above, as JSON (loadDomain result)
  *
- * Chỉ đọc. Chọn / đổi ngành là việc của con người: sửa `domain` trong knowledge/_sut.json.
- * Exit: 0 = đọc được · 1 = _sut.json chọn id không có, hoặc pack hỏng.
+ * Read-only. Choosing / changing the domain is a human task: edit `domain` in knowledge/_sut.json.
+ * Exit: 0 = readable · 1 = _sut.json selects a non-existent id, or a pack is broken.
  */
 
 const path = require('path');
@@ -23,18 +23,18 @@ function run(argv) {
   }
   if (argv.includes('--json')) return { code: 0, out: JSON.stringify({ available, ...d }, null, 2) };
 
-  const lines = [`Pack đang có: ${available.join(', ') || '(chưa có)'}`];
+  const lines = [`Available packs: ${available.join(', ') || '(none)'}`];
   if (!d.ids.length) {
-    lines.push('Ngành đã chọn: (không) — knowledge/_sut.json chưa khai `domain`; mọi tool dùng mặc định cũ, skill bỏ qua bước pack ngành.');
+    lines.push('Selected domain: (none) — knowledge/_sut.json declares no `domain`; all tools use the legacy default, skills skip the domain-pack step.');
   } else {
-    lines.push(`Ngành đã chọn: ${d.ids.join(', ')}`);
+    lines.push(`Selected domain: ${d.ids.join(', ')}`);
     lines.push(`  vocab:         ${d.files.vocab.join(' · ') || '—'}`);
     lines.push(`  risks:         ${d.files.risks.join(' · ') || '—'}`);
     lines.push(`  rule-patterns: ${d.files.rulePatterns.join(' · ') || '—'}`);
     lines.push(`  conflict topics: ${Object.keys(d.conflictTopics || {}).length} · datagen types: ${Object.keys(d.datagen.types).join(', ') || '—'} · units: ${d.units.join(', ') || '—'}`);
   }
-  if (d.override) lines.push(`Bổ sung của dự án: ${d.override.file}`);
-  lines.push('Pack là checklist, không phải nguồn sự thật (QA_STANDARD §10.3).');
+  if (d.override) lines.push(`Project override: ${d.override.file}`);
+  lines.push('A pack is a checklist, not a source of truth (QA_STANDARD §10.3).');
   return { code: 0, out: lines.join('\n') };
 }
 
