@@ -30,6 +30,11 @@ available, those checks are `PENDING_HUMAN_REVIEW` — never 0.
 The hidden benchmark (A4d) and the ambiguous-rule check (A5e) are not published. They reward raising
 precise questions about what the INPUT does not settle; they never reward a guessed value.
 
+**Open book.** This is an open-book, AI-assisted assessment (README §8). Reading published solutions or BA
+answers is allowed and is not penalised. Every point still requires artifacts that pass these checks against
+this exam's `INPUT/shopgo-refund/`; a value taken from outside that INPUT and written into a business rule is
+an invented value (A5e = 0). The live defense (I3) includes a small change request handled on the spot.
+
 ## 2. Instructor — 30
 
 | Id | Area | Pts | Levels | Evidence |

@@ -16,6 +16,12 @@ the exam stops at stage 06 and does not include automation.
 
 Grading: [RUBRIC.md](RUBRIC.md) · Self-check: [SELF-CHECK.md](SELF-CHECK.md) · Appeals: [APPEALS.md](APPEALS.md).
 
+> **This is an open-book, AI-assisted practical assessment.** You may read all repository documentation,
+> study previous examples and published solutions (including the refund material and BA answers used in
+> `docs/skill-lab/`), and use AI tools. What is assessed is whether you can **apply** the framework: valid,
+> traceable artifacts built from this exam's `INPUT/shopgo-refund/`, and your own explanation of every
+> decision in the live defense. See §8.
+
 ## 2. Timeline
 
 | Item | Value |
@@ -27,13 +33,13 @@ Grading: [RUBRIC.md](RUBRIC.md) · Self-check: [SELF-CHECK.md](SELF-CHECK.md) ·
 
 ## 3. Branch rules
 
-- You work **only** on your own branch `exams/<student-id>`. The instructor creates it for you from the exam
-  starter; your `<student-id>` is given to you by the instructor.
+- You work **only** on your own branch `exams/<student-id>`, created from the frozen starter tag
+  `exam/shopgo-refund-v1/starter` (§4). Your `<student-id>` is given to you by the instructor.
 - **Never** push to `exams/shopgo-refund-v1`, `develop`, `main`, or another student's branch. Never
   force-push, rename or delete any branch that is not yours.
-- The repository is **public** and every branch is visible to everyone. Do **not** read, copy or adapt
-  another student's work. Similarity between submissions is detected and reviewed by the instructor, and
-  you must be able to explain every line of your work in the live defense.
+- The repository is **public** and every branch is visible to everyone. Submitting another student's work
+  as your own is not allowed. Near-identical submissions are reviewed by the instructor (not penalised
+  automatically), and you must be able to explain every line of your work in the live defense.
 - Do **not** change the read-only paths: `INPUT/shopgo-refund/**`, `EXAM/brief/**`, `EXAM/schema/**`,
   `EXAM/selfcheck/**`. Changing them makes the submission invalid.
 - Your work is never merged anywhere. It stays on your branch.
@@ -43,9 +49,16 @@ Grading: [RUBRIC.md](RUBRIC.md) · Self-check: [SELF-CHECK.md](SELF-CHECK.md) ·
 Ask your AI agent to run these for you (see §8), or run them yourself:
 
 ```bash
-git fetch origin && git switch exams/<student-id>
+git clone https://github.com/tuyendv-d3bu9/cw-agent-updated.git && cd cw-agent-updated
+git fetch origin --tags
+# if the instructor already created your branch:
+git switch exams/<student-id>
+# otherwise create it from the frozen starter and publish it once:
+git switch -c exams/<student-id> exam/shopgo-refund-v1/starter && git push -u origin exams/<student-id>
 npm install
 ```
+
+Your branch must start from the starter tag — the self-check and the grader verify it.
 
 Then:
 
@@ -99,8 +112,19 @@ git push origin exams/<student-id>
 You may push as often as you like before the deadline. The last commit on your branch at the deadline is
 the one that is frozen and graded. There is no other submission step: no pull request, no upload.
 
-## 8. AI usage policy
+## 8. Open-book and AI usage policy
 
+- **Open book.** You may read anything in the repository, previous examples and published solutions,
+  including the refund scenario and BA answers in `docs/skill-lab/` and other branches. Using them as
+  learning material is not cheating.
+- **One source of truth for this exam.** Business rules (`BR`/`FD`/`AF`) and every value in your artifacts
+  must come from `INPUT/shopgo-refund/` (QA_STANDARD §10). An answer that exists only in other material —
+  for example a published BA answer that is not in this exam's INPUT — is **not** a source here: raise it
+  as a question (`OQ`/`MR`) and, if you continue, record a proceed decision (T3 §2). Writing such a value
+  into a business rule counts as an invented value (A5).
+- **Copying earns nothing by itself.** Points come only from artifacts that pass the checks: quotes that
+  exist verbatim in this exam's INPUT, ids that trace, a clean lint, a closed gate. A copied reference
+  output that does not trace to this INPUT scores accordingly.
 - AI assistants **are allowed**, including the AI agent this framework is built for.
 - You **must declare** every AI tool you used in `EXAM/AI_USE.md`: which tool, what you used it for, and
   what you checked yourself.
