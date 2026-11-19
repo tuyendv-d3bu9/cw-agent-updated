@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "exam_id": "shopgo-refund-v1",
+  "student_id": "<student-id>",
+  "branch": "exams/<student-id>",
+  "starter_commit": "<40-hex SHA of tag exam/shopgo-refund-v1/starter>",
+  "task_slug": "shopgo-refund",
+  "t1_customized_agent": {
+    "agent_folder": "qa-system/qa-test-design",
+    "decision_class": "<A|B|C>",
+    "changed_files": [],
+    "anchors": {
+      "N1": "<done|n/a>",
+      "N2": "<done|n/a>",
+      "N3": "<done|n/a>",
+      "N4": "<done|n/a>",
+      "N5": "<done|n/a>",
+      "N6": "<done|n/a>",
+      "N7": "<done|n/a>"
+    },
+    "anchor_reasons": {},
+    "tests_added": [],
+    "decision_record": "EXAM/DECISIONS.md#t1"
+  },
+  "t2_new_agent": {
+    "agent_folder": "qa-system/qa-<new-agent>",
+    "agent_file": "qa-system/qa-<new-agent>/AGENT.md",
+    "skills": [],
+    "deliverable_prefix": "17",
+    "example_output": "OUTPUT/shopgo-refund/17_<snake_name>.md",
+    "registrations": [],
+    "tests_added": [],
+    "decision_record": "EXAM/DECISIONS.md#t2"
+  },
+  "t3_pipeline": {
+    "input_dir": "INPUT/shopgo-refund",
+    "feature_knowledge": "knowledge/features/shopgo-refund.md",
+    "artifacts": {
+      "00": "OUTPUT/shopgo-refund/00_plan.md",
+      "01": "OUTPUT/shopgo-refund/01_requirement_risk_summary.md",
+      "02": "OUTPUT/shopgo-refund/02_missing_rule_report.md",
+      "03": "OUTPUT/shopgo-refund/03_viewpoint_report.md",
+      "04": "OUTPUT/shopgo-refund/04_test_idea_report.md",
+      "05": {
+        "spec": "OUTPUT/shopgo-refund/05_test_case_spec.md",
+        "blueprint": null,
+        "batches": []
+      },
+      "06": "OUTPUT/shopgo-refund/06_coverage_review.md"
+    },
+    "gate_log": "OUTPUT/shopgo-refund/_gate.log"
+  },
+  "evidence": {
+    "decisions": "EXAM/DECISIONS.md",
+    "ai_use_declaration": "EXAM/AI_USE.md"
+  }
+}
