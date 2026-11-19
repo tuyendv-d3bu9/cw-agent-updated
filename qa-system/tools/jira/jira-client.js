@@ -355,6 +355,7 @@ const COLUMN_ALIASES = {
   status: [/tr[aạ]ng\s*th[aá]i/i, /^status$/i, /k[eế]t\s*qu[aả]$/i],
   actual: [/th[uự]c\s*t[eế]/i, /^actual/i],
   evidence: [/b[aằ]ng\s*ch[uứ]ng/i, /^evidence/i],
+  device: [/^device$/i, /^thi[eế]t\s*b[iị]$/i],
 };
 
 function mapHeader(cells) {
@@ -405,6 +406,7 @@ function parseRunResult(content) {
       status: cell('status').replace(/\*/g, '').trim().toUpperCase(),
       actual: cell('actual'),
       evidence,
+      device: cell('device').replace(/[`*]/g, '').trim(),
     });
   }
   return rows;

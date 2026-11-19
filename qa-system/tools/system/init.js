@@ -189,9 +189,15 @@ function stepAutomation() {
   if (!fs.existsSync(src)) return;
 
   ensureDir(PATHS.AUTOMATION, 'bộ nối với hệ thống đang kiểm thử');
-  for (const f of fs.readdirSync(src)) {
-    ensureFile(path.join(src, f), path.join(PATHS.AUTOMATION, f), 'từ template');
-  }
+  // Đệ quy: template có thư mục con `utils/` (evidence.ts, devices.js); copyFileSync trên thư mục sẽ lỗi.
+  const copyTree = (from, to) => {
+    for (const f of fs.readdirSync(from)) {
+      const s = path.join(from, f);
+      if (fs.statSync(s).isDirectory()) copyTree(s, path.join(to, f));
+      else ensureFile(s, path.join(to, f), 'từ template');
+    }
+  };
+  copyTree(src, PATHS.AUTOMATION);
   // The two directories the qa-automation agent writes code into.
   ensureDir(path.join(PATHS.AUTOMATION, 'pages'), 'Page Object Model — agent sinh ra');
   ensureDir(path.join(PATHS.AUTOMATION, 'tests'), 'kịch bản test — agent sinh ra');

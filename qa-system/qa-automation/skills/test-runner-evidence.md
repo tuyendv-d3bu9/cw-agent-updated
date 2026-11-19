@@ -40,14 +40,16 @@ Thực thi kiểm thử tự động cho một đợt chạy cụ thể (Run Ses
    - **WebKit**: `mobile-ios` và `tablet` chạy bằng WebKit. Lần đầu dùng, agent tự chạy `npx playwright install webkit`
      (và `chromium` nếu chưa có) rồi báo kết quả; không bắt người dùng gõ.
    - **Đường dẫn evidence**: chạy 1 thiết bị thì giữ `evidence/<TC_ID>/`; chạy từ 2 thiết bị trở lên thì thành
-     `evidence/<device>/<TC_ID>/` để ảnh không ghi đè nhau. `run_result.md` phải ghi rõ thiết bị cho từng kết quả.
+     `evidence/<device>/<TC_ID>/` để ảnh không ghi đè nhau. `run_result.md` phải ghi rõ thiết bị: dòng đầu `Thiết bị (Device)` liệt kê mọi project đã chạy, và bảng kết quả có cột `Device` (đúng tên project trong `results.json`/báo cáo HTML) — một ca chạy trên 3 thiết bị = 3 dòng.
+   - **Cài trình duyệt (agent tự chạy, báo kết quả)**: lần đầu `npx playwright install chromium webkit`. Nếu tải bị chặn, báo đúng lệnh và thông báo lỗi, không tự đoán kết quả.
+   - **Ghi nhận thiết bị thật đã dùng** khi cần chứng minh: trong test log `page.viewportSize()` và `navigator.userAgent`, rồi chép vào Actual Result.
 4. **Tổng hợp kết quả ra Run Result**:
    - Ghi vào `OUTPUT/<task-slug>/runs/<run-id>/run_result.md`.
    - Nếu có lỗi, liệt kê vào `OUTPUT/<task-slug>/runs/<run-id>/run_defects.md` để `qa-reporter` xử lý tiếp.
 
 ## Format output
 Ghi ra `OUTPUT/<task-slug>/runs/<run-id>/run_result.md` theo mẫu chuẩn:
-- Bảng tổng kết số lượng PASS, FAIL, BLOCKED.
+- Bảng tổng kết số lượng PASS, FAIL, BLOCKED, kèm dòng `Thiết bị (Device)` ở phần đầu và cột `Device` ở mỗi dòng kết quả.
 - Chi tiết từng test case kèm Actual Result và đường dẫn thư mục/file bằng chứng trong `evidence/<TC_ID>/`.
 
 ## Chốt chặn nghiệm thu (Quality Gates)
