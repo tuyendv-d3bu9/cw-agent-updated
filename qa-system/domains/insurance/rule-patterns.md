@@ -4,6 +4,7 @@
 > an `MR` question in 02, never a `BR` (QA_STANDARD §10.3). Use only neutral placeholders (`<field>`,
 > `<state>`, `<threshold>`) — never concrete values, thresholds or message texts.
 > Source `Unknown` = general industry experience, no verified URL yet.
+> Source column: a `Ref id` registered in `qa-system/domains/SOURCES.md` (its status — VERIFIED / PARTIAL — is recorded there), or `Unknown`.
 
 | Key | Rule family | 06W group | Template question (neutral) | Source |
 |---|---|---|---|---|
@@ -22,3 +23,17 @@
 | underwriting-authority | Underwriting authority by risk level | W5 | Which `<action>`s need a higher-level underwriter when `<threshold>` is exceeded? | Unknown |
 | beneficiary-change | Changing the beneficiary | W5 | Who may change `<beneficiary>`, whose confirmation is needed, and does it take effect after a claim has been submitted? | Unknown |
 | notice-timing | Timing and channel of notices | W6 | After `<event>`, to which role, through which channel and when is the notice sent? | Unknown |
+| quote-expiry-rerating | Quote validity and re-rating | W4 | When does `<quote>` expire, and is `<premium>` re-rated if `<rating-factor>` changes before bind? | Unknown |
+| re-underwriting-trigger | Changes that trigger re-underwriting | W2 | Which changes to `<application>` after `<underwriting-decision>` send it back to underwriting? | Unknown |
+| cooling-off | Cancellation in a cooling-off period | W4 | Does `<product>` have a `<cooling-off-period>`, counted from which event, and what is refunded inside it? | Unknown |
+| reserve-update | Updating claim reserves | W6 | Which `<event>`s change `<reserve>`, and who approves the change? | Unknown |
+| recovery-allocation | Allocating recoveries | W3 | Is a `<recovery>` netted against `<claim>` paid totals and limits, and in which order? | Unknown |
+| fraud-referral-state | Claim state during fraud referral | W5 | Which `<role>` decides a referred `<claim>`, and which state does the claimant see meanwhile? | Unknown |
+| party-role-mapping | Which party is used for which action | W5 | For `<action>` (consent, notice, payout), is `<policyholder>`, `<insured>` or `<beneficiary>` used? | Unknown |
+| preauthorization-binding | Preauthorisation vs claim | W2 | Must `<claim>` match a prior `<preauthorization>`, and what happens when it does not? | ref-fhir-claimresponse |
+| partial-approval-outcome | Partly approved claims | W6 | When `<claim>` is partly approved, how are unpaid lines communicated and can they be appealed? | ref-fhir-claimresponse |
+| eligibility-date-basis | Date used for eligibility | W4 | Is cover checked on `<event-date>`, `<treatment-date>` or `<submission-date>`? | ref-fhir-coverage |
+| aggregate-limit-concurrency | Shared limits under concurrent claims | W4 | How is `<aggregate-limit>` reserved when several `<claim>`s are approved at the same time? | Unknown |
+| commission-reversal | Reversing commission | W6 | On `<cancel>` / `<lapse>` within `<period>`, is `<commission>` reversed, and how much? | Unknown |
+| product-version-binding | Which product version applies | W3 | Does `<policy>` keep its issue-time `<product-version>` at `<renewal>` / `<endorsement>`? | Unknown |
+| payout-account-verification | Verifying payout account changes | W5 | Who verifies a change of `<payout-account>`, and is a pending `<payout>` held until then? | Unknown |

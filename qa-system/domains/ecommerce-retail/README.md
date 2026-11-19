@@ -21,6 +21,7 @@ The level names follow the domain-packs plan §3; the MSCI page was not reopened
 | Model | Used for | Source |
 |---|---|---|
 | Unknown (no retail reference model verified yet) | No part of the pack comes from this model | Unknown |
+| GS1 identification keys (GTIN) — VERIFIED via GS1 US "What is a GTIN?" and the GS1 standards index | `vocab.md#product-identifier`, `#variant`; `risks.md#product-identifier-integrity` | https://www.gs1us.org/upcs-barcodes-prefixes/what-is-a-gtin · https://ref.gs1.org/standards/ (gs1.org pages returned 403) |
 
 ## 4. Regulations / standards that create risk
 | Regulation / standard | Scope of application | Source |
@@ -35,6 +36,9 @@ The level names follow the domain-packs plan §3; the MSCI page was not reopened
 - ISO/IEC 25010 characteristic names: https://iso25000.com/index.php/en/iso-25000-standards/iso-25010
 - ISO/IEC 25010:2023 (official page, could not be opened): https://www.iso.org/standard/78176.html
 - Retail reference model: Unknown
+- GS1 US, What is a GTIN: https://www.gs1us.org/upcs-barcodes-prefixes/what-is-a-gtin
+- OWASP ASVS 5.0.0: https://asvs.owasp.org/ (chapter titles: https://github.com/OWASP/ASVS/tree/master/5.0/en)
+- Reference register for every row of this pack (status VERIFIED / PARTIAL / UNKNOWN, access limitations, date 2026-11-19): `qa-system/domains/SOURCES.md`
 
 ## 6. Pack files
 | File | Read by | Used for |
@@ -45,3 +49,4 @@ The level names follow the domain-packs plan §3; the MSCI page was not reopened
 | `conflict_topics.json` | `npm run knowledge:conflicts` | Moved from `DEFAULT_TOPICS` of `conflict-detector.js` |
 | `datagen.json` | `npm run data:gen` | Moved from the `voucher_code`, `currency_vnd`, `bank_vn` types of `generate-dataset.js` |
 | `units.json` | `npm run lint` (origin of numbers) | The currency units `vnđ`, `vnd`, `đồng`, `đ` from `provenance.js` |
+| `coverage-matrix.md` | Pack authors and reviewers; not read by tools | Capability × risk × ISO 25010 × question × reference audit, with open gaps for a domain expert |

@@ -28,6 +28,16 @@
       "category": "Thanh toán sau khi huỷ lượt khám",
       "allow": ["vẫn tạo claim", "vẫn tính phí", "claim still created", "still billed"],
       "deny": ["không tạo claim", "không tính phí", "huỷ thì không thu", "no claim", "not billed"]
+    },
+    "mergeReversal": {
+      "category": "Undoing a patient-record merge",
+      "allow": ["có thể hoàn tác gộp hồ sơ", "merge can be undone", "unmerge allowed"],
+      "deny": ["không thể hoàn tác gộp hồ sơ", "merge cannot be undone", "unmerge not allowed", "no unmerge"]
+    },
+    "doubleBooking": {
+      "category": "Several appointments in one slot",
+      "allow": ["cho phép đặt trùng lịch", "double booking allowed", "overbooking allowed"],
+      "deny": ["không cho phép đặt trùng lịch", "không được đặt trùng lịch", "double booking not allowed", "no double booking", "overbooking not allowed"]
     }
   }
 }

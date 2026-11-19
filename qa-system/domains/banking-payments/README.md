@@ -20,6 +20,7 @@ the concrete limit / fee / cut-off values of any bank.
 |---|---|---|
 | BIAN Service Landscape (business areas → business domains → service domains) | Suggests vocabulary groups / risk areas by banking service domain. The three-level structure is taken from plan §3; the page content is `Unknown` because it could not be opened | https://digital-portfolio.opengroup.org/archimate-bian/latest/01-doc/chap03.html (WebFetch was redirected to a login page) |
 | ISTQB Certified Tester Finance Testing (CT-FT) | A reminder that testing financial systems is a specialism of its own. The page only says CT-FT focuses on testing knowledge for systems in the financial services sector; the syllabus content is `Unknown` | https://istqb.org/certifications/certification-list (opened) |
+| BIAN Service Landscape V12.0 matrix view — VERIFIED names of business areas, business domains and some service domains | Capability names in `coverage-matrix.md`; sources of `vocab.md#service-domain`, `#payment-order`, `#current-account` and several risks | https://bian.org/servicelandscape-12-0-0/views/view_51891.html |
 
 ## 4. Regulations / standards that create risk
 | Regulation / standard | Scope of application | Source |
@@ -37,6 +38,10 @@ the concrete limit / fee / cut-off values of any bank.
 - https://digital-portfolio.opengroup.org/archimate-bian/latest/01-doc/chap03.html — URL from plan §8, could not be opened
 - https://www.msci.com/index/methodology/latest/GICS — URL from plan §8, the PDF could not be read
 - https://www.iso.org/standard/78176.html — URL from plan §8, returns 403
+- https://bian.org/servicelandscape-12-0-0/views/view_51891.html — opened (BIAN V12.0 matrix view)
+- https://istqb.org/certifications/certified-tester-finance-testing-ct-ft/ — opened (CT-FT page; syllabus PDF not read)
+- https://asvs.owasp.org/ — opened (ASVS 5.0.0); chapter titles: https://github.com/OWASP/ASVS/tree/master/5.0/en
+- Reference register for every row of this pack (status VERIFIED / PARTIAL / UNKNOWN, access limitations, date 2026-11-19): `qa-system/domains/SOURCES.md`
 
 ## 6. Pack files
 | File | Read by | Used for |
@@ -47,3 +52,4 @@ the concrete limit / fee / cut-off values of any bank.
 | `conflict_topics.json` | `npm run knowledge:conflicts` | Topics for detecting conflicts between features |
 | `datagen.json` | `npm run data:gen` | Generated data types |
 | `units.json` | `npm run lint` (origin of numbers) | Units of measure / currencies (additions only) |
+| `coverage-matrix.md` | Pack authors and reviewers; not read by tools | Capability × risk × ISO 25010 × question × reference audit, with open gaps for a domain expert |

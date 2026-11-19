@@ -19,6 +19,7 @@ the concrete premium / limit / waiting-period values of any product.
 | Model | Used for | Source |
 |---|---|---|
 | ACORD Reference Architecture (Capability, Process, Product, Data models — per plan §3) | Suggests vocabulary groups and risk areas by insurance capability / process / product / data. The page content is `Unknown` because it could not be opened | https://www.acord.org/standards-architecture/reference-architecture (WebFetch returned 403) |
+| HL7 FHIR R5 Financial resources (Coverage, ClaimResponse) — VERIFIED codes and definitions | Health-cover rows only: `vocab.md#preauthorization`, `#predetermination`, `#coverage`; risks `preauthorization-vs-claim`, `partial-adjudication`, `coverage-period-status` | https://www.hl7.org/fhir/coverage.html · https://www.hl7.org/fhir/claimresponse.html |
 
 ## 4. Regulations / standards that create risk
 | Regulation / standard | Scope of application | Source |
@@ -33,6 +34,10 @@ the concrete premium / limit / waiting-period values of any product.
 - https://www.acord.org/standards-architecture/reference-architecture — URL from plan §8, returns 403, could not be opened
 - https://www.msci.com/index/methodology/latest/GICS — URL from plan §8, the PDF could not be read
 - https://www.iso.org/standard/78176.html — URL from plan §8, returns 403
+- https://www.hl7.org/fhir/coverage.html — opened
+- https://www.hl7.org/fhir/claimresponse.html — opened
+- ACORD retried 2026-11-19 (reference-architecture, /ra, /standards-architecture, a news page): all HTTP 403 — nothing in this pack comes from ACORD
+- Reference register for every row of this pack (status VERIFIED / PARTIAL / UNKNOWN, access limitations, date 2026-11-19): `qa-system/domains/SOURCES.md`
 
 ## 6. Pack files
 | File | Read by | Used for |
@@ -43,3 +48,4 @@ the concrete premium / limit / waiting-period values of any product.
 | `conflict_topics.json` | `npm run knowledge:conflicts` | Topics for detecting conflicts between features |
 | `datagen.json` | `npm run data:gen` | Generated data types |
 | `units.json` | `npm run lint` (origin of numbers) | Units of measure / currencies (additions only) |
+| `coverage-matrix.md` | Pack authors and reviewers; not read by tools | Capability × risk × ISO 25010 × question × reference audit, with open gaps for a domain expert |

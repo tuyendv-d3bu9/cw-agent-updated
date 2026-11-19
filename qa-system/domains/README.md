@@ -57,6 +57,10 @@ Industry classification per GICS: https://www.msci.com/index/methodology/latest/
 1. Copy `_template/` to `qa-system/domains/<pack-id>/` (lower case, digits, hyphens).
 2. Fill in all 7 files. Every row has a source column: a verified URL, or `Unknown`. The README needs **at least one URL**
    (`http://`/`https://`) or an explicit `Unknown`. No guessing, no invented links, no example values from a real project.
+   Prefer a `Ref id` from [`SOURCES.md`](SOURCES.md) in the source column: register the reference there first with its URL,
+   what was read, status (VERIFIED / PARTIAL / UNKNOWN), date and access limitation.
+   Optional, not read by tools: `coverage-matrix.md` — capability × risk × ISO 25010 × question × reference, with gaps left
+   open for a domain expert (see the four phase-1 packs).
 3. Add a row to table §1 of this file.
 4. `npm run agent:check` — the pack must appear in the *domain packs* section with no errors.
 5. This is a system upgrade: follow `qa-system/qa-lead/skills/system-upgrade-governance.md`.
