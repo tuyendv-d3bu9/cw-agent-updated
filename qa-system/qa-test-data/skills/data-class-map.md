@@ -1,48 +1,50 @@
 ---
 name: data-class-map
 description: >
-  Lập bản đồ Data Class (Valid, Boundary, Invalid, Null/Empty, Special) cho từng field lấy từ
-  bảng FD của Chặng 1, kèm mốc biên khi nguồn có min/max/độ dài.
+  Builds the Data Class map (Valid, Boundary, Invalid, Null/Empty, Special) for each field taken from
+  the Stage 1 FD table, with boundary points when the sources give min/max/length.
 ---
 
 # Skill: data-class-map
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · nhãn §2.1 · FACT §3 · **chuỗi biên §6** ·
-> knowledge §8 · nguồn §10).
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict §1 · guards §2 · labels §2.1 · FACT §3 · **boundary chain §6** ·
+> knowledge §8 · sources §10).
+>
+> The output format block (headings, column headers, labels) stays in Vietnamese; later stages and tools read it. Copy it verbatim.
 
-## Mục đích
-Chuẩn hoá phân loại dữ liệu test cho **từng field** trước khi sinh dataset — chặn "Garbage data → Garbage testing".
+## Purpose
+Normalise the classification of test data for **each field** before datasets are generated — to stop "Garbage data → Garbage testing".
 
-## Đầu vào
-- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — **§3b FIELD & RÀNG BUỘC** (`FD-xx`) và `BR` liên quan.
-- `OUTPUT/<task-slug>/05_test_case_spec.md` — TC nào cần data cho field nào.
-- `knowledge/_project.md` (§2 định dạng ngày/tiền, NULL vs rỗng) · `knowledge/features/<feature-slug>.md` (§3b, §8, §9).
+## Inputs (Đầu vào)
+- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — **§3b FIELD & RÀNG BUỘC** (`FD-xx`) and the related `BR`s.
+- `OUTPUT/<task-slug>/05_test_case_spec.md` — which TCs need data for which fields.
+- `knowledge/_project.md` (§2 date/currency formats, NULL vs empty) · `knowledge/features/<feature-slug>.md` (§3b, §8, §9).
 
-## KHÔNG được (riêng skill này)
-- Sinh dataset ở bước này.
-- Thêm field không có trong `FD` của 01.
-- Tự đặt khoảng giá trị, độ dài, định dạng. Không có trong `FD`/knowledge §9 ⇒ `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]`.
+## MUST NOT (specific to this skill)
+- Generate datasets in this step.
+- Add fields that are not in the `FD`s of 01.
+- Set value ranges, lengths or formats yourself. Not in the `FD`/knowledge §9 ⇒ `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]`.
 
-## Registry 5 Data Class (cố định)
-| Data Class | Mô tả |
+## Registry of 5 Data Classes (fixed)
+| Data Class | Description |
 |---|---|
-| **Valid** | Thoả mọi ràng buộc có nguồn |
-| **Boundary** | Điểm chuỗi biên QA_STANDARD §6 |
-| **Invalid** | Vi phạm ràng buộc có nguồn (sai kiểu, sai định dạng, ngoài khoảng) |
-| **Null/Empty** | Không có giá trị — chỉ khi `Bắt buộc` có nguồn |
-| **Special** | Ký tự đặc biệt, khoảng trắng thừa, hoa-thường |
+| **Valid** | Meets every sourced constraint |
+| **Boundary** | A point of the QA_STANDARD §6 boundary chain |
+| **Invalid** | Violates a sourced constraint (wrong type, wrong format, out of range) |
+| **Null/Empty** | No value — only when `Bắt buộc` (required) has a source |
+| **Special** | Special characters, extra whitespace, upper/lower case |
 
-## Các bước
-1. Mỗi `FD-xx` của 01 một dòng; kiểu, bắt buộc, ràng buộc chép từ `FD` (hoặc knowledge §9 kèm nguồn).
-2. Chọn Data Class áp dụng được theo ràng buộc **có nguồn**.
-3. `FD` có min/max/độ dài trong nguồn ⇒ ghi mốc biên theo §6. Không có ⇒ `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]`.
-4. Field thiếu thông tin ⇒ ghi bảng §2; MR đã có thì trỏ mã, chưa có thì thêm dòng `## ASK` (chuyển Chặng 2).
+## Steps
+1. One row per `FD-xx` of 01; type, required-ness and constraints are copied from the `FD` (or knowledge §9 with its source).
+2. Choose the applicable Data Classes according to the **sourced** constraints.
+3. An `FD` with min/max/length in the sources ⇒ record the boundary points per §6. None ⇒ `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]`.
+4. A field lacking information ⇒ record it in table §2; if an MR exists, point to its code; if not, add a `## ASK` row (hand over to Stage 2).
 
 ## Verdict
-`PASS` khi mọi `FD` có dòng; thiếu thông tin đã có MR hoặc dòng ASK. Còn field thiếu mà chưa có MR ⇒ `ASK`.
+`PASS` when every `FD` has a row and every gap in information already has an MR or an ASK row. A field still lacking information with no MR ⇒ `ASK`.
 
-## Format output
-Ghi ra `OUTPUT/<task-slug>/09_data_class_map.md`:
+## Output format
+Write `OUTPUT/<task-slug>/09_data_class_map.md`:
 
 ````markdown
 # Data Class Map · <task-slug>
@@ -63,7 +65,9 @@ Owner: qa-system/qa-test-data/skills/data-class-map.md · Nguồn: 01_requiremen
 |---|---|---|---|
 ````
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Mọi `FD` của 01 có đúng một dòng; không field ngoài `FD`.
-- [ ] Không có ngưỡng/định dạng nào không trích được về `FD` hoặc knowledge §9.
-- [ ] Mốc biên đúng §6 cho field có ngưỡng trong nguồn.
+(Sections: 1 field map — type, sourced constraint, data classes to test, boundary points · 2 fields lacking information — what is missing, MR.)
+
+## Acceptance gates (Quality Gates)
+- [ ] Every `FD` of 01 has exactly one row; no field outside the `FD`s.
+- [ ] No threshold/format that cannot be traced back to an `FD` or knowledge §9.
+- [ ] Boundary points follow §6 for fields with a threshold in the sources.

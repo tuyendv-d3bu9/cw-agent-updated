@@ -1,43 +1,45 @@
 ---
 name: web-journey-discovery
 description: >
-  Sử dụng Playwright Browser MCP để tự động truy cập URL mục tiêu, "mò web" (khám phá cây DOM, Accessibility Snapshot),
-  nhận diện các phần tử tương tác và ghi nhận luồng chuyển trang thực tế để phục vụ sinh Page Object Model (POM).
+  Uses the Playwright Browser MCP to visit the target URL automatically, "explore the web" (the DOM tree, the Accessibility Snapshot),
+  identify the interactive elements and record the real page-transition flow for generating the Page Object Model (POM).
 ---
 
 # Skill: web-journey-discovery
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT).
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict · guards · FACT).
+>
+> The output format block below is kept as written (including its Vietnamese headings and Gherkin sample); copy its structure verbatim.
 
-## Mục đích
-Khám phá trực tiếp ứng dụng web đang chạy (Staging / Dev / Production), tự động quét cấu trúc trang để xác định:
-1. Thứ tự chuyển trang (Page transitions).
-2. Các phần tử tương tác chính (Buttons, Input fields, Forms, Modals).
-3. Đề xuất các selector / locator chuẩn nhất cho `qa-automation` đưa vào POM.
+## Purpose
+Explore the running web application directly (Staging / Dev / Production), automatically scanning the page structure to identify:
+1. The order of page transitions.
+2. The main interactive elements (Buttons, Input fields, Forms, Modals).
+3. Proposed best selectors / locators for `qa-automation` to put into the POM.
 
-## Tham số
-- `url`: Địa chỉ trang web mục tiêu (người dùng cung cấp; không tự đoán).
-- `scope`: Hành trình cần khám phá (ví dụ: `<journey-1>`, `<journey-2>`).
+## Parameters
+- `url`: The target web address (provided by the user; never guessed).
+- `scope`: The journey to explore (e.g. `<journey-1>`, `<journey-2>`).
 
-## Đầu vào
-- `url` do người dùng đưa (không tự chọn môi trường) · `OUTPUT/<task-slug>/05_test_case_spec.md`
-- `knowledge/_project.md` · `knowledge/features/<task-slug>.md` (luôn nạp, QA_STANDARD §7)
+## Inputs (Đầu vào)
+- The `url` given by the user (never choose the environment yourself) · `OUTPUT/<task-slug>/05_test_case_spec.md`
+- `knowledge/_project.md` · `knowledge/features/<task-slug>.md` (always loaded, QA_STANDARD §7)
 
-## Các bước thực hiện
-1. **Khởi tạo & Điều hướng**:
-   - Sử dụng Playwright mở URL được chỉ định.
-   - Chờ trang tải hoàn tất mạng (`networkidle` hoặc `domcontentloaded`).
-2. **Quét Accessibility Snapshot & DOM**:
-   - Trích xuất cây Accessibility Tree để phát hiện các `role`, `name`, `placeholder`, `aria-label`.
-   - Tìm kiếm các phần tử có thuộc tính `data-testid` hoặc `id` ổn định.
-3. **Thử nghiệm tương tác (Exploration Probe)**:
-   - Thử click hoặc nhập dữ liệu mẫu để kích hoạt hành vi chuyển trang hoặc mở popup.
-   - Ghi nhận trạng thái URL trước và sau hành động.
-4. **Tổng hợp báo cáo khám phá**:
-   - Ghi lại danh sách các locator bền vững kèm ảnh chụp màn hình hiện trạng trang.
+## Steps
+1. **Initialise & navigate**:
+   - Use Playwright to open the given URL.
+   - Wait until the page has finished loading (`networkidle` or `domcontentloaded`).
+2. **Scan the Accessibility Snapshot & DOM**:
+   - Extract the Accessibility Tree to find the `role`, `name`, `placeholder`, `aria-label` values.
+   - Look for elements with stable `data-testid` or `id` attributes.
+3. **Interaction probe (Exploration Probe)**:
+   - Try clicking or entering sample data to trigger page transitions or open popups.
+   - Record the URL state before and after the action.
+4. **Summarise the exploration report**:
+   - Record the list of robust locators with screenshots of the current page state.
 
-## Format output
-Ghi ra `OUTPUT/<task-slug>/G1_web_journey_discovery.md` (kèm file Gherkin riêng `OUTPUT/<task-slug>/exploratory/journeys.feature` nếu cần import vào Jira Xray/Zephyr):
+## Output format
+Write `OUTPUT/<task-slug>/G1_web_journey_discovery.md` (with a separate Gherkin file `OUTPUT/<task-slug>/exploratory/journeys.feature` if it needs importing into Jira Xray/Zephyr):
 
 ```markdown
 # WEB JOURNEY DISCOVERY & GHERKIN SPEC — [TÊN ỨNG DỤNG / DOMAIN]
@@ -81,9 +83,11 @@ Feature: [Tên tính năng được khám phá trên web]
 | 2 | `/<route>` | Nhập `<giá trị>` & click `<nút>` | `<kết quả mong đợi>` | `evidence/step2.png` |
 ```
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Kịch bản được viết theo đúng chuẩn **Gherkin BDD** (`Given - When - Then`), không viết văn xuôi tùy tiện.
-- [ ] 100% các step trong Gherkin đều có locator ánh xạ tương ứng trong bảng Khuyến Nghị Cho POM.
-- [ ] Ưu tiên locator theo thứ tự: `getByTestId` ➔ `getByRole` ➔ `getByPlaceholder` ➔ CSS ID `#...` (CẤM dùng XPath tuyệt đối dễ gãy).
-- [ ] Báo cáo ghi rõ URL môi trường và bằng chứng ảnh chụp màn hình tương ứng.
+(Sections: 1 Gherkin BDD scenarios normalised from the real exploration · 2 Gherkin step ➔ recommended POM locator mapping ·
+3 exploration timeline — step, URL, probe action, transition/popup/toast result, evidence image.)
 
+## Acceptance gates (Quality Gates)
+- [ ] The scenarios follow the **Gherkin BDD** standard (`Given - When - Then`), not free prose.
+- [ ] 100% of the Gherkin steps have a matching locator in the POM recommendation table.
+- [ ] Locator priority order: `getByTestId` ➔ `getByRole` ➔ `getByPlaceholder` ➔ CSS ID `#...` (absolute XPath, which breaks easily, is FORBIDDEN).
+- [ ] The report states the environment URL and the matching evidence screenshots.

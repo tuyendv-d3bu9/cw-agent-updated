@@ -1,66 +1,69 @@
 ---
 name: data-validation-traceability
 description: >
-  Validate tính toàn vẹn và logic của dataset trước khi seed/dùng,
-  đồng thời lập Traceability Matrix nối từng record dữ liệu với Test Case tương ứng.
+  Validates the integrity and logic of the datasets before they are seeded/used,
+  and builds a Traceability Matrix linking each data record to its Test Case.
 ---
 
 # Skill: data-validation-traceability
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · nhãn §2.1 · FACT §3 · chuỗi biên §6 · nguồn §10).
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict §1 · guards §2 · labels §2.1 · FACT §3 · boundary chain §6 · sources §10).
+>
+> The output format block (headings, column headers, `CHƯA CÓ DATA`, the `## FIX` / `## ASK` tables) stays in Vietnamese;
+> `coverage-review` and `npm run readiness` read it. Copy it verbatim.
 
-## Mục đích
-Hai việc chốt chặn cuối của `qa-system/qa-test-data`:
-1. **Validate** dataset TRƯỚC khi seed/dùng — bắt lỗi logic/nghiệp vụ/format.
-2. **Traceability Matrix** — nối mỗi record dữ liệu với test case dùng nó.
+## Purpose
+The two final gating jobs of `qa-system/qa-test-data`:
+1. **Validate** the datasets BEFORE they are seeded/used — catch logic/business/format errors.
+2. **Traceability Matrix** — link each data record to the test case that uses it.
 
-## Đầu vào
-- `OUTPUT/<task-slug>/10_dataset.md` + `11_boundary_negative_dataset.md` — dataset cần validate.
-- `OUTPUT/<task-slug>/05_test_case_spec.md` — test suite để trace.
-- `OUTPUT/<task-slug>/09_data_class_map.md` — ràng buộc có nguồn của từng field.
-- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `FD`, `BR` để đối chiếu.
+## Inputs (Đầu vào)
+- `OUTPUT/<task-slug>/10_dataset.md` + `11_boundary_negative_dataset.md` — the datasets to validate.
+- `OUTPUT/<task-slug>/05_test_case_spec.md` — the test suite to trace.
+- `OUTPUT/<task-slug>/09_data_class_map.md` — the sourced constraints of each field.
+- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `FD`, `BR` for cross-checking.
 - `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (§8, §9).
 
-## KHÔNG được (riêng skill này)
-- Tự "sửa ngầm" dataset nguồn — chỉ **đề xuất** bản sửa.
-- Tự quyết khi rule chưa rõ (vd "hệ thống có cho số thập phân không?") → `ASK`.
-- Để trống ô: test case chưa có data → `CHƯA CÓ DATA`.
-- Tạo record "mồ côi" (không phục vụ test case nào) trừ khi ghi rõ lý do.
-- Trace test case tới data không tồn tại trong dataset.
+## MUST NOT (specific to this skill)
+- "Silently fix" the source dataset — only **propose** a fix.
+- Decide by yourself when a rule is unclear (e.g. "does the system accept decimals?") → `ASK`.
+- Leave cells empty: a test case without data yet → `CHƯA CÓ DATA` (no data yet).
+- Create "orphan" records (serving no test case) unless the reason is stated.
+- Trace a test case to data that does not exist in the dataset.
 
-## Phần A — Validation
+## Part A — Validation
 
-### FACT áp cho dataset
-| | Tiêu chí | Dạng lỗi điển hình |
+### FACT applied to datasets
+| | Criterion | Typical error |
 |---|---|---|
-| **F** | Giá trị trích được về ràng buộc có nguồn | Giá trị nằm ngoài khoảng `FD`, hoặc khoảng không có nguồn |
-| **A** | Đúng định dạng/khoảng | Định danh sai format quy ước → INSERT fail do constraint |
-| **C** | Không thiếu trường bắt buộc | Thiếu cột NOT NULL → SQL fail |
-| **T** | Đủ rõ để biết pass/fail | Giá trị thập phân nhưng chưa rõ hệ thống có nhận |
+| **F** | The value can be traced to a sourced constraint | A value outside the `FD` range, or a range with no source |
+| **A** | Correct format/range | An identifier in the wrong conventional format → INSERT fails on a constraint |
+| **C** | No required field missing | A NOT NULL column is missing → SQL fails |
+| **T** | Clear enough to decide pass/fail | A decimal value, but it is unclear whether the system accepts it |
 
-### 5 loại lỗi phổ biến trong AI-generated data
-1. **Logic inconsistency** — hai field đúng riêng lẻ nhưng kết hợp lại vô nghĩa.
-2. **Business rule violation** — giá trị vượt khoảng rule cho phép của kiểu đó.
-3. **Date/time logic error** — mốc thời gian ở quá khứ nhưng trạng thái vẫn "đang hiệu lực".
-4. **Format inconsistency** — mix nhiều định dạng ngày/số trong cùng dataset.
-5. **Null sai chỗ** — NULL ở field bắt buộc mà không phải record chủ ý test NULL.
+### 5 common error types in AI-generated data
+1. **Logic inconsistency** — two fields are each valid on their own but meaningless together.
+2. **Business rule violation** — a value exceeds the range the rule allows for that type.
+3. **Date/time logic error** — a timestamp in the past while the status is still "active".
+4. **Format inconsistency** — several date/number formats mixed in the same dataset.
+5. **Misplaced null** — NULL in a required field in a record that is not deliberately testing NULL.
 
-### Cách chạy
-Với mỗi issue ghi đủ: `Record #` (hoặc mã) · field lỗi · mô tả cụ thể · phân loại lỗi ·
-gợi ý sửa. Sai format/logic → `FIX`. Thiếu rule để phán → `ASK`.
+### How to run it
+For each issue record: `Record #` (or code) · faulty field · concrete description · error type ·
+suggested fix. Wrong format/logic → `FIX`. A rule is missing to judge it → `ASK`.
 
-## Phần B — Traceability Matrix
+## Part B — Traceability Matrix
 
-Workflow tổng của agent:
+The agent's overall workflow:
 `Requirement → Data Class Map → Realistic Dataset → Export → Boundary/Negative Dataset → Validation → Traceability Matrix → Test Execution`
 
-Nguyên tắc:
-- Mỗi test case cần data phải trace về **một record cụ thể** (mã hoặc `#`).
-- Record boundary/invalid phải nối đúng test case kiểm biên/âm tính tương ứng.
-- Test case chưa có data → `CHƯA CÓ DATA`.
+Principles:
+- Each test case that needs data must trace to **one specific record** (code or `#`).
+- A boundary/invalid record must link to exactly the matching boundary/negative test case.
+- A test case without data yet → `CHƯA CÓ DATA`.
 
-## Format output
-Ghi ra `OUTPUT/<task-slug>/12_data_validation_traceability.md`:
+## Output format
+Write `OUTPUT/<task-slug>/12_data_validation_traceability.md`:
 
 ```markdown
 # Data Validation & Traceability · <task-slug>
@@ -103,8 +106,10 @@ Owner: qa-system/qa-test-data/skills/data-validation-traceability.md · Nguồn:
 |---|---|---|---|
 ```
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] 100% Test Case cần data đều được nối với record cụ thể trong Traceability Matrix (FACT — C).
-- [ ] Record map được nêu rõ giá trị để tái hiện đúng ca kiểm (FACT — T).
-- [ ] Không có issue mức FIX/ASK bị bỏ qua mà chưa có giải pháp hoặc câu hỏi tương ứng.
-- [ ] File xuất ra tại `OUTPUT/<task-slug>/12_data_validation_traceability.md`.
+(Sections: 1 validation result · 2 FACT check of the dataset · 3 traceability matrix · 4 orphan records (if any).)
+
+## Acceptance gates (Quality Gates)
+- [ ] 100% of the Test Cases that need data are linked to a specific record in the Traceability Matrix (FACT — C).
+- [ ] Each mapped record states its values clearly enough to reproduce the exact test (FACT — T).
+- [ ] No FIX/ASK-level issue is skipped without a matching solution or question.
+- [ ] The file is written to `OUTPUT/<task-slug>/12_data_validation_traceability.md`.

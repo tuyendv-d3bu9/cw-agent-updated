@@ -1,38 +1,41 @@
 ---
 name: boundary-negative-dataset
 description: >
-  Sinh dataset biên và âm tính có chủ đích: mỗi record kiểm đúng một điểm của chuỗi biên
-  QA_STANDARD §6 hoặc một lớp Invalid/Null/Special, gắn với test case cụ thể.
+  Generates deliberate boundary and negative datasets: each record checks exactly one point of the QA_STANDARD §6
+  boundary chain or one Invalid/Null/Special class, tied to a specific test case.
 ---
 
 # Skill: boundary-negative-dataset
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · nhãn §2.1 · FACT §3 · **chuỗi biên §6** · nguồn §10).
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict §1 · guards §2 · labels §2.1 · FACT §3 · **boundary chain §6** · sources §10).
+>
+> The output format block (headings, column headers, `Không áp dụng` / `CHƯA CÓ DATA` / `Record mồ côi` labels) stays
+> in Vietnamese; later stages and tools read it. Copy it verbatim.
 
-## Mục đích
-Mỗi record kiểm đúng một edge case, các field còn lại giữ Valid để cô lập biến số.
+## Purpose
+Each record checks exactly one edge case; the other fields stay Valid to isolate the variable.
 
-## Đầu vào
-- `OUTPUT/<task-slug>/09_data_class_map.md` — Field Map, mốc biên.
-- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `FD`, `BR` để xác định "vi phạm".
-- `OUTPUT/<task-slug>/05_test_case_spec.md` — TC kiểm biên/âm tính cần record.
+## Inputs (Đầu vào)
+- `OUTPUT/<task-slug>/09_data_class_map.md` — Field Map, boundary points.
+- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `FD`, `BR` to determine what counts as a "violation".
+- `OUTPUT/<task-slug>/05_test_case_spec.md` — the boundary/negative TCs that need records.
 - `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (§9).
 
-## KHÔNG được (riêng skill này)
-- Tự tính điểm biên: chạy `npm run boundary -- <task-slug>` và chép giá trị (máy tính từ ràng buộc FD).
-- Dựng chuỗi biên cho field không có min/max/độ dài trong nguồn — ô đó ghi `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]`.
-- Sinh nhiều record cho cùng một edge case, hoặc thêm record để đủ số lượng.
-- Để trống `Test Purpose` hay `TC_ID`.
+## MUST NOT (specific to this skill)
+- Compute boundary points yourself: run `npm run boundary -- <task-slug>` and copy the values (computed by machine from the FD constraints).
+- Build a boundary chain for a field with no min/max/length in the sources — that cell records `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]`.
+- Generate several records for the same edge case, or add records to reach a count.
+- Leave `Test Purpose` or `TC_ID` empty.
 
-## Các bước
-1. Với mỗi field ở 09: field có khoảng ⇒ 7 điểm §6; field có định dạng/độ dài ⇒ chuỗi định dạng §6;
-   Null/Empty chỉ khi `Bắt buộc` có nguồn.
-2. Một record cho một edge case; field khác lấy giá trị Valid từ `10_dataset.md` hoặc từ nguồn.
-3. Gắn `Loại data`, `Test Purpose`, mã `FD`, và `TC_ID` dùng record. Không TC nào dùng ⇒ ghi `Record mồ côi` + lý do.
-4. Xuất CSV/SQL/JSON (quy ước NULL và ngày theo `dataset-generation`).
+## Steps
+1. For each field in 09: a field with a range ⇒ the 7 points of §6; a field with a format/length ⇒ the §6 format chain;
+   Null/Empty only when `Bắt buộc` (required) has a source.
+2. One record per edge case; the other fields take Valid values from `10_dataset.md` or from the sources.
+3. Attach `Loại data` (data type), `Test Purpose`, the `FD` code, and the `TC_ID` that uses the record. No TC uses it ⇒ record `Record mồ côi` (orphan record) + the reason.
+4. Export CSV/SQL/JSON (NULL and date conventions per `dataset-generation`).
 
-## Format output
-Ghi ra `OUTPUT/<task-slug>/11_boundary_negative_dataset.md`:
+## Output format
+Write `OUTPUT/<task-slug>/11_boundary_negative_dataset.md`:
 
 ````markdown
 # Boundary & Negative Dataset · <task-slug>
@@ -56,7 +59,10 @@ Owner: qa-system/qa-test-data/skills/boundary-negative-dataset.md · Nguồn: 09
 ```
 ````
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Đủ điểm §6 cho mọi field có ngưỡng trong nguồn; không điểm nào cho field không có ngưỡng.
-- [ ] Mỗi record có `TC_ID`, `Test Purpose`, `FD`; không record trùng edge case.
-- [ ] Bảng đối chiếu không có ô trống.
+(Section 2 = boundary chain reconciliation; `Giữa` = middle value. Cell rule: not applicable ⇒ `Không áp dụng`; no record yet ⇒
+`CHƯA CÓ DATA`; threshold missing ⇒ `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]`.)
+
+## Acceptance gates (Quality Gates)
+- [ ] All §6 points present for every field with a threshold in the sources; no points for fields without a threshold.
+- [ ] Each record has a `TC_ID`, `Test Purpose`, `FD`; no two records cover the same edge case.
+- [ ] The reconciliation table has no empty cells.

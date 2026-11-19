@@ -1,32 +1,32 @@
 ---
 name: pom-generator
 description: >
-  Tự động sinh cấu trúc Page Object Model (POM) chuẩn TypeScript cho Playwright dựa trên kết quả khảo sát DOM và Accessibility Snapshot từ luồng khám phá web.
+  Automatically generates a standard TypeScript Page Object Model (POM) structure for Playwright based on the DOM and Accessibility Snapshot survey from the web exploration flow.
 ---
 
 # Skill: pom-generator
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT).
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict · guards · FACT).
 
-## Mục đích
-Tạo ra các class Page Object Model (POM) chuyên nghiệp, module hóa, bảo trì dễ dàng, phân tách tuyệt đối giữa cấu trúc phần tử (Locators) và hành động người dùng (Actions).
+## Purpose
+Create professional, modular, easy-to-maintain Page Object Model (POM) classes with a strict separation between the element structure (Locators) and the user actions (Actions).
 
-## Đầu vào
-- Snapshot DOM / Accessibility Tree từ web exploration (Playwright MCP hoặc skill `web-journey-discovery` cùng agent).
-- Danh sách hành động trong Test Cases (Steps).
-- `knowledge/features/<sut>-ui-map.md` — locator đã trích từ app thật. Không có ⇒ chạy `web-journey-discovery` trước, không đoán.
-- `knowledge/_project.md` · `knowledge/features/<task-slug>.md` (luôn nạp, QA_STANDARD §7)
+## Inputs (Đầu vào)
+- DOM snapshot / Accessibility Tree from web exploration (Playwright MCP or the `web-journey-discovery` skill of the same agent).
+- The list of actions in the Test Cases (Steps).
+- `knowledge/features/<sut>-ui-map.md` — locators extracted from the real app. Not present ⇒ run `web-journey-discovery` first; never guess.
+- `knowledge/_project.md` · `knowledge/features/<task-slug>.md` (always loaded, QA_STANDARD §7)
 
-## Nguyên tắc sinh Locator chuẩn Playwright (Bắt Buộc)
-1. Ưu tiên 1: `page.getByRole(...)` (ví dụ: `page.getByRole('button', { name: '<nhãn nút trong ui-map>' })`)
-2. Ưu tiên 2: `page.getByTestId(...)` (ví dụ: `page.getByTestId('<data-testid trong ui-map>')`)
-3. Ưu tiên 3: `page.getByLabel(...)` hoặc `page.getByPlaceholder(...)`
-4. Ưu tiên 4: `page.getByText(...)`
-5. **CẤM**: Tuyệt đối không dùng XPath tuyệt đối hoặc class ngẫu nhiên dễ đổi.
+## Rules for generating standard Playwright locators (Mandatory)
+1. Priority 1: `page.getByRole(...)` (e.g. `page.getByRole('button', { name: '<button label in the ui-map>' })`)
+2. Priority 2: `page.getByTestId(...)` (e.g. `page.getByTestId('<data-testid in the ui-map>')`)
+3. Priority 3: `page.getByLabel(...)` or `page.getByPlaceholder(...)`
+4. Priority 4: `page.getByText(...)`
+5. **FORBIDDEN**: never use absolute XPath or random classes that change easily.
 
-## Cấu trúc file chuẩn sinh ra:
-> Ví dụ dưới chỉ minh hoạ cấu trúc; tên trang, nhãn, placeholder phải lấy từ app thật / ui-map.
-Ghi vào thư mục `automation/pages/<PageName>.ts`:
+## Standard generated file structure:
+> The example below only illustrates the structure; page names, labels and placeholders must come from the real app / ui-map.
+Write into `automation/pages/<PageName>.ts`:
 
 ```typescript
 import { Page, Locator, expect } from '@playwright/test';
@@ -39,14 +39,14 @@ export class <PageName>Page {
 
   constructor(page: Page) {
     this.page = page;
-    // Mọi nhãn / placeholder / test-id lấy NGUYÊN VĂN từ knowledge/features/<sut>-ui-map.md
-    this.<field>Input = page.getByLabel('<nhãn field trong ui-map>');
-    this.submitButton = page.getByRole('button', { name: '<nhãn nút trong ui-map>' });
-    this.resultMessage = page.getByTestId('<data-testid trong ui-map>');
+    // Every label / placeholder / test-id is taken VERBATIM from knowledge/features/<sut>-ui-map.md
+    this.<field>Input = page.getByLabel('<field label in the ui-map>');
+    this.submitButton = page.getByRole('button', { name: '<button label in the ui-map>' });
+    this.resultMessage = page.getByTestId('<data-testid in the ui-map>');
   }
 
   async goto() {
-    await this.page.goto('<đường dẫn trang trong ui-map>');
+    await this.page.goto('<page path in the ui-map>');
   }
 
   async submit<Field>(value: string) {
@@ -55,13 +55,13 @@ export class <PageName>Page {
   }
 
   async verifyResult(expectedText: string) {
-    // expectedText lấy từ Expected Result của test case, không tự đặt
+    // expectedText comes from the test case's Expected Result; never set it yourself
     await expect(this.resultMessage).toContainText(expectedText);
   }
 }
 ```
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] 100% Page Object tuân thủ đúng chuẩn TypeScript, không có cú pháp lỗi.
-- [ ] Mọi locator đều tuân thủ thứ tự ưu tiên robust locator (getByRole / getByTestId).
-- [ ] Các action method đều có kiểu dữ liệu rõ ràng (`async ...: Promise<void>`).
+## Acceptance gates (Quality Gates)
+- [ ] 100% of Page Objects follow the TypeScript standard, with no syntax errors.
+- [ ] Every locator follows the robust-locator priority order (getByRole / getByTestId).
+- [ ] Every action method has explicit types (`async ...: Promise<void>`).

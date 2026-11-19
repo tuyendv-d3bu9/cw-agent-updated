@@ -1,56 +1,58 @@
 ---
 name: ui-screenshot-review
 description: >
-  Phân tích ảnh chụp màn hình UI bằng AI Vision để phát hiện và đặc tả các vấn đề về
-  UI Inconsistency, Accessibility và UX Problem nhìn thấy được.
+  Analyses UI screenshots with AI Vision to find and specify the visible
+  UI Inconsistency, Accessibility and UX Problem issues.
 ---
 
 # Skill: ui-screenshot-review
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · nhãn §2.1 · FACT §3 · thang Severity §11).
-> **Cần ảnh đính kèm (Vision). Không có ảnh → DỪNG, yêu cầu cung cấp ảnh.**
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict §1 · guards §2 · labels §2.1 · FACT §3 · Severity scale §11).
+> **Attached images are required (Vision). No image → STOP and ask for images.**
+>
+> The output format block (headings, column headers, labels) stays in Vietnamese as written; copy it verbatim.
 
-## Mục đích
-Quét ảnh chụp màn hình, phát hiện và đặc tả vấn đề UI / Accessibility / UX nhìn thấy được.
+## Purpose
+Scan screenshots, then find and specify the visible UI / Accessibility / UX problems.
 
-## Đầu vào
-- 1..n ảnh chụp màn hình đính kèm trực tiếp. **Bắt buộc** — không có ảnh thì dừng.
-- `INPUT/<task-slug>/04_design/` — bản giao thiết kế của UI/UX Designer: design token
-  (màu, chữ, khoảng cách), trạng thái từng thành phần, danh mục thông báo, chuẩn
-  accessibility, và ảnh mockup export từ Figma nếu có. **Đọc trước khi soi ảnh.**
-- (Tuỳ chọn) mô tả ngắn từng màn hình / bối cảnh tính năng.
+## Inputs (Đầu vào)
+- 1..n directly attached screenshots. **Mandatory** — no image, stop.
+- `INPUT/<task-slug>/04_design/` — the UI/UX Designer's handover: design tokens
+  (colours, typography, spacing), the states of each component, the message catalogue, the
+  accessibility standard, and mockup images exported from Figma if any. **Read it before inspecting the images.**
+- (Optional) a short description of each screen / the feature context.
 
-> **Vì sao phải có bản vẽ**: không có chuẩn mực thì nhận xét giao diện chỉ là khẩu vị, Dev
-> cãi lại được và nên cãi. Có bản vẽ thì mỗi phát hiện trỏ về một mã mục cụ thể, verify
-> lại được sau khi sửa. Thư mục `04_design/` trống → vẫn soi được nhưng phải nói rõ trong
-> báo cáo là đang chấm **không có chuẩn mực**, và hạ mức tin cậy của các nhận định thẩm mỹ.
+> **Why the design is needed**: without a reference, comments on the UI are just taste; Dev
+> can push back, and should. With the design, each finding points to a specific section code and can be
+> verified again after the fix. An empty `04_design/` folder → the images can still be inspected, but the report
+> must state clearly that it is judging **without a reference**, and lower the confidence of aesthetic findings.
 
-## KHÔNG được (riêng skill này)
-- Suy đoán hành vi động: hover, animation, chuyển màn, phản hồi sau click — ảnh tĩnh không chứa
-  thông tin đó.
-- Tự "tưởng tượng" màn hình khi chưa có ảnh.
-- Khẳng định điều không nhìn rõ khi ảnh mờ / độ phân giải thấp.
+## MUST NOT (specific to this skill)
+- Speculate about dynamic behaviour: hover, animation, screen transitions, the response after a click — a static image does not contain
+  that information.
+- "Imagine" a screen when there is no image.
+- Assert something that is not clearly visible when the image is blurred / low-resolution.
 
-## 3 nhóm vấn đề cần soi
-| Nhóm | Soi gì |
+## The 3 problem groups to inspect
+| Group | What to inspect |
 |---|---|
-| **UI Inconsistency** | Lệch canh lề, spacing không đều, bo góc/kích thước/màu nút không nhất quán, font lộn xộn |
-| **Accessibility** | Tương phản chữ/nền thấp, cỡ chữ quá nhỏ, vùng chạm quá sát nhau, thiếu nhãn nhìn thấy được |
-| **UX Problem** | Thông báo lỗi/nhãn khó hiểu, thiếu tín hiệu trạng thái (vd không thấy loading), luồng thị giác gây nhầm lẫn |
+| **UI Inconsistency** | Misaligned margins, uneven spacing, inconsistent button corner radius/size/colour, messy fonts |
+| **Accessibility** | Low text/background contrast, font too small, touch targets too close together, missing visible labels |
+| **UX Problem** | Confusing error messages/labels, missing state signals (e.g. no visible loading), a visual flow that misleads |
 
-## Các bước
-1. **Kiểm tra tiền đề** — không có ảnh → DỪNG và yêu cầu cung cấp ảnh.
-2. **Quét & phân loại** — với mỗi ảnh, liệt kê vấn đề nhìn thấy được, phân vào đúng 1 trong 3 nhóm.
-3. **Đặc tả từng vấn đề** — **Vị trí** (chỗ nào trên màn hình) · **Mô tả** (nhìn thấy gì) ·
-   **Lý do** (vì sao là vấn đề) · **Severity** `[ĐỀ XUẤT]` theo thang QA_STANDARD §11 (`Critical`/`Major`/`Minor`/`Trivial`) · **Đề xuất sửa**.
-3b. **Truy vết về bản vẽ** — mỗi phát hiện trỏ về mã mục bị vi phạm trong `04_design/`
-   (ví dụ `vi phạm MSG-01`). Ghi lại cả những mục sản phẩm **làm đúng**, để lần sửa sau
-   không vô tình làm hỏng.
-4. **Gắn cờ độ tin cậy** — ảnh mờ hoặc không đủ rõ → gắn `[GIẢ ĐỊNH]` + đề nghị người dùng
-   cross-check bằng mắt.
+## Steps
+1. **Check the precondition** — no image → STOP and ask for images.
+2. **Scan & classify** — for each image, list the visible problems, each in exactly 1 of the 3 groups.
+3. **Specify each problem** — **Location** (where on the screen) · **Description** (what is seen) ·
+   **Reason** (why it is a problem) · **Severity** `[ĐỀ XUẤT]` (proposal) on the QA_STANDARD §11 scale (`Critical`/`Major`/`Minor`/`Trivial`) · **Suggested fix**.
+3b. **Trace back to the design** — each finding points to the violated section code in `04_design/`
+   (e.g. `vi phạm MSG-01` — violates MSG-01). Also record the items the product **gets right**, so that the next fix
+   does not accidentally break them.
+4. **Flag confidence** — a blurred or unclear image → tag `[GIẢ ĐỊNH]` (assumption) + ask the user to
+   cross-check visually.
 
-## Format output
-Ghi ra `OUTPUT/<task-slug>/08_ui_screenshot_analysis.md`:
+## Output format
+Write `OUTPUT/<task-slug>/08_ui_screenshot_analysis.md`:
 
 ```markdown
 # UI Screenshot Analysis · <task-slug>
@@ -76,10 +78,13 @@ Owner: qa-system/qa-ui-review/skills/ui-screenshot-review.md · Nguồn: <ảnh 
 > **Ghi chú độ tin cậy**: [các nhận định gắn [GIẢ ĐỊNH] cần cross-check bằng mắt, nếu có]
 ```
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Bắt buộc có file ảnh đính kèm; nếu không có ảnh phải dừng lại ngay với Verdict `ASK`.
-- [ ] Đã quét đủ 3 nhóm (UI Inconsistency, Accessibility, UX Problem) cho từng ảnh, không bỏ nhóm nào.
-- [ ] Mọi nhận định dựa trên ảnh mờ hoặc phỏng đoán bắt buộc gắn nhãn `[GIẢ ĐỊNH]`.
-- [ ] Mỗi đề xuất sửa đủ cụ thể để Dev/Designer có thể verify lại sau khi sửa.
-- [ ] Đã đọc `INPUT/<task-slug>/04_design/`; mỗi phát hiện trỏ về mã mục bị vi phạm. Thư mục
-      trống thì phải nói rõ trong báo cáo là đang chấm không có chuẩn mực.
+(Columns: location · description (seen) · reason · violated section (04_design) · severity · suggested fix. `Không có chuẩn mực` = no reference.
+The closing note lists the findings tagged `[GIẢ ĐỊNH]` that need a visual cross-check.)
+
+## Acceptance gates (Quality Gates)
+- [ ] An attached image is mandatory; with no image, stop immediately with Verdict `ASK`.
+- [ ] All 3 groups (UI Inconsistency, Accessibility, UX Problem) are scanned for each image; no group skipped.
+- [ ] Every finding based on a blurred image or a guess carries the `[GIẢ ĐỊNH]` label.
+- [ ] Each suggested fix is concrete enough for Dev/Designer to verify after the fix.
+- [ ] `INPUT/<task-slug>/04_design/` has been read; each finding points to the violated section code. If the folder
+      is empty, the report must state clearly that it is judging without a reference.

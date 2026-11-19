@@ -1,46 +1,49 @@
 ---
 name: exploratory-charter
 description: >
-  Chuyển đổi Risk Area thành bộ Exploratory Charter 5 trường (Mission, Area, Risk, Time-box, Notes)
-  có mục tiêu rõ ràng và giới hạn thời gian cho các phiên kiểm thử thăm dò do con người thực hiện.
+  Turns Risk Areas into a set of 5-field Exploratory Charters (Mission, Area, Risk, Time-box, Notes)
+  with clear goals and time limits for exploratory testing sessions carried out by humans.
 ---
 
 # Skill: exploratory-charter
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict · guard · FACT · risk matrix 3x3 §5).
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict · guards · FACT · 3x3 risk matrix §5).
+>
+> The output format block and the Mission syntax `Khám phá … để phát hiện …` (Explore … to discover …) stay in
+> Vietnamese as written; copy them verbatim.
 
-## Mục đích
-Chuyển Risk Area thành Exploratory Charter có mục tiêu rõ ràng và giới hạn thời gian, định hướng
-phiên thăm dò do con người thực hiện.
+## Purpose
+Turn Risk Areas into Exploratory Charters with clear goals and time limits, steering
+exploratory sessions carried out by humans.
 
-## Đầu vào
-- Danh sách Risk Area + mức Likelihood/Impact (từ `03_viewpoint_report.md` §1), và/hoặc
-- Requirement Summary (`01_*.md`), và/hoặc mô tả tính năng.
-- `knowledge/_project.md` · `knowledge/features/<task-slug>.md` (luôn nạp, QA_STANDARD §7)
+## Inputs (Đầu vào)
+- The list of Risk Areas + Likelihood/Impact levels (from `03_viewpoint_report.md` §1), and/or
+- The Requirement Summary (`01_*.md`), and/or a feature description.
+- `knowledge/_project.md` · `knowledge/features/<task-slug>.md` (always loaded, QA_STANDARD §7)
 
-## KHÔNG được (riêng skill này)
-- Kịch bản hoá: viết Steps / Precondition / Expected chi tiết như Test Case.
-- Gộp nhiều rủi ro vào một Charter — **một Charter, một rủi ro**.
-- Đặt time-box phi thực tế cho một phiên con người.
+## MUST NOT (specific to this skill)
+- Script it: write detailed Steps / Precondition / Expected like a Test Case.
+- Combine several risks into one Charter — **one Charter, one risk**.
+- Set an unrealistic time-box for a human session.
 
-## Các bước
-1. **Chọn rủi ro trọng tâm** — ưu tiên rủi ro cao trước; mỗi Charter tập trung **một** rủi ro
-   khác biệt; bao phủ đầy đủ các rủi ro cao theo bản chất nghiệp vụ.
-2. **Soạn từng Charter đủ 05 trường**:
+## Steps
+1. **Choose the focal risk** — higher risks first; each Charter focuses on **one** distinct
+   risk; cover all high risks according to their business nature.
+2. **Write each Charter with all 05 fields**:
 
-   | Trường | Nội dung |
+   | Field | Content |
    |---|---|
-   | **Mission** | Mục tiêu khám phá — "Khám phá … để phát hiện …" |
-   | **Area** | Khu vực / màn hình / luồng dữ liệu cụ thể thuộc phạm vi thăm dò |
-   | **Risk** | Rủi ro chính Charter nhắm tới — trace về Risk Area / Rule nguồn |
-   | **Time-box** | Khung thời gian thực tế cho một phiên (gợi ý 30–90 phút) |
-   | **Notes** | Điểm cần chú ý, dữ liệu/biến thể nên thử, câu hỏi mở cần trả lời |
+   | **Mission** | The exploration goal — "Khám phá … để phát hiện …" (Explore … to discover …) |
+   | **Area** | The specific area / screen / data flow within the exploration scope |
+   | **Risk** | The main risk the Charter targets — traced to the source Risk Area / Rule |
+   | **Time-box** | A realistic time frame for one session (suggested 30–90 minutes) |
+   | **Notes** | Points to watch, data/variants worth trying, open questions to answer |
 
-3. **Tự đối chiếu độ bao phủ rủi ro** — không để rủi ro ưu tiên cao nào trống Charter. Vùng cần
-   góc nhìn ngoài dữ liệu đã cho → gắn `[GIẢ ĐỊNH]` + nêu lý do.
+3. **Self-check risk coverage** — no high-priority risk may be left without a Charter. An area that needs
+   a perspective beyond the given data → tag it `[GIẢ ĐỊNH]` (assumption) + state the reason.
 
-## Format output
-Ghi ra `OUTPUT/<task-slug>/07_exploratory_charter.md`:
+## Output format
+Write `OUTPUT/<task-slug>/07_exploratory_charter.md`:
 
 ```markdown
 # EXPLORATORY CHARTER SET — [TÊN TÍNH NĂNG]
@@ -62,8 +65,10 @@ Owner: qa-automation/exploratory-charter · Nguồn: OUTPUT/<task-slug>/03_viewp
 *(Lặp lại — mỗi Charter một rủi ro khác nhau, ưu tiên rủi ro cao trước)*
 ```
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Mỗi Charter tập trung duy nhất một rủi ro trọng tâm, không gộp nhiều rủi ro.
-- [ ] Mission bắt đầu bằng cú pháp chuẩn: `Khám phá [đối tượng] để phát hiện [vấn đề tiềm ẩn]`.
-- [ ] Time-box thực tế nằm trong khoảng 30–90 phút.
-- [ ] Tuyệt đối không viết steps dạng scripted kịch bản hoá như test case.
+(Sections: 1 charter summary by risk · 2 details of each charter. Repeat the block — one different risk per Charter, higher risks first.)
+
+## Acceptance gates (Quality Gates)
+- [ ] Each Charter focuses on exactly one focal risk, never several.
+- [ ] The Mission starts with the standard syntax: `Khám phá [đối tượng] để phát hiện [vấn đề tiềm ẩn]` (Explore [target] to discover [potential problem]).
+- [ ] The time-box is realistic, within 30–90 minutes.
+- [ ] Absolutely no scripted steps like a test case.
