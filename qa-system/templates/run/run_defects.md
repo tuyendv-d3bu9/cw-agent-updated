@@ -3,4 +3,4 @@
 
 | Defect # | Test Case liên quan | Tiêu đề lỗi | Mức độ | Trạng thái | Bug Report File / Jira Key |
 |---|---|---|:---:|:---:|---|
-| DEF-01 | TC-005 | Giảm giá vượt quá ngưỡng chiết khấu tối đa cho phép | High | New | `OUTPUT/reports/bug-report-vchr-max-cap.md` |
+| DEF-01 | TC-005 | `<tiêu đề lỗi>` | High | New | `OUTPUT/reports/bug-report-<slug>.md` |

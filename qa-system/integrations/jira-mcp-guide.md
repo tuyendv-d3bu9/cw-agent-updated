@@ -24,7 +24,7 @@
    JIRA_HOST=https://your-domain.atlassian.net
    JIRA_EMAIL=email-cua-ban@gmail.com
    JIRA_API_TOKEN=ATATT3xFfGF0... (token vừa tạo)
-   JIRA_PROJECT_KEY=SHOPGO
+   JIRA_PROJECT_KEY=PROJ
    ```
 
 ---
@@ -39,13 +39,13 @@ Khi MCP Server được kích hoạt, Agent có quyền sử dụng 5 công cụ
 ### 2. `jira_search_issues`
 - **Mục đích**: Tìm kiếm danh sách issue theo cú pháp JQL (Jira Query Language).
 - **Tham số**:
-  - `jql` (string): Câu lệnh JQL (ví dụ: `project = "SHOPGO" AND issuetype = Bug AND status = Open`).
+  - `jql` (string): Câu lệnh JQL (ví dụ: `project = "PROJ" AND issuetype = Bug AND status = Open`).
   - `maxResults` (number): Số lượng kết quả tối đa (mặc định 20, tối đa 100).
 
 ### 3. `jira_get_issue`
 - **Mục đích**: Lấy thông tin chi tiết của 1 ticket Jira cụ thể.
 - **Tham số**:
-  - `issueKey` (string, bắt buộc): Mã ticket (ví dụ: `SHOPGO-101`).
+  - `issueKey` (string, bắt buộc): Mã ticket (ví dụ: `PROJ-101`).
 
 ### 4. `jira_create_bug`
 - **Mục đích**: Tạo một issue loại Bug mới trên Jira theo chuẩn kỹ thuật.

@@ -110,13 +110,13 @@ const TOOLS = [
   },
   {
     name: 'jira_get_issue',
-    description: 'Get full details of a specific Jira issue by its key (e.g. SHOPGO-101).',
+    description: 'Get full details of a specific Jira issue by its key (e.g. PROJ-101).',
     inputSchema: {
       type: 'object',
       properties: {
         issueKey: {
           type: 'string',
-          description: 'The Jira issue key, e.g. "SHOPGO-101".'
+          description: 'The Jira issue key, e.g. "PROJ-101".'
         }
       },
       required: ['issueKey']
@@ -130,7 +130,7 @@ const TOOLS = [
       properties: {
         summary: {
           type: 'string',
-          description: 'Title/Summary of the bug (e.g., "[Voucher] Mã hết hạn vẫn áp dụng thành công").'
+          description: 'Title/Summary of the bug (e.g., "[<Module>] <mô tả lỗi>").'
         },
         description: {
           type: 'string',
@@ -143,7 +143,7 @@ const TOOLS = [
         components: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Optional component names (e.g. ["Voucher", "Checkout"]).'
+          description: 'Optional component names (e.g. ["<Component>"]).'
         }
       },
       required: ['summary', 'description']
@@ -157,7 +157,7 @@ const TOOLS = [
       properties: {
         taskSlug: {
           type: 'string',
-          description: 'The task slug (e.g. "function-d-voucher"). If omitted, uses the first active task directory.'
+          description: 'The task slug (e.g. "<task-slug>"). If omitted, uses the first active task directory.'
         }
       }
     }
