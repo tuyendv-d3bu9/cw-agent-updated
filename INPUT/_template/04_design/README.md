@@ -1,12 +1,12 @@
-# 04_design — Bản Vẽ Thiết Kế & Giao Diện UI/UX
+# 04_design — Design Drawings & UI/UX Interface
 
-## Mục đích
-Chứa tài liệu thiết kế từ UI/UX Designer để `qa-ui-review` so sánh đối chiếu giữa giao diện thực tế và bản vẽ thiết kế, hoặc để `qa-automation` nhận diện luồng thị giác.
+## Purpose
+Holds design documents from the UI/UX Designer so `qa-ui-review` can compare the actual interface against the design drawings, or so `qa-automation` can recognize the visual flow.
 
-## Các loại tài liệu phù hợp:
-- Link Figma / Sketch / Adobe XD
-- Ảnh chụp màn hình bản vẽ (Wireframe, High-fidelity Mockups)
-- Hướng dẫn phong cách (Design System / Tokens: mã màu, font chữ, trạng thái hover/active)
+## Suitable document types:
+- Figma / Sketch / Adobe XD links
+- Screenshots of drawings (Wireframe, High-fidelity Mockups)
+- Style guides (Design System / Tokens: color codes, fonts, hover/active states)
 
-## Định dạng:
-- `.png`, `.jpg`, `.webp`, `.md` (chứa links)
+## Formats:
+- `.png`, `.jpg`, `.webp`, `.md` (containing links). Images are kept by intake in `04_design/_assets/`.

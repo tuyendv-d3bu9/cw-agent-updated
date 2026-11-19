@@ -1,0 +1,33 @@
+# Coverage matrix · ecommerce-retail
+
+> Audit of the pack against the business capabilities of online retail (2026-11-19). A row is a capability, not a rule.
+> Key risks name rows of `risks.md` / `rule-patterns.md` (`[DOMAIN] ecommerce-retail/<file>#<key>`). Questions and scenarios use
+> neutral placeholders only; every concrete value comes from the project. References: `qa-system/domains/SOURCES.md`.
+> Gap status: `covered` = in the pack before this audit · `added now` = added in this audit · `open — needs domain expert`.
+
+| Capability | Key risks | QA viewpoints (ISO 25010 characteristic) | Questions for stakeholders | Example test scenarios | Reference | Verification | Gap status |
+|---|---|---|---|---|---|---|---|
+| Catalogue and product identity | product-identifier-integrity, stock-display-staleness | Functional Suitability (correctness) | Does each sellable `<variant>` have its own `<product-id>`? Is `<availability>` re-checked at `<order>`? | Import two `<variant>`s with one `<product-id>`; order an item whose shown availability is stale | ref-gs1us-gtin | VERIFIED | added now |
+| Pricing, tax and price display | rounding-and-tax-mismatch, price-change-after-add, price-display-consistency | Functional Suitability | Is `<amount>` rounded per line or on the total? Is `<price>` shown with or without `<tax>` on each page? | Same cart priced on listing, cart and invoice; price change between add-to-cart and payment | Unknown | none | covered; display consistency added now |
+| Promotions and vouchers | promotion-stacking-conflict, discount-scope-shipping-vs-subtotal, voucher-abuse | Functional Suitability, Security | May `<promotion-A>` and `<promotion-B>` stack? How are attempts on `<voucher>` limited? | Apply two promotions in both orders; repeated invalid code entry | Unknown | none | covered |
+| Cart and checkout | guest-vs-member-eligibility, cart-merge-on-login, checkout-error-protection, client-side-price-tampering, checkout-inclusivity | Functional Suitability, Security, Interaction Capability | Is `<amount>` recomputed on the server? Which accessibility `<standard>` applies? | Tamper `<price>` in the request; complete checkout by keyboard only; log in with a guest cart | ref-owasp-asvs-chapters, ref-iso25010-summary | PARTIAL (ASVS chapter titles only) | covered; tampering and inclusivity added now |
+| Customer account and personal data | account-takeover, customer-data-privacy, order-access-control | Security (Confidentiality, Authenticity) | Which `<action>`s need re-authentication? Which `<field>`s appear in `<export>`? | Change address in a long-lived session; open another customer's `<order>` by id | ref-owasp-asvs-chapters | PARTIAL | covered (access); account and privacy added now |
+| Inventory and reservation | oversell-inventory, reservation-expiry, backorder-preorder | Reliability | How long is `<reservation>` held? May `<sku>` without stock be pre-ordered? | Two buyers race for the last `<sku>`; reservation expires during payment | Unknown | none | covered; backorder added now |
+| Payment and fraud | payment-state-mismatch, duplicate-order-submission, card-data-exposure, payment-fraud-screening | Reliability, Security | Which `<order>` state holds while `<fraud-check>` is pending? Where may card `<field>`s be stored? | Payment callback arrives twice / late; order held for review then released | ref-pci-dss | PARTIAL | covered; fraud screening added now |
+| Order lifecycle and amendment | order-state-transition, order-amendment-window, order-audit-trail, side-effect-failure-compensation | Functional Suitability, Security (Accountability) | Until which `<state>` may `<order>` change? Is each manual `<action>` logged? | Change address after the order entered fulfilment; staff refund without trace | ref-owasp-asvs-chapters | PARTIAL | covered; amendment added now |
+| Fulfilment and delivery | provider-timeout, delivery-eligibility, partial-fulfilment-refund | Functional Suitability, Compatibility | Which `<address>` / `<sku>` combinations cannot be served, and when is the customer told? | Order to an address outside `<delivery-zone>`; carrier does not respond | Unknown | none | covered; eligibility added now |
+| Returns, refunds, benefit restoration | return-refund-eligibility, benefit-restore-on-cancel | Functional Suitability | When `<order>` in `<state-A>` is cancelled, is `<benefit>` restored? | Cancel after partial delivery; return one line of a discounted order | Unknown | none | covered |
+| Stored value (gift card, credit, points) | stored-value-balance, stored-value-restore | Reliability | Is `<stored-value>` reserved at checkout or deducted at payment, and restored on `<refund>`? | Spend the same balance from two sessions; refund an order paid partly with stored value | Unknown | none | added now |
+| Settlement and reconciliation | payment-reconciliation, settlement-reconciliation | Functional Suitability | How often are `<order>` totals reconciled with `<provider>` settlement? | Refund issued but settlement shows the original amount | Unknown | none | added now |
+| Notifications | order-notification-correctness, notification-trigger | Interaction Capability | Which `<event>`s trigger `<notification>`, with which `<field>`s? | Partial refund message shows the right `<amount>` and recipient | Unknown | none | added now |
+| Peak load | peak-traffic-checkout, purchase-quantity-abuse | Performance Efficiency (Capacity), Security | What `<load>` must checkout sustain? How is `<purchase-limit>` counted? | Campaign start with `<load>`; one person buys through several accounts | ref-iso25010-summary | VERIFIED (characteristic names) | added now |
+| Consumer-protection, tax and e-invoice law | (no pack row) | Functional Suitability | Which `<regulation>` applies to `<feature>` in `<jurisdiction>`? | Unknown | Unknown | none | open — needs domain expert (jurisdiction-specific) |
+| Marketplace, store pickup, omnichannel returns | (outside pack scope) | — | Does the project include `<multi-vendor>` or `<in-store>` flows? | Unknown | Unknown | none | open — needs domain expert (scope decision) |
+
+## Validation note (2026-11-19)
+
+Agent-level validation on synthetic features (outside the repo) showed analysts missing failures of follow-up
+actions after a successful main action, time limits inside multi-party processes, and re-checks when parties are
+added. The rule patterns `downstream-side-effect-failure` / `side-effect-failure-compensation`, `dispute-time-limits`
+and the widened `re-underwriting-trigger` were added or extended for that reason. They are questions only; their
+Source stays `Unknown` until a verified reference or domain-expert review exists.

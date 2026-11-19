@@ -1,0 +1,7 @@
+{
+  "_comment": [
+    "Đơn vị (tiền tệ, tỷ lệ) của ngân hàng / thanh toán — giúp lint nhận ra con số mang đơn vị là giới hạn nghiệp vụ.",
+    "Chỉ THÊM vào tập đơn vị sẵn có của qa-system/tools/lib/provenance.js. Chữ thường."
+  ],
+  "units": ["usd", "eur", "jpy", "bps", "basis points", "điểm cơ bản", "%/năm", "%/ngày", "triệu đồng", "tỷ đồng", "giao dịch/ngày", "lần/ngày"]
+}

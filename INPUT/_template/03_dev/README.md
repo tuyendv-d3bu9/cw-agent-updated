@@ -1,13 +1,13 @@
-# 03_dev — Đặc Tả Kỹ Thuật Từ Đội Ngũ Phát Triển
+# 03_dev — Technical Specifications from the Development Team
 
-## Mục đích
-Chứa tài liệu kỹ thuật từ Tech Lead, Backend, Database Developer để Agent đối chiếu chéo xem yêu cầu của BA có khả thi về mặt kỹ thuật, API và Database hay không.
+## Purpose
+Holds technical documents from the Tech Lead, Backend and Database Developers so the Agent can cross-check whether the BA's requirements are feasible in terms of technology, API and Database.
 
-## Các loại tài liệu phù hợp:
-- Đặc tả API: Swagger, OpenAPI (`.json`, `.yaml`)
+## Suitable document types:
+- API specs: Swagger, OpenAPI (`.json`, `.yaml`)
 - Postman Collection (`.json`)
-- Lược đồ cơ sở dữ liệu (Database Schema / DDL / ERD)
-- Kiến trúc tích hợp, danh sách Third-party APIs, mã lỗi hệ thống (Error Codes)
+- Database schema (Database Schema / DDL / ERD)
+- Integration architecture, list of third-party APIs, system error codes
 
-## Định dạng:
+## Formats:
 - `.json`, `.yaml`, `.sql`, `.md`

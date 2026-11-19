@@ -1,0 +1,7 @@
+{
+  "_comment": [
+    "Chủ đề dò xung đột giữa các tính năng — cùng định dạng knowledge/_conflict_topics.json.",
+    "topics.<key> = { category: chuỗi, allow: [cụm cho phép], deny: [cụm phủ định] }. Để trống nếu ngành chưa có chủ đề kiểm được."
+  ],
+  "topics": {}
+}

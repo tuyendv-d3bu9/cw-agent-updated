@@ -1,0 +1,10 @@
+{
+  "_comment": [
+    "Kiểu dữ liệu sinh của ngành. types.<tên> = { generator: <engine của generate-dataset>, defaults: { tham số } }.",
+    "Engine trung tính: code, money, bank_account, enum, boundary, negative, email, date, name, phone, address, citizen_id.",
+    "enums.<tên> = [giá trị] — dùng trong schema bằng { \"type\": \"enum\", \"enum\": \"<tên>\" }.",
+    "Giá trị phải lấy từ nguồn ghi trong README. Ràng buộc nghiệp vụ của dự án vẫn chép từ Field Map, không lấy ở đây."
+  ],
+  "types": {},
+  "enums": {}
+}

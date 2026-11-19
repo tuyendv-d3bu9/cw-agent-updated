@@ -1,0 +1,11 @@
+{
+  "name": "@cw/qa-agent-system",
+  "version": "2.1.0",
+  "description": "Hệ thống 9 agent QA: phân tích yêu cầu, quét kẽ hở 06W, sinh test case 8 trường, sinh dữ liệu, automation Playwright. Kèm cổng ASK và cổng Go/No-Go thi hành bằng máy.",
+  "private": true,
+  "license": "ISC",
+  "type": "commonjs",
+  "files": ["core", "qa-*", "tools", "templates", "workflows", "integrations", "README.md"],
+  "keywords": ["qa", "testing", "ai-agent", "test-design", "playwright"],
+  "engines": { "node": ">=18" }
+}

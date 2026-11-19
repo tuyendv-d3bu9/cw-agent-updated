@@ -1,14 +1,16 @@
-# 02_ba — Yêu Cầu Chi Tiết Từ Business Analyst (BẮT BUỘC)
+# 02_ba — Detailed Requirements from the Business Analyst (REQUIRED)
 
-## Mục đích
-Đây là **nguồn sự thật cốt lõi** (Single Source of Truth) để hệ thống trích xuất Business Rules (`BR-xx`), quét kẽ hở 06W và thiết kế Test Cases.
+## Purpose
+The main source of business logic for extracting `BR-xx`/`FD-xx`/`AF-xx`, scanning 06W gaps and designing test cases.
+When it differs from other compartments, the priority order follows `qa-system/core/QA_STANDARD.md` §10.2 (a dated, newer CR/Q&A wins for the part it covers).
+Put the version/date in the file name so the agent knows which is the latest.
 
-## Các loại tài liệu phù hợp:
+## Suitable document types:
 - PRD (Product Requirement Document)
 - SRS (Software Requirement Specification)
-- Danh sách User Stories & Tiêu chí nghiệm thu (Acceptance Criteria - AC)
-- Use Case Specifications & Luồng nghiệp vụ (Workflows)
+- List of User Stories & Acceptance Criteria (AC)
+- Use Case Specifications & business workflows
 
-## Định dạng:
-- `.docx` (Hệ thống sẽ tự động chuyển đổi ngầm sang `.md`)
-- `.md` (Khuyến nghị chuẩn)
+## Formats:
+- `.docx` (the system converts it to `.md` silently)
+- `.md` (the recommended standard)

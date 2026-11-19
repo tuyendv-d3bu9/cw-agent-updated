@@ -20,5 +20,24 @@ TODO.md
 PLAN.md
 VIDEO_RECORDING_SCRIPT.md
 
+.scratch/
+
+**/index.html
+.DS_Store
+
+# Tài liệu riêng của giảng viên — không bao giờ phát cho học viên
+GIANG-VIEN/
+
+# Artifact nội bộ của Playwright — KHÔNG phải bằng chứng nộp cho khách.
+# Bằng chứng thật nằm ở OUTPUT/<slug>/runs/<RUN-ID>/evidence/<TC_ID>/
 test-results/
-automation/test-results/
+**/runs/*/_playwright/
+**/runs/*/report/
+**/runs/*/results.json
+**/evidence/.last-run.json
+
+# Worktree tạm của agent Claude Code (không phải file dự án)
+.claude/worktrees/
+
+# Kết quả chấm thi — chỉ nằm trên nhánh grading/<exam> của clone chấm thi (giảng viên force-add), không bao giờ commit lên nhánh học viên
+GRADING/

@@ -1,0 +1,91 @@
+{
+  "_comment": [
+    "Chủ đề xung đột của ngành bán lẻ / thương mại điện tử.",
+    "Bằng đúng DEFAULT_TOPICS trong qa-system/tools/knowledge/conflict-detector.js (test giữ hai bên không lệch).",
+    "Định dạng giống knowledge/_conflict_topics.json: topics.<key> = { category, allow[], deny[] }."
+  ],
+  "topics": {
+    "stacking": {
+      "category": "Cộng dồn khuyến mãi / quyền lợi",
+      "allow": [
+        "cộng dồn",
+        "kết hợp",
+        "áp dụng đồng thời",
+        "stackable",
+        "dùng chung",
+        "combine",
+        "stacking allowed"
+      ],
+      "deny": [
+        "không cộng dồn",
+        "không được cộng dồn",
+        "không áp dụng đồng thời",
+        "không kết hợp",
+        "chỉ 1 mã",
+        "duy nhất 1",
+        "không dùng chung",
+        "non-stackable",
+        "cannot combine",
+        "not stackable"
+      ]
+    },
+    "guestAccess": {
+      "category": "Điều kiện tài khoản (Guest vs đăng nhập)",
+      "allow": [
+        "không cần đăng nhập",
+        "khách vãng lai",
+        "guest",
+        "chưa đăng nhập",
+        "anonymous"
+      ],
+      "deny": [
+        "bắt buộc đăng nhập",
+        "yêu cầu đăng nhập",
+        "phải đăng nhập",
+        "chỉ áp dụng thành viên",
+        "must login",
+        "authentication required",
+        "không hỗ trợ guest",
+        "không cho guest"
+      ]
+    },
+    "cancellationRefund": {
+      "category": "Huỷ / hoàn quyền lợi",
+      "allow": [
+        "hoàn lại mã",
+        "hoàn voucher",
+        "phục hồi mã",
+        "restore voucher",
+        "hoàn về ví",
+        "refund",
+        "restore"
+      ],
+      "deny": [
+        "không hoàn lại",
+        "không hoàn",
+        "hủy là mất",
+        "huỷ là mất",
+        "mất quyền sử dụng",
+        "không phục hồi",
+        "non-refundable",
+        "forfeited",
+        "no refund"
+      ]
+    },
+    "shippingDiscount": {
+      "category": "Phạm vi giảm giá (phí ship vs tiền hàng)",
+      "allow": [
+        "giảm cả phí ship",
+        "áp dụng phí vận chuyển",
+        "freeship kết hợp",
+        "applies to shipping"
+      ],
+      "deny": [
+        "chỉ áp dụng tiền hàng",
+        "không giảm phí vận chuyển",
+        "không bao gồm ship",
+        "subtotal only"
+      ]
+    }
+  }
+}

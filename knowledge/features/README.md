@@ -1,18 +1,14 @@
-# Quản Lý Tri Thức Tính Năng (knowledge/features/)
+# knowledge/features/ — Per-feature knowledge
 
-Thư mục này chứa tri thức tích lũy vĩnh viễn cho từng tính năng cụ thể của dự án.
+One file per feature, kebab-case name equal to the task's `slug`: `<slug>.md`.
+Create with `npm run knowledge:new <slug>` (intake also creates it), from the template `knowledge/_template.md`.
 
-## Quy ước đặt tên:
-- Mỗi file đại diện cho một tính năng, đặt tên theo dạng kebab-case: `<feature-slug>.md` (Ví dụ: `voucher-checkout.md`, `cart-management.md`, `user-authentication.md`).
+Lifecycle:
+1. Skill `01` records sourced facts; skill `02` adds `MR-xx` questions with status `New` to §7.
+2. The BA/PO answers → the user relays it, the agent copies it **verbatim** into `Phản hồi chính thức` (official answer) and changes the status;
+   a §8 decision needs an approver + date. Then `npm run knowledge:sync -- <slug> --write`.
+3. Next run: every stage reads this file; a settled MR becomes a `BR` in the next `01` run; never re-ask what is settled.
 
-## Cách tạo mới một file tri thức tính năng:
-Sử dụng script tự động:
-```bash
-npm run knowledge:new <feature-slug>
-```
-Hoặc copy từ `knowledge/_template.md` sang thư mục này.
+Detailed write rules: `qa-system/core/QA_STANDARD.md` §8. Never delete old rows — only change `Trạng thái` (status).
 
-## Quy trình cập nhật tri thức:
-1. **Lần phân tích đầu tiên**: Agent đọc tài liệu trong `INPUT/` và sinh các kẽ hở ban đầu vào Mục 7 (`OPEN QUESTIONS`).
-2. **Khi BA phản hồi**: Con người hoặc Agent (thông qua skill `qa-knowledge-sync`) ghi nhận câu trả lời vào Mục 8 (`GIẢ ĐỊNH ĐÃ CHỐT`) và chuyển các rule thành công sang Mục 3 (`BUSINESS RULES`).
-3. **Các lần chạy sau**: Mọi Agent sẽ đọc file này trước tiên để kế thừa toàn bộ các quyết định trước đó.
+`<sut>-ui-map.md`: the UI map of the system under test, locators quoted from the real app — written before writing any locator.

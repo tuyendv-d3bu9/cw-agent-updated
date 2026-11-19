@@ -1,0 +1,64 @@
+{
+  "_comment": [
+    "Đầu vào BẮT BUỘC của skill gen-daily-summary (qa-reporter).",
+    "Trước đây skill khai 'cần file sprint data JSON' nhưng không ở đâu nói file đó hình dáng ra sao,",
+    "nên agent phải tự đoán cấu trúc — nguồn ảo giác. File này là hợp đồng.",
+    "Mọi con số trong Daily Summary phải đối chiếu ngược được về đây.",
+    "Chép ra OUTPUT/<slug>/reports/sprint_data_<YYYY-MM-DD>.json rồi điền."
+  ],
+
+  "_source": [
+    "Liệt kê đúng những file đã đọc để dựng JSON này — để người đọc truy ngược được",
+    "OUTPUT/<slug>/runs/<RUN-ID>/run_result.md",
+    "OUTPUT/<slug>/jira_defects_summary.md"
+  ],
+
+  "project": "<Tên dự án>",
+  "task": "<task-slug>",
+  "report_date": "<YYYY-MM-DD>",
+  "run": "<RUN-ID, ví dụ RUN-01_regression>",
+  "environment": "<URL môi trường đã chạy>",
+
+  "scope": {
+    "total_test_cases": 0,
+    "automation_scope": 0,
+    "expected_pass": 0,
+    "expected_fail": 0,
+    "out_of_scope": ["<TC_ID hoặc nhóm nằm ngoài đợt chạy này, kèm lý do>"]
+  },
+
+  "execution": {
+    "executed": 0,
+    "passed": 0,
+    "failed": 0,
+    "blocked": 0,
+    "remaining": 0,
+    "duration": "<ví dụ 12m 30s>",
+    "features": ["<tên tính năng đã chạy>"],
+    "results": [
+      {
+        "tc": "<TC_ID>",
+        "jira": "<Jira key, hoặc chuỗi rỗng nếu chưa đẩy>",
+        "title": "<tiêu đề test case>",
+        "status": "PASS | FAIL | BLOCKED"
+      }
+    ]
+  },
+
+  "defects": [
+    {
+      "id": "<BUG-xx hoặc Jira key>",
+      "severity": "Blocker | Critical | High | Medium | Low",
+      "title": "<tóm tắt lỗi>",
+      "status": "<Open | In Progress | Resolved …>",
+      "is_blocker": false
+    }
+  ],
+
+  "next_actions": [
+    {
+      "task": "<việc cần làm tiếp>",
+      "owner": "<người phụ trách, hoặc bỏ trống nếu chưa phân công>"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "_comment": [
+    "Kiểu dữ liệu sinh cho test ngành ngân hàng / thanh toán. Mọi giá trị là dữ liệu GIẢ, không dùng làm quy tắc nghiệp vụ.",
+    "card_pan_test: TEST ONLY — số thẻ sandbox công bố trong tài liệu chính thức của Stripe (https://docs.stripe.com/testing). Không phải dữ liệu thẻ thật, không dùng được để thanh toán thật; cấm thay bằng số thẻ thật.",
+    "account_number_synthetic: ghép tiền tố + chuỗi số tổng hợp, không theo cấu trúc số tài khoản / IBAN của quốc gia nào (cấu trúc thật: Unknown).",
+    "Giới hạn, độ dài, định dạng của dự án vẫn chép từ Field Map; tham số trong schema thắng mặc định ở đây."
+  ],
+  "types": {
+    "card_pan_test": {
+      "_note": "TEST ONLY — Stripe sandbox test card numbers (https://docs.stripe.com/testing). Not real payment data; never replace with production card numbers.",
+      "generator": "code",
+      "defaults": {
+        "prefixes": [
+          ""
+        ],
+        "values": [
+          "4242424242424242",
+          "5555555555554444",
+          "378282246310005"
+        ]
+      }
+    },
+    "account_number_synthetic": {
+      "generator": "code",
+      "defaults": {
+        "prefixes": [
+          "TEST",
+          "ACC"
+        ],
+        "values": [
+          "0000000001",
+          "0000000002",
+          "0000000003",
+          "1234567890",
+          "9999999999"
+        ]
+      }
+    },
+    "transaction_reference": {
+      "generator": "code",
+      "defaults": {
+        "prefixes": [
+          "TXN",
+          "REF"
+        ],
+        "values": [
+          "20260101001",
+          "20260101002",
+          "20261231999",
+          "00000000000"
+        ]
+      }
+    },
+    "amount_generic": {
+      "generator": "money",
+      "defaults": {
+        "min": 1,
+        "max": 1000000,
+        "step": 1,
+        "locale": "en-US"
+      }
+    },
+    "dispute_reference_synthetic": {
+      "_note": "Synthetic dispute / chargeback reference; format is not that of any card scheme or bank (real format: Unknown).",
+      "generator": "code",
+      "defaults": {
+        "prefixes": [
+          "TESTDSP-"
+        ],
+        "values": [
+          "000001",
+          "000002",
+          "999999"
+        ]
+      }
+    }
+  },
+  "enums": {}
+}

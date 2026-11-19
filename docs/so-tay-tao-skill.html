@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>qa-system skill-authoring handbook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one ~1000px column; the SVG process diagram on top; each step is a block with a real sequence number (a sequential process). */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --sunk: #e9edf3;
+  --fg: #172030;
+  --muted: #5a6577;
+  --line: #d8dee8;
+  --accent: #2a58b8;
+  --accent-soft: #e2eafa;
+  --warn: #a8640f;
+  --warn-soft: #f9ecd8;
+  --bad: #b5352f;
+  --bad-soft: #f9e4e2;
+  --good: #1d7b4a;
+  --good-soft: #e1f2e8;
+  --font: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10141b; --surface: #171d27; --sunk: #1e2632; --fg: #e3e8f0; --muted: #98a3b5; --line: #2a3342;
+    --accent: #8eaef5; --accent-soft: #1f2b45; --warn: #efb060; --warn-soft: #382a17; --bad: #f2877f; --bad-soft: #3b1f1d;
+    --good: #72d69c; --good-soft: #183323; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10141b; --surface: #171d27; --sunk: #1e2632; --fg: #e3e8f0; --muted: #98a3b5; --line: #2a3342;
+  --accent: #8eaef5; --accent-soft: #1f2b45; --warn: #efb060; --warn-soft: #382a17; --bad: #f2877f; --bad-soft: #3b1f1d;
+  --good: #72d69c; --good-soft: #183323; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 16px; line-height: 1.7; }
+.wrap { max-width: 1000px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 36px 80px; display: grid; gap: 52px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -.012em; }
+h1 { font-size: clamp(32px, 5.4vw, 48px); line-height: 1.1; font-weight: 800; }
+h2 { font-size: clamp(22px, 3vw, 27px); line-height: 1.25; font-weight: 700; }
+h3 { font-size: 17px; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+code { font-family: var(--mono); font-size: .86em; background: var(--sunk); padding: 1px 6px; border-radius: 5px; }
+section { display: grid; gap: 18px; }
+.kicker { font-size: 12.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 18px; color: var(--muted); max-width: 62ch; }
+.muted { color: var(--muted); }
+
+.hero { display: grid; gap: 16px; padding: 28px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
+.rules3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.rules3 div { background: var(--sunk); border-radius: 12px; padding: 14px 16px; display: grid; gap: 2px; }
+.rules3 b { font-size: 16.5px; }
+.rules3 span { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; overflow-x: auto; }
+.diagram svg { display: block; min-width: 780px; width: 100%; height: auto; }
+
+.step { display: grid; grid-template-columns: 52px 1fr; gap: 16px; align-items: start; }
+.step .n { width: 44px; height: 44px; border-radius: 12px; background: var(--accent); color: var(--surface); font-weight: 800; font-size: 19px; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+.step .body { display: grid; gap: 14px; min-width: 0; }
+@media (max-width: 560px) { .step { grid-template-columns: 1fr; } }
+
+.tree { display: grid; gap: 10px; }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+.q .ans { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 600px) { .q { grid-template-columns: 1fr; } .q .ans { justify-content: flex-start; } }
+.pill { display: inline-block; font-size: 12.5px; font-weight: 700; padding: 2px 10px; border-radius: 99px; white-space: nowrap; }
+.pill.a { background: var(--accent-soft); color: var(--accent); }
+.pill.ok { background: var(--good-soft); color: var(--good); }
+.pill.no { background: var(--bad-soft); color: var(--bad); }
+.pill.w { background: var(--warn-soft); color: var(--warn); }
+
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; line-height: 1.55; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: var(--sunk); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.c { text-align: center; white-space: nowrap; }
+
+pre { margin: 0; padding: 14px 16px; font-family: var(--mono); font-size: 12.8px; line-height: 1.65; overflow-x: auto; white-space: pre; background: var(--sunk); color: var(--fg); border-radius: 12px; }
+.anno { color: var(--accent); }
+
+.rulegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.rule { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; min-width: 0; align-content: start; }
+.rule h3 { font-size: 16px; }
+.ex { display: grid; gap: 6px; font-size: 14px; }
+.ex div { border-radius: 8px; padding: 7px 10px; }
+.ex .bad { background: var(--bad-soft); }
+.ex .good { background: var(--good-soft); }
+.ex b { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; margin-right: 6px; }
+.ex .bad b { color: var(--bad); }
+.ex .good b { color: var(--good); }
+
+.cmds { display: grid; gap: 8px; }
+.cmd { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; align-items: center; }
+.cmd code { background: none; padding: 0; font-size: 13.5px; overflow-wrap: anywhere; }
+.cmd span { color: var(--muted); font-size: 14px; }
+@media (max-width: 600px) { .cmd { grid-template-columns: 1fr; gap: 2px; } }
+
+.lesson { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.lesson div { background: var(--warn-soft); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; font-size: 14.5px; }
+.lesson b { font-size: 15.5px; }
+
+.prompt { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.prompt .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; background: var(--sunk); flex-wrap: wrap; }
+.prompt .top span { font-weight: 700; font-size: 14px; }
+.prompt textarea { width: 100%; border: 0; background: var(--surface); color: var(--fg); font-family: var(--mono); font-size: 13px; line-height: 1.65; padding: 14px 16px; resize: vertical; min-height: 190px; }
+button { font-family: var(--font); font-size: 13.5px; font-weight: 700; border: 1px solid var(--accent); color: var(--accent); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+button:hover { background: var(--accent-soft); }
+button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.plain { margin: 0; padding-left: 20px; display: grid; gap: 7px; max-width: 74ch; }
+.summary { background: var(--accent); color: var(--surface); border-radius: 18px; padding: 28px; display: grid; gap: 16px; }
+.summary h2 { color: var(--surface); }
+.summary ol { margin: 0; padding-left: 22px; display: grid; gap: 8px; max-width: 72ch; }
+.summary p { max-width: 70ch; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">qa-system · create / edit a skill</div>
+  <h1>qa-system skill-authoring handbook</h1>
+  <p class="lede">A badly written skill can make the AI invent data, make results drift between runs, or break the checking gates of the whole system. This page is a 6-step process for adding or editing a skill while the system keeps running exactly as before.</p>
+  <div class="rules3">
+    <div><b>Never edit by hand</b><span>Delegate to the QA Leader through the <code>system-upgrade-governance</code> process.</span></div>
+    <div><b>Approve first, act after</b><span>Read the analysis table and the list of affected files before allowing any edit.</span></div>
+    <div><b>Done means evidence</b><span>Tests green, integrity check clean, two real runs giving the same result.</span></div>
+  </div>
+</header>
+
+<section>
+  <h2>The whole process</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 980 190" role="img" aria-label="Six steps: analyze, place the layer, write the skill, propagate to 7 anchor points, accept, commit">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--muted)"/></marker></defs>
+      <g style="font-family: var(--font)">
+        <g style="font-size: 13px">
+          <rect x="8" y="40" width="138" height="70" rx="12" style="fill: var(--accent-soft); stroke: var(--accent)"/>
+          <text x="77" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">1 · Analyze</text>
+          <text x="77" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">A / B / C · impact</text>
+
+          <rect x="172" y="40" width="138" height="70" rx="12" style="fill: var(--surface); stroke: var(--accent)"/>
+          <text x="241" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">2 · Place layer</text>
+          <text x="241" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">rule · skill · knowledge</text>
+
+          <rect x="336" y="40" width="138" height="70" rx="12" style="fill: var(--surface); stroke: var(--accent)"/>
+          <text x="405" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">3 · Write skill</text>
+          <text x="405" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">template + 7 rules</text>
+
+          <rect x="500" y="40" width="138" height="70" rx="12" style="fill: var(--surface); stroke: var(--accent)"/>
+          <text x="569" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">4 · Propagate</text>
+          <text x="569" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">all 7 anchor points</text>
+
+          <rect x="664" y="40" width="138" height="70" rx="12" style="fill: var(--surface); stroke: var(--accent)"/>
+          <text x="733" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">5 · Accept</text>
+          <text x="733" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">commands + real runs × 2</text>
+
+          <rect x="828" y="40" width="144" height="70" rx="12" style="fill: var(--good-soft); stroke: var(--good)"/>
+          <text x="900" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">6 · Commit</text>
+          <text x="900" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">split tool / data</text>
+        </g>
+        <g style="stroke: var(--muted); stroke-width: 1.5; fill: none">
+          <line x1="146" y1="75" x2="168" y2="75" marker-end="url(#ah)"/>
+          <line x1="310" y1="75" x2="332" y2="75" marker-end="url(#ah)"/>
+          <line x1="474" y1="75" x2="496" y2="75" marker-end="url(#ah)"/>
+          <line x1="638" y1="75" x2="660" y2="75" marker-end="url(#ah)"/>
+          <line x1="802" y1="75" x2="824" y2="75" marker-end="url(#ah)"/>
+          <path d="M733 110 C 733 165, 405 165, 405 114" marker-end="url(#ah)"/>
+        </g>
+        <rect x="490" y="148" width="158" height="30" rx="8" style="fill: var(--bad-soft)"/>
+        <text x="569" y="168" text-anchor="middle" style="fill: var(--bad); font-size: 12px; font-weight: 700">wherever it is red, go back and fix</text>
+        <rect x="18" y="6" width="118" height="26" rx="8" style="fill: var(--warn-soft)"/>
+        <text x="77" y="24" text-anchor="middle" style="fill: var(--warn); font-size: 12px; font-weight: 700">you approve here</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<section class="step">
+  <div class="n">1</div>
+  <div class="body">
+    <h2>Analyze first, edit no file yet</h2>
+    <p>Tell the AI: <code>Upgrade skill &lt;name&gt;: &lt;what you want to change&gt;. Run PHAN_TICH (analysis) mode first.</code> The AI answers three questions in order and stops at the first one that is true:</p>
+    <div class="tree">
+      <div class="q"><span>Only changes how an existing skill works? (add a column, tighten a rule, change a format)</span><span class="ans"><span class="pill a">Yes → C · edit in place</span></span></div>
+      <div class="q"><span>Is there already an agent that handles exactly this area?</span><span class="ans"><span class="pill w">No → B · new agent</span></span></div>
+      <div class="q"><span>If this work is given to that agent, must it read another kind of file, write somewhere else, or take on another role?</span><span class="ans"><span class="pill w">Yes → B</span><span class="pill a">No → A · add a skill</span></span></div>
+    </div>
+    <p>It comes with the list of affected steps (<code>npm run agent:check -- --impact &lt;agent&gt;</code>). <b>You read this table, and only then allow the work.</b> Prefer A or C; build a new agent only when really needed, because the more agents there are, the harder it is for the QA Leader to coordinate.</p>
+  </div>
+</section>
+
+<section class="step">
+  <div class="n">2</div>
+  <div class="body">
+    <h2>Put content in the right place</h2>
+    <p>This is the most common mistake. The same sentence put in the wrong place becomes something entirely different.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>The content is…</th><th>Put it in</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>A rule every skill must follow, or a table used by 2 or more skills</td><td><code>qa-system/core/QA_STANDARD.md</code></td><td>A rule lives in one place only. The skill writes "per QA_STANDARD §4" and does not copy it</td></tr>
+        <tr><td>Values, messages, thresholds of one specific feature</td><td><code>knowledge/features/&lt;slug&gt;.md</code></td><td>If left in a skill, the AI treats it as truth for <i>every</i> feature</td></tr>
+        <tr><td>The method, parameters, output sample of this task only</td><td><code>qa-system/qa-&lt;agent&gt;/skills/&lt;name&gt;.md</code></td><td>A skill is "how to do it"</td></tr>
+        <tr><td>Who the agent is, what it may do, whom it hands back to</td><td><code>qa-system/qa-&lt;agent&gt;/AGENT.md</code></td><td>Identity and boundaries</td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted">Editing <code>QA_STANDARD.md</code> changes the rules of the whole system, so a human must decide; do not let the AI do it on its own.</p>
+  </div>
+</section>
+
+<section class="step">
+  <div class="n">3</div>
+  <div class="body">
+    <h2>Write the skill from the existing template</h2>
+    <p>Always start from <code>qa-system/templates/skills/ten-skill.md</code>. A standard skill has all of the following parts. (The template's section headings such as <code>Mục đích</code> = Purpose, <code>Đầu vào</code> = Inputs, <code>KHÔNG được</code> = MUST NOT, <code>Các bước</code> = Steps, <code>Format output</code>, <code>Chốt chặn nghiệm thu</code> = Acceptance checkpoint are kept verbatim in Vietnamese because tools and agents parse them.)</p>
+<pre>---
+name: ten-skill
+description: One sentence: does what, reads what, outputs which file
+---
+# Skill: ten-skill
+&gt; Tuân thủ QA_STANDARD (§1 · §2 · §3 · §7 · §9 · §10)   <span class="anno">← point to section numbers, do not copy rules</span>
+
+## Mục đích                                             <span class="anno">← 1–3 sentences</span>
+## Đầu vào
+- OUTPUT/&lt;slug&gt;/0N_….md
+- knowledge/_project.md · knowledge/features/&lt;slug&gt;.md  <span class="anno">← always present</span>
+&gt; Thiếu đầu vào → DỪNG (missing input → STOP)           <span class="anno">← never imagine</span>
+## KHÔNG được (riêng skill này)                         <span class="anno">← boundary with the next step</span>
+## Các bước                                             <span class="anno">← if a machine can do it, call a command</span>
+## Format output
+# &lt;Tên&gt; · &lt;slug&gt;
+Owner: … · Nguồn: … · Verdict: PASS                     <span class="anno">← line 2: machines read this line</span>
+| ID | … | Nguồn |                                      <span class="anno">← every table has a source column</span>
+## Chốt chặn nghiệm thu                                 <span class="anno">← a checkable checklist</span></pre>
+    <h3>Seven rules so a skill does not make the AI invent</h3>
+    <div class="rulegrid">
+      <div class="rule"><h3>1. Examples must be neutral</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>"Example: lock the account for 15 minutes after 5 failures"</div><div class="good"><b>Right</b>"Example: <code>&lt;field&gt;</code> locks after <code>&lt;n&gt;</code> attempts (<code>BR-01</code>)"</div></div>
+        <p class="muted">An older version once copied voucher figures into the refund feature for exactly this reason.</p></div>
+      <div class="rule"><h3>2. If missing, write the label</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>"If absent, use a reasonable value"</div><div class="good"><b>Right</b>"Not in the source ⇒ <code>[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]</code>" (the fixed label meaning "not in the document")</div></div></div>
+      <div class="rule"><h3>3. Set no quantity targets</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>"Generate at least 5 questions / 20 test cases"</div><div class="good"><b>Right</b>"Stop once the table is fully scanned; the quantity is decided by the documents"</div></div></div>
+      <div class="rule"><h3>4. If a machine can do it, give it to the machine</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>"Number BR-01, BR-02… yourself", "compute boundary points yourself"</div><div class="good"><b>Right</b>"Write <code>BR-?</code> then run <code>npm run ids --assign</code>"; "copy from <code>npm run boundary</code>"</div></div></div>
+      <div class="rule"><h3>5. One output file, with a meta line</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>Writing several files, or a bold verdict on line 5</div><div class="good"><b>Right</b>Line 2: <code>Owner: … · Nguồn: … · Verdict: PASS</code> (<code>Nguồn</code> = source, kept verbatim: tools parse it)</div></div></div>
+      <div class="rule"><h3>6. Questions must be closed questions</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>"How does the system handle it?"</div><div class="good"><b>Right</b>"Is the delivery date day 0 or day 1 (A/B)?"</div></div></div>
+      <div class="rule"><h3>7. A skill and a tool must not contradict each other</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>The skill says "do not rescan" while lint demands a rescan</div><div class="good"><b>Right</b>When the format changes, edit lint/schema and add tests in the same pass</div></div>
+        <p class="muted">This bug was real, found in the refund trial run.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="step">
+  <div class="n">4</div>
+  <div class="body">
+    <h2>Update all 7 related places</h2>
+    <p>Finishing the skill file is only half the job. The system finds and calls a skill through the 7 places below; miss one and the skill "exists but is as good as absent", or the check gate reports wrongly.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>#</th><th>Place to edit</th><th>What to edit</th><th>A</th><th>B</th><th>C</th></tr></thead>
+      <tbody>
+        <tr><td>N1</td><td><code>skills/&lt;name&gt;.md</code></td><td>The skill content following the template</td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill ok">yes</span></td></tr>
+        <tr><td>N2</td><td><code>qa-&lt;agent&gt;/AGENT.md</code></td><td>Add to "Skill sở hữu" (owned skills), the name matching the file name exactly</td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill ok">yes</span></td><td class="c">—</td></tr>
+        <tr><td>N3</td><td><code>workflows/WORKFLOW.md</code></td><td>Stage table: agent, skill, input, output</td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill w">if input/output changes</span></td></tr>
+        <tr><td>N4</td><td><code>knowledge/_system_map.json</code></td><td>Lookup paths (<code>npm run map:sync</code>)</td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill ok">yes</span></td><td class="c">—</td></tr>
+        <tr><td>N5</td><td><code>qa-lead/AGENT.md</code></td><td>The coordination matrix + the phrases users commonly say to reach it</td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill w">if the output changes</span></td></tr>
+        <tr><td>N6</td><td><code>tools/system/agent-doctor.js</code></td><td>Declare which file the skill produces and who uses that file</td><td class="c"><span class="pill w">if there is a new file</span></td><td class="c"><span class="pill ok">yes</span></td><td class="c">—</td></tr>
+        <tr><td>N7</td><td><code>lint-deliverables.js</code> · <code>lib/schema.js</code></td><td>Check rules + a reader for the new format, with tests</td><td class="c"><span class="pill w">if a tool reads it</span></td><td class="c"><span class="pill w">if a tool reads it</span></td><td class="c"><span class="pill w">if the format changes</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted">A skill that produces a new output file gets the next unused sequence number in <code>WORKFLOW.md</code>. Do not insert in the middle, do not reuse an old number. Do not delete an old skill to "tidy up"; removal is for a human to decide.</p>
+  </div>
+</section>
+
+<section class="step">
+  <div class="n">5</div>
+  <div class="body">
+    <h2>Acceptance: run the commands, then run for real</h2>
+    <h3>a. Four commands must be green</h3>
+    <div class="cmds">
+      <div class="cmd"><code>npm test</code><span>All tool tests are green. If you edited a tool you must add new tests.</span></div>
+      <div class="cmd"><code>npm run agent:check</code><span>Reports INTACT: every declared skill has a real file, and the places agree with each other.</span></div>
+      <div class="cmd"><code>npm run map:sync</code><span>The system map has the new entry.</span></div>
+      <div class="cmd"><code>npm run workflow -- validate</code><span>No workflow bypasses a gate.</span></div>
+    </div>
+    <h3>b. Two real runs on the standard assignment set</h3>
+    <p>The assignment set is in the repo at <code>docs/skill-lab/de-bai/</code> (the refund feature; the scenario documents are in Vietnamese): 9 documents with planted traps including two SRS versions, comments, unapproved edits, a hidden Excel row, and a CR that changes a value. The reference results to compare against are in <code>docs/skill-lab/01-tao-skill-moi/du-lieu/</code>.</p>
+    <ol class="plain">
+      <li>Load the assignment into a new task: <code>npm run intake -- docs/skill-lab/de-bai --slug &lt;name&gt; --force</code>, then run the pipeline up to the stage the skill affects.</li>
+      <li>Run <b>twice, each in a fresh session</b>, then compare: <code>npm run diff-runs -- &lt;run 1&gt; &lt;run 2&gt;</code>.</li>
+      <li>Every difference must be explainable by a sentence in the skill. If it cannot be explained, the skill still leaves room for the AI to invent: go back to step 3.</li>
+      <li>Compare with the reference results: <code>npm run lint</code> clean, <code>npm run gate</code> closing/opening at the right time, 9/9 traps still caught.</li>
+      <li>Re-run an <b>unrelated</b> older stage to be sure the old flow still comes out as before.</li>
+    </ol>
+    <h3>c. Five conditions for a new or just-edited skill</h3>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>Condition</th><th>How to check</th></tr></thead>
+      <tbody>
+        <tr><td>a</td><td>Points to rules, does not copy rules</td><td>No verdict, label, FACT or 06W table is copied; only "QA_STANDARD §n"</td></tr>
+        <tr><td>b</td><td>Declares all inputs, including knowledge</td><td>Has <code>_project.md</code> and <code>features/&lt;slug&gt;.md</code></td></tr>
+        <tr><td>c</td><td>Machines can read the output</td><td>The meta line is correct; tables have a source column; ids come from <code>npm run ids</code></td></tr>
+        <tr><td>d</td><td>Two runs give the same result</td><td><code>diff-runs</code>, every difference explainable</td></tr>
+        <tr><td>e</td><td>No examples from a real project</td><td>Use only placeholders such as <code>&lt;field&gt;</code>, <code>BR-01</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="step">
+  <div class="n">6</div>
+  <div class="body">
+    <h2>Commit tidily, split the right parts</h2>
+    <ul class="plain">
+      <li>Work on a <b>separate branch</b>, never edit directly on develop.</li>
+      <li>Split into two commits: <b>the <code>qa-system/</code> edits</b> and <b>the trial-run data</b> (<code>INPUT/</code>, <code>OUTPUT/</code>, <code>knowledge/features/</code>). Only the system-edit commit goes over to develop.</li>
+      <li>The pre-commit hook runs lint before every commit. <b>Do not use <code>--no-verify</code></b> to bypass it.</li>
+      <li>The upgrade record (A/B/C table, the 7 places edited, command results) is kept outside the repo.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Mistakes that really happened, do not repeat them</h2>
+  <div class="lesson">
+    <div><b>An example turned into data</b><span>A sample knowledge file had a voucher "cap of 500.000" that was copied into the refund feature. The refund auto-approval threshold is also 500.000, so it was very easy to confuse.</span></div>
+    <div><b>The skill says one thing, the tool checks another</b><span>Skill 02 said not to rescan, while lint demanded that a new rule have a matrix row. The AI was stuck between two rules.</span></div>
+    <div><b>Quantity targets</b><span>"At least 5 questions" made every run produce a different set of questions.</span></div>
+    <div><b>Information in the wrong section</b><span>The success message was written only in the Happy Path section, which the checker does not read, so even a correct test case was blocked.</span></div>
+    <div><b>A dead path</b><span>A skill pointed to an <code>agents/</code> folder that no longer exists, so the new skill was created where nobody reads it.</span></div>
+    <div><b>Green tests are not necessarily right</b><span>331 unit tests were all green, yet running for real still exposed 8 bugs. The two-real-runs step is mandatory.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Practice exercises</h2>
+  <p>Two exercises done together with the AI; the resources are in the repo at <code>docs/skill-lab/</code>:</p>
+  <div class="lesson" style="--x:0">
+    <div style="background: var(--accent-soft)"><b>01-tao-skill-moi/</b><span>Create the skill "Which test cases does a Change Request affect?" when you do not yet know which agent it belongs to. Includes CR-08 for trial runs and an analysis sheet.</span></div>
+    <div style="background: var(--accent-soft)"><b>02-nang-cap-skill/</b><span>Upgrade <code>missing-rule-06w</code> so two runs ask the same set of questions. Includes real divergence measurements, a fixed 01, and a before/after measuring method.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Sample assignment sentence</h2>
+  <p>Copy this sentence verbatim, replace the parts in angle brackets, then send it to the AI.</p>
+  <div class="prompt">
+    <div class="top"><span>Assign a skill upgrade</span><button type="button" id="copyBtn">Copy this sentence</button></div>
+    <textarea id="promptText" aria-label="Sample assignment sentence" spellcheck="false">QA Leader, upgrade skill <skill-name>: <description of the change>.
+Follow qa-system/qa-lead/skills/system-upgrade-governance.md:
+1. PHAN_TICH (analysis): the A/B/C decision table, layer placement, the list of 7 anchor points, the --impact result. Stop for me to approve.
+2. THI_CONG (implementation, after I agree): work on a separate branch, write following templates/skills/ten-skill.md, update all 7 anchor points; if the format changes, edit lint/schema and add tests.
+3. NGHIEM_THU (acceptance): run npm test, npm run agent:check, npm run map:sync, npm run workflow -- validate; run the skill 2 times (fresh sessions) on the assignment set docs/skill-lab/de-bai and compare with npm run diff-runs; paste the real results and explain each difference.
+Do not edit QA_STANDARD.md unless I agree. Do not put examples from a real project into the skill.</textarea>
+  </div>
+</section>
+
+<section class="summary">
+  <h2>Remember five things</h2>
+  <ol>
+    <li><b>Analyze first, you approve, and only then edit.</b></li>
+    <li><b>Rules live in QA_STANDARD, facts live in knowledge, a skill keeps only the method.</b></li>
+    <li><b>A skill has no real examples, sets no targets, and writes a label when something is missing.</b></li>
+    <li><b>Edit all 7 places; if a skill changes format, the tools change with it.</b></li>
+    <li><b>Done is when the commands are green and two real runs give the same result.</b></li>
+  </ol>
+  <p>Follow these five things and whatever skill you add, the system keeps running as before, and the AI still only quotes or asks, never invents.</p>
+</section>
+
+</div>
+
+<script>
+(function () {
+  var btn = document.getElementById('copyBtn');
+  var ta = document.getElementById('promptText');
+  btn.addEventListener('click', function () {
+    var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy this sentence'; }, 1800); };
+    var fallback = function () { ta.focus(); ta.select(); btn.textContent = 'Selected, press Ctrl/⌘+C'; };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, fallback);
+      else fallback();
+    } catch (e) { fallback(); }
+  });
+})();
+</script>
+</body>
+</html>
