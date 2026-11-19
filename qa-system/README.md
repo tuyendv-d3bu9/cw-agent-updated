@@ -1,24 +1,24 @@
-# qa-system/ — Hệ thống 9 agent QA · **MÁY MÓC**
+# qa-system/ — The 9-agent QA system · **MACHINERY**
 
-> **Bình thường bạn không cần mở thư mục này.** Agent tự đọc.
-> Chỉ vào đây khi **cố ý nâng cấp hệ thống**: thêm skill, dựng agent mới, sửa skill cũ.
+> **Normally you do not need to open this folder.** The agents read it themselves.
+> Come here only when you **deliberately upgrade the system**: add a skill, build a new agent, edit an existing skill.
 
-| Thư mục | Là gì |
+| Folder | What it is |
 |---|---|
-| `core/QA_STANDARD.md` | Nguồn **duy nhất** của luật chung: verdict & cổng ASK, nhãn, FACT, 06W, rủi ro, knowledge, mã định danh, ưu tiên nguồn, thang đo |
-| `qa-lead/` | Tổng chỉ huy — cửa ngõ duy nhất giữa bạn và hệ thống |
-| `qa-analyst/` `qa-test-design/` `qa-test-data/` `qa-ui-review/` `qa-reporter/` `qa-automation/` `qa-readiness-evaluator/` | 8 chuyên gia theo từng chặng |
-| `tools/` | Công cụ nội bộ — xem [tools/README.md](tools/README.md) |
-| `templates/` | Khuôn mẫu agent/skill/workflow — xem [templates/README.md](templates/README.md) |
-| `workflows/` | Bản đồ pipeline (`WORKFLOW.md`) và các runbook |
-| `domains/` | Pack ngành — checklist theo ngành, dự án chọn ở `knowledge/_sut.json` → `domain` (QA_STANDARD §10.3) — xem [domains/README.md](domains/README.md) |
-| `integrations/` | Dùng trên Antigravity / Cursor / Claude Code, Jira MCP |
+| `core/QA_STANDARD.md` | The **single** source of common rules: verdict & ASK gate, labels, FACT, 06W, risk, knowledge, identifiers, source priority, scales |
+| `qa-lead/` | The commander — the only gateway between you and the system |
+| `qa-analyst/` `qa-test-design/` `qa-test-data/` `qa-ui-review/` `qa-reporter/` `qa-automation/` `qa-readiness-evaluator/` | 8 specialists, one per stage |
+| `tools/` | Internal tools — see [tools/README.md](tools/README.md) |
+| `templates/` | Agent/skill/workflow templates — see [templates/README.md](templates/README.md) |
+| `workflows/` | The pipeline map (`WORKFLOW.md`) and runbooks |
+| `domains/` | Domain packs — per-industry checklists, the project chooses in `knowledge/_sut.json` → `domain` (QA_STANDARD §10.3) — see [domains/README.md](domains/README.md) |
+| `integrations/` | Use on Antigravity / Cursor / Claude Code, Jira MCP |
 
-Muốn nâng cấp, cứ nói bằng lời: *"Tôi muốn skill sinh test case có thêm trường X"*.
-QA Leader chạy `qa-lead/skills/system-upgrade-governance.md`: cây quyết định, 7 điểm neo, nghiệm thu
-(gồm chạy skill hai lần trên cùng đầu vào để so kết quả). Sau mỗi lần sửa: `npm test` và `npm run agent:check` phải xanh.
+To upgrade, just say it in words: *"I want the test-case-generation skill to have an extra field X"*.
+The QA Leader runs `qa-lead/skills/system-upgrade-governance.md`: decision tree, 7 anchor points, acceptance
+(including running the skill twice on the same input to compare results). After every edit: `npm test` and `npm run agent:check` must be green.
 
 ---
 
-Thư mục này được thiết kế để tách ra thành npm package dùng lại ở dự án khác.
-Trong repo học viên thì nó là thư mục thường — sửa được, commit được, nộp bài được.
+This folder is designed to be split out as an npm package reusable in other projects.
+In the learners' repo it is an ordinary folder — editable, committable, submittable as homework.

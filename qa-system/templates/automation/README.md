@@ -1,52 +1,52 @@
-# automation/ — Bộ nối với hệ thống đang kiểm thử (SUT Adapter)
+# automation/ — Connector to the system under test (SUT Adapter)
 
-> **Trên nhánh `develop` thư mục này CỐ TÌNH trống.**
-> `develop` là nhánh khung dùng chung, không gắn với hệ thống nào.
-> Nhánh sử dụng (`exam`, `sample/*`, hoặc dự án thật của bạn) mới điền vào đây.
+> **On the `develop` branch this folder is INTENTIONALLY empty.**
+> `develop` is the shared framework branch, tied to no system.
+> A consuming branch (`exam`, `sample/*`, or your real project) fills it in.
 
-## Vì sao trống mà không xoá hẳn
+## Why empty rather than deleted
 
-Mọi dự án muốn chạy automation đều cần một bộ nối: locator, luồng đăng nhập,
-cách dọn trạng thái của *hệ thống đó*. Agent `qa-automation` sinh ra chính loại file
-này (nhánh G trong `WORKFLOW.md`). Giữ lại `playwright.config.ts` và khung thư mục
-để nhánh sử dụng chỉ việc thả POM vào là chạy, không phải dựng lại cấu hình.
+Every project that wants to run automation needs a connector: locators, login flow,
+and how to clean up the state of *that system*. The `qa-automation` agent generates exactly this kind of file
+(branch G in `WORKFLOW.md`). Keep `playwright.config.ts` and the folder skeleton
+so a consuming branch only drops POMs in and runs, without rebuilding the configuration.
 
-## Nhánh sử dụng cần điền gì
+## What a consuming branch must fill in
 
-| Việc | Cách làm |
+| Task | How |
 |---|---|
-| Khai báo SUT | Đặt `QA_BASE_URL` trong `.env` hoặc biến môi trường |
-| Ghi bản đồ giao diện | `knowledge/features/<sut>-ui-map.md` — locator trích từ app thật, không suy đoán |
-| Sinh POM | Nói với agent: *"gom cụm luồng và sinh POM"* → `pages/*.ts` |
-| Viết kịch bản | → `tests/*.spec.ts` |
+| Declare the SUT | Set `QA_BASE_URL` in `.env` or an environment variable |
+| Record the UI map | `knowledge/features/<sut>-ui-map.md` — locators quoted from the real app, not guessed |
+| Generate POMs | Tell the agent: *"cluster the flows and generate POMs"* → `pages/*.ts` |
+| Write scenarios | → `tests/*.spec.ts` |
 
-`playwright.config.ts` giữ nguyên, không cần sửa.
+`playwright.config.ts` stays as is, no edit needed.
 
-## Kết quả chạy KHÔNG nằm ở đây
+## Run results are NOT here
 
-`AGENTS.md` §1.2: bằng chứng của một lượt chạy thuộc về `OUTPUT/`.
+`AGENTS.md` §1.2: the evidence of a run belongs in `OUTPUT/`.
 
 ```
-automation/                      CODE — sống qua nhiều lượt chạy
-OUTPUT/<task>/runs/RUN-XX/       KẾT QUẢ — xoá và chạy lại được
-  ├─ evidence/*.png              ảnh bằng chứng để nộp bài / log Jira
-  ├─ report/                     báo cáo HTML
+automation/                      CODE — lives across many runs
+OUTPUT/<task>/runs/RUN-XX/       RESULTS — can be deleted and re-run
+  ├─ evidence/*.png              evidence screenshots for submission / Jira log
+  ├─ report/                     HTML report
   └─ results.json
 ```
 
-Agent truyền `QA_TASK_SLUG` và `QA_RUN_ID` để config biết ghi vào đâu.
-Không truyền thì rơi về `.scratch/`.
+The agent passes `QA_TASK_SLUG` and `QA_RUN_ID` so the config knows where to write.
+If not passed, it falls back to `.scratch/`.
 
-## Chạy trên thiết bị khác
+## Running on other devices
 
-Biến `QA_DEVICE` (agent tự truyền): `desktop-chrome` (mặc định) · `mobile-android` · `mobile-ios` · `tablet` · `all`,
-hoặc nhiều tên cách nhau dấu phẩy. Tên sai -> config báo lỗi kèm danh sách hợp lệ.
-`mobile-ios`/`tablet` dùng WebKit: agent chạy `npx playwright install chromium webkit` một lần (người dùng không gõ lệnh).
-Script npm cũng chọn thiết bị (chạy được trên Windows, không cần cross-env): `test:e2e:mobile` (android + ios), `test:e2e:tablet`, `test:e2e:all`.
-`QA_DEVICE` thắng tên script. Alias cũ `chromium` = `desktop-chrome`. Logic chọn nằm ở `utils/devices.js` (có test).
-Ví dụ agent chạy: `QA_DEVICE=mobile-ios,tablet QA_TASK_SLUG=<slug> QA_RUN_ID=RUN-01_x npx playwright test -c automation/playwright.config.ts`.
-`run_result.md` có dòng `Thiết bị` ở đầu và cột `Device` cho từng dòng kết quả.
-Chạy từ 2 thiết bị trở lên, evidence nằm ở `evidence/<device>/<TC_ID>/`; một thiết bị giữ `evidence/<TC_ID>/`.
+The `QA_DEVICE` variable (passed by the agent): `desktop-chrome` (default) · `mobile-android` · `mobile-ios` · `tablet` · `all`,
+or several names separated by commas. A wrong name -> the config reports an error with the list of valid names.
+`mobile-ios`/`tablet` use WebKit: the agent runs `npx playwright install chromium webkit` once (the user types no commands).
+The npm scripts also select a device (works on Windows, no cross-env needed): `test:e2e:mobile` (android + ios), `test:e2e:tablet`, `test:e2e:all`.
+`QA_DEVICE` wins over the script name. The old alias `chromium` = `desktop-chrome`. The selection logic lives in `utils/devices.js` (tested).
+Example the agent runs: `QA_DEVICE=mobile-ios,tablet QA_TASK_SLUG=<slug> QA_RUN_ID=RUN-01_x npx playwright test -c automation/playwright.config.ts`.
+`run_result.md` has a `Thiết bị` (device) line at the top and a `Device` column for each result row.
+When running on 2 or more devices, evidence goes in `evidence/<device>/<TC_ID>/`; with one device it stays in `evidence/<TC_ID>/`.
 
-> Cổng biên giới (`AGENTS.md` §1.5): **không** tự chạy tầng này sau Chặng 6.
-> Cần `npm run readiness` cho khuyến nghị GO **và** người dùng yêu cầu rõ kèm URL môi trường.
+> Boundary gate (`AGENTS.md` §1.5): **never** run this layer on your own after Stage 6.
+> It needs `npm run readiness` to recommend GO **and** the user's explicit request together with an environment URL.

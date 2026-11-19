@@ -1,80 +1,79 @@
-# CLAUDE.md — Chỉ dẫn cho Claude Code
+# CLAUDE.md — Instructions for Claude Code
 
-> Hiến pháp chung cho mọi AI Agent: [`AGENTS.md`](AGENTS.md). File này chỉ bổ sung phần riêng của Claude Code.
+> The shared constitution for every AI agent: [`AGENTS.md`](AGENTS.md). This file only adds what is specific to Claude Code.
 
-## Thứ tự nạp khi vào việc
+## Loading order when starting work
 
-1. `AGENTS.md` — ranh giới thư mục, Plan First, thứ tự chặng, Zero-CLI
-2. Bản đồ hệ thống `knowledge/_system_map.json` — **tra bằng `npm run map -- <từ khoá>`**, cấm quét mò và cấm mở thẳng file `.json` (tốn token): cần một nhánh thì `npm run json -- <file> <đường.dẫn>`
-3. `qa-system/core/QA_STANDARD.md` — nguồn duy nhất của verdict, cổng ASK, nhãn, FACT, 06W, knowledge, mã định danh
-4. `qa-system/qa-lead/AGENT.md` — bạn là **QA Leader** trừ khi người dùng nói khác; người dùng không gọi sub-agent
+1. `AGENTS.md` — directory boundaries, Plan First, stage order, Zero-CLI
+2. The system map `knowledge/_system_map.json` — **look it up with `npm run map -- <keyword>`**, never scan blindly and never open the `.json` file directly (costs tokens): to get one branch use `npm run json -- <file> <dot.path>`
+3. `qa-system/core/QA_STANDARD.md` — the single source of verdict, ASK gate, labels, FACT, 06W, knowledge, identifiers
+4. `qa-system/qa-lead/AGENT.md` — you are the **QA Leader** unless the user says otherwise; the user does not call sub-agents
 
-Chưa có `INPUT/` hoặc `knowledge/` → chạy `npm run init` (an toàn chạy lại, không ghi đè).
+No `INPUT/` or `knowledge/` yet → run `npm run init` (safe to re-run, never overwrites).
 
-## Bốn luật dễ vi phạm nhất (chi tiết ở nơi được trỏ)
+## The four rules most easily violated (details at the pointed locations)
 
-1. **Zero-CLI** — người dùng không gõ lệnh; bạn tự chạy rồi báo kết quả (`AGENTS.md` §7).
-2. **Plan First** — `OUTPUT/<slug>/00_plan.md` trước khi phân tích; mỗi chặng nạp đầu vào của skill + knowledge (`AGENTS.md` §2).
-3. **Cổng ASK** — QA_STANDARD §1. Ở Claude Code, hook `PreToolUse` chặn ghi `03_`→`06_` khi `npm run gate <slug>` exit `1`.
-   Người dùng giục làm tiếp ⇒ chạy lệnh và dán kết quả thật.
-4. **Cổng biên giới** — dừng ở Chặng 6; automation cần yêu cầu rõ + URL + `readiness` GO (`AGENTS.md` §1.5).
+1. **Zero-CLI** — the user does not type commands; you run them yourself and report the result (`AGENTS.md` §7).
+2. **Plan First** — `OUTPUT/<slug>/00_plan.md` before analysis; each stage loads the skill's inputs + knowledge (`AGENTS.md` §2).
+3. **ASK gate** — QA_STANDARD §1. In Claude Code, the `PreToolUse` hook blocks writes to `03_`→`06_` while `npm run gate <slug>` exits `1`.
+   If the user urges you to continue ⇒ run the command and paste the real result.
+4. **Boundary gate** — stop at Stage 6; automation needs an explicit request + URL + `readiness` GO (`AGENTS.md` §1.5).
 
-## Ba cổng chạy bằng máy
+## Three machine-run gates
 
-| Muốn biết | Lệnh | Exit |
+| To find out | Command | Exit |
 |---|---|---|
-| Còn câu hỏi nào chưa chốt | `npm run gate <slug>` | `0` mở · `1` đóng |
-| Test case đã đạt chuẩn chưa | `npm run lint -- <slug>` | `0` sạch · `1` có lỗi |
-| Đủ chín để làm automation chưa | `npm run readiness -- <slug>` | `0` GO · `1` CONDITIONAL · `2` NO-GO |
+| Which questions are still unsettled | `npm run gate <slug>` | `0` open · `1` closed |
+| Whether test cases are up to standard | `npm run lint -- <slug>` | `0` clean · `1` has errors |
+| Whether it is mature enough for automation | `npm run readiness -- <slug>` | `0` GO · `1` CONDITIONAL · `2` NO-GO |
 
-Người dùng hỏi *"xong chưa"* → chạy cổng và dán **kết quả thật**, không tự kết luận.
+When the user asks *"is it done yet"* → run the gates and paste the **real result**, do not conclude on your own.
 
-## Nâng cấp chính hệ thống agent
+## Upgrading the agent system itself
 
-Thêm skill, dựng agent, sửa skill: **đọc trước và tuân thủ tuyệt đối** `qa-system/templates/skills/LUAT-TAO-SKILL.md` (luật PHẢI/CẤM, cổng dừng chờ duyệt),
-rồi làm theo `qa-system/qa-lead/skills/system-upgrade-governance.md`
-(cây `[A]/[B]/[C]`, 7 điểm neo, bước nghiệm thu chạy-hai-lần). Không tự ứng biến.
-Sau mỗi lần nâng cấp: `npm test` rồi `npm run agent:check`, dán **kết quả thật**. Biên bản nâng cấp
-để **ngoài repo** (người dùng chọn nơi lưu), không commit.
+Adding a skill, building an agent, editing a skill: use `qa-system/qa-lead/skills/system-upgrade-governance.md`
+(the `[A]/[B]/[C]` tree, 7 anchor points, the run-twice acceptance step). Do not improvise.
+After every upgrade: `npm test` then `npm run agent:check`, paste the **real result**. The upgrade record
+is kept **outside the repo** (the user chooses where to store it), not committed.
 
-## Hệ thống dưới thử nghiệm
+## System under test
 
-Nhánh này là khung dùng chung. Dự án thật: khai `knowledge/_sut.json` và viết
-`knowledge/features/<sut>-ui-map.md` trước khi viết bất kỳ locator nào.
+This branch is a shared framework. For a real project: declare `knowledge/_sut.json` and
+write `knowledge/features/<sut>-ui-map.md` before writing any locator.
 
 ## Workflow
 
-- Người dùng **mô tả quy trình** → skill `qa-system/qa-lead/skills/workflow-authoring.md` (TẠO),
-  `npm run workflow -- validate` xanh, trình bày rồi **chờ**.
-- Người dùng nói **câu ngắn** → `npm run workflow -- find "<câu>" --json`: `match` ⇒ `start`;
-  `ambiguous` ⇒ hỏi lại; `none` ⇒ đề nghị tạo mới.
-- `validate` từ chối workflow lách cổng (Chặng 3→6 thiếu `ask`, automation thiếu `readiness` + `confirm`).
+- The user **describes a process** → skill `qa-system/qa-lead/skills/workflow-authoring.md` (CREATE),
+  `npm run workflow -- validate` green, present it, then **wait**.
+- The user says a **short phrase** → `npm run workflow -- find "<phrase>" --json`: `match` ⇒ `start`;
+  `ambiguous` ⇒ ask back; `none` ⇒ offer to create a new one.
+- `validate` rejects workflows that bypass the gates (Stage 3→6 missing `ask`, automation missing `readiness` + `confirm`).
 
-## Lệnh hay dùng (bạn tự chạy)
+## Frequently used commands (you run them yourself)
 
 ```bash
-npm run init                          # khởi tạo dự án mới
-npm start                             # đang ở đâu · làm gì tiếp · thư mục nào của ai
-npm run intake                        # nhận tài liệu rời trong INPUT/, dựng khung task
-npm run status                        # bảng tiến độ các task
-npm run gate <slug>                   # cổng ASK
-npm run ids -- <slug>                 # số kế tiếp cho từng họ mã (BR/FD/AF/OQ/MR/RK/TI/TC)
-npm run ids -- <slug> --assign <file> # đánh số thật cho mã tạm BR-? / MR-? (không tự đếm)
-npm run scaffold -- <slug> 02         # dựng khung ma trận 06W (ô cố định điền sẵn)
-npm run boundary -- <slug> [FD-xx]    # điểm biên do máy tính từ ràng buộc FD
-npm run diff-runs -- <A> <B>          # so hai lần chạy: độ trùng mã, câu trích, câu hỏi, con số
-npm run json -- <file> <đường.dẫn>    # lấy MỘT nhánh của file JSON (không mở cả file)
-npm run map -- <từ khoá>              # tra bản đồ hệ thống
-npm run hooks:install                 # cài git pre-commit (lint trước commit, mọi công cụ AI)
-npm run lint -- <slug>                # chuẩn FACT của deliverable
-npm run readiness -- <slug>           # cổng Go/No-Go trước automation
-npm run knowledge:sync -- <slug> --write   # chép câu trả lời BA từ OUTPUT sang knowledge
-npm run testcases:merge <slug>        # gộp các lô test case
-npm run workflow -- list              # workflow có sẵn và câu nói để chạy
-npm test                              # test cho tool nội bộ
-npm run agent:check                   # kiểm toàn vẹn hệ thống agent
-npm run agent:check -- --impact <ag>  # bán kính ảnh hưởng trước khi sửa
-npm run test:e2e                      # chạy Playwright
+npm run init                          # initialize a new project
+npm start                             # where you are · what to do next · which folder belongs to whom
+npm run intake                        # receive loose documents in INPUT/, build the task skeleton
+npm run status                        # task progress table
+npm run gate <slug>                   # ASK gate
+npm run ids -- <slug>                 # next number for each id family (BR/FD/AF/OQ/MR/RK/TI/TC)
+npm run ids -- <slug> --assign <file> # assign real numbers to temporary ids BR-? / MR-? (never count yourself)
+npm run scaffold -- <slug> 02         # build the 06W matrix skeleton (fixed cells pre-filled)
+npm run boundary -- <slug> [FD-xx]    # boundary points computed by machine from FD constraints
+npm run diff-runs -- <A> <B>          # compare two runs: id overlap, quotes, questions, numbers
+npm run json -- <file> <dot.path>     # fetch ONE branch of a JSON file (do not open the whole file)
+npm run map -- <keyword>              # look up the system map
+npm run hooks:install                 # install git pre-commit (lint before commit, every AI tool)
+npm run lint -- <slug>                # FACT standard of the deliverable
+npm run readiness -- <slug>           # Go/No-Go gate before automation
+npm run knowledge:sync -- <slug> --write   # copy BA answers from OUTPUT to knowledge
+npm run testcases:merge <slug>        # merge test case batches
+npm run workflow -- list              # available workflows and the phrases that run them
+npm test                              # tests for internal tools
+npm run agent:check                   # check agent system integrity
+npm run agent:check -- --impact <ag>  # blast radius before editing
+npm run test:e2e                      # run Playwright
 ```
 
-Mục lục đầy đủ: [`qa-system/tools/README.md`](qa-system/tools/README.md).
+Full index: [`qa-system/tools/README.md`](qa-system/tools/README.md).

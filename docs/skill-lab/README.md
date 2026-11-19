@@ -1,40 +1,45 @@
-# Skill Lab — tạo và nâng cấp skill qa-system
+# Skill Lab — creating and upgrading qa-system skills
 
-Hai bài thực hành, làm cùng AI theo quy trình `qa-system/qa-lead/skills/system-upgrade-governance.md`.
-Đọc trước: [`docs/so-tay-tao-skill.html`](../so-tay-tao-skill.html) (mở bằng trình duyệt).
+Two practice exercises, done together with the AI following the process in `qa-system/qa-lead/skills/system-upgrade-governance.md`.
+Read first: [`docs/so-tay-tao-skill.html`](../so-tay-tao-skill.html) (the skill-authoring handbook; open it in a browser).
 
-| Thư mục | Bài | Dạng nâng cấp | Thời lượng gợi ý |
+> **Language note.** The lab's scenario data (the refund feature documents in `de-bai/`, the BA answers in `tra-loi-ba/`,
+> the reference results in `*/du-lieu/`, and `CR-08`) is deliberately kept in Vietnamese: it is the source material the
+> agents quote verbatim, and the `.docx` / `.xlsx` files of the same scenario are Vietnamese too. Folder names
+> (`de-bai` = assignment, `tra-loi-ba` = BA answers, `du-lieu` = data) are also kept because commands refer to them.
+
+| Folder | Exercise | Upgrade type | Suggested duration |
 |---|---|---|---|
-| [`01-tao-skill-moi/`](01-tao-skill-moi/) | Tạo skill mới khi **chưa biết** nó thuộc agent `qa-*` nào | `[A]` hoặc `[B]` — học viên tự phân tích | 60–75 phút |
-| [`02-nang-cap-skill/`](02-nang-cap-skill/) | Nâng cấp skill `missing-rule-06w` để hai lần chạy ra cùng bộ câu hỏi | `[C]` — sửa tại chỗ | 45–60 phút |
+| [`01-tao-skill-moi/`](01-tao-skill-moi/) | Create a new skill when you **do not yet know** which `qa-*` agent it belongs to | `[A]` or `[B]` — learners analyze it themselves | 60–75 minutes |
+| [`02-nang-cap-skill/`](02-nang-cap-skill/) | Upgrade the `missing-rule-06w` skill so two runs produce the same set of questions | `[C]` — edit in place | 45–60 minutes |
 
-## Chuẩn bị (5 phút, mỗi học viên)
+## Preparation (5 minutes, each learner)
 
 ```bash
 git switch develop
-git switch -c lab/<ten-hoc-vien>      # làm trên nhánh riêng, không sửa thẳng develop
+git switch -c lab/<learner-name>      # work on your own branch, never edit develop directly
 npm install
-npm test                              # phải xanh trước khi bắt đầu
+npm test                              # must be green before starting
 ```
 
-Mọi dữ liệu của lab nằm ngay trong thư mục này, không phụ thuộc nhánh nào:
+All lab data lives right in this folder, independent of any branch:
 
-| Thư mục | Chứa gì |
+| Folder | Contains |
 |---|---|
-| [`de-bai/`](de-bai/) | 8 tài liệu tính năng hoàn tiền có cài bẫy: SRS v1/v2 (docx, có comment và chỉnh sửa chưa duyệt), bảng mã lỗi xlsx có dòng ẩn, API, wireframe, BRD, CR-07, biên bản họp |
-| [`tra-loi-ba/`](tra-loi-ba/) | Câu trả lời của BA/PO cho 17 câu hỏi (đóng vai) |
-| `01-tao-skill-moi/du-lieu/` | Kết quả chuẩn Chặng 01→06 (51 test case) + knowledge, để Bài 1 phân tích CR |
-| `02-nang-cap-skill/du-lieu/` | Bản Chặng 01 cố định, để Bài 2 chỉ đo riêng Chặng 02 |
+| [`de-bai/`](de-bai/) | 8 documents of the refund feature with planted traps: SRS v1/v2 (docx, with comments and unapproved edits), an xlsx error-code table with hidden rows, API, wireframe, BRD, CR-07, meeting minutes |
+| [`tra-loi-ba/`](tra-loi-ba/) | BA/PO answers to 17 questions (role-played) |
+| `01-tao-skill-moi/du-lieu/` | Reference results for Stages 01→06 (51 test cases) + knowledge, so Exercise 1 can analyze a CR |
+| `02-nang-cap-skill/du-lieu/` | A fixed Stage 01 version, so Exercise 2 measures Stage 02 alone |
 
-Nạp đề vào một task mới (dùng `--force` vì có thể đã có task cùng nội dung):
+Load the assignment into a new task (use `--force` because a task with the same content may already exist):
 
 ```bash
-npm run intake -- docs/skill-lab/de-bai --slug <ten-task> --force
+npm run intake -- docs/skill-lab/de-bai --slug <task-name> --force
 ```
 
-## Luật chung của buổi lab
+## Ground rules of the lab session
 
-1. Không sửa file trong `qa-system/` bằng tay — giao việc cho AI theo câu mẫu trong từng bài.
-2. Bước PHAN_TICH luôn dừng lại để **người** duyệt trước khi sửa.
-3. "Xong" nghĩa là: `npm test` xanh · `npm run agent:check` INTACT · chạy thật hai lần và `diff-runs` giải thích được.
-4. Phiếu phân tích (`phieu-phan-tich.md`) điền xong mới được commit. Phiếu là biên bản, nộp cho giảng viên, không commit.
+1. Do not edit files in `qa-system/` by hand — delegate to the AI using the sample sentences in each exercise.
+2. The ANALYSIS step (`PHAN_TICH`) always stops for a **human** to approve before editing.
+3. "Done" means: `npm test` green · `npm run agent:check` INTACT · two real runs and `diff-runs` explainable.
+4. The analysis sheet (`phieu-phan-tich.md`) may be committed only once filled in. The sheet is a record handed to the instructor, not committed.

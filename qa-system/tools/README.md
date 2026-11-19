@@ -1,199 +1,199 @@
-# qa-system/tools — Công cụ nội bộ của hệ thống Agent
+# qa-system/tools — Internal tools of the Agent system
 
-> ⚠️ **Người dùng KHÔNG gõ các lệnh này** (luật Zero-CLI, `AGENTS.md` §7).
-> Đây là tay chân của Agent. Agent tự chạy ngầm rồi báo cáo kết quả bằng tiếng Việt.
+> ⚠️ **Users do NOT type these commands** (Zero-CLI rule, `AGENTS.md` §7).
+> These are the Agent's hands. The Agent runs them silently and reports the result in words.
 
-Tool được gom theo **nhóm chức năng**, mỗi nhóm một thư mục. Cần việc gì thì mở đúng
-thư mục đó, không quét cả cây.
+Tools are grouped by **function**, one folder per group. When you need something, open exactly
+that folder — do not scan the whole tree.
 
 ```
-lib/          ← code dùng chung, KHÔNG gọi trực tiếp
-intake/       ← đưa tài liệu từ ngoài vào INPUT/
-knowledge/    ← khởi tạo & soát tri thức trong knowledge/
-testcase/     ← gộp và xuất test case
-testdata/     ← sinh dữ liệu kiểm thử
-jira/         ← mọi giao tiếp với Jira
-system/       ← tự kiểm, tiến độ, bản đồ, cổng ASK
-exam/         ← tự kiểm bài thi tốt nghiệp (học viên) và chấm thi (giảng viên)
+lib/          ← shared code, NOT called directly
+intake/       ← bring documents from outside into INPUT/
+knowledge/    ← initialize & audit knowledge in knowledge/
+testcase/     ← merge and export test cases
+testdata/     ← generate test data
+jira/         ← all communication with Jira
+system/       ← self-check, progress, map, ASK gate
+exam/         ← graduation exam: student self-check and instructor grading
 ```
 
 ---
 
-## Bảng tra nhanh: cần gì → chạy gì
+## Quick lookup: need what → run what
 
-| Cần làm gì | Lệnh | File |
+| What you need | Command | File |
 |---|---|---|
-| **Khởi tạo dự án mới (chạy đầu tiên)** | `npm run init` | `system/init.js` |
-| **Xem đang ở đâu, làm gì tiếp** | `npm start` | `system/start.js` |
-| Nhận tài liệu mới, phân loại vào 5 ngăn | `npm run intake -- <file\|thư-mục> [--slug <slug>]` | `intake/intake.js` |
-| **Xử lý tài liệu số lượng lớn (>100 files, đa luồng)** | `npm run intake:bulk [-- <thư-mục>] [--dry-run]` | `intake/bulk-intake.js` |
-| Chỉ đổi docx/pdf/xlsx sang .md (không phân loại) | `npm run convert -- <file>` | `intake/convert.js` |
-| Tạo file tri thức cho tính năng mới | `npm run knowledge:new <slug>` | `knowledge/new-knowledge.js` |
-| Dựng `knowledge/` cho repo trắng | `npm run knowledge:init` | `knowledge/bootstrap-knowledge.js` |
-| Soát mâu thuẫn rule giữa các tính năng | `npm run knowledge:conflicts [slug]` | `knowledge/conflict-detector.js` |
-| **Chia tài liệu thành lô để chưng cất tri thức** (chỉ lấy file mới/đã đổi) | `npm run knowledge:digest <slug> [--budget 60000]` | `knowledge/digest-plan.js` |
-| **Chuyển câu trả lời BA từ OUTPUT sang knowledge** | `npm run knowledge:sync -- <slug> --write` | `knowledge/sync-answers.js` |
-| Gộp `batch_*.md` thành spec tổng | `npm run testcases:merge <slug>` | `testcase/merge-testcases.js` |
-| Xuất CSV Jira Xray / Redmine | `npm run testcases:export <slug>` | `testcase/export-testcases.js` |
-| Sinh dataset (0 token LLM) | `npm run data:gen -- --slug <slug> --schema <f.json> --count 50` | `testdata/generate-dataset.js` |
-| Kéo bug/defect từ Jira về | `npm run jira:pull <slug>` | `jira/jira-client.js` |
-| Đẩy test case lên Jira (hoặc xuất CSV) | `npm run jira:push <slug>` | `jira/jira-client.js` |
-| Đẩy kết quả chạy + ảnh bằng chứng lên Jira | `npm run jira:sync <slug> <run-id>` | `jira/jira-client.js` |
-| Khởi động MCP server cho AI IDE | `npm run jira:mcp` | `jira/mcp-server.js` |
-| Xem tiến độ mọi task | `npm run status` | `system/status.js` |
-| Tự kiểm toàn vẹn hệ thống agent | `npm run agent:check` | `system/agent-doctor.js` |
-| Xem bán kính ảnh hưởng trước khi sửa | `npm run agent:check -- --impact <agent>` | `system/agent-doctor.js` |
-| Đồng bộ bản đồ hệ thống | `npm run map:sync` | `system/sync-system-map.js` |
-| **Kiểm cổng ASK trước khi sinh chặng 3→6** | `npm run gate [slug]` | `system/gate.js` |
-| **Số kế tiếp cho từng họ mã** (BR/FD/AF/OQ/MR/RK/TI/TC) — mã ổn định qua các lần chạy, QA_STANDARD §9.1 | `npm run ids -- <slug>` | xem script `ids` trong `package.json` |
-| **Lấy một nhánh của file JSON** (system map, manifest, metrics…) — không nạp cả file | `npm run json -- <file> <đường.dẫn> [--keys]` | `qa-system/tools/system/json.js` |
-| **Tra bản đồ hệ thống theo từ khoá** | `npm run map -- <từ khoá>` | `qa-system/tools/system/map.js` |
-| **Dự án chọn pack ngành nào** (`knowledge/_sut.json` → `domain`) và skill cần đọc file nào của pack | `npm run domain [-- --json]` | `qa-system/tools/system/domain.js` |
-| **Lint trước mỗi `git commit`** (mọi công cụ AI; chặn deliverable bịa/sai định dạng vào lịch sử) | `npm run hooks:install` (init cài sẵn) | `qa-system/tools/system/precommit.js` |
-| **Điểm biên của từng field** do máy tính từ ràng buộc FD (agent chép, không tự tính) | `npm run boundary -- <slug> [FD-xx]` | `qa-system/tools/system/boundary.js` |
-| **Dựng khung 02** (ma trận 06W đủ dòng, ô cố định điền sẵn) | `npm run scaffold -- <slug> 02` | `qa-system/tools/system/scaffold.js` |
-| **Đánh số mã tạm** (`BR-?` → `BR-09`) | `npm run ids -- <slug> --assign <file>` | `qa-system/tools/system/ids.js` |
-| **So hai lần chạy** (độ trùng mã, câu trích, câu hỏi, con số, verdict) | `npm run diff-runs -- <thư mục A> <thư mục B> [--min N]` | `qa-system/tools/system/diff-runs.js` |
-| *Nguồn gốc giá trị* (module dùng trong lint): chữ thông báo / con số ở Expected & Test Data phải có trong nguồn | — | `qa-system/tools/lib/provenance.js` |
-| Soát dấu vết nhảy cóc cổng ASK | `npm run gate:audit [slug]` | `system/gate.js` |
-| **Đo độ sẵn sàng trước Automation** | `npm run readiness -- <slug> --write` | `system/readiness.js` |
-| **Kiểm chuẩn FACT của deliverable** | `npm run lint -- <slug>` | `system/lint-deliverables.js` |
-| **Tạo / tìm / chạy workflow** | `npm run workflow -- <list\|find\|show\|start\|new\|validate>` | `system/workflow.js` |
-| **Chạy test cho chính các tool này** | `npm test` | `__tests__/` |
+| **Initialize a new project (run first)** | `npm run init` | `system/init.js` |
+| **See where you are, what to do next** | `npm start` | `system/start.js` |
+| Receive new documents, classify into the 5 compartments | `npm run intake -- <file\|folder> [--slug <slug>]` | `intake/intake.js` |
+| **Process a large number of documents (>100 files, multi-threaded)** | `npm run intake:bulk [-- <folder>] [--dry-run]` | `intake/bulk-intake.js` |
+| Only convert docx/pdf/xlsx to .md (no classification) | `npm run convert -- <file>` | `intake/convert.js` |
+| Create the knowledge file for a new feature | `npm run knowledge:new <slug>` | `knowledge/new-knowledge.js` |
+| Build `knowledge/` for a blank repo | `npm run knowledge:init` | `knowledge/bootstrap-knowledge.js` |
+| Audit rule conflicts between features | `npm run knowledge:conflicts [slug]` | `knowledge/conflict-detector.js` |
+| **Split documents into batches to distill knowledge** (only new/changed files) | `npm run knowledge:digest <slug> [--budget 60000]` | `knowledge/digest-plan.js` |
+| **Move BA answers from OUTPUT to knowledge** | `npm run knowledge:sync -- <slug> --write` | `knowledge/sync-answers.js` |
+| Merge `batch_*.md` into the overall spec | `npm run testcases:merge <slug>` | `testcase/merge-testcases.js` |
+| Export Jira Xray / Redmine CSV | `npm run testcases:export <slug>` | `testcase/export-testcases.js` |
+| Generate a dataset (0 LLM tokens) | `npm run data:gen -- --slug <slug> --schema <f.json> --count 50` | `testdata/generate-dataset.js` |
+| Pull bugs/defects from Jira | `npm run jira:pull <slug>` | `jira/jira-client.js` |
+| Push test cases to Jira (or export CSV) | `npm run jira:push <slug>` | `jira/jira-client.js` |
+| Push run results + evidence screenshots to Jira | `npm run jira:sync <slug> <run-id>` | `jira/jira-client.js` |
+| Start the MCP server for AI IDEs | `npm run jira:mcp` | `jira/mcp-server.js` |
+| See the progress of every task | `npm run status` | `system/status.js` |
+| Self-check the integrity of the agent system | `npm run agent:check` | `system/agent-doctor.js` |
+| See the blast radius before editing | `npm run agent:check -- --impact <agent>` | `system/agent-doctor.js` |
+| Sync the system map | `npm run map:sync` | `system/sync-system-map.js` |
+| **Check the ASK gate before generating stages 3→6** | `npm run gate [slug]` | `system/gate.js` |
+| **Next number for each id family** (BR/FD/AF/OQ/MR/RK/TI/TC) — ids stay stable across runs, QA_STANDARD §9.1 | `npm run ids -- <slug>` | see the `ids` script in `package.json` |
+| **Fetch one branch of a JSON file** (system map, manifest, metrics…) — never load the whole file | `npm run json -- <file> <dot.path> [--keys]` | `qa-system/tools/system/json.js` |
+| **Look up the system map by keyword** | `npm run map -- <keyword>` | `qa-system/tools/system/map.js` |
+| **Which domain pack the project chose** (`knowledge/_sut.json` → `domain`) and which pack files a skill must read | `npm run domain [-- --json]` | `qa-system/tools/system/domain.js` |
+| **Lint before every `git commit`** (every AI tool; keeps invented / wrongly formatted deliverables out of history) | `npm run hooks:install` (init installs it) | `qa-system/tools/system/precommit.js` |
+| **Boundary points of each field** computed by machine from FD constraints (the agent copies, never computes) | `npm run boundary -- <slug> [FD-xx]` | `qa-system/tools/system/boundary.js` |
+| **Build the 02 skeleton** (06W matrix with all rows, fixed cells pre-filled) | `npm run scaffold -- <slug> 02` | `qa-system/tools/system/scaffold.js` |
+| **Number temporary ids** (`BR-?` → `BR-09`) | `npm run ids -- <slug> --assign <file>` | `qa-system/tools/system/ids.js` |
+| **Compare two runs** (id overlap, quotes, questions, numbers, verdict) | `npm run diff-runs -- <folder A> <folder B> [--min N]` | `qa-system/tools/system/diff-runs.js` |
+| *Value provenance* (a module used in lint): notification text / numbers in Expected & Test Data must exist in the source | — | `qa-system/tools/lib/provenance.js` |
+| Audit traces of skipping the ASK gate | `npm run gate:audit [slug]` | `system/gate.js` |
+| **Measure readiness before Automation** | `npm run readiness -- <slug> --write` | `system/readiness.js` |
+| **Check the FACT standard of deliverables** | `npm run lint -- <slug>` | `system/lint-deliverables.js` |
+| **Create / find / run a workflow** | `npm run workflow -- <list\|find\|show\|start\|new\|validate>` | `system/workflow.js` |
+| **Run the tests for these tools themselves** | `npm test` | `__tests__/` |
 
 ---
 
-## `lib/` — code dùng chung
+## `lib/` — shared code
 
-Không có entry point, không có script npm. Mọi tool khác `require` vào đây.
-Trước khi viết một hàm tiện ích mới, kiểm tra ở đây đã có chưa.
+No entry point, no npm script. Every other tool `require`s from here.
+Before writing a new utility function, check whether it already exists here.
 
-| File | Giữ cái gì | Vì sao tồn tại |
+| File | Holds | Why it exists |
 |---|---|---|
-| `paths.js` | `PATHS.ROOT/INPUT/OUTPUT/KNOWLEDGE/...`, `taskDir()`, `featureKnowledge()`, `listTaskSlugs()` | Trước đây 6 tool tự tính `path.resolve(__dirname,'../..')`. Gom tool vào thư mục con là độ sâu đổi → sai hết. Giờ chỉ một chỗ biết gốc repo ở đâu. |
-| `env.js` | `loadEnv()`, `jiraConfig()` | `loadEnv()` từng bị chép nguyên văn ở 4 file Jira. |
-| `jira-api.js` | `request()`, `jiraRequest()`, `jiraAttach()`, `adf()` | Từng có 4 bản `makeRequest` khác chữ ký, chỉ 2 bản có timeout. |
-| `doc-converter.js` | Chuyển docx/xlsx/pdf/yaml/txt → markdown sạch | Thư viện dùng chung của `intake/` — không phải tool chạy riêng. |
-| `domain.js` | `loadDomain({ root })` → `{ ids, packs, conflictTopics, datagen, units, files, override }` · `validatePack()` | Một loader cho pack ngành (`qa-system/domains/`). `conflict-detector`, `generate-dataset`, `lint` (đơn vị) và `agent:check` cùng đọc một lựa chọn ngành. Chưa chọn ngành ⇒ `ids` rỗng, `conflictTopics` null ⇒ mọi tool chạy như trước. Id không có ⇒ báo lỗi kèm danh sách id, không đoán. |
+| `paths.js` | `PATHS.ROOT/INPUT/OUTPUT/KNOWLEDGE/...`, `taskDir()`, `featureKnowledge()`, `listTaskSlugs()` | Previously 6 tools each computed `path.resolve(__dirname,'../..')`. Moving tools into subfolders changes the depth → everything broke. Now only one place knows where the repo root is. |
+| `env.js` | `loadEnv()`, `jiraConfig()` | `loadEnv()` was once copied verbatim into 4 Jira files. |
+| `jira-api.js` | `request()`, `jiraRequest()`, `jiraAttach()`, `adf()` | There used to be 4 `makeRequest` copies with different signatures, only 2 with a timeout. |
+| `doc-converter.js` | Converts docx/xlsx/pdf/yaml/txt → clean markdown | A shared library of `intake/` — not a standalone tool. |
+| `domain.js` | `loadDomain({ root })` → `{ ids, packs, conflictTopics, datagen, units, files, override }` · `validatePack()` | One loader for domain packs (`qa-system/domains/`). `conflict-detector`, `generate-dataset`, `lint` (units) and `agent:check` all read the same industry choice. No industry chosen ⇒ `ids` empty, `conflictTopics` null ⇒ every tool runs as before. An id that does not exist ⇒ an error with the list of ids, never a guess. |
 
 ---
 
-## Cổng ASK — 3 lớp (`system/gate.js` + `system/gate-hook.js`)
+## ASK gate — 3 layers (`system/gate.js` + `system/gate-hook.js`)
 
-Luật cổng: `qa-system/core/QA_STANDARD.md` §1 (định nghĩa duy nhất). Luật văn bản chỉ là *xác suất*,
-nên ba lớp dưới đây biến nó thành điều kiện kiểm bằng máy:
+Gate rule: `qa-system/core/QA_STANDARD.md` §1 (the single definition). A written rule is only a *probability*,
+so the three layers below turn it into a condition checked by machine:
 
-| Lớp | Cơ chế | Chặn được gì | Hiệu lực ở đâu |
+| Layer | Mechanism | What it blocks | Where it applies |
 |---|---|---|---|
-| 1 | `npm run gate` → exit code `0` mở / `1` đóng, ghi `OUTPUT/<slug>/_gate.lock` | Bất kỳ ai chịu gọi | Mọi IDE |
-| 2 | Hook `PreToolUse` trong `.claude/settings.json` → `gate-hook.js` trả `permissionDecision: deny` | Thao tác ghi file 03→06, **harness chặn, model không cãi được** | Chỉ Claude Code |
-| 3 | `npm run gate:audit` → exit `2` nếu có file 03→06 sinh ra sau mốc khoá | Phát hiện *hậu kiểm* khi ai đó lách được lớp 1 và 2 | Mọi IDE |
+| 1 | `npm run gate` → exit code `0` open / `1` closed, writes `OUTPUT/<slug>/_gate.lock` | Anyone willing to call it | Every IDE |
+| 2 | `PreToolUse` hook in `.claude/settings.json` → `gate-hook.js` returns `permissionDecision: deny` | File writes to 03→06, **the harness blocks, the model cannot argue** | Claude Code only |
+| 3 | `npm run gate:audit` → exit `2` if any 03→06 file was produced after the lock time | *After-the-fact* detection when someone got around layers 1 and 2 | Every IDE |
 
-Điều kiện mở khoá: QA_STANDARD §1 luật 2 (trạng thái §9.3, bảng quyết định §9.5). Không có đường nào mở bằng lời nói.
-
----
-
-## Thêm tool mới
-
-1. Chọn đúng nhóm. Không vừa nhóm nào thì cân nhắc kỹ trước khi tạo nhóm mới —
-   thêm thư mục là thêm thứ phải nhớ.
-2. Lấy đường dẫn từ `lib/paths.js`. **Không** dùng `process.cwd()` (vỡ khi chạy từ
-   thư mục khác) và **không** tự tính `__dirname/../..` (vỡ khi file bị di chuyển).
-3. Khai báo script vào `package.json` theo quy ước `<nhóm>:<việc>`.
-4. Thêm một dòng vào bảng tra nhanh ở trên.
-5. Nếu tool sinh ra deliverable mới: khai thêm vào `PIPELINE_DEPENDENCIES` của
-   `system/agent-doctor.js` để phân tích bán kính ảnh hưởng còn đúng.
-6. Chạy `npm test` rồi `npm run agent:check`, dán **kết quả thật** vào biên bản nâng cấp (để ngoài repo).
+Unlock conditions: QA_STANDARD §1 rule 2 (status §9.3, decision table §9.5). There is no way to open it by words alone.
 
 ---
 
-## Cổng Go/No-Go trước Automation (`system/readiness.js`)
+## Adding a new tool
 
-Cùng triết lý với cổng ASK: **số liệu do máy đo, agent chỉ diễn giải**. Trước đây skill
-`gen-readiness-report` tự đếm bằng mắt, mà lại đọc 5 file của một dự án khác
-(`coverage-plan.json`, `voucher-spec.json`, `testcases/*.csv`…) — không file nào do pipeline
-này sinh ra, nên cổng luôn báo "không tìm thấy" rồi vẫn kết luận.
+1. Choose the right group. If none fits, think hard before creating a new group —
+   adding a folder adds something to remember.
+2. Take paths from `lib/paths.js`. **Do not** use `process.cwd()` (breaks when run from another
+   folder) and **do not** compute `__dirname/../..` yourself (breaks when the file is moved).
+3. Declare the script in `package.json` following the `<group>:<task>` convention.
+4. Add a row to the quick-lookup table above.
+5. If the tool produces a new deliverable: add it to `PIPELINE_DEPENDENCIES` in
+   `system/agent-doctor.js` so the blast-radius analysis stays correct.
+6. Run `npm test` then `npm run agent:check`, and paste the **real result** into the upgrade record (kept outside the repo).
 
-`npm run readiness -- <slug> --write` đọc deliverable thật (`01_` `02_` `03_` `05_` `06_` `12_`
-và `knowledge/features/<slug>.md`), tính độ phủ viewpoint/rule, tỷ lệ trace, trạng thái cổng ASK,
-rồi ghi `OUTPUT/<slug>/15_readiness_metrics.json`.
+---
 
-| Exit code | Khuyến nghị |
+## Go/No-Go gate before Automation (`system/readiness.js`)
+
+Same philosophy as the ASK gate: **figures are measured by machine, the agent only interprets**. Previously the
+`gen-readiness-report` skill counted by eye, and read 5 files of a different project
+(`coverage-plan.json`, `voucher-spec.json`, `testcases/*.csv`…) — none produced by this
+pipeline, so the gate always reported "not found" and still concluded.
+
+`npm run readiness -- <slug> --write` reads the real deliverables (`01_` `02_` `03_` `05_` `06_` `12_`
+and `knowledge/features/<slug>.md`), computes viewpoint/rule coverage, trace ratio, ASK gate status,
+then writes `OUTPUT/<slug>/15_readiness_metrics.json`.
+
+| Exit code | Recommendation |
 |:---:|---|
-| `0` | **GO** — trace 100%, phủ đủ viewpoint và rule, cổng ASK mở, Chặng 6 PASS, tri thức đã ghi vào `knowledge/` |
-| `1` | **CONDITIONAL GO** — còn điều kiện kèm theo |
-| `2` | **NO-GO** — có điểm chặn phải xử lý xong |
+| `0` | **GO** — trace 100%, viewpoints and rules fully covered, ASK gate open, Stage 6 PASS, knowledge written into `knowledge/` |
+| `1` | **CONDITIONAL GO** — conditions still attached |
+| `2` | **NO-GO** — there are blockers that must be resolved |
 
-> ⚠️ `GO` **chưa đủ** để chạy Automation. Cổng biên giới (`AGENTS.md` §1.5) còn đòi
-> người dùng yêu cầu rõ ràng **và** URL môi trường cụ thể.
-
----
-
-## Linter deliverable (`system/lint-deliverables.js`)
-
-Chuẩn FACT (QA_STANDARD §3) và schema deliverable (§7, §9) trước đây chỉ được `coverage-review` kiểm —
-tức **LLM tự chấm bài của LLM**.
-
-`npm run lint -- <slug>` biến chuẩn thành điều kiện kiểm được bằng máy:
-
-Kiểm phần cơ học: trường bắt buộc và định dạng test case, tag trace, dòng meta (QA_STANDARD §7), schema bảng
-và trích nguyên văn (§9), ma trận 06W (§4), ô trống (§2). Danh sách luật chính xác ở đầu file
-`system/lint-deliverables.js` — README không chép lại để khỏi lệch.
-
-Exit `0` = sạch hoặc chỉ cảnh báo · `1` = có lỗi phải sửa.
-
-> **Nguyên tắc khi mở rộng linter: thà bỏ sót còn hơn kêu oan.**
-> Bản đầu bắt nhầm `<script>alert('XSS')</script>` (payload XSS hợp lệ) và `SG-XXXXXX`
-> (mô tả định dạng mã đơn) là placeholder, lại báo "thiếu Verdict" cho file đang có
-> `**Verdict Chặng 1**:`. Linter kêu oan thì người ta tắt nó đi — hỏng đúng mục đích.
-> Luật mới phải được thử trên deliverable thật trước khi bật.
+> ⚠️ `GO` is **not enough** to run Automation. The boundary gate (`AGENTS.md` §1.5) also requires
+> an explicit user request **and** a concrete environment URL.
 
 ---
 
-## `exam/` — bài thi tốt nghiệp (đặc tả: `docs/plans/graduation-project.md`)
+## Deliverable linter (`system/lint-deliverables.js`)
 
-Engine công khai; chỉ `$GRADER_PRIVATE` (roster, benchmark, test ẩn, bundle) là bí mật.
+The FACT standard (QA_STANDARD §3) and the deliverable schema (§7, §9) used to be checked only by `coverage-review` —
+that is, **an LLM grading an LLM's work**.
 
-| Ai | Lệnh | Việc |
+`npm run lint -- <slug>` turns the standard into a machine-checkable condition:
+
+It checks the mechanical part: required fields and format of test cases, trace tags, the meta line (QA_STANDARD §7), table schema
+and verbatim quotes (§9), the 06W matrix (§4), empty cells (§2). The exact list of rules is at the top of
+`system/lint-deliverables.js` — the README does not copy it, to avoid drift.
+
+Exit `0` = clean or warnings only · `1` = there are errors to fix.
+
+> **Principle when extending the linter: better to miss than to cry wolf.**
+> The first version mistook `<script>alert('XSS')</script>` (a valid XSS payload) and `SG-XXXXXX`
+> (a description of an order-code format) for placeholders, and reported "missing Verdict" for a file that has
+> `**Verdict Chặng 1**:` (Verdict Stage 1). A linter that cries wolf gets switched off — defeating its purpose.
+> A new rule must be tried on real deliverables before it is enabled.
+
+---
+
+## `exam/` — graduation exam (spec: `docs/plans/graduation-project.md`, instructor guide: [`exam/INSTRUCTOR.md`](exam/INSTRUCTOR.md))
+
+The engine is public; only `$GRADER_PRIVATE` (roster, benchmark, hidden tests, bundles) is secret.
+
+| Who | Command | What it does |
 |---|---|---|
-| Học viên | `npm run exam:check` | Tự kiểm trên cây làm việc: schema, preflight B-01…B-05 / G-01…G-08, các check công khai; PASS/FAIL + gợi ý sửa; ghi `.scratch/exam-check.json`; không tính điểm, không mạng |
-| Giảng viên | `npm run exam:grading-setup -- --exam <id>` | Biến clone hiện tại thành clone chấm: `pushurl DISABLED`, hook `pre-push` chặn `grading/*`, nhánh `grading/<id>` từ tag starter |
-| Giảng viên | `npm run exam:grade -- --exam <id> (--student <sid> \| --all) [--no-fetch] [--remote <r>]` | Fetch → roster → freeze + bundle → `git archive` → preflight → tool tin cậy của starter → container (Docker) → `GRADING/results/<sid>.json\|.html` + `summary.csv` |
-| Giảng viên | `npm run exam:score -- --exam <id> --student <sid> --criterion I1 --points 8 --level "6-8" --evidence <p> --comment "…" --reviewer <tên>` | Ghi `GRADING/instructor/<sid>.json` (JSON, có kiểm level + evidence), dựng lại kết quả. `--resolve-flag <id>` đóng một cờ toàn vẹn |
-| Giảng viên | `npm run exam:report -- --exam <id> [--student <sid>]` | Tính lại kết quả từ phần tự động đã lưu + file giảng viên (không chấm lại), dựng HTML + `summary.csv` |
-| Giảng viên | `node qa-system/tools/exam/make-instructor-tests.js --exam <id>` | Sinh fixture + test ẩn T1/T2 vào `$GRADER_PRIVATE/<id>/instructor-tests/` |
+| Student | `npm run exam:check` | Self-check on the working tree: schema, preflight B-01…B-05 / G-01…G-08, public checks; PASS/FAIL + fix hint; writes `.scratch/exam-check.json`; no score, no network |
+| Instructor | `npm run exam:grading-setup -- --exam <id>` | Turns the current clone into the grading clone: `pushurl DISABLED`, `pre-push` hook blocking `grading/*`, branch `grading/<id>` from the starter tag |
+| Instructor | `npm run exam:grade -- --exam <id> (--student <sid> \| --all) [--no-fetch] [--remote <r>]` | Fetch → roster → freeze + bundle → `git archive` → preflight → the starter's trusted tools → container (Docker) → `GRADING/results/<sid>.json\|.html` + `summary.csv` |
+| Instructor | `npm run exam:score -- --exam <id> --student <sid> --criterion I1 --points 8 --level "6-8" --evidence <p> --comment "…" --reviewer <name>` | Writes `GRADING/instructor/<sid>.json` (level and evidence validated) and rebuilds the result. `--resolve-flag <id>` closes an integrity flag |
+| Instructor | `npm run exam:report -- --exam <id> [--student <sid>]` | Recomputes results from the stored automated part + instructor file (no re-grading), rebuilds HTML + `summary.csv` |
+| Instructor | `node qa-system/tools/exam/make-instructor-tests.js --exam <id>` | Generates the hidden T1/T2 fixtures and tests into `$GRADER_PRIVATE/<id>/instructor-tests/` |
 
-Biến môi trường: `GRADER_PRIVATE` (mặc định `~/cw-grader-private`), `GRADING_TMP` (mặc định `~/.cache/cw-exam-grading`,
-phải là thư mục container mount được), `EXAM_CONTAINER=off` (ép không dùng container ⇒ check cần chạy code học viên = `PENDING_HUMAN_REVIEW`),
-`EXAM_CONTAINER_IMAGE` (mặc định `node:24-alpine`).
+Environment variables: `GRADER_PRIVATE` (default `~/cw-grader-private`), `GRADING_TMP` (default `~/.cache/cw-exam-grading`,
+must be a folder the container runtime can mount), `EXAM_CONTAINER=off` (no container ⇒ checks that run student code become `PENDING_HUMAN_REVIEW`),
+`EXAM_CONTAINER_IMAGE` (default `node:24-alpine`).
 
-## `__tests__/` — test cho chính các tool
+## `__tests__/` — tests for the tools themselves
 
 ```bash
-npm test        # chạy bằng node:test có sẵn, không thêm thư viện nào
+npm test        # runs with the built-in node:test, no extra library
 ```
 
-Mỗi ca ở đây là **một lỗi đã xảy ra thật**, không phải test cho đủ hình thức.
-Trong một phiên làm việc, các tool này hỏng 9 lần và **không lần nào lộ ra khi
-đọc code** — chỉ lộ khi chạy trên dữ liệu thật hoặc trên một dự án trắng:
+Every case here is **a bug that really happened**, not a test written for show.
+In one working session these tools broke 9 times and **not once was it visible when
+reading the code** — it only showed up when run on real data or on a blank project:
 
-| Lỗi | Ca test giữ chỗ |
+| Bug | Test case holding the place |
 |---|---|
-| `\Z` không tồn tại trong regex JS → Mục 8 cuối file không đọc được, đường mở khoá cổng ASK im lặng hỏng | `gate.test.js` |
-| Từ khoá `email` đẩy mọi PRD đăng nhập sang `05_communication` → Cổng 0 báo thiếu `02_ba` | `intake.test.js` |
-| `slugify` nuốt nguyên âm tiếng Việt → `Giỏ Hàng` thành `gi-hng` | `intake.test.js` |
-| `03_dev` đòi đúng chữ `database schema` nên trượt `DB schema` | `intake.test.js` |
-| Linter coi payload XSS và `SG-XXXXXX` là placeholder | `lint.test.js` |
-| Linter báo trùng giữa `batch_*.md` và spec tổng, trong khi batch là nguồn được gộp vào spec | `lint.test.js` |
-| Linter ép `Rule#BR-<số>` nên báo oan `Rule#GAP-H2` | `lint.test.js` |
-| Thiếu một trường bị báo thành hai lỗi (điểm dừng regex sai) | `lint.test.js` |
-| `_comment` trong schema biến thành một cột dữ liệu rác | `readiness.test.js` |
+| `\Z` does not exist in JS regex → Section 8 at the end of a file could not be read, the ASK-gate unlock path silently broke | `gate.test.js` |
+| The keyword `email` pushed every login PRD into `05_communication` → Gate 0 reported `02_ba` missing | `intake.test.js` |
+| `slugify` swallowed Vietnamese vowels → `Giỏ Hàng` (Shopping Cart) became `gi-hng` | `intake.test.js` |
+| `03_dev` demanded the exact words `database schema` so `DB schema` failed | `intake.test.js` |
+| The linter treated an XSS payload and `SG-XXXXXX` as placeholders | `lint.test.js` |
+| The linter reported duplicates between `batch_*.md` and the overall spec, although batches are the source merged into the spec | `lint.test.js` |
+| The linter forced `Rule#BR-<number>` so it wrongly reported `Rule#GAP-H2` | `lint.test.js` |
+| One missing field was reported as two errors (wrong regex stop point) | `lint.test.js` |
+| `_comment` in the schema became a junk data column | `readiness.test.js` |
 
-**Khi sửa một tool, viết ca test trước.** Nếu không tái hiện được lỗi bằng test
-thì chưa hiểu lỗi.
+**When fixing a tool, write the test case first.** If you cannot reproduce the bug with a test,
+you do not yet understand the bug.
 
-Quy ước: file `*.test.js`, dùng `helpers.js` để dựng dự án giả trong thư mục tạm —
-test không bao giờ đụng vào `OUTPUT/` hay `knowledge/` thật.
+Convention: `*.test.js` files, use `helpers.js` to build a fake project in a temp folder —
+tests never touch the real `OUTPUT/` or `knowledge/`.
 
 ---
 

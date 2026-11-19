@@ -1,91 +1,91 @@
-# AGENTS — Hiến pháp & bản đồ điều hành
+# AGENTS — Constitution & Operations Map
 
-> Áp dụng cho mọi AI Agent (Antigravity, Claude Code, Cursor, Codex, Copilot, Gemini CLI…) trong repo này.
-> **Luật nghiệp vụ** (verdict, cổng ASK, nhãn, FACT, 06W, knowledge, mã định danh, thứ tự ưu tiên nguồn)
-> chỉ nằm ở [`qa-system/core/QA_STANDARD.md`](qa-system/core/QA_STANDARD.md). File này **trỏ tới**, không chép lại.
+> Applies to every AI agent (Antigravity, Claude Code, Cursor, Codex, Copilot, Gemini CLI…) in this repo.
+> **Business rules** (verdict, ASK gate, labels, FACT, 06W, knowledge, identifiers, source priority order)
+> live only in [`qa-system/core/QA_STANDARD.md`](qa-system/core/QA_STANDARD.md). This file **points to** them and does not copy them.
 
 ---
 
-## 1. Không gian làm việc
+## 1. Workspace
 
-| Khu vực | Chức năng | Agent được làm gì |
+| Area | Purpose | What the agent may do |
 |---|---|---|
-| `INPUT/<slug>/` | Tài liệu nguồn, 5 ngăn `01_business` · `02_ba` · `03_dev` · `04_design` · `05_communication` | **Chỉ đọc** (trừ tool intake) |
-| `OUTPUT/<slug>/` | Deliverable `00`→`15`, `testcases/`, `runs/` | **Nơi duy nhất** được xuất kết quả |
-| `knowledge/` | Tri thức tích luỹ (SSOT) | Đọc/ghi theo QA_STANDARD §8 |
-| `qa-system/` | Agent, skill, tool, template, workflow | Chỉ QA Leader sửa, qua `system-upgrade-governance` — **đọc và tuân thủ tuyệt đối** `qa-system/templates/skills/LUAT-TAO-SKILL.md` trước khi sửa bất kỳ file nào |
+| `INPUT/<slug>/` | Source documents, 5 compartments `01_business` · `02_ba` · `03_dev` · `04_design` · `05_communication` | **Read only** (except the intake tool) |
+| `OUTPUT/<slug>/` | Deliverables `00`→`15`, `testcases/`, `runs/` | **The only place** results may be written |
+| `knowledge/` | Accumulated knowledge (SSOT) | Read/write per QA_STANDARD §8 |
+| `qa-system/` | Agents, skills, tools, templates, workflows | Only the QA Leader edits, via `system-upgrade-governance` — **read and strictly follow** `qa-system/templates/skills/LUAT-TAO-SKILL.md` (the skill-authoring rules) before editing any file |
 
-### 1.1. Cổng 0 — tiếp nhận tài liệu
-- QA Leader tự chạy `npm run intake` (hoặc `intake:bulk` cho khối lớn): chuyển sang `.md`, xếp 5 ngăn, dựng `OUTPUT/<slug>/`, `knowledge/features/<slug>.md`, `00_plan.md`.
-- **Thiếu `02_ba/`** ⇒ dừng, xin người dùng bổ sung trước khi lập plan. Thiếu ngăn khác ⇒ ghi rủi ro (`qa-lead/AGENT.md` §3).
-- **Thứ tự ưu tiên khi các nguồn khác nhau**: QA_STANDARD §10.2. Không xác định được bản mới hơn ⇒ sinh MR, không tự chọn.
-- Intake trích comment, tracked changes, dấu "DRAFT" vào mục `## Annotations / Pending changes` của file `.md`.
-  Mục này **chưa phải sự thật** ⇒ thành MR (QA_STANDARD §10.2).
-- File không hỗ trợ hoặc chuyển đổi lỗi được **giữ nguyên tại chỗ và báo lại** — không xoá. Ảnh (wireframe,
-  screenshot) được giữ ở `INPUT/<slug>/04_design/_assets/`.
-- **Tên task theo tính năng**, không theo bản: version/ngày/loại tài liệu bị bỏ (`SRS_Doi_mat_khau_v2` → `doi-mat-khau`).
-  Tài liệu sắp vào một task **đã có** tài liệu ⇒ intake dừng, **exit 2**, file chưa bị đụng. QA Leader hỏi người dùng
-  bằng lời *"đây là bản mới / tài liệu bổ sung của tính năng X?"* — không tự chọn — rồi chạy lại với `--into <slug>`
-  (đúng) hoặc `--slug <tên-khác>` (khác tính năng).
-- Bản cũ của cùng tài liệu (cùng tên bỏ version/ngày, cùng ngăn) được chuyển sang `<ngăn>/_superseded/` theo
-  ngày → version. **Không agent nào đọc `_superseded/`** khi phân tích. Không phân định được bản nào mới hơn ⇒ giữ
-  cả hai, intake báo ra, QA Leader hỏi người dùng bản nào đang dùng.
+### 1.1. Gate 0 — document intake
+- The QA Leader runs `npm run intake` itself (or `intake:bulk` for large batches): converts to `.md`, sorts into the 5 compartments, builds `OUTPUT/<slug>/`, `knowledge/features/<slug>.md`, `00_plan.md`.
+- **Missing `02_ba/`** ⇒ stop and ask the user to supply it before planning. Missing any other compartment ⇒ record a risk (`qa-lead/AGENT.md` §3).
+- **Priority order when sources disagree**: QA_STANDARD §10.2. If the newer version cannot be determined ⇒ raise an MR (missing-rule question), do not choose yourself.
+- Intake extracts comments, tracked changes and "DRAFT" markers into the `## Annotations / Pending changes` section of the `.md` file.
+  That section is **not yet truth** ⇒ it becomes an MR (QA_STANDARD §10.2).
+- Unsupported files or failed conversions are **left in place and reported** — never deleted. Images (wireframes,
+  screenshots) are kept in `INPUT/<slug>/04_design/_assets/`.
+- **Task names follow the feature**, not the revision: version/date/document type are dropped (`SRS_Doi_mat_khau_v2` → `doi-mat-khau`).
+  A document about to enter a task that **already has** documents ⇒ intake stops, **exit 2**, the file is untouched. The QA Leader asks
+  the user in words *"is this a new version / supplementary document of feature X?"* — never decides alone — then re-runs with `--into <slug>`
+  (yes) or `--slug <other-name>` (a different feature).
+- Older versions of the same document (same name minus version/date, same compartment) are moved to `<compartment>/_superseded/` by
+  date → version. **No agent reads `_superseded/`** during analysis. If it cannot be decided which is newer, keep
+  both, intake reports it, and the QA Leader asks the user which one is in use.
 
-### 1.2. Tầng thực thi (`OUTPUT/<slug>/runs/`)
-Master Spec `01_`→`06_` cố định. Chạy test cho một ticket thì mở session riêng
-`runs/RUN-XX_<ticket>/` gồm `run_plan.md` · `run_result.md` · `evidence/` · `run_defects.md`
-(khuôn ở `qa-system/templates/run/`).
+### 1.2. Execution layer (`OUTPUT/<slug>/runs/`)
+The Master Spec `01_`→`06_` is fixed. Running tests for a ticket opens its own session
+`runs/RUN-XX_<ticket>/` containing `run_plan.md` · `run_result.md` · `evidence/` · `run_defects.md`
+(templates in `qa-system/templates/run/`).
 
 ### 1.3. System Map First
-Vào việc là tra `npm run map -- <từ khoá>` (bảng `routing_table` của `knowledge/_system_map.json`) rồi mở **đúng file đích**.
-**Không mở thẳng file `.json`** (system map, manifest, metrics, blueprint, sprint-data): dùng `npm run json -- <file> <đường.dẫn>` để lấy đúng nhánh cần, `--keys` để xem có những khoá nào.
-Cấm quét/grep mò toàn dự án. Bản đồ lệch thực tế ⇒ `npm run map:sync`.
+When starting work, look up `npm run map -- <keyword>` (the `routing_table` of `knowledge/_system_map.json`) and open **exactly the target file**.
+**Never open `.json` files directly** (system map, manifest, metrics, blueprint, sprint-data): use `npm run json -- <file> <dot.path>` to fetch just the branch you need, `--keys` to see which keys exist.
+Do not scan/grep blindly across the whole project. If the map drifts from reality ⇒ `npm run map:sync`.
 
-### 1.4. QA Leader là cửa ngõ duy nhất
-Người dùng chỉ nói với QA Leader (`qa-system/qa-lead/AGENT.md`). QA Leader tra bản đồ, lập `00_plan.md`,
-giao việc cho đúng agent chuyên môn.
+### 1.4. The QA Leader is the only entry point
+The user talks only to the QA Leader (`qa-system/qa-lead/AGENT.md`). The QA Leader looks up the map, writes `00_plan.md`,
+and delegates to the right specialist agent.
 
-### 1.5. Cổng biên giới & sẵn sàng
-- Chặng 6 là **điểm dừng tự nhiên**. Không tự chạy tiếp sang automation.
-- Automation (nhánh G) chỉ chạy khi đủ cả ba: người dùng yêu cầu rõ · có URL môi trường ·
-  `npm run readiness -- <slug> --write` ra `GO` (exit `0` GO · `1` CONDITIONAL · `2` NO-GO), rồi
-  `qa-readiness-evaluator` diễn giải thành `15_readiness_report.md`. Số liệu do tool đo, không đếm bằng mắt.
+### 1.5. Boundary & readiness gate
+- Stage 6 is the **natural stopping point**. Never continue into automation on your own.
+- Automation (branch G) runs only when all three hold: the user explicitly asks · an environment URL exists ·
+  `npm run readiness -- <slug> --write` returns `GO` (exit `0` GO · `1` CONDITIONAL · `2` NO-GO), then
+  `qa-readiness-evaluator` interprets it into `15_readiness_report.md`. Figures are measured by the tool, not counted by eye.
 
-### 1.6. Cổng ASK
-Luật: **QA_STANDARD §1** (định nghĩa duy nhất). Thi hành bằng máy, ba lớp:
+### 1.6. ASK gate
+Rule: **QA_STANDARD §1** (the single definition). Enforced by machine in three layers:
 
-| Lớp | Cơ chế | Hiệu lực |
+| Layer | Mechanism | Effect |
 |---|---|---|
-| 1 | `npm run gate <slug>` → exit `0` mở · `1` đóng; ghi/gỡ `OUTPUT/<slug>/_gate.lock` | Mọi IDE |
-| 2 | Hook `PreToolUse` (`.claude/settings.json` → `qa-system/tools/system/gate-hook.js`) chặn ghi `03_`→`06_` | Claude Code |
-| 3 | `npm run gate:audit <slug>` → exit `2` nếu có file `03_`→`06_` sinh sau mốc khoá | Mọi IDE / CI |
+| 1 | `npm run gate <slug>` → exit `0` open · `1` closed; writes/removes `OUTPUT/<slug>/_gate.lock` | Every IDE |
+| 2 | `PreToolUse` hook (`.claude/settings.json` → `qa-system/tools/system/gate-hook.js`) blocks writes to `03_`→`06_` | Claude Code |
+| 3 | `npm run gate:audit <slug>` → exit `2` if any `03_`→`06_` file was produced after the lock time | Every IDE / CI |
 
-Ngoài Claude Code không có lớp 2 ⇒ tự gọi `npm run gate` trước mỗi deliverable Chặng 3+ là **bắt buộc**.
+Outside Claude Code there is no layer 2 ⇒ calling `npm run gate` yourself before every Stage 3+ deliverable is **mandatory**.
 
 ---
 
-## 2. Plan First & nạp theo chặng
+## 2. Plan First & per-stage loading
 
-Trước khi phân tích tính năng: tạo `OUTPUT/<slug>/00_plan.md` (hoặc `npm run workflow -- start <tên> --slug <slug>`).
-Đây là **tracker duy nhất** — tick `- [x]` tại đây, không tạo `TODO.md` hay file theo dõi nào khác. Xem nhanh: `npm run status`.
+Before analyzing a feature: create `OUTPUT/<slug>/00_plan.md` (or `npm run workflow -- start <name> --slug <slug>`).
+This is the **only tracker** — tick `- [x]` here, never create `TODO.md` or any other tracking file. Quick view: `npm run status`.
 
-**Luật nạp**: mỗi chặng nạp **đầu vào đã khai trong skill** + `knowledge/_project.md` + `knowledge/features/<slug>.md`
-(QA_STANDARD §7). Không nạp thêm deliverable ngoài danh sách, không đọc lan sang task khác.
+**Loading rule**: each stage loads **the inputs declared in its skill** + `knowledge/_project.md` + `knowledge/features/<slug>.md`
+(QA_STANDARD §7). Do not load deliverables outside that list, do not read across into other tasks.
 
-### 2.1. Thứ tự chặng
+### 2.1. Stage order
 
 ```
-01 → 02 →[npm run gate]→ 03 → 04 → 05 →[npm run lint]→ 06   ← điểm dừng tự nhiên
-                                    └─(tuỳ chọn) 09 → 10 → 11 → 12 → chạy lại 06 (có 12)
-06 →[readiness GO + yêu cầu + URL]→ nhánh G (automation)
+01 → 02 →[npm run gate]→ 03 → 04 → 05 →[npm run lint]→ 06   ← natural stopping point
+                                    └─(optional) 09 → 10 → 11 → 12 → re-run 06 (with 12)
+06 →[readiness GO + request + URL]→ branch G (automation)
 ```
 
-- `01` không có điểm dừng cứng: `OQ-xx` không chặn, `02` xử lý chúng. Cổng duy nhất của pipeline thiết kế là sau `02`.
-- Nhánh dữ liệu `09`→`12` chỉ chạy khi cần dataset. Đã chạy thì `06` phải chạy lại để gom gap `CHƯA CÓ DATA`.
-- Mã định danh ổn định qua các lần chạy (QA_STANDARD §9.1). Số kế tiếp cho từng họ mã: `npm run ids -- <slug>`.
-- Bảng chặng đầy đủ (agent · skill · vào · ra): `qa-system/workflows/WORKFLOW.md`.
+- `01` has no hard stop: `OQ-xx` do not block, `02` handles them. The only gate of the design pipeline is after `02`.
+- The data branch `09`→`12` runs only when a dataset is needed. Once run, `06` must be re-run to collect the `CHƯA CÓ DATA` (no data yet) gaps.
+- Identifiers are stable across runs (QA_STANDARD §9.1). Next number per id family: `npm run ids -- <slug>`.
+- Full stage table (agent · skill · input · output): `qa-system/workflows/WORKFLOW.md`.
 
-### 2.2. Khung `00_plan.md`
+### 2.2. `00_plan.md` skeleton
 
 ```markdown
 # Kế hoạch · <slug>
@@ -106,49 +106,53 @@ Ngày tạo: YYYY-MM-DD · Người lập: <agent/tool> · Mode: <1-4> · Trạn
 - [ ] 06 coverage-review → 06_coverage_review.md
 ```
 
-### 2.3. "Tiếp tục" / "Tiến độ thế nào?"
-Người dùng không phải nhớ đường dẫn. Agent tự đóng vai QA Leader: chạy `npm run status`, đọc `00_plan.md`,
-xác định task dở và cổng đang đóng (nếu có thì nhắc lại câu hỏi treo), đề xuất chặng kế, chờ xác nhận rồi
-nạp đúng đầu vào của chặng đó — không làm lại chặng đã xong.
+> The skeleton's headings and labels are kept in Vietnamese on purpose because tools and agents copy them verbatim:
+> `Kế hoạch` = plan, `Ngày tạo` = created on, `Người lập` = author, `Trạng thái` = status, `Nguồn` = sources,
+> `5 ngăn` = 5 compartments, `hoặc` = or, `Lộ trình` = roadmap, `Cổng ASK` = ASK gate, `Cổng lint` = lint gate.
+
+### 2.3. "Continue" / "How is progress?"
+The user does not have to remember paths. The agent plays the QA Leader itself: runs `npm run status`, reads `00_plan.md`,
+identifies the unfinished task and the gate that is closed (if any, restates the pending question), proposes the next stage, waits for confirmation, then
+loads exactly that stage's inputs — never redoing a finished stage.
 
 ---
 
-## 3. Quy mô lớn
+## 3. Large scale
 
-- **Test case > 50**: không sinh một lượt. `05_test_blueprint.json` (danh mục rút gọn) → lô
-  `OUTPUT/<slug>/testcases/batch_01.md`, `batch_02.md`… (~50 TC/lô) → `npm run testcases:merge <slug>`.
-- **Dữ liệu > 10 record**: không gõ tay. Agent viết `dataset_schema.json`, chạy `npm run data:gen`
-  (0 token LLM), ra `10_dataset.md`.
-- **Khối tài liệu lớn**: `npm run knowledge:digest <slug>` chia lô, skill `knowledge-digest` chưng cất có trích nguồn.
-- **Hành trình web** (nhánh G): chuẩn hoá Gherkin `Given/When/Then` kèm bảng ánh xạ Step → locator
-  (`getByRole`, `getByTestId`, `getByPlaceholder`). Locator chỉ lấy từ app thật / `knowledge/features/<sut>-ui-map.md`.
-
----
-
-## 4. Vòng tri thức
-
-`OUTPUT/` là kết quả một lần chạy; `knowledge/` là thứ tích luỹ. **Ai ghi mục nào**: QA_STANDARD §8 (một bảng duy nhất).
-Câu trả lời của BA/PO là việc của con người: agent chỉ chép nguyên văn khi người dùng đưa, rồi chạy
-`npm run knowledge:sync -- <slug> --write`. Lần chạy sau đọc knowledge ⇒ không hỏi lại điều đã chốt.
-Khởi tạo: `npm run init` (repo mới) · `npm run knowledge:new <slug>` (tính năng mới).
+- **Test cases > 50**: do not generate in one pass. `05_test_blueprint.json` (condensed catalog) → batches
+  `OUTPUT/<slug>/testcases/batch_01.md`, `batch_02.md`… (~50 TCs per batch) → `npm run testcases:merge <slug>`.
+- **Data > 10 records**: never type by hand. The agent writes `dataset_schema.json`, runs `npm run data:gen`
+  (0 LLM tokens), producing `10_dataset.md`.
+- **Large document sets**: `npm run knowledge:digest <slug>` splits into batches, the `knowledge-digest` skill distills with source citations.
+- **Web journeys** (branch G): normalize to Gherkin `Given/When/Then` with a Step → locator mapping table
+  (`getByRole`, `getByTestId`, `getByPlaceholder`). Locators come only from the real app / `knowledge/features/<sut>-ui-map.md`.
 
 ---
 
-## 5. Ràng buộc bất biến
+## 4. Knowledge loop
 
-1. **Chỉ trích hoặc hỏi, không sáng tác** — guard QA_STANDARD §2, nhãn khi thiếu §2.1, FACT §3.
-2. **Verdict** PASS / FIX / ASK — QA_STANDARD §1. Dòng meta 10 dòng đầu — §7.
-3. **Kiểm bằng máy trước khi báo xong**: `npm run lint -- <slug>` trước khi báo xong Chặng 5/6 (exit `1` ⇒ chưa xong).
-   Linter lo phần cơ học **và nguồn gốc giá trị** (chữ thông báo, con số, trích dẫn phải có trong nguồn); độ phủ nghiệp vụ và việc hiểu đúng một câu vẫn là việc của agent và con người.
-   Lint chạy lại ở mọi lối ra (`export`, đẩy Jira, `readiness`) và trước mỗi `git commit` (`npm run hooks:install`, `npm run init` cài sẵn) — áp dụng cho mọi công cụ AI, không riêng Claude Code.
-4. **Giữ gốc sạch**: không tạo file ở root (`TODO.md`, `.cursorrules`…). Mọi kết quả trong `OUTPUT/<slug>/`.
+`OUTPUT/` is the result of one run; `knowledge/` is what accumulates. **Who writes which section**: QA_STANDARD §8 (a single table).
+BA/PO answers are human work: the agent copies them verbatim only when the user supplies them, then runs
+`npm run knowledge:sync -- <slug> --write`. The next run reads knowledge ⇒ never re-asks what is already settled.
+Initialization: `npm run init` (new repo) · `npm run knowledge:new <slug>` (new feature).
 
 ---
 
-## 6. Lệnh
+## 5. Invariant constraints
 
-Mục lục đầy đủ + bảng "cần gì → chạy gì": [`qa-system/tools/README.md`](qa-system/tools/README.md).
-Hay dùng: `npm run init` · `npm start` · `npm run intake` · `npm run status` · `npm run gate <slug>` ·
+1. **Only quote or ask, never invent** — guard QA_STANDARD §2, label for missing info §2.1, FACT §3.
+2. **Verdict** PASS / FIX / ASK — QA_STANDARD §1. The 10-line meta header — §7.
+3. **Machine-check before reporting done**: `npm run lint -- <slug>` before reporting Stage 5/6 done (exit `1` ⇒ not done).
+   The linter handles the mechanical part **and value provenance** (notification text, numbers, quotes must exist in the source); business coverage and getting one sentence right remain the job of the agent and humans.
+   Lint re-runs at every exit (`export`, Jira push, `readiness`) and before every `git commit` (`npm run hooks:install`, installed by `npm run init`) — applies to every AI tool, not just Claude Code.
+4. **Keep the root clean**: no files at root (`TODO.md`, `.cursorrules`…). All results go in `OUTPUT/<slug>/`.
+
+---
+
+## 6. Commands
+
+Full index + "need what → run what" table: [`qa-system/tools/README.md`](qa-system/tools/README.md).
+Common: `npm run init` · `npm start` · `npm run intake` · `npm run status` · `npm run gate <slug>` ·
 `npm run ids -- <slug>` · `npm run lint -- <slug>` · `npm run readiness -- <slug>` ·
 `npm run knowledge:sync -- <slug> --write` · `npm run testcases:merge <slug>` · `npm run workflow -- <list|find|start|validate>` ·
 `npm test` · `npm run agent:check`.
@@ -157,15 +161,15 @@ Hay dùng: `npm run init` · `npm start` · `npm run intake` · `npm run status`
 
 ## 7. Zero-CLI
 
-Người dùng là Tester / BA / PO / quản lý — **không gõ lệnh terminal**. Mọi script là công cụ nội bộ của agent.
-**Cấm** bảo người dùng *"mở terminal gõ npm run…"*: agent tự chạy ngầm rồi báo kết quả bằng lời.
+Users are Testers / BAs / POs / managers — they **do not type terminal commands**. Every script is an internal tool of the agent.
+**Forbidden**: telling the user *"open a terminal and type npm run…"*: the agent runs it silently and reports the result in words.
 
-| Người dùng nói | Agent tự làm |
+| User says | Agent does itself |
 |---|---|
-| *"Bắt đầu từ đâu?"* · *"Thư mục này để làm gì?"* | `npm start`, đọc kết quả cho họ |
-| *"Có tài liệu mới trong INPUT, xử lý giúp"* | `npm run intake` |
-| *"Tiến độ thế nào?"* | `npm run status` |
-| *"Tạo workflow: mỗi khi … thì …"* | skill `workflow-authoring` chế độ TẠO, `validate` xanh, trình bày rồi **chờ** |
-| Một câu ngắn như *"BA gửi tài liệu mới"* | `npm run workflow -- find` → `start`, dừng ở mọi cổng |
+| *"Where do I start?"* · *"What is this folder for?"* | `npm start`, reads the result to them |
+| *"There are new documents in INPUT, please process them"* | `npm run intake` |
+| *"How is progress?"* | `npm run status` |
+| *"Create a workflow: whenever … then …"* | skill `workflow-authoring` in CREATE mode, `validate` green, present then **wait** |
+| A short phrase such as *"BA sent a new document"* | `npm run workflow -- find` → `start`, stopping at every gate |
 
-Bảng ánh xạ đầy đủ: `qa-system/qa-lead/AGENT.md` §5.
+Full mapping table: `qa-system/qa-lead/AGENT.md` §5.

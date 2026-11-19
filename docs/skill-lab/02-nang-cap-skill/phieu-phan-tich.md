@@ -1,66 +1,66 @@
-# Phiếu phân tích — Bài 2: nâng cấp skill missing-rule-06w
+# Analysis sheet — Exercise 2: upgrade the missing-rule-06w skill
 
-Học viên: `<tên>` · Nhánh: `lab/<tên>` · Ngày: `<YYYY-MM-DD>`
+Learner: `<name>` · Branch: `lab/<name>` · Date: `<YYYY-MM-DD>`
 
-> Điền theo thứ tự. Ô nào chưa trả lời được thì ghi lý do, không bỏ trống. Phiếu nộp cho giảng viên, không commit.
+> Fill in order. If a cell cannot be answered yet, write the reason — do not leave it blank. The sheet is handed to the instructor, not committed.
 
-## 1. Cây quyết định A / B / C
+## 1. Decision tree A / B / C
 
-| Câu | Đúng / Sai | Lý do (một dòng, chỉ ra file đã tra) |
+| Question | True / False | Reason (one line, name the file you checked) |
 |---|---|---|
-| (1) Chỉ đổi hành vi của một skill đang có? | | |
-| (2) Đã có agent sở hữu đúng mảng việc này? Agent nào? | | (bỏ qua nếu câu 1 Đúng) |
-| (3) Giao cho agent đó có vượt một vai trò không? (đọc loại file khác · ghi chỗ khác · phải thêm "và cũng…") | | |
-| **Kết luận** | **[A] / [B] / [C]** vào agent `qa-…` | |
+| (1) Does it only change the behavior of an existing skill? | | |
+| (2) Is there already an agent that owns exactly this area? Which agent? | | (skip if question 1 is True) |
+| (3) Would giving it to that agent exceed one role? (reads another file type · writes elsewhere · needs "and also…") | | |
+| **Conclusion** | **[A] / [B] / [C]** into agent `qa-…` | |
 
-Kết quả `npm run agent:check -- --impact <agent>` (dán):
+Result of `npm run agent:check -- --impact <agent>` (paste):
 
 ```
 ```
 
-## 2. Đặt tầng
+## 2. Layer placement
 
-| Nội dung | Tầng (QA_STANDARD / knowledge / skill / AGENT.md) | Lý do |
+| Content | Layer (QA_STANDARD / knowledge / skill / AGENT.md) | Reason |
 |---|---|---|
-| Bảng tín hiệu "thấy dấu hiệu gì thì xét ô W nào" | | |
-| Định nghĩa 6 chiều W1–W6 và bảng áp dụng | | |
-| Luật đặt mã MR khi một kẽ hở chạm nhiều ô | | |
-| Câu hỏi về COD, đơn của người khác… của tính năng hoàn tiền | | |
+| The signal table "seeing which sign means which W cell to examine" | | |
+| The definition of the 6 dimensions W1–W6 and the applicability table | | |
+| The rule for placing an MR id when one gap touches several cells | | |
+| Questions about COD, other people's orders… of the refund feature | | |
 
-## 3. Thay đổi trong skill
+## 3. Changes in the skill
 
-- File: `qa-system/qa-analyst/skills/missing-rule-06w.md` — mục nào thêm / sửa: …
-- Bảng tín hiệu (dán bản cuối):
-- Luật đặt chỗ MR:
-- Có đổi format bảng ma trận không? (Có ⇒ N7 bắt buộc)
+- File: `qa-system/qa-analyst/skills/missing-rule-06w.md` — which section was added / edited: …
+- Signal table (paste the final version):
+- MR placement rule:
+- Does the matrix table format change? (Yes ⇒ N7 is mandatory)
 
-## 4. Bảy điểm neo
+## 4. Seven anchor points
 
-| # | Điểm neo | File | Đã sửa gì | Trạng thái (ĐÃ XONG / KHÔNG ÁP DỤNG + lý do) |
+| # | Anchor point | File | What was changed | Status (DONE / NOT APPLICABLE + reason) |
 |---|---|---|---|---|
 | N1 | skill | | | |
-| N2 | AGENT.md của agent | | | |
+| N2 | the agent's AGENT.md | | | |
 | N3 | WORKFLOW.md | | | |
 | N4 | _system_map.json | | | |
 | N5 | qa-lead/AGENT.md (§2 + §5) | | | |
 | N6 | agent-doctor.js | | | |
 | N7 | lint / schema + test | | | |
 
-## 5. Nghiệm thu (dán kết quả thật)
+## 5. Acceptance (paste the real results)
 
-| Kiểm tra | Kết quả |
+| Check | Result |
 |---|---|
 | `npm test` | |
 | `npm run agent:check` | |
 | `npm run lint -- lab-06w-a` / `lab-06w-b` | |
-| Vòng 1 (trước) — `diff-runs`: ô 06W có kẽ hở · phán quyết ô 06W | |
-| Vòng 2 (sau) — `diff-runs`: ô 06W có kẽ hở · phán quyết ô 06W | |
-| 5 câu hỏi từ annotation còn ở cả hai lần? | |
-| 4 chủ đề từng bị sót có ở cả hai lần "sau"? | |
-| Giải thích từng khác biệt còn lại | |
+| Round 1 (before) — `diff-runs`: 06W cells with a gap (`ô 06W có kẽ hở`) · 06W cell verdicts (`phán quyết ô 06W`) | |
+| Round 2 (after) — `diff-runs`: 06W cells with a gap · 06W cell verdicts | |
+| Are the 5 questions from annotations present in both runs? | |
+| Are the 4 previously missed topics present in both "after" runs? | |
+| Explanation of each remaining difference | |
 
-## 6. Commit
+## 6. Commits
 
-| Commit | Gồm | Đưa sang develop? |
+| Commit | Contains | Goes to develop? |
 |---|---|---|
 | | | |

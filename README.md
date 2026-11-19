@@ -1,52 +1,52 @@
 # CW QA Agent
 
-Bộ AI Agent làm QA từ tài liệu yêu cầu tới test case, chạy được với mọi công cụ AI (Claude Code, Antigravity, Codex,
-Cursor, Gemini CLI…). Nguyên tắc gốc: **AI chỉ được trích (có nguồn) hoặc hỏi (thành câu hỏi cho BA) — không sáng tác.**
-Thiếu thông tin thì ghi `[CHƯA CÓ TRONG TÀI LIỆU]`, và như thế là đạt.
+A set of AI agents that do QA from requirement documents to test cases, working with any AI tool (Claude Code, Antigravity, Codex,
+Cursor, Gemini CLI…). The core principle: **AI may only quote (with a source) or ask (as a question for the BA) — never invent.**
+When information is missing, write `[CHƯA CÓ TRONG TÀI LIỆU]` (the fixed label meaning "not in the document"), and that counts as a pass.
 
-## Dùng thế nào
+## How to use
 
-Bạn không cần gõ lệnh. Mở thư mục bằng công cụ AI rồi nói:
+You do not need to type commands. Open the folder with an AI tool and say:
 
-| Bạn nói | Agent làm |
+| You say | The agent does |
 |---|---|
-| *"Khởi tạo giúp tôi"* | `npm run init` (dựng `INPUT/`, `knowledge/`, cài pre-commit) |
-| *"Tôi vừa bỏ tài liệu vào INPUT, xử lý giúp"* | Nhận tài liệu, xếp 5 ngăn, dựng task |
-| *"Phân tích tính năng <tên>"* | Lập `00_plan.md`, chạy 01 → 02, dừng ở câu hỏi cho BA |
-| *"BA đã trả lời: …"* | Chép nguyên văn (kèm người + ngày), mở cổng, chạy tiếp 03 → 06 |
-| *"Tiến độ thế nào?"* · *"Test case đạt chuẩn chưa?"* | Chạy `status` / `lint` và đọc kết quả thật |
+| *"Initialize it for me"* | `npm run init` (builds `INPUT/`, `knowledge/`, installs pre-commit) |
+| *"I just put documents in INPUT, please process them"* | Receives the documents, sorts them into 5 compartments, builds the task |
+| *"Analyze the feature <name>"* | Writes `00_plan.md`, runs 01 → 02, stops at the questions for the BA |
+| *"The BA answered: …"* | Copies verbatim (with person + date), opens the gate, continues 03 → 06 |
+| *"How is progress?"* · *"Are the test cases up to standard?"* | Runs `status` / `lint` and reads the real result |
 
-## Luồng làm việc
+## Workflow
 
 ```
-INPUT/<slug>/ ─► 01 bóc rule ─► 02 tìm kẽ hở ─► [cổng ASK: BA trả lời] ─► 03 viewpoint ─► 04 test idea ─► 05 test case ─► [lint] ─► 06 độ phủ
-                (trích nguyên văn)  (ma trận 06W)                                                                                      điểm dừng
+INPUT/<slug>/ ─► 01 extract rules ─► 02 find gaps ─► [ASK gate: BA answers] ─► 03 viewpoint ─► 04 test idea ─► 05 test case ─► [lint] ─► 06 coverage
+                (verbatim quotes)    (06W matrix)                                                                                       stopping point
 ```
 
-Ba cổng do máy kiểm, không do AI tự kết luận:
+Three gates are checked by machine, not concluded by the AI:
 
-| Cổng | Lệnh | Chặn khi |
+| Gate | Command | Blocks when |
 |---|---|---|
-| ASK | `npm run gate <slug>` | Còn câu hỏi BA chưa chốt (phải có người trả lời + ngày; AI không được tự chốt) |
-| Lint | `npm run lint -- <slug>` | Thiếu trích dẫn, chữ thông báo / con số không có trong nguồn, sai format |
-| Readiness | `npm run readiness -- <slug>` | Chưa đủ chín để sang automation |
+| ASK | `npm run gate <slug>` | BA questions remain unsettled (a person and a date must be on the answer; the AI may not settle them itself) |
+| Lint | `npm run lint -- <slug>` | Missing citations, notification text / numbers not in the source, wrong format |
+| Readiness | `npm run readiness -- <slug>` | Not mature enough to move to automation |
 
-Ngoài ra: hook chặn ghi file khi cổng đóng (Claude Code) và **pre-commit** lint trước mỗi commit (mọi công cụ).
+In addition: a hook blocks file writes while the gate is closed (Claude Code), and a **pre-commit** hook lints before every commit (every tool).
 
-## Thư mục
+## Folders
 
-| Thư mục | Là gì | Ai sửa |
+| Folder | What it is | Who edits |
 |---|---|---|
-| `INPUT/<slug>/` | Tài liệu nguồn, 5 ngăn: `01_business` · `02_ba` (bắt buộc) · `03_dev` · `04_design` · `05_communication` | Bạn (agent chỉ đọc) |
-| `OUTPUT/<slug>/` | Kết quả mỗi lần chạy: `00_plan` → `06`, `testcases/`, `runs/` | Agent |
-| `knowledge/` | Tri thức tích luỹ: `_project.md` (quy ước dự án), `features/<slug>.md` (rule, câu hỏi, quyết định của BA) | Agent + con người theo luật |
-| `qa-system/` | Agent, skill, luật chung (`core/QA_STANDARD.md`), tool, workflow | Chỉ qua quy trình nâng cấp |
-| `docs/` | Sổ tay tạo skill (`so-tay-tao-skill.html`) và bài thực hành `skill-lab/` | Giảng viên |
+| `INPUT/<slug>/` | Source documents, 5 compartments: `01_business` · `02_ba` (required) · `03_dev` · `04_design` · `05_communication` | You (the agent only reads) |
+| `OUTPUT/<slug>/` | Results of each run: `00_plan` → `06`, `testcases/`, `runs/` | Agent |
+| `knowledge/` | Accumulated knowledge: `_project.md` (project conventions), `features/<slug>.md` (rules, questions, BA decisions) | Agent + humans per the rules |
+| `qa-system/` | Agents, skills, common rules (`core/QA_STANDARD.md`), tools, workflows | Only through the upgrade process |
+| `docs/` | The skill-authoring handbook (`so-tay-tao-skill.html`) and the `skill-lab/` practice exercises | Instructors |
 
-## Đọc tiếp
+## Read next
 
-- Luật cho mọi AI agent: [`AGENTS.md`](AGENTS.md) · riêng Claude Code: [`CLAUDE.md`](CLAUDE.md)
-- Luật nghiệp vụ (verdict, cổng ASK, nhãn, FACT, 06W, mã định danh): [`qa-system/core/QA_STANDARD.md`](qa-system/core/QA_STANDARD.md)
-- Toàn bộ lệnh: [`qa-system/tools/README.md`](qa-system/tools/README.md)
-- Tạo / sửa skill: luật bắt buộc [`qa-system/templates/skills/LUAT-TAO-SKILL.md`](qa-system/templates/skills/LUAT-TAO-SKILL.md),
-  sổ tay [`docs/so-tay-tao-skill.html`](docs/so-tay-tao-skill.html), thực hành [`docs/skill-lab/`](docs/skill-lab/)
+- Rules for every AI agent: [`AGENTS.md`](AGENTS.md) · Claude Code only: [`CLAUDE.md`](CLAUDE.md)
+- Business rules (verdict, ASK gate, labels, FACT, 06W, identifiers): [`qa-system/core/QA_STANDARD.md`](qa-system/core/QA_STANDARD.md)
+- All commands: [`qa-system/tools/README.md`](qa-system/tools/README.md)
+- Create / edit skills: mandatory rules [`qa-system/templates/skills/LUAT-TAO-SKILL.md`](qa-system/templates/skills/LUAT-TAO-SKILL.md),
+  handbook [`docs/so-tay-tao-skill.html`](docs/so-tay-tao-skill.html), practice [`docs/skill-lab/`](docs/skill-lab/)

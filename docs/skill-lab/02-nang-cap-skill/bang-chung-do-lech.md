@@ -1,9 +1,13 @@
-# Bằng chứng — hai lần chạy Chặng 01–02 trên tính năng hoàn tiền
+# Evidence — two runs of Stages 01–02 on the refund feature
 
-Đo ngày 2026-11-04. Lần A và lần B do hai phiên AI độc lập chạy trên cùng `INPUT/` (lần B không thấy kết quả lần A).
-Lưu ý: ở lần đo này **cả 01 và 02 đều chạy lại**, nên một phần độ lệch đến từ 01. Bài 2 cố định 01 để đo riêng skill 02.
+Measured on 2026-11-04. Run A and run B were done by two independent AI sessions on the same `INPUT/` (run B did not see run A's results).
+Note: in this measurement **both 01 and 02 were re-run**, so part of the divergence comes from 01. Exercise 2 fixes 01 to measure skill 02 alone.
 
-## Kết quả `npm run diff-runs`
+## Result of `npm run diff-runs`
+
+The tool's output is pasted verbatim (its labels are Vietnamese: `Bộ mã` = id set, `trùng` = overlap, `Nội dung` = content,
+`câu trích 01` = quotes in 01, `câu hỏi MR (đúng chữ)` = MR questions (exact wording), `ô 06W có kẽ hở` = 06W cells with a gap,
+`phán quyết ô 06W` = 06W cell verdicts):
 
 ```
 Bộ mã                A     B   trùng
@@ -21,39 +25,45 @@ Nội dung                         A     B   trùng
    phán quyết ô 06W           156   162    59%
 ```
 
-## Đối chiếu chủ đề câu hỏi (bằng tay)
+(The note after the arrow means: "questions are free text, this metric is not used for evaluation".)
 
-| Chủ đề | Lần A (ô) | Lần B (ô) | Ghi chú |
+## Topic-by-topic comparison of the questions (by hand)
+
+| Topic | Run A (cell) | Run B (cell) | Note |
 |---|---|---|---|
-| Ảnh bắt buộc khi Hàng lỗi (tracked change) | FD-04 × W3 | FD-01 × W1 | Cùng câu, khác ô |
-| Giao sai hàng có tự động duyệt? (comment PO) | BR-05 × W3 | BR-05 × W1 | Cùng câu, khác ô |
-| Dòng mã lỗi bị ẩn / vượt số lần | BR-13 × W6 | BR-13 × W2 | Cùng câu, khác ô |
-| Hoàn tiền qua cổng thanh toán thất bại | BR-07 × W2, W6 | BR-07 × W5 | Cùng câu, khác ô |
-| Thời gian xử lý tối đa | BR-06 × W4 | BR-06 × W4 | Trùng |
-| Thông báo lỗi ràng buộc từng field | FD-01…04 × W1 | FD-02…04 × W1 | Gần trùng |
-| Cách tính 10 ngày, múi giờ | BR-02 × W3, W4 | BR-02 × W4 | Gần trùng |
-| Trần tiền yêu cầu thứ hai | BR-04 × W3 | BR-04 × W3 | Trùng |
-| Trưởng nhóm duyệt yêu cầu nhỏ | BR-06 × W5 | BR-06 × W5 | Trùng |
-| Ràng buộc lý do từ chối | BR-08 × W1 | BR-08 × W1 | Trùng |
-| Huỷ và duyệt cùng lúc | BR-10/11 × W4 | BR-11 × W4 | Gần trùng |
-| Email thông báo | BR-14 × W3 | BR-14 × W6 | Cùng chủ đề, khác ô |
-| **Đơn COD đã giao** | BR-01 × W3 | — | **B bỏ sót** |
-| **Gửi yêu cầu cho đơn của người khác** | BR-01 × W5 | — | **B bỏ sót** |
-| **Nhân viên CSKH với yêu cầu trên ngưỡng** | BR-06 × W2 | — | **B bỏ sót** |
-| **Số tiền đã thanh toán gồm những gì** | FD-02 × W3 | — | **B bỏ sót** |
-| Phương thức thanh toán gốc không dùng được | (gộp trong câu cổng thanh toán) | BR-07 × W3 | Khác cách gộp |
+| Photo required when goods are defective (tracked change) | FD-04 × W3 | FD-01 × W1 | Same question, different cell |
+| Is a wrong-item delivery auto-approved? (PO comment) | BR-05 × W3 | BR-05 × W1 | Same question, different cell |
+| Hidden error-code row / exceeding the attempt count | BR-13 × W6 | BR-13 × W2 | Same question, different cell |
+| Refund through a failed payment gateway | BR-07 × W2, W6 | BR-07 × W5 | Same question, different cell |
+| Maximum processing time | BR-06 × W4 | BR-06 × W4 | Same |
+| Constraint error message per field | FD-01…04 × W1 | FD-02…04 × W1 | Nearly the same |
+| How the 10 days are counted, time zone | BR-02 × W3, W4 | BR-02 × W4 | Nearly the same |
+| Cap on the second request amount | BR-04 × W3 | BR-04 × W3 | Same |
+| Team lead approves small requests | BR-06 × W5 | BR-06 × W5 | Same |
+| Constraint on the rejection reason | BR-08 × W1 | BR-08 × W1 | Same |
+| Cancel and approve at the same time | BR-10/11 × W4 | BR-11 × W4 | Nearly the same |
+| Notification email | BR-14 × W3 | BR-14 × W6 | Same topic, different cell |
+| **A delivered COD order** | BR-01 × W3 | — | **B missed it** |
+| **Submitting a request for someone else's order** | BR-01 × W5 | — | **B missed it** |
+| **A support agent with a request above the threshold** | BR-06 × W2 | — | **B missed it** |
+| **What the amount paid includes** | FD-02 × W3 | — | **B missed it** |
+| Original payment method unavailable | (merged into the payment-gateway question) | BR-07 × W3 | Merged differently |
 
-**Đọc kết quả:** phần có trong tài liệu (comment, chữ ẩn, TBD) → 100% trùng chủ đề. Phần phải phán đoán → lệch ô
-(cùng câu nhưng W1/W3/W6 tuỳ lần), và 4 câu hỏi về **người khác / vai trò** (W5), **con số gồm gì** (W3),
-**ngoài phạm vi nhưng vẫn đi được** (W2) chỉ một lần hỏi.
+**Reading the result:** the part that is in the documents (comments, hidden text, TBD) → 100% topic overlap. The part that needs judgment → the cell
+drifts (the same question lands in W1/W3/W6 depending on the run), and 4 questions about **other people / roles** (W5), **what a figure includes** (W3),
+**out of scope but still reachable** (W2) were asked only once.
 
-## Test case bịa mẫu (cho bài nâng cao)
+## Sample invented test case (for the advanced exercise)
+
+The scenario text is kept in Vietnamese (it is quoted data); the English gloss is in parentheses.
 
 ```markdown
 ### TC_ID: REFUND-901
 - **Title**: Verify khách bị khoá chức năng hoàn tiền khi gửi quá nhiều yêu cầu
+  (Verify a customer is locked out of refunds after sending too many requests)
 - **Precondition**:
   - [GIẢ ĐỊNH] Khách đã gửi 5 yêu cầu trong ngày
+    ([ASSUMPTION] The customer has sent 5 requests today)
 - **Test Steps**:
   1. Mở chi tiết đơn hàng Đã giao
   2. Chọn Yêu cầu hoàn tiền
@@ -68,4 +78,7 @@ Nội dung                         A     B   trùng
 - **Tags**: Rule#BR-13, Viewpoint#VP-02, TI#TI-33, Module#REFUND, Manual
 ```
 
-Lint hiện tại chặn 4 lỗi (`[GIẢ ĐỊNH]`, câu thông báo, 15.000.000, 30). `E-REFUND-429` chưa bị chặn.
+(Steps: open the details of a Delivered order · choose Request refund · press Submit request. Data: requested amount 15,000,000 VND; lock duration 30 minutes.
+Expected: the message "You have sent too many requests, please try again after 30 minutes." and error code E-REFUND-429.)
+
+The current lint blocks 4 errors (`[GIẢ ĐỊNH]`, the notification sentence, 15.000.000, 30). `E-REFUND-429` is not yet blocked.

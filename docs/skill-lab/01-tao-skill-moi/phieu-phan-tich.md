@@ -1,66 +1,66 @@
-# Phiếu phân tích — Bài 1: tạo skill mới
+# Analysis sheet — Exercise 1: create a new skill
 
-Học viên: `<tên>` · Nhánh: `lab/<tên>` · Ngày: `<YYYY-MM-DD>`
+Learner: `<name>` · Branch: `lab/<name>` · Date: `<YYYY-MM-DD>`
 
-> Điền theo thứ tự. Ô nào chưa trả lời được thì ghi lý do, không bỏ trống. Phiếu nộp cho giảng viên, không commit.
+> Fill in order. If a cell cannot be answered yet, write the reason — do not leave it blank. The sheet is handed to the instructor, not committed.
 
-## 1. Cây quyết định A / B / C
+## 1. Decision tree A / B / C
 
-| Câu | Đúng / Sai | Lý do (một dòng, chỉ ra file đã tra) |
+| Question | True / False | Reason (one line, name the file you checked) |
 |---|---|---|
-| (1) Chỉ đổi hành vi của một skill đang có? | | |
-| (2) Đã có agent sở hữu đúng mảng việc này? Agent nào? | | |
-| (3) Giao cho agent đó có vượt một vai trò không? (đọc loại file khác · ghi chỗ khác · phải thêm "và cũng…") | | |
-| **Kết luận** | **[A] / [B] / [C]** vào agent `qa-…` | |
+| (1) Does it only change the behavior of an existing skill? | | |
+| (2) Is there already an agent that owns exactly this area? Which agent? | | |
+| (3) Would giving it to that agent exceed one role? (reads another file type · writes elsewhere · needs "and also…") | | |
+| **Conclusion** | **[A] / [B] / [C]** into agent `qa-…` | |
 
-Kết quả `npm run agent:check -- --impact <agent>` (dán):
+Result of `npm run agent:check -- --impact <agent>` (paste):
 
 ```
 ```
 
-## 2. Đặt tầng
+## 2. Layer placement
 
-| Nội dung | Tầng (QA_STANDARD / knowledge / skill / AGENT.md) | Lý do |
+| Content | Layer (QA_STANDARD / knowledge / skill / AGENT.md) | Reason |
 |---|---|---|
-| Luật "CR mới hơn, đã duyệt thì thắng spec" | | |
-| Giá trị ngưỡng mới của một tính năng | | |
-| Cách dò CR → BR/FD/AF → TC và format bảng kết quả | | |
-| Agent này giờ làm thêm việc gì, giao lại cho ai | | |
+| The rule "a newer, approved CR wins over the spec" | | |
+| The new threshold value of a feature | | |
+| How to trace CR → BR/FD/AF → TC and the result table format | | |
+| What extra work this agent now does, and who it hands back to | | |
 
 ## 3. Skill
 
-- Tên file: `qa-system/qa-…/skills/<ten-skill>.md`
-- Số thứ tự deliverable: `__` (tra bảng §2 của `qa-system/workflows/WORKFLOW.md`; lấy số kế tiếp sau số lớn nhất)
-- Đầu vào: …
-- Mục "KHÔNG được": …
+- File name: `qa-system/qa-…/skills/<ten-skill>.md`
+- Deliverable sequence number: `__` (look in table §2 of `qa-system/workflows/WORKFLOW.md`; take the next number after the largest)
+- Inputs: …
+- The "MUST NOT" section: …
 
-## 4. Bảy điểm neo
+## 4. Seven anchor points
 
-| # | Điểm neo | File | Đã sửa gì | Trạng thái (ĐÃ XONG / KHÔNG ÁP DỤNG + lý do) |
+| # | Anchor point | File | What was changed | Status (DONE / NOT APPLICABLE + reason) |
 |---|---|---|---|---|
 | N1 | skill | | | |
-| N2 | AGENT.md của agent | | | |
+| N2 | the agent's AGENT.md | | | |
 | N3 | WORKFLOW.md | | | |
 | N4 | _system_map.json | | | |
 | N5 | qa-lead/AGENT.md (§2 + §5) | | | |
 | N6 | agent-doctor.js | | | |
 | N7 | lint / schema + test | | | |
 
-## 5. Nghiệm thu (dán kết quả thật)
+## 5. Acceptance (paste the real results)
 
-| Kiểm tra | Kết quả |
+| Check | Result |
 |---|---|
 | `npm test` | |
 | `npm run agent:check` | |
 | `npm run map:sync` | |
 | `npm run workflow -- validate` | |
-| Định tuyến: câu *"BA vừa gửi CR, test case nào bị ảnh hưởng?"* gọi đúng skill? | |
-| Lần chạy 1 — danh sách TC bị ảnh hưởng | |
-| Lần chạy 2 — danh sách TC bị ảnh hưởng | |
-| `npm run diff-runs` + giải thích từng khác biệt | |
+| Routing: does the sentence *"The BA just sent a CR, which test cases are affected?"* call the right skill? | |
+| Run 1 — list of affected TCs | |
+| Run 2 — list of affected TCs | |
+| `npm run diff-runs` + explanation of each difference | |
 
-## 6. Commit
+## 6. Commits
 
-| Commit | Gồm | Đưa sang develop? |
+| Commit | Contains | Goes to develop? |
 |---|---|---|
 | | | |

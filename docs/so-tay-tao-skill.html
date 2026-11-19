@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sổ tay tạo skill qa-system</title>
+<title>qa-system skill-authoring handbook</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Bố cục: một cột ~1000px; sơ đồ quy trình SVG ở đầu; mỗi bước là một khối có số thứ tự thật (quy trình tuần tự). */
+/* Layout: one ~1000px column; the SVG process diagram on top; each step is a block with a real sequence number (a sequential process). */
 :root {
   --bg: #f3f5f8;
   --surface: #ffffff;
@@ -128,46 +128,46 @@ button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
 <div class="wrap">
 
 <header class="hero">
-  <div class="kicker">qa-system · tạo mới / chỉnh sửa skill</div>
-  <h1>Sổ tay tạo skill qa-system</h1>
-  <p class="lede">Một skill viết sai có thể làm AI bịa dữ liệu, làm lệch kết quả giữa các lần chạy, hoặc làm gãy cổng kiểm của cả hệ thống. Trang này là quy trình 6 bước để thêm hoặc sửa skill mà hệ thống vẫn chạy đúng như cũ.</p>
+  <div class="kicker">qa-system · create / edit a skill</div>
+  <h1>qa-system skill-authoring handbook</h1>
+  <p class="lede">A badly written skill can make the AI invent data, make results drift between runs, or break the checking gates of the whole system. This page is a 6-step process for adding or editing a skill while the system keeps running exactly as before.</p>
   <div class="rules3">
-    <div><b>Không sửa tay</b><span>Giao cho QA Leader qua quy trình <code>system-upgrade-governance</code>.</span></div>
-    <div><b>Duyệt trước, làm sau</b><span>Xem bảng phân tích và danh sách file bị ảnh hưởng rồi mới cho sửa.</span></div>
-    <div><b>Xong là có bằng chứng</b><span>Test xanh, kiểm toàn vẹn sạch, chạy thật hai lần ra cùng kết quả.</span></div>
+    <div><b>Never edit by hand</b><span>Delegate to the QA Leader through the <code>system-upgrade-governance</code> process.</span></div>
+    <div><b>Approve first, act after</b><span>Read the analysis table and the list of affected files before allowing any edit.</span></div>
+    <div><b>Done means evidence</b><span>Tests green, integrity check clean, two real runs giving the same result.</span></div>
   </div>
 </header>
 
 <section>
-  <h2>Toàn bộ quy trình</h2>
+  <h2>The whole process</h2>
   <div class="diagram">
-    <svg viewBox="0 0 980 190" role="img" aria-label="Sáu bước: phân tích, đặt tầng, viết skill, lan truyền 7 điểm neo, nghiệm thu, commit">
+    <svg viewBox="0 0 980 190" role="img" aria-label="Six steps: analyze, place the layer, write the skill, propagate to 7 anchor points, accept, commit">
       <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--muted)"/></marker></defs>
       <g style="font-family: var(--font)">
         <g style="font-size: 13px">
           <rect x="8" y="40" width="138" height="70" rx="12" style="fill: var(--accent-soft); stroke: var(--accent)"/>
-          <text x="77" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">1 · Phân tích</text>
-          <text x="77" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">A / B / C · ảnh hưởng</text>
+          <text x="77" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">1 · Analyze</text>
+          <text x="77" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">A / B / C · impact</text>
 
           <rect x="172" y="40" width="138" height="70" rx="12" style="fill: var(--surface); stroke: var(--accent)"/>
-          <text x="241" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">2 · Đặt tầng</text>
-          <text x="241" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">luật · skill · tri thức</text>
+          <text x="241" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">2 · Place layer</text>
+          <text x="241" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">rule · skill · knowledge</text>
 
           <rect x="336" y="40" width="138" height="70" rx="12" style="fill: var(--surface); stroke: var(--accent)"/>
-          <text x="405" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">3 · Viết skill</text>
-          <text x="405" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">theo khuôn + 7 luật</text>
+          <text x="405" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">3 · Write skill</text>
+          <text x="405" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">template + 7 rules</text>
 
           <rect x="500" y="40" width="138" height="70" rx="12" style="fill: var(--surface); stroke: var(--accent)"/>
-          <text x="569" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">4 · Lan truyền</text>
-          <text x="569" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">đủ 7 điểm neo</text>
+          <text x="569" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">4 · Propagate</text>
+          <text x="569" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">all 7 anchor points</text>
 
           <rect x="664" y="40" width="138" height="70" rx="12" style="fill: var(--surface); stroke: var(--accent)"/>
-          <text x="733" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">5 · Nghiệm thu</text>
-          <text x="733" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">lệnh + chạy thật × 2</text>
+          <text x="733" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">5 · Accept</text>
+          <text x="733" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">commands + real runs × 2</text>
 
           <rect x="828" y="40" width="144" height="70" rx="12" style="fill: var(--good-soft); stroke: var(--good)"/>
           <text x="900" y="68" text-anchor="middle" style="fill: var(--fg); font-weight: 700">6 · Commit</text>
-          <text x="900" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">tách tool / dữ liệu</text>
+          <text x="900" y="88" text-anchor="middle" style="fill: var(--muted); font-size: 11.5px">split tool / data</text>
         </g>
         <g style="stroke: var(--muted); stroke-width: 1.5; fill: none">
           <line x1="146" y1="75" x2="168" y2="75" marker-end="url(#ah)"/>
@@ -178,9 +178,9 @@ button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
           <path d="M733 110 C 733 165, 405 165, 405 114" marker-end="url(#ah)"/>
         </g>
         <rect x="490" y="148" width="158" height="30" rx="8" style="fill: var(--bad-soft)"/>
-        <text x="569" y="168" text-anchor="middle" style="fill: var(--bad); font-size: 12px; font-weight: 700">đỏ ở đâu thì quay lại sửa</text>
+        <text x="569" y="168" text-anchor="middle" style="fill: var(--bad); font-size: 12px; font-weight: 700">wherever it is red, go back and fix</text>
         <rect x="18" y="6" width="118" height="26" rx="8" style="fill: var(--warn-soft)"/>
-        <text x="77" y="24" text-anchor="middle" style="fill: var(--warn); font-size: 12px; font-weight: 700">bạn duyệt tại đây</text>
+        <text x="77" y="24" text-anchor="middle" style="fill: var(--warn); font-size: 12px; font-weight: 700">you approve here</text>
       </g>
     </svg>
   </div>
@@ -189,77 +189,77 @@ button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
 <section class="step">
   <div class="n">1</div>
   <div class="body">
-    <h2>Phân tích trước, chưa sửa file nào</h2>
-    <p>Nói với AI: <code>Nâng cấp skill &lt;tên&gt;: &lt;muốn thay đổi gì&gt;. Chạy chế độ PHAN_TICH trước.</code> AI trả lời ba câu hỏi theo thứ tự, gặp câu nào đúng thì dừng ở đó:</p>
+    <h2>Analyze first, edit no file yet</h2>
+    <p>Tell the AI: <code>Upgrade skill &lt;name&gt;: &lt;what you want to change&gt;. Run PHAN_TICH (analysis) mode first.</code> The AI answers three questions in order and stops at the first one that is true:</p>
     <div class="tree">
-      <div class="q"><span>Chỉ đổi cách làm của một skill đã có? (thêm cột, siết luật, đổi format)</span><span class="ans"><span class="pill a">Có → C · sửa tại chỗ</span></span></div>
-      <div class="q"><span>Đã có agent nào lo đúng mảng việc này chưa?</span><span class="ans"><span class="pill w">Chưa → B · agent mới</span></span></div>
-      <div class="q"><span>Giao thêm việc này thì agent đó có phải đọc loại file khác, ghi vào chỗ khác, hoặc kiêm thêm vai trò không?</span><span class="ans"><span class="pill w">Có → B</span><span class="pill a">Không → A · thêm skill</span></span></div>
+      <div class="q"><span>Only changes how an existing skill works? (add a column, tighten a rule, change a format)</span><span class="ans"><span class="pill a">Yes → C · edit in place</span></span></div>
+      <div class="q"><span>Is there already an agent that handles exactly this area?</span><span class="ans"><span class="pill w">No → B · new agent</span></span></div>
+      <div class="q"><span>If this work is given to that agent, must it read another kind of file, write somewhere else, or take on another role?</span><span class="ans"><span class="pill w">Yes → B</span><span class="pill a">No → A · add a skill</span></span></div>
     </div>
-    <p>Kèm theo là danh sách bước bị ảnh hưởng (<code>npm run agent:check -- --impact &lt;agent&gt;</code>). <b>Bạn đọc bảng này rồi mới cho làm.</b> Ưu tiên A hoặc C; chỉ dựng agent mới khi thật cần, vì càng nhiều agent thì QA Leader càng khó điều phối.</p>
+    <p>It comes with the list of affected steps (<code>npm run agent:check -- --impact &lt;agent&gt;</code>). <b>You read this table, and only then allow the work.</b> Prefer A or C; build a new agent only when really needed, because the more agents there are, the harder it is for the QA Leader to coordinate.</p>
   </div>
 </section>
 
 <section class="step">
   <div class="n">2</div>
   <div class="body">
-    <h2>Đặt nội dung vào đúng chỗ</h2>
-    <p>Đây là lỗi hay gặp nhất. Cùng một câu, đặt sai chỗ là thành chuyện khác hẳn.</p>
+    <h2>Put content in the right place</h2>
+    <p>This is the most common mistake. The same sentence put in the wrong place becomes something entirely different.</p>
     <div class="tbl"><table>
-      <thead><tr><th>Nội dung là…</th><th>Để ở</th><th>Vì sao</th></tr></thead>
+      <thead><tr><th>The content is…</th><th>Put it in</th><th>Why</th></tr></thead>
       <tbody>
-        <tr><td>Luật mọi skill phải theo, hoặc bảng từ 2 skill trở lên dùng</td><td><code>qa-system/core/QA_STANDARD.md</code></td><td>Một luật chỉ nằm một chỗ. Skill ghi "theo QA_STANDARD §4", không chép lại</td></tr>
-        <tr><td>Giá trị, thông báo, ngưỡng của một tính năng cụ thể</td><td><code>knowledge/features/&lt;slug&gt;.md</code></td><td>Để trong skill thì AI coi là sự thật cho <i>mọi</i> tính năng</td></tr>
-        <tr><td>Cách làm, tham số, mẫu output của riêng việc này</td><td><code>qa-system/qa-&lt;agent&gt;/skills/&lt;tên&gt;.md</code></td><td>Skill là "làm thế nào"</td></tr>
-        <tr><td>Agent là ai, được làm gì, giao lại cho ai</td><td><code>qa-system/qa-&lt;agent&gt;/AGENT.md</code></td><td>Danh tính và ranh giới</td></tr>
+        <tr><td>A rule every skill must follow, or a table used by 2 or more skills</td><td><code>qa-system/core/QA_STANDARD.md</code></td><td>A rule lives in one place only. The skill writes "per QA_STANDARD §4" and does not copy it</td></tr>
+        <tr><td>Values, messages, thresholds of one specific feature</td><td><code>knowledge/features/&lt;slug&gt;.md</code></td><td>If left in a skill, the AI treats it as truth for <i>every</i> feature</td></tr>
+        <tr><td>The method, parameters, output sample of this task only</td><td><code>qa-system/qa-&lt;agent&gt;/skills/&lt;name&gt;.md</code></td><td>A skill is "how to do it"</td></tr>
+        <tr><td>Who the agent is, what it may do, whom it hands back to</td><td><code>qa-system/qa-&lt;agent&gt;/AGENT.md</code></td><td>Identity and boundaries</td></tr>
       </tbody>
     </table></div>
-    <p class="muted">Sửa <code>QA_STANDARD.md</code> là thay đổi luật của cả hệ thống, nên người phải quyết, không để AI tự làm.</p>
+    <p class="muted">Editing <code>QA_STANDARD.md</code> changes the rules of the whole system, so a human must decide; do not let the AI do it on its own.</p>
   </div>
 </section>
 
 <section class="step">
   <div class="n">3</div>
   <div class="body">
-    <h2>Viết skill theo khuôn có sẵn</h2>
-    <p>Luôn bắt đầu từ <code>qa-system/templates/skills/ten-skill.md</code>. Một skill chuẩn có đủ các phần sau:</p>
+    <h2>Write the skill from the existing template</h2>
+    <p>Always start from <code>qa-system/templates/skills/ten-skill.md</code>. A standard skill has all of the following parts. (The template's section headings such as <code>Mục đích</code> = Purpose, <code>Đầu vào</code> = Inputs, <code>KHÔNG được</code> = MUST NOT, <code>Các bước</code> = Steps, <code>Format output</code>, <code>Chốt chặn nghiệm thu</code> = Acceptance checkpoint are kept verbatim in Vietnamese because tools and agents parse them.)</p>
 <pre>---
 name: ten-skill
-description: Một câu: làm gì, đọc gì, ra file gì
+description: One sentence: does what, reads what, outputs which file
 ---
 # Skill: ten-skill
-&gt; Tuân thủ QA_STANDARD (§1 · §2 · §3 · §7 · §9 · §10)   <span class="anno">← trỏ số mục, không chép luật</span>
+&gt; Tuân thủ QA_STANDARD (§1 · §2 · §3 · §7 · §9 · §10)   <span class="anno">← point to section numbers, do not copy rules</span>
 
-## Mục đích                                             <span class="anno">← 1–3 câu</span>
+## Mục đích                                             <span class="anno">← 1–3 sentences</span>
 ## Đầu vào
 - OUTPUT/&lt;slug&gt;/0N_….md
-- knowledge/_project.md · knowledge/features/&lt;slug&gt;.md  <span class="anno">← luôn có</span>
-&gt; Thiếu đầu vào → DỪNG                                  <span class="anno">← không tự tưởng tượng</span>
-## KHÔNG được (riêng skill này)                         <span class="anno">← ranh giới với bước sau</span>
-## Các bước                                             <span class="anno">← việc máy làm được thì gọi lệnh</span>
+- knowledge/_project.md · knowledge/features/&lt;slug&gt;.md  <span class="anno">← always present</span>
+&gt; Thiếu đầu vào → DỪNG (missing input → STOP)           <span class="anno">← never imagine</span>
+## KHÔNG được (riêng skill này)                         <span class="anno">← boundary with the next step</span>
+## Các bước                                             <span class="anno">← if a machine can do it, call a command</span>
 ## Format output
 # &lt;Tên&gt; · &lt;slug&gt;
-Owner: … · Nguồn: … · Verdict: PASS                     <span class="anno">← dòng 2: máy đọc dòng này</span>
-| ID | … | Nguồn |                                      <span class="anno">← mọi bảng có cột nguồn</span>
-## Chốt chặn nghiệm thu                                 <span class="anno">← checklist kiểm được</span></pre>
-    <h3>Bảy luật để skill không làm AI bịa</h3>
+Owner: … · Nguồn: … · Verdict: PASS                     <span class="anno">← line 2: machines read this line</span>
+| ID | … | Nguồn |                                      <span class="anno">← every table has a source column</span>
+## Chốt chặn nghiệm thu                                 <span class="anno">← a checkable checklist</span></pre>
+    <h3>Seven rules so a skill does not make the AI invent</h3>
     <div class="rulegrid">
-      <div class="rule"><h3>1. Ví dụ phải trung tính</h3>
-        <div class="ex"><div class="bad"><b>Sai</b>"Ví dụ: khoá tài khoản 15 phút sau 5 lần sai"</div><div class="good"><b>Đúng</b>"Ví dụ: <code>&lt;field&gt;</code> khoá sau <code>&lt;n&gt;</code> lần (<code>BR-01</code>)"</div></div>
-        <p class="muted">Bản cũ từng chép số liệu voucher sang tính năng hoàn tiền vì lý do này.</p></div>
-      <div class="rule"><h3>2. Thiếu thì ghi nhãn</h3>
-        <div class="ex"><div class="bad"><b>Sai</b>"Nếu không có, dùng giá trị hợp lý"</div><div class="good"><b>Đúng</b>"Không có trong nguồn ⇒ <code>[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]</code>"</div></div></div>
-      <div class="rule"><h3>3. Không đặt chỉ tiêu số lượng</h3>
-        <div class="ex"><div class="bad"><b>Sai</b>"Sinh ít nhất 5 câu hỏi / 20 test case"</div><div class="good"><b>Đúng</b>"Quét hết bảng thì dừng; số lượng do tài liệu quyết định"</div></div></div>
-      <div class="rule"><h3>4. Máy làm được thì giao máy</h3>
-        <div class="ex"><div class="bad"><b>Sai</b>"Tự đánh số BR-01, BR-02…", "tự tính điểm biên"</div><div class="good"><b>Đúng</b>"Ghi <code>BR-?</code> rồi chạy <code>npm run ids --assign</code>"; "chép từ <code>npm run boundary</code>"</div></div></div>
-      <div class="rule"><h3>5. Một file output, có dòng meta</h3>
-        <div class="ex"><div class="bad"><b>Sai</b>Ghi nhiều file, hoặc verdict in đậm ở dòng 5</div><div class="good"><b>Đúng</b>Dòng 2: <code>Owner: … · Nguồn: … · Verdict: PASS</code></div></div></div>
-      <div class="rule"><h3>6. Câu hỏi phải là câu đóng</h3>
-        <div class="ex"><div class="bad"><b>Sai</b>"Hệ thống xử lý thế nào?"</div><div class="good"><b>Đúng</b>"Ngày giao là ngày 0 hay ngày 1 (A/B)?"</div></div></div>
-      <div class="rule"><h3>7. Skill và tool không được nói ngược nhau</h3>
-        <div class="ex"><div class="bad"><b>Sai</b>Skill dặn "không quét lại", còn lint bắt quét</div><div class="good"><b>Đúng</b>Đổi format thì sửa luôn lint/schema và thêm test, trong cùng một lần</div></div>
-        <p class="muted">Lỗi này có thật, phát hiện ở lần chạy thử hoàn tiền.</p></div>
+      <div class="rule"><h3>1. Examples must be neutral</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>"Example: lock the account for 15 minutes after 5 failures"</div><div class="good"><b>Right</b>"Example: <code>&lt;field&gt;</code> locks after <code>&lt;n&gt;</code> attempts (<code>BR-01</code>)"</div></div>
+        <p class="muted">An older version once copied voucher figures into the refund feature for exactly this reason.</p></div>
+      <div class="rule"><h3>2. If missing, write the label</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>"If absent, use a reasonable value"</div><div class="good"><b>Right</b>"Not in the source ⇒ <code>[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]</code>" (the fixed label meaning "not in the document")</div></div></div>
+      <div class="rule"><h3>3. Set no quantity targets</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>"Generate at least 5 questions / 20 test cases"</div><div class="good"><b>Right</b>"Stop once the table is fully scanned; the quantity is decided by the documents"</div></div></div>
+      <div class="rule"><h3>4. If a machine can do it, give it to the machine</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>"Number BR-01, BR-02… yourself", "compute boundary points yourself"</div><div class="good"><b>Right</b>"Write <code>BR-?</code> then run <code>npm run ids --assign</code>"; "copy from <code>npm run boundary</code>"</div></div></div>
+      <div class="rule"><h3>5. One output file, with a meta line</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>Writing several files, or a bold verdict on line 5</div><div class="good"><b>Right</b>Line 2: <code>Owner: … · Nguồn: … · Verdict: PASS</code> (<code>Nguồn</code> = source, kept verbatim: tools parse it)</div></div></div>
+      <div class="rule"><h3>6. Questions must be closed questions</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>"How does the system handle it?"</div><div class="good"><b>Right</b>"Is the delivery date day 0 or day 1 (A/B)?"</div></div></div>
+      <div class="rule"><h3>7. A skill and a tool must not contradict each other</h3>
+        <div class="ex"><div class="bad"><b>Wrong</b>The skill says "do not rescan" while lint demands a rescan</div><div class="good"><b>Right</b>When the format changes, edit lint/schema and add tests in the same pass</div></div>
+        <p class="muted">This bug was real, found in the refund trial run.</p></div>
     </div>
   </div>
 </section>
@@ -267,53 +267,53 @@ Owner: … · Nguồn: … · Verdict: PASS                     <span class="ann
 <section class="step">
   <div class="n">4</div>
   <div class="body">
-    <h2>Cập nhật đủ 7 chỗ liên quan</h2>
-    <p>Sửa xong file skill mới chỉ được một nửa việc. Hệ thống tìm và gọi skill qua 7 chỗ dưới đây; sót chỗ nào thì skill "có mà như không", hoặc cổng kiểm báo sai.</p>
+    <h2>Update all 7 related places</h2>
+    <p>Finishing the skill file is only half the job. The system finds and calls a skill through the 7 places below; miss one and the skill "exists but is as good as absent", or the check gate reports wrongly.</p>
     <div class="tbl"><table>
-      <thead><tr><th>#</th><th>Chỗ cần sửa</th><th>Sửa gì</th><th>A</th><th>B</th><th>C</th></tr></thead>
+      <thead><tr><th>#</th><th>Place to edit</th><th>What to edit</th><th>A</th><th>B</th><th>C</th></tr></thead>
       <tbody>
-        <tr><td>N1</td><td><code>skills/&lt;tên&gt;.md</code></td><td>Nội dung skill theo khuôn</td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill ok">có</span></td></tr>
-        <tr><td>N2</td><td><code>qa-&lt;agent&gt;/AGENT.md</code></td><td>Thêm vào "Skill sở hữu", tên khớp đúng tên file</td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill ok">có</span></td><td class="c">—</td></tr>
-        <tr><td>N3</td><td><code>workflows/WORKFLOW.md</code></td><td>Bảng chặng: agent, skill, vào, ra</td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill w">nếu đổi vào/ra</span></td></tr>
-        <tr><td>N4</td><td><code>knowledge/_system_map.json</code></td><td>Đường dẫn tra cứu (<code>npm run map:sync</code>)</td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill ok">có</span></td><td class="c">—</td></tr>
-        <tr><td>N5</td><td><code>qa-lead/AGENT.md</code></td><td>Ma trận điều phối + câu người dùng hay nói để gọi tới</td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill ok">có</span></td><td class="c"><span class="pill w">nếu đổi đầu ra</span></td></tr>
-        <tr><td>N6</td><td><code>tools/system/agent-doctor.js</code></td><td>Khai skill sinh file gì, ai dùng file đó</td><td class="c"><span class="pill w">nếu có file mới</span></td><td class="c"><span class="pill ok">có</span></td><td class="c">—</td></tr>
-        <tr><td>N7</td><td><code>lint-deliverables.js</code> · <code>lib/schema.js</code></td><td>Luật kiểm + bộ đọc cho format mới, kèm test</td><td class="c"><span class="pill w">nếu tool đọc</span></td><td class="c"><span class="pill w">nếu tool đọc</span></td><td class="c"><span class="pill w">nếu đổi format</span></td></tr>
+        <tr><td>N1</td><td><code>skills/&lt;name&gt;.md</code></td><td>The skill content following the template</td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill ok">yes</span></td></tr>
+        <tr><td>N2</td><td><code>qa-&lt;agent&gt;/AGENT.md</code></td><td>Add to "Skill sở hữu" (owned skills), the name matching the file name exactly</td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill ok">yes</span></td><td class="c">—</td></tr>
+        <tr><td>N3</td><td><code>workflows/WORKFLOW.md</code></td><td>Stage table: agent, skill, input, output</td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill w">if input/output changes</span></td></tr>
+        <tr><td>N4</td><td><code>knowledge/_system_map.json</code></td><td>Lookup paths (<code>npm run map:sync</code>)</td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill ok">yes</span></td><td class="c">—</td></tr>
+        <tr><td>N5</td><td><code>qa-lead/AGENT.md</code></td><td>The coordination matrix + the phrases users commonly say to reach it</td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill ok">yes</span></td><td class="c"><span class="pill w">if the output changes</span></td></tr>
+        <tr><td>N6</td><td><code>tools/system/agent-doctor.js</code></td><td>Declare which file the skill produces and who uses that file</td><td class="c"><span class="pill w">if there is a new file</span></td><td class="c"><span class="pill ok">yes</span></td><td class="c">—</td></tr>
+        <tr><td>N7</td><td><code>lint-deliverables.js</code> · <code>lib/schema.js</code></td><td>Check rules + a reader for the new format, with tests</td><td class="c"><span class="pill w">if a tool reads it</span></td><td class="c"><span class="pill w">if a tool reads it</span></td><td class="c"><span class="pill w">if the format changes</span></td></tr>
       </tbody>
     </table></div>
-    <p class="muted">Skill sinh file output mới thì cấp số thứ tự kế tiếp chưa dùng trong <code>WORKFLOW.md</code>. Không chèn giữa, không dùng lại số cũ. Không xoá skill cũ để "dọn cho gọn"; gỡ bỏ là việc người quyết.</p>
+    <p class="muted">A skill that produces a new output file gets the next unused sequence number in <code>WORKFLOW.md</code>. Do not insert in the middle, do not reuse an old number. Do not delete an old skill to "tidy up"; removal is for a human to decide.</p>
   </div>
 </section>
 
 <section class="step">
   <div class="n">5</div>
   <div class="body">
-    <h2>Nghiệm thu: chạy lệnh, rồi chạy thật</h2>
-    <h3>a. Bốn lệnh phải xanh</h3>
+    <h2>Acceptance: run the commands, then run for real</h2>
+    <h3>a. Four commands must be green</h3>
     <div class="cmds">
-      <div class="cmd"><code>npm test</code><span>Toàn bộ test tool xanh. Có sửa tool thì phải thêm test mới.</span></div>
-      <div class="cmd"><code>npm run agent:check</code><span>Báo INTACT: skill khai báo đều có file thật, các chỗ khớp nhau.</span></div>
-      <div class="cmd"><code>npm run map:sync</code><span>Bản đồ hệ thống có mục mới.</span></div>
-      <div class="cmd"><code>npm run workflow -- validate</code><span>Không workflow nào lách cổng.</span></div>
+      <div class="cmd"><code>npm test</code><span>All tool tests are green. If you edited a tool you must add new tests.</span></div>
+      <div class="cmd"><code>npm run agent:check</code><span>Reports INTACT: every declared skill has a real file, and the places agree with each other.</span></div>
+      <div class="cmd"><code>npm run map:sync</code><span>The system map has the new entry.</span></div>
+      <div class="cmd"><code>npm run workflow -- validate</code><span>No workflow bypasses a gate.</span></div>
     </div>
-    <h3>b. Chạy thật hai lần trên bộ đề chuẩn</h3>
-    <p>Bộ đề nằm trong repo ở <code>docs/skill-lab/de-bai/</code> (tính năng hoàn tiền): 9 tài liệu cài sẵn bẫy gồm hai phiên bản SRS, comment, chỉnh sửa chưa duyệt, dòng Excel bị ẩn, CR đổi giá trị. Kết quả chuẩn để đối chiếu nằm ở <code>docs/skill-lab/01-tao-skill-moi/du-lieu/</code>.</p>
+    <h3>b. Two real runs on the standard assignment set</h3>
+    <p>The assignment set is in the repo at <code>docs/skill-lab/de-bai/</code> (the refund feature; the scenario documents are in Vietnamese): 9 documents with planted traps including two SRS versions, comments, unapproved edits, a hidden Excel row, and a CR that changes a value. The reference results to compare against are in <code>docs/skill-lab/01-tao-skill-moi/du-lieu/</code>.</p>
     <ol class="plain">
-      <li>Nạp đề vào một task mới: <code>npm run intake -- docs/skill-lab/de-bai --slug &lt;tên&gt; --force</code>, rồi chạy pipeline tới chặng mà skill ảnh hưởng.</li>
-      <li>Chạy <b>hai lần, mỗi lần một phiên mới</b>, rồi so: <code>npm run diff-runs -- &lt;lần 1&gt; &lt;lần 2&gt;</code>.</li>
-      <li>Mỗi chỗ khác nhau phải giải thích được bằng một câu trong skill. Không giải thích được nghĩa là skill còn chỗ để AI tự sáng tác: quay lại bước 3.</li>
-      <li>Đối chiếu với kết quả chuẩn: <code>npm run lint</code> sạch, <code>npm run gate</code> đóng/mở đúng lúc, 9/9 bẫy vẫn được bắt.</li>
-      <li>Chạy lại một chặng cũ <b>không liên quan</b> để chắc luồng cũ vẫn ra như trước.</li>
+      <li>Load the assignment into a new task: <code>npm run intake -- docs/skill-lab/de-bai --slug &lt;name&gt; --force</code>, then run the pipeline up to the stage the skill affects.</li>
+      <li>Run <b>twice, each in a fresh session</b>, then compare: <code>npm run diff-runs -- &lt;run 1&gt; &lt;run 2&gt;</code>.</li>
+      <li>Every difference must be explainable by a sentence in the skill. If it cannot be explained, the skill still leaves room for the AI to invent: go back to step 3.</li>
+      <li>Compare with the reference results: <code>npm run lint</code> clean, <code>npm run gate</code> closing/opening at the right time, 9/9 traps still caught.</li>
+      <li>Re-run an <b>unrelated</b> older stage to be sure the old flow still comes out as before.</li>
     </ol>
-    <h3>c. Năm điều kiện cho skill mới hoặc skill vừa sửa</h3>
+    <h3>c. Five conditions for a new or just-edited skill</h3>
     <div class="tbl"><table>
-      <thead><tr><th></th><th>Điều kiện</th><th>Cách kiểm</th></tr></thead>
+      <thead><tr><th></th><th>Condition</th><th>How to check</th></tr></thead>
       <tbody>
-        <tr><td>a</td><td>Trỏ tới luật, không chép luật</td><td>Không có bảng verdict, nhãn, FACT, 06W nào chép lại; chỉ có "QA_STANDARD §n"</td></tr>
-        <tr><td>b</td><td>Khai đủ đầu vào, gồm tri thức</td><td>Có <code>_project.md</code> và <code>features/&lt;slug&gt;.md</code></td></tr>
-        <tr><td>c</td><td>Máy đọc được output</td><td>Dòng meta đúng; bảng có cột nguồn; mã lấy từ <code>npm run ids</code></td></tr>
-        <tr><td>d</td><td>Hai lần chạy cho cùng kết quả</td><td><code>diff-runs</code>, mọi khác biệt giải thích được</td></tr>
-        <tr><td>e</td><td>Không có ví dụ của dự án thật</td><td>Chỉ dùng chỗ giữ chỗ như <code>&lt;field&gt;</code>, <code>BR-01</code></td></tr>
+        <tr><td>a</td><td>Points to rules, does not copy rules</td><td>No verdict, label, FACT or 06W table is copied; only "QA_STANDARD §n"</td></tr>
+        <tr><td>b</td><td>Declares all inputs, including knowledge</td><td>Has <code>_project.md</code> and <code>features/&lt;slug&gt;.md</code></td></tr>
+        <tr><td>c</td><td>Machines can read the output</td><td>The meta line is correct; tables have a source column; ids come from <code>npm run ids</code></td></tr>
+        <tr><td>d</td><td>Two runs give the same result</td><td><code>diff-runs</code>, every difference explainable</td></tr>
+        <tr><td>e</td><td>No examples from a real project</td><td>Use only placeholders such as <code>&lt;field&gt;</code>, <code>BR-01</code></td></tr>
       </tbody>
     </table></div>
   </div>
@@ -322,61 +322,61 @@ Owner: … · Nguồn: … · Verdict: PASS                     <span class="ann
 <section class="step">
   <div class="n">6</div>
   <div class="body">
-    <h2>Commit gọn, tách đúng phần</h2>
+    <h2>Commit tidily, split the right parts</h2>
     <ul class="plain">
-      <li>Làm trên <b>nhánh riêng</b>, không sửa thẳng trên develop.</li>
-      <li>Tách hai commit: <b>phần sửa <code>qa-system/</code></b> và <b>phần dữ liệu chạy thử</b> (<code>INPUT/</code>, <code>OUTPUT/</code>, <code>knowledge/features/</code>). Chỉ commit sửa hệ thống được đưa sang develop.</li>
-      <li>Pre-commit tự chạy lint trước mỗi commit. <b>Không dùng <code>--no-verify</code></b> để lách.</li>
-      <li>Biên bản nâng cấp (bảng A/B/C, 7 chỗ đã sửa, kết quả lệnh) để ngoài repo.</li>
+      <li>Work on a <b>separate branch</b>, never edit directly on develop.</li>
+      <li>Split into two commits: <b>the <code>qa-system/</code> edits</b> and <b>the trial-run data</b> (<code>INPUT/</code>, <code>OUTPUT/</code>, <code>knowledge/features/</code>). Only the system-edit commit goes over to develop.</li>
+      <li>The pre-commit hook runs lint before every commit. <b>Do not use <code>--no-verify</code></b> to bypass it.</li>
+      <li>The upgrade record (A/B/C table, the 7 places edited, command results) is kept outside the repo.</li>
     </ul>
   </div>
 </section>
 
 <section>
-  <h2>Những lỗi đã gặp thật, đừng lặp lại</h2>
+  <h2>Mistakes that really happened, do not repeat them</h2>
   <div class="lesson">
-    <div><b>Ví dụ thành dữ liệu</b><span>Tri thức mẫu có "trần 500.000" của voucher, bị chép sang tính năng hoàn tiền. Ngưỡng tự duyệt của hoàn tiền cũng là 500.000, nên rất dễ nhầm.</span></div>
-    <div><b>Skill nói một đằng, tool kiểm một nẻo</b><span>Skill 02 dặn không quét lại, còn lint bắt rule mới phải có hàng ma trận. AI bị kẹt giữa hai luật.</span></div>
-    <div><b>Chỉ tiêu số lượng</b><span>"Ít nhất 5 câu hỏi" làm mỗi lần chạy ra một bộ câu hỏi khác nhau.</span></div>
-    <div><b>Thông tin đặt sai mục</b><span>Thông báo thành công chỉ ghi ở mục Happy Path, mà máy kiểm không đọc mục đó, nên test case đúng cũng bị chặn.</span></div>
-    <div><b>Đường dẫn chết</b><span>Skill trỏ tới thư mục <code>agents/</code> không còn tồn tại, nên skill mới được tạo ra chỗ không ai đọc.</span></div>
-    <div><b>Test xanh chưa chắc đã đúng</b><span>331 test đơn vị đều xanh, nhưng chạy thật vẫn lộ 8 lỗi. Bước chạy thật hai lần là bắt buộc.</span></div>
+    <div><b>An example turned into data</b><span>A sample knowledge file had a voucher "cap of 500.000" that was copied into the refund feature. The refund auto-approval threshold is also 500.000, so it was very easy to confuse.</span></div>
+    <div><b>The skill says one thing, the tool checks another</b><span>Skill 02 said not to rescan, while lint demanded that a new rule have a matrix row. The AI was stuck between two rules.</span></div>
+    <div><b>Quantity targets</b><span>"At least 5 questions" made every run produce a different set of questions.</span></div>
+    <div><b>Information in the wrong section</b><span>The success message was written only in the Happy Path section, which the checker does not read, so even a correct test case was blocked.</span></div>
+    <div><b>A dead path</b><span>A skill pointed to an <code>agents/</code> folder that no longer exists, so the new skill was created where nobody reads it.</span></div>
+    <div><b>Green tests are not necessarily right</b><span>331 unit tests were all green, yet running for real still exposed 8 bugs. The two-real-runs step is mandatory.</span></div>
   </div>
 </section>
 
 <section>
-  <h2>Bài thực hành</h2>
-  <p>Hai bài làm cùng AI, tài nguyên nằm trong repo ở <code>docs/skill-lab/</code>:</p>
+  <h2>Practice exercises</h2>
+  <p>Two exercises done together with the AI; the resources are in the repo at <code>docs/skill-lab/</code>:</p>
   <div class="lesson" style="--x:0">
-    <div style="background: var(--accent-soft)"><b>01-tao-skill-moi/</b><span>Tạo skill "Change Request tác động tới test case nào?" khi chưa biết nó thuộc agent nào. Có CR-08 để chạy thử và phiếu phân tích.</span></div>
-    <div style="background: var(--accent-soft)"><b>02-nang-cap-skill/</b><span>Nâng cấp <code>missing-rule-06w</code> để hai lần chạy hỏi cùng bộ câu hỏi. Có số đo độ lệch thật, bản 01 cố định và cách đo trước/sau.</span></div>
+    <div style="background: var(--accent-soft)"><b>01-tao-skill-moi/</b><span>Create the skill "Which test cases does a Change Request affect?" when you do not yet know which agent it belongs to. Includes CR-08 for trial runs and an analysis sheet.</span></div>
+    <div style="background: var(--accent-soft)"><b>02-nang-cap-skill/</b><span>Upgrade <code>missing-rule-06w</code> so two runs ask the same set of questions. Includes real divergence measurements, a fixed 01, and a before/after measuring method.</span></div>
   </div>
 </section>
 
 <section>
-  <h2>Câu giao việc mẫu</h2>
-  <p>Chép nguyên câu này, thay phần trong ngoặc nhọn, rồi gửi cho AI.</p>
+  <h2>Sample assignment sentence</h2>
+  <p>Copy this sentence verbatim, replace the parts in angle brackets, then send it to the AI.</p>
   <div class="prompt">
-    <div class="top"><span>Giao việc nâng cấp skill</span><button type="button" id="copyBtn">Chép câu này</button></div>
-    <textarea id="promptText" aria-label="Câu giao việc mẫu" spellcheck="false">QA Leader, nâng cấp skill <tên-skill>: <mô tả thay đổi>.
-Làm theo qa-system/qa-lead/skills/system-upgrade-governance.md:
-1. PHAN_TICH: bảng quyết định A/B/C, đặt tầng, danh sách 7 điểm neo, kết quả --impact. Dừng để tôi duyệt.
-2. THI_CONG (sau khi tôi đồng ý): làm trên nhánh riêng, viết theo templates/skills/ten-skill.md, cập nhật đủ 7 điểm neo; đổi format thì sửa lint/schema và thêm test.
-3. NGHIEM_THU: chạy npm test, npm run agent:check, npm run map:sync, npm run workflow -- validate; chạy skill 2 lần (phiên mới) trên bộ đề docs/skill-lab/de-bai và so bằng npm run diff-runs; dán kết quả thật, giải thích từng khác biệt.
-Không sửa QA_STANDARD.md nếu tôi chưa đồng ý. Không đưa ví dụ của dự án thật vào skill.</textarea>
+    <div class="top"><span>Assign a skill upgrade</span><button type="button" id="copyBtn">Copy this sentence</button></div>
+    <textarea id="promptText" aria-label="Sample assignment sentence" spellcheck="false">QA Leader, upgrade skill <skill-name>: <description of the change>.
+Follow qa-system/qa-lead/skills/system-upgrade-governance.md:
+1. PHAN_TICH (analysis): the A/B/C decision table, layer placement, the list of 7 anchor points, the --impact result. Stop for me to approve.
+2. THI_CONG (implementation, after I agree): work on a separate branch, write following templates/skills/ten-skill.md, update all 7 anchor points; if the format changes, edit lint/schema and add tests.
+3. NGHIEM_THU (acceptance): run npm test, npm run agent:check, npm run map:sync, npm run workflow -- validate; run the skill 2 times (fresh sessions) on the assignment set docs/skill-lab/de-bai and compare with npm run diff-runs; paste the real results and explain each difference.
+Do not edit QA_STANDARD.md unless I agree. Do not put examples from a real project into the skill.</textarea>
   </div>
 </section>
 
 <section class="summary">
-  <h2>Nhớ năm điều</h2>
+  <h2>Remember five things</h2>
   <ol>
-    <li><b>Phân tích trước, bạn duyệt rồi mới sửa.</b></li>
-    <li><b>Luật để ở QA_STANDARD, dữ kiện để ở knowledge, skill chỉ giữ cách làm.</b></li>
-    <li><b>Skill không có ví dụ thật, không đặt chỉ tiêu, thiếu thì ghi nhãn.</b></li>
-    <li><b>Sửa đủ 7 chỗ; skill đổi format thì tool đổi theo.</b></li>
-    <li><b>Xong là khi lệnh xanh và chạy thật hai lần ra cùng kết quả.</b></li>
+    <li><b>Analyze first, you approve, and only then edit.</b></li>
+    <li><b>Rules live in QA_STANDARD, facts live in knowledge, a skill keeps only the method.</b></li>
+    <li><b>A skill has no real examples, sets no targets, and writes a label when something is missing.</b></li>
+    <li><b>Edit all 7 places; if a skill changes format, the tools change with it.</b></li>
+    <li><b>Done is when the commands are green and two real runs give the same result.</b></li>
   </ol>
-  <p>Làm đúng năm điều này thì thêm skill nào hệ thống cũng vẫn chạy như cũ, và AI vẫn chỉ được trích hoặc hỏi, không được bịa.</p>
+  <p>Follow these five things and whatever skill you add, the system keeps running as before, and the AI still only quotes or asks, never invents.</p>
 </section>
 
 </div>
@@ -386,8 +386,8 @@ Không sửa QA_STANDARD.md nếu tôi chưa đồng ý. Không đưa ví dụ c
   var btn = document.getElementById('copyBtn');
   var ta = document.getElementById('promptText');
   btn.addEventListener('click', function () {
-    var done = function () { btn.textContent = 'Đã chép'; setTimeout(function () { btn.textContent = 'Chép câu này'; }, 1800); };
-    var fallback = function () { ta.focus(); ta.select(); btn.textContent = 'Đã chọn, nhấn Ctrl/⌘+C'; };
+    var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy this sentence'; }, 1800); };
+    var fallback = function () { ta.focus(); ta.select(); btn.textContent = 'Selected, press Ctrl/⌘+C'; };
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, fallback);
       else fallback();

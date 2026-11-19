@@ -1,17 +1,21 @@
 # <Tên Tính Năng> — Feature Knowledge
 
-> Dữ kiện nghiệp vụ **có nguồn** của một tính năng. Mọi agent đọc file này trước khi chạy.
-> Luật đọc/ghi: `qa-system/core/QA_STANDARD.md` §8. Schema bảng: §9.
+> `<Tên Tính Năng>` = `<Feature Name>` (heading kept verbatim: tools parse it).
+
+> **Sourced** business facts of one feature. Every agent reads this file before running.
+> Read/write rules: `qa-system/core/QA_STANDARD.md` §8. Table schema: §9.
 >
-> File được tạo tự động khi intake (hoặc `npm run knowledge:new <feature-slug>`) và **bắt đầu trống**.
-> Dòng còn `<điền>` hoặc bảng chưa có dòng = chưa khai báo — agent coi như không có, không tự điền giá trị.
+> The file is created automatically at intake (or by `npm run knowledge:new <feature-slug>`) and **starts empty**.
+> A line still containing `<điền>` (placeholder, "to be filled") or a table with no rows = not declared yet — the agent treats it as absent and never fills in values itself.
+>
+> **Headings, table header rows and field labels in this file are intentionally kept in Vietnamese: tools parse them** (gate, lint, schema, knowledge:sync, ids, scaffold). Glossary: `Nguồn tài liệu` = source documents · `Cập nhật lần cuối` = last updated · `Trạng thái tổng thể` = overall status · `Tác nhân` = actor · `Quyền hạn` = permissions · `Điều kiện tiên quyết` = prerequisites · `Nguồn (file §mục)` = source (file §section) · `Trích nguyên văn` = verbatim quote · `Điều kiện` = condition · `Hành vi / Kết quả` = behavior / result · `Kiểu` = type · `Bắt buộc` = required · `Ràng buộc` = constraint · `Thông báo khi sai` = error message · `Tình huống` = situation · `Hệ thống phản hồi` = system response · `Nội dung loại trừ` = excluded item · `Kẽ hở` = gap · `Nhóm 06W` = 06W group · `Nguồn phát hiện` = where found · `Phương án gợi ý` = suggested option · `Câu hỏi cho BA/PO` = question for BA/PO · `Phản hồi chính thức` = official answer · `Người trả lời` = answerer · `Ngày` = date · `Trạng thái` = status · `Mã liên quan` = related id · `Câu hỏi` = question · `Quyết định chính thức` = official decision · `Người phê duyệt` = approver · `Ngày chốt` = date settled · `Hằng số` = constant · `Kiểu dữ liệu` = data type · `Giá trị` = value · `Phạm vi ảnh hưởng` = scope of impact · `Mã` = id · `Ghi chú` = note.
 
 Feature slug: `<feature-slug>` · Nguồn tài liệu: `INPUT/<feature-slug>/` · Cập nhật lần cuối: `<điền>` · Trạng thái tổng thể: `DRAFT`
 
 ---
 
 ## 1. TỔNG QUAN TÍNH NĂNG (FEATURE OVERVIEW)
-<điền — 1–2 câu, kèm nguồn>
+<điền — 1–2 sentences, with source>
 
 ## 2. TÁC NHÂN & PHÂN QUYỀN (ACTORS & ROLES)
 
@@ -19,8 +23,8 @@ Feature slug: `<feature-slug>` · Nguồn tài liệu: `INPUT/<feature-slug>/` �
 |---|---|---|---|
 
 ## 3. QUY TẮC NGHIỆP VỤ ĐÃ XÁC NHẬN (CONFIRMED BUSINESS RULES)
-> Chỉ rule **có nguồn**: tài liệu (kèm trích nguyên văn) hoặc quyết định ở Mục 8 (`knowledge §8 #n`).
-> Điều chưa rõ nằm ở Mục 7.
+> Only **sourced** rules: a document (with a verbatim quote) or a decision in Section 8 (`knowledge §8 #n`).
+> Anything unclear goes in Section 7.
 
 | ID | Điều kiện | Hành vi / Kết quả | Nguồn (file §mục) | Trích nguyên văn | Trạng thái |
 |---|---|---|---|---|---|
@@ -31,7 +35,7 @@ Feature slug: `<feature-slug>` · Nguồn tài liệu: `INPUT/<feature-slug>/` �
 |---|---|---|---|---|---|---|---|
 
 ## 4. LUỒNG CHÍNH (HAPPY PATH)
-<điền — các bước có trong nguồn, kèm nguồn>
+<điền — the steps found in the source, with source>
 
 ## 5. LUỒNG PHỤ & LỖI (ALTERNATE & ERROR FLOWS)
 
@@ -39,28 +43,28 @@ Feature slug: `<feature-slug>` · Nguồn tài liệu: `INPUT/<feature-slug>/` �
 |---|---|---|---|---|
 
 ## 6. NGOÀI PHẠM VI (OUT OF SCOPE)
-> Chỉ những gì nguồn **nói rõ** là không làm, kèm trích nguồn. Điều tài liệu không nhắc tới là câu hỏi (Mục 7), không phải ngoài phạm vi.
+> Only what the source **explicitly says** is not done, with a source quote. What the documents do not mention is a question (Section 7), not out of scope.
 
 | Nội dung loại trừ | Nguồn (file §mục) | Trích nguyên văn |
 |---|---|---|
 
 ## 7. CÂU HỎI MỞ & KẼ HỞ 06W (OPEN QUESTIONS & MISSING RULES)
-> Skill `02` thêm dòng (`New`). Cột `Phản hồi chính thức`, `Người trả lời`, `Ngày`, `Trạng thái` do **con người** điền
-> (hoặc agent chép nguyên văn khi người dùng chuyển lời BA). Trạng thái: `New` → `TREO` → `Confirmed` / `Rejected` (§9.3).
-> Mã `MR-xx` cấp tiếp số lớn nhất đang có — không đánh lại từ 01.
+> Skill `02` adds rows (`New`). The columns `Phản hồi chính thức` (official answer), `Người trả lời` (answerer), `Ngày` (date), `Trạng thái` (status) are filled by **humans**
+> (or the agent copies verbatim when the user relays the BA's words). Status: `New` → `TREO` (pending) → `Confirmed` / `Rejected` (§9.3).
+> `MR-xx` ids continue from the largest number in use — never renumber from 01.
 
 | ID | Kẽ hở | Nhóm 06W | Nguồn phát hiện | Phương án gợi ý (chưa phải rule) | Câu hỏi cho BA/PO | Phản hồi chính thức | Người trả lời | Ngày | Trạng thái |
 |---|---|---|---|---|---|---|---|---|---|
 
 ## 8. QUYẾT ĐỊNH ĐÃ CHỐT (CONFIRMED DECISIONS LOG)
-> Chỉ ghi khi BA/PO đã quyết. Thiếu `Người phê duyệt` hoặc `Ngày chốt` thì tool coi là chưa chốt.
-> Lần chạy sau agent áp dụng luôn, không hỏi lại.
+> Record only when the BA/PO has decided. If `Người phê duyệt` (approver) or `Ngày chốt` (date settled) is missing, the tool treats it as not settled.
+> The next run applies it directly and does not ask again.
 
 | # | Mã liên quan | Câu hỏi | Quyết định chính thức | Người phê duyệt | Ngày chốt |
 |---|---|---|---|---|---|
 
 ## 9. HẰNG SỐ NGHIỆP VỤ (DOMAIN CONSTANTS)
-> Chỉ hằng số có trong nguồn. Dùng cho chuỗi biên và sinh dữ liệu test.
+> Only constants found in the source. Used for boundary strings and test data generation.
 
 | Hằng số | Kiểu dữ liệu | Giá trị | Phạm vi ảnh hưởng | Nguồn (file §mục) |
 |---|---|---|---|---|

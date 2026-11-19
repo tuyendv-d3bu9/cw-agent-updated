@@ -1,31 +1,31 @@
-# Project Knowledge — quy ước dùng cho MỌI feature
+# Project Knowledge — conventions used for EVERY feature
 
-> Tri thức nền cấp **dự án**, do con người khai. Mọi skill đọc file này.
-> Ô còn `<điền>` = **chưa khai báo**: agent coi như không có (`[CONTEXT_MISSING]` / `[CHƯA CÓ TRONG TÀI LIỆU]`),
-> **không** tự lấy giá trị "thường gặp" thay vào. Xem `qa-system/core/QA_STANDARD.md` §8, §10.
+> **Project-level** baseline knowledge, declared by humans. Every skill reads this file.
+> A cell still containing `<điền>` ("to be filled") = **not declared**: the agent treats it as absent (`[CONTEXT_MISSING]` / `[CHƯA CÓ TRONG TÀI LIỆU]`, the fixed label meaning "not in the document"),
+> and **never** substitutes a "typical" value. See `qa-system/core/QA_STANDARD.md` §8, §10.
 
-Dự án: `<điền>` · Cập nhật lần cuối: `<điền>`
+Project (Dự án): `<điền>` · Last updated (Cập nhật lần cuối): `<điền>`
 
 ---
 
-## 1. Quy ước định danh
-| Đối tượng | Format | Ví dụ |
+## 1. Identifier conventions
+| Object | Format | Example |
 |---|---|---|
-| Module prefix cho `TC_ID` (2–6 ký tự hoa) | `<điền>` | `<điền>` |
-| Mã nghiệp vụ (mã đơn, mã giao dịch…) | `<điền>` | `<điền>` |
+| Module prefix for `TC_ID` (2–6 uppercase characters) | `<điền>` | `<điền>` |
+| Business codes (order code, transaction code…) | `<điền>` | `<điền>` |
 
-## 2. Định dạng dữ liệu
-| Loại | Quy ước | Ghi chú |
+## 2. Data formats
+| Type | Convention | Note |
 |---|---|---|
-| Ngày / Giờ | `<điền>` | Chưa khai thì agent dùng `YYYY-MM-DD` cho **tài liệu QA**, không suy ra định dạng hiển thị của hệ thống |
-| Tiền tệ | `<điền>` | |
+| Date / Time | `<điền>` | If not declared, the agent uses `YYYY-MM-DD` for **QA documents** and does not infer the system's display format |
+| Currency | `<điền>` | |
 | Timezone | `<điền>` | |
-| NULL vs rỗng | `<điền>` | |
+| NULL vs empty | `<điền>` | |
 
-## 3. Bối cảnh nghiệp vụ dùng chung
-> Dùng cho Risk Analysis (skill `01`). Ô chưa khai ⇒ `[CONTEXT_MISSING]`.
+## 3. Shared business context
+> Used for Risk Analysis (skill `01`). A cell not declared ⇒ `[CONTEXT_MISSING]`.
 
-| Khía cạnh | Nội dung |
+| Aspect | Content |
 |---|---|
 | User Context | `<điền>` |
 | Usage Context | `<điền>` |
@@ -33,38 +33,38 @@ Dự án: `<điền>` · Cập nhật lần cuối: `<điền>`
 | Operational Context | `<điền>` |
 | Criticality Context | `<điền>` |
 
-## 4. Môi trường test
-| Thuộc tính | Nội dung |
+## 4. Test environment
+| Attribute | Content |
 |---|---|
-| Môi trường | `<điền>` |
-| Cách seed data | `<điền>` |
-| Có được dùng dữ liệu giống production? | `<điền>` |
+| Environment | `<điền>` |
+| How data is seeded | `<điền>` |
+| May production-like data be used? | `<điền>` |
 
 ## 5. Test Management Tool & ALM Integration
-### 5.1. Jira Xray (Khuyến nghị)
-| Thuộc tính | Cấu hình chuẩn | Ý nghĩa / Ghi chú |
+### 5.1. Jira Xray (recommended)
+| Attribute | Standard configuration | Meaning / Note |
 |---|---|---|
-| Issue Type | `Test` | Loại issue đại diện cho Test Case trong Xray |
-| Summary Format | `[<TC_ID>] <Title>` | Ví dụ: `[AUTH-001] Verify đăng nhập thành công...` |
-| Manual Steps | `Action`, `Data`, `Expected Result` | 3 cột chuẩn của bảng Manual Test Step trong Xray |
-| Preconditions | `Preconditions` (Text/Wiki) | Tiền điều kiện trước khi thực hiện test |
-| Priority | `High`, `Medium`, `Low` | Theo thang Priority của `QA_STANDARD.md` §11 |
-| Labels | `Rule#BR-xx`, `Viewpoint#VP-xx`, `Module#<MOD>` | Phục vụ truy xuất nguồn gốc (Traceability) |
-| File xuất | `OUTPUT/<slug>/export_jira_xray.csv` | Mã hóa UTF-8 BOM, sẵn sàng cho Xray Test Importer |
+| Issue Type | `Test` | The issue type that represents a Test Case in Xray |
+| Summary Format | `[<TC_ID>] <Title>` | Example: `[AUTH-001] Verify login succeeds...` |
+| Manual Steps | `Action`, `Data`, `Expected Result` | The 3 standard columns of the Manual Test Step table in Xray |
+| Preconditions | `Preconditions` (Text/Wiki) | Conditions that must hold before executing the test |
+| Priority | `High`, `Medium`, `Low` | Per the Priority scale of `QA_STANDARD.md` §11 |
+| Labels | `Rule#BR-xx`, `Viewpoint#VP-xx`, `Module#<MOD>` | Supports traceability |
+| Export file | `OUTPUT/<slug>/export_jira_xray.csv` | UTF-8 BOM encoding, ready for the Xray Test Importer |
 
 ### 5.2. Redmine
-| Thuộc tính | Cấu hình chuẩn | Ý nghĩa / Ghi chú |
+| Attribute | Standard configuration | Meaning / Note |
 |---|---|---|
-| Tracker | `Test Case` (hoặc `Feature` / `Task`) | Phân loại issue trong Redmine |
-| Subject | `[<TC_ID>] <Title>` | Tiêu đề test case |
-| Priority | `Urgent` (High), `Normal` (Medium), `Low` (Low) | Mức độ ưu tiên chuẩn của Redmine |
-| Category | Mã module (`AUTH`, `PAY`...) | Gom nhóm test case theo phân hệ |
-| Status | `New` | Trạng thái ban đầu |
-| Description | Đầy đủ Preconditions, Steps, Data, Expected Result | Định dạng Textile / Markdown của Redmine |
-| File xuất | `OUTPUT/<slug>/export_redmine.csv` | Mã hóa UTF-8 BOM |
+| Tracker | `Test Case` (or `Feature` / `Task`) | Issue classification in Redmine |
+| Subject | `[<TC_ID>] <Title>` | Test case title |
+| Priority | `Urgent` (High), `Normal` (Medium), `Low` (Low) | Redmine's standard priority levels |
+| Category | Module code (`AUTH`, `PAY`...) | Groups test cases by module |
+| Status | `New` | Initial status |
+| Description | Full Preconditions, Steps, Data, Expected Result | Redmine's Textile / Markdown format |
+| Export file | `OUTPUT/<slug>/export_redmine.csv` | UTF-8 BOM encoding |
 
-## 6. Ràng buộc riêng của dự án
-> Quy tắc áp dụng xuyên suốt hệ thống, **có nguồn**. Chưa có thì để trống bảng.
+## 6. Project-specific constraints
+> Rules that apply across the whole system, **with a source**. If none, leave the table empty.
 
-| Quy tắc | Nguồn |
+| Rule | Source |
 |---|---|

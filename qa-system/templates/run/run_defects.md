@@ -1,6 +1,7 @@
 # RUN DEFECTS — [RUN-ID] · [TÊN TÍNH NĂNG]
-> Dành cho `qa-reporter` bốc tách và đẩy trực tiếp lên Jira / Redmine hoặc sinh Bug Report độc lập.
+> For `qa-reporter` to extract and push straight to Jira / Redmine, or to generate a standalone Bug Report.
+> (`[TÊN TÍNH NĂNG]` = `[FEATURE NAME]`; the table header row is kept verbatim because tools read it.)
 
 | Defect # | Test Case liên quan | Tiêu đề lỗi | Mức độ | Trạng thái | Bug Report File / Jira Key |
 |---|---|---|:---:|:---:|---|
-| DEF-01 | TC-005 | `<tiêu đề lỗi>` | High | New | `OUTPUT/reports/bug-report-<slug>.md` |
+| DEF-01 | TC-005 | `<defect title>` | High | New | `OUTPUT/reports/bug-report-<slug>.md` |

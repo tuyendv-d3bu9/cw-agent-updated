@@ -1,12 +1,12 @@
-# 01_business — Tài Liệu Định Hướng Nghiệp Vụ & Chiến Lược
+# 01_business — Business Direction & Strategy Documents
 
-## Mục đích
-Chứa các tài liệu từ phía Khách hàng, Product Owner (PO), Ban điều hành hoặc Giám đốc sản phẩm.
+## Purpose
+Holds documents from the Customer, Product Owner (PO), executive board or product director.
 
-## Các loại tài liệu phù hợp:
-- Tài liệu tầm nhìn sản phẩm (Product Vision), bài toán kinh doanh.
-- Chính sách pháp lý, quy định ngành, chính sách chiết khấu/thanh toán cấp cao.
-- Mục tiêu và chỉ số KPI nghiệp vụ của tính năng.
+## Suitable document types:
+- Product Vision documents, business problem statements.
+- Legal policies, industry regulations, high-level discount/payment policies.
+- Business goals and KPI metrics of the feature.
 
-## Định dạng khuyến nghị:
+## Recommended formats:
 - `.md`, `.docx`, `.pdf`

@@ -1,46 +1,46 @@
-# Bài 2 — Nâng cấp skill `missing-rule-06w`: hai lần chạy phải hỏi cùng một bộ câu hỏi
+# Exercise 2 — Upgrade the `missing-rule-06w` skill: two runs must ask the same set of questions
 
-## Skill nào, nâng cấp gì
+## Which skill, what upgrade
 
-- **Skill:** `qa-system/qa-analyst/skills/missing-rule-06w.md` (Chặng 02: quét ma trận 06W, sinh câu hỏi MR cho BA).
-- **Dạng nâng cấp:** `[C]` — sửa tại chỗ, không thêm agent, không thêm deliverable.
-- **Vấn đề:** chạy hai lần trên cùng tài liệu hoàn tiền, câu hỏi bám vào nguồn (comment, chữ ẩn, "đang cập nhật")
-  trùng 100%, nhưng **vị trí kẽ hở trong ma trận chỉ trùng 34%**, và lần chạy thứ hai **bỏ sót 4 câu hỏi thật**.
-  Chi tiết: [`bang-chung-do-lech.md`](bang-chung-do-lech.md).
-- **Nguyên nhân:** skill chỉ nói "chấm từng ô đúng một kết quả" nhưng không nói *khi nào* một ô W phải xét kỹ.
-  Model tự quyết ⇒ mỗi lần một kiểu.
+- **Skill:** `qa-system/qa-analyst/skills/missing-rule-06w.md` (Stage 02: scan the 06W matrix, generate MR questions for the BA).
+- **Upgrade type:** `[C]` — edit in place, no new agent, no new deliverable.
+- **Problem:** running twice on the same refund documents, the questions anchored in the source (comments, hidden text, "being updated")
+  overlap 100%, but the **gap positions in the matrix overlap only 34%**, and the second run **misses 4 real questions**.
+  Details: [`bang-chung-do-lech.md`](bang-chung-do-lech.md) (the "evidence of divergence").
+- **Cause:** the skill only says "score each cell with exactly one result" but does not say *when* a W cell must be examined closely.
+  The model decides on its own ⇒ differently each time.
 
-## Mục tiêu nâng cấp
+## Upgrade goal
 
-Thêm vào skill một **bảng tín hiệu cố định**: thấy dấu hiệu gì trong `BR/FD/AF` thì ô W nào **bắt buộc** phải xét
-và câu hỏi đặt vào ô nào. Ví dụ dạng tín hiệu (học viên tự hoàn thiện, không chép nguyên):
+Add a **fixed signal table** to the skill: seeing which sign in `BR/FD/AF` makes which W cell **mandatory** to examine
+and into which cell the question goes. Example shape of the signals (learners complete it themselves, do not copy verbatim):
 
-| Dấu hiệu trong đối tượng | Ô bắt buộc xét | Kẽ hở hay bị sót |
+| Sign in the object | Cell that must be examined | Gap often missed |
 |---|---|---|
-| Nói tới "của chính mình", vai trò, người duyệt | W5 | Người khác / vai trò khác làm thì sao |
-| Có trần / ngưỡng tiền, số lượng | W3 | Con số đó gồm và không gồm những gì |
-| Có thời hạn, ngày giờ | W4 | Mốc tính, giờ cắt, múi giờ |
-| Có trạng thái, chuyển trạng thái | W2 | Thao tác khi đang ở trạng thái khác / hai bên cùng thao tác |
-| Bị loại khỏi phạm vi nhưng vẫn đi qua được luồng chính | W2 | Hệ thống chặn hay ẩn, phản hồi gì |
+| Mentions "one's own", a role, an approver | W5 | What if someone else / another role does it |
+| Has a money / quantity cap or threshold | W3 | What that figure includes and excludes |
+| Has a deadline, date/time | W4 | The starting point, cut-off time, time zone |
+| Has states, state transitions | W2 | The action while in another state / both sides acting at once |
+| Excluded from scope but still passes through the main flow | W2 | Does the system block or hide it, and what response |
 
-Kèm **luật đặt chỗ**: một kẽ hở chạm nhiều ô ⇒ đặt mã MR ở ô đầu tiên theo thứ tự W1→W6 của đối tượng
-có mã nhỏ nhất; các ô còn lại ghi cùng mã.
+Plus a **placement rule**: a gap that touches several cells ⇒ put the MR id in the first cell in the order W1→W6 of the object
+with the smallest id; the remaining cells carry the same id.
 
-## Ràng buộc (đây là phần học viên hay làm sai)
+## Constraints (this is the part learners most often get wrong)
 
-1. Bảng tín hiệu **chỉ skill 02 dùng** ⇒ đặt trong skill, **không** sửa `QA_STANDARD.md` §4.
-   Nếu thấy phải sửa §4 (định nghĩa 06W) ⇒ dừng, hỏi giảng viên — đó là quyết định của người (Human-Final).
-2. Bảng tín hiệu dùng từ trung tính (`<vai trò>`, `<ngưỡng>`), **không** ghi "COD", "500.000", "hoàn tiền".
-3. Không thêm chỉ tiêu số câu hỏi. Tín hiệu chỉ quyết định ô nào phải xét; xét xong có thể là `Nguồn: …`, không bắt buộc ra MR.
-4. Ô cố định `Không áp dụng` của scaffold (QA_STANDARD §4) không được đổi.
-5. Đổi format bảng ma trận ⇒ phải sửa `lint-deliverables.js` + test (N7). Không đổi format thì N7 = KHÔNG ÁP DỤNG.
+1. The signal table is **used only by skill 02** ⇒ put it in the skill, **do not** edit `QA_STANDARD.md` §4.
+   If you think §4 (the definition of 06W) must change ⇒ stop and ask the instructor — that is a human decision (Human-Final).
+2. The signal table uses neutral words (`<role>`, `<threshold>`), **never** "COD", "500.000", "refund".
+3. Do not add a target number of questions. A signal only decides which cell must be examined; the result of examining may be `Nguồn: …` (source: …), it need not produce an MR.
+4. The fixed `Không áp dụng` (not applicable) cells of the scaffold (QA_STANDARD §4) must not be changed.
+5. Changing the matrix table format ⇒ you must edit `lint-deliverables.js` + tests (N7). If the format does not change, N7 = NOT APPLICABLE.
 
-## Cách đo trước / sau
+## How to measure before / after
 
-Dùng **cùng một bản 01 cố định** (`du-lieu/01_requirement_risk_summary.md`) cho mọi lần chạy, để chỉ đo độ lệch do skill 02.
+Use **the same fixed 01** (`du-lieu/01_requirement_risk_summary.md`) for every run, so only the divergence caused by skill 02 is measured.
 
 ```bash
-# Dựng hai task giống hệt nhau
+# Build two identical tasks
 for s in lab-06w-a lab-06w-b; do
   npm run intake -- docs/skill-lab/de-bai --slug $s --force
   sed "s/^# Requirement & Risk Summary · hoan-tien$/# Requirement \& Risk Summary · $s/" \
@@ -48,44 +48,44 @@ for s in lab-06w-a lab-06w-b; do
 done
 ```
 
-Rồi **mỗi task một phiên AI mới**:
+Then **one fresh AI session per task**:
 
 ```text
-Chạy Chặng 02 (missing-rule-06w) cho task <lab-06w-a | lab-06w-b>. Dùng npm run scaffold, npm run ids --assign,
-lint tới khi 0 lỗi, knowledge:sync --write, dán kết quả npm run gate. Không đọc OUTPUT của task khác.
+Run Stage 02 (missing-rule-06w) for the task <lab-06w-a | lab-06w-b>. Use npm run scaffold, npm run ids --assign,
+lint until 0 errors, knowledge:sync --write, paste the result of npm run gate. Do not read the OUTPUT of the other task.
 ```
 
-So:
+Compare:
 
 ```bash
 npm run diff-runs -- OUTPUT/lab-06w-a OUTPUT/lab-06w-b
 ```
 
-Làm **hai vòng**: vòng 1 với skill hiện tại (số "trước"), vòng 2 sau khi nâng cấp (số "sau") — trước vòng 2, xoá
-`OUTPUT/lab-06w-*/02_*`, `_gate.*` và dòng §7 trong `knowledge/features/lab-06w-*.md`, hoặc dựng hai slug mới.
+Do **two rounds**: round 1 with the current skill (the "before" numbers), round 2 after the upgrade (the "after" numbers) — before round 2, delete
+`OUTPUT/lab-06w-*/02_*`, `_gate.*` and the §7 rows in `knowledge/features/lab-06w-*.md`, or build two new slugs.
 
-## Câu giao việc nâng cấp
+## Upgrade assignment sentence
 
 ```text
-QA Leader, nâng cấp skill missing-rule-06w: thêm bảng tín hiệu bắt buộc xét ô W và luật đặt chỗ MR,
-để hai lần chạy trên cùng tài liệu cho cùng bộ câu hỏi. Bằng chứng: docs/skill-lab/02-nang-cap-skill/bang-chung-do-lech.md.
-Làm theo system-upgrade-governance: PHAN_TICH trước (A/B/C, đặt tầng — có phải sửa QA_STANDARD không?, 7 điểm neo),
-dừng để tôi duyệt. Ví dụ trong skill phải trung tính, không có từ của tính năng hoàn tiền.
+QA Leader, upgrade the missing-rule-06w skill: add a signal table that makes examining certain W cells mandatory and a rule for placing MR ids,
+so two runs on the same documents give the same set of questions. Evidence: docs/skill-lab/02-nang-cap-skill/bang-chung-do-lech.md.
+Follow system-upgrade-governance: ANALYSIS (PHAN_TICH) first (A/B/C, layer placement — must QA_STANDARD change?, 7 anchor points),
+stop for me to approve. Examples in the skill must be neutral, with no words from the refund feature.
 ```
 
-## Tiêu chí đạt
+## Pass criteria
 
-- [ ] Phiếu phân tích kết luận `[C]`, đặt tầng đúng (bảng tín hiệu nằm trong skill, QA_STANDARD không đổi).
-- [ ] `npm test` xanh · `npm run agent:check` INTACT · `npm run lint` 0 lỗi trên cả hai task.
-- [ ] Số "sau" của `ô 06W có kẽ hở` và `phán quyết ô 06W` **cao hơn** số "trước".
-- [ ] 5 câu hỏi sinh từ comment / tracked change / dòng ẩn / "đang cập nhật" / việc còn mở **vẫn còn** ở cả hai lần.
-- [ ] 4 chủ đề từng bị sót (xem bằng chứng) xuất hiện ở **cả hai** lần chạy "sau".
-- [ ] Mỗi khác biệt còn lại giải thích được bằng một câu trong skill.
+- [ ] The analysis sheet concludes `[C]` and places layers correctly (the signal table lives in the skill, QA_STANDARD unchanged).
+- [ ] `npm test` green · `npm run agent:check` INTACT · `npm run lint` 0 errors on both tasks.
+- [ ] The "after" numbers of `ô 06W có kẽ hở` (06W cells with a gap) and `phán quyết ô 06W` (06W cell verdicts) are **higher** than the "before" numbers.
+- [ ] The 5 questions generated from comment / tracked change / hidden row / "being updated" / open item **are still present** in both runs.
+- [ ] The 4 previously missed topics (see the evidence) appear in **both** "after" runs.
+- [ ] Each remaining difference can be explained by a sentence in the skill.
 
-## Bài nâng cao (nếu còn thời gian)
+## Advanced exercise (if time remains)
 
-**Skill `test-case-generation` + lint: chặn mã lỗi tự chế.** Lint hiện bắt chữ trong ngoặc kép và con số có đơn vị,
-nhưng `Mã lỗi E-REFUND-429` trong Expected vẫn lọt. Nâng cấp `[C]` có **N7**: thêm luật vào
-`qa-system/tools/lib/provenance.js` (mã dạng chữ hoa / mã HTTP trong Expected phải có trong AF hoặc knowledge),
-kèm test đỏ-trước-xanh-sau trong `qa-system/tools/__tests__/provenance.test.js`. Nghiệm thu: test case bịa mẫu
-trong [`bang-chung-do-lech.md`](bang-chung-do-lech.md) bị chặn 5 lỗi thay vì 4, và 51 test case của task `lab-cr` (Bài 1) vẫn sạch.
+**Skill `test-case-generation` + lint: block invented error codes.** Lint currently catches text in quotation marks and numbers with units,
+but `Mã lỗi E-REFUND-429` (Error code E-REFUND-429) in Expected still slips through. A `[C]` upgrade with **N7**: add a rule to
+`qa-system/tools/lib/provenance.js` (an uppercase-style code / HTTP code in Expected must exist in AF or knowledge),
+with a red-then-green test in `qa-system/tools/__tests__/provenance.test.js`. Acceptance: the sample invented test case
+in [`bang-chung-do-lech.md`](bang-chung-do-lech.md) is blocked with 5 errors instead of 4, and the 51 test cases of the `lab-cr` task (Exercise 1) are still clean.

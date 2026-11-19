@@ -1,36 +1,36 @@
-# Thuật Ngữ Nghiệp Vụ Toàn Hệ Thống (_glossary.md)
+# System-Wide Business Glossary (_glossary.md)
 
-> File này định nghĩa chính xác các thuật ngữ nghiệp vụ xuyên suốt mọi tính năng của dự án.
-> Giúp Agent, Tester, BA và Developer hiểu cùng một nghĩa, tránh nhầm lẫn logic khi phân tích.
+> This file defines precisely the business terms used across every feature of the project.
+> It helps Agents, Testers, BAs and Developers share one meaning and avoid logic confusion during analysis.
 
-Dự án: `<điền>` · Cập nhật: `<điền>`
+Project (Dự án): `<điền>` · Updated (Cập nhật): `<điền>`  (`<điền>` = "to be filled")
 
-> Bảng bắt đầu trống. Chỉ ghi thuật ngữ có nguồn; agent không tự định nghĩa thay dự án.
+> The tables start empty. Record only sourced terms; the agent never defines terms on the project's behalf.
 
 ---
 
-## 1. Người Dùng & Phân Quyền (Users & Roles)
+## 1. Users & Roles
 
-| Thuật ngữ | Tiếng Anh tương đương | Định nghĩa chính xác | Ranh giới / Lưu ý |
+| Term | English equivalent | Precise definition | Boundary / Note |
 |---|---|---|---|
 
 ---
 
-## 2. Thực Thể Nghiệp Vụ Cốt Lõi (Core Domain Entities)
+## 2. Core Domain Entities
 
-| Thuật ngữ | Tiếng Anh tương đương | Định nghĩa chính xác | Ranh giới / Lưu ý |
+| Term | English equivalent | Precise definition | Boundary / Note |
 |---|---|---|---|
 
 ---
 
-## 3. Trạng Thái Vòng Đời (Lifecycle States)
+## 3. Lifecycle States
 
-| Trạng thái | Ý nghĩa | Hành vi hệ thống |
+| State | Meaning | System behavior |
 |---|---|---|
 
 ---
 
-## 4. Tham Số & Công Thức Tính Toán (Parameters & Calculations)
+## 4. Parameters & Calculations
 
-| Thuật ngữ | Tiếng Anh tương đương | Định nghĩa & Công thức | Đơn vị / Định dạng |
+| Term | English equivalent | Definition & formula | Unit / Format |
 |---|---|---|---|
