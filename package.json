@@ -37,6 +37,7 @@
     "gate:audit": "node qa-system/tools/system/gate.js audit",
     "readiness": "node qa-system/tools/system/readiness.js",
     "workflow": "node qa-system/tools/system/workflow.js",
+    "report": "node qa-system/tools/report/build-report.js",
     "lint": "node qa-system/tools/system/lint-deliverables.js",
     "exam:check": "node qa-system/tools/exam/check.js",
     "exam:grade": "node qa-system/tools/exam/grade.js",

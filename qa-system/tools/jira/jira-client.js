@@ -355,6 +355,7 @@ const COLUMN_ALIASES = {
   status: [/tr[aạ]ng\s*th[aá]i/i, /^status$/i, /k[eế]t\s*qu[aả]$/i],
   actual: [/th[uự]c\s*t[eế]/i, /^actual/i],
   evidence: [/b[aằ]ng\s*ch[uứ]ng/i, /^evidence/i],
+  device: [/^device$/i, /^thi[eế]t\s*b[iị]$/i],
 };
 
 function mapHeader(cells) {
@@ -405,9 +406,37 @@ function parseRunResult(content) {
       status: cell('status').replace(/\*/g, '').trim().toUpperCase(),
       actual: cell('actual'),
       evidence,
+      device: cell('device').replace(/[`*]/g, '').trim(),
     });
   }
   return rows;
+}
+
+/**
+ * One Jira issue per test case, even when the run covered several devices.
+ * Without this, a TC that failed on mobile but passed on desktop was synced once per row and the
+ * LAST row decided the Jira status — a failure could be overwritten by a pass. Worst result wins:
+ * FAIL, then any other non-PASS status (e.g. BLOCKED), then PASS. Evidence comes from the row that
+ * decided the status. Rows without a device (single-device runs, old 6-column tables) pass through.
+ */
+function mergeDeviceRows(rows) {
+  const rank = (s) => (s === 'FAIL' ? 2 : s === 'PASS' ? 0 : 1);
+  const order = [];
+  const byTc = new Map();
+  for (const r of rows) {
+    if (!byTc.has(r.tcId)) { byTc.set(r.tcId, []); order.push(r.tcId); }
+    byTc.get(r.tcId).push(r);
+  }
+  return order.map((tcId) => {
+    const group = byTc.get(tcId);
+    if (group.length === 1) return group[0];
+    const worst = group.reduce((a, b) => (rank(b.status) > rank(a.status) ? b : a));
+    return {
+      ...worst,
+      device: group.map((r) => r.device || '?').join(', '),
+      actual: group.map((r) => `[${r.device || '?'}] ${r.status}: ${r.actual}`).join(' · '),
+    };
+  });
 }
 
 /**
@@ -555,7 +584,7 @@ async function syncRunResults(slug, runId, cfg) {
     }
   }
 
-  const rows = parseRunResult(fs.readFileSync(resultPath, 'utf-8'));
+  const rows = mergeDeviceRows(parseRunResult(fs.readFileSync(resultPath, 'utf-8')));
   const mapping = parseMapping(fs.readFileSync(mappingPath, 'utf-8'));
 
   // Đối số thứ 5 là MỘT test case cần sync riêng, ví dụ `sync <slug> <run> VCHR-003`.
@@ -840,6 +869,7 @@ if (require.main === module) {
 
 module.exports = {
   parseRunResult,
+  mergeDeviceRows,
   parseMapping,
   parseTestCases,
   resolveEvidence,

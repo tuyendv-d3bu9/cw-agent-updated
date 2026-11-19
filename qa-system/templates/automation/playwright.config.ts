@@ -102,49 +102,18 @@ const DEVICE_PROJECTS: Record<string, { use: Record<string, unknown> }> = {
   'mobile-ios': { use: { ...devices['iPhone 14'] } },
   tablet: { use: { ...devices['iPad (gen 7)'] } },
 };
-// Tên cũ của project; ai còn truyền `chromium` vẫn chạy được.
-const DEVICE_ALIASES: Record<string, string> = { chromium: 'desktop-chrome' };
-
-/**
- * Script npm -> thiết bị. Không đặt biến kiểu `QA_DEVICE=... playwright` trong package.json
- * vì cú pháp đó không chạy trên Windows cmd; npm luôn đặt `npm_lifecycle_event` = tên script
- * trên mọi hệ điều hành, nên config tự suy ra thiết bị mà không cần thêm thư viện (cross-env).
- */
-const SCRIPT_DEVICES: Record<string, string> = {
-  'test:e2e:mobile': 'mobile-android,mobile-ios',
-  'test:e2e:tablet': 'tablet',
-  'test:e2e:all': 'all',
+// Logic chọn thiết bị (QA_DEVICE / tên script npm / alias / `all`) nằm ở utils/devices.js
+// — module thuần, có test ở qa-system/tools/__tests__/multi-device.test.js.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { resolveDevices } = require('./utils/devices.js') as {
+  resolveDevices(env: Record<string, string | undefined>): { names: string[]; split: boolean };
 };
 
-/** Đọc QA_DEVICE (ưu tiên) hoặc tên script npm -> danh sách tên project. Giá trị lạ thì báo lỗi, không đoán. */
-function resolveDevices(): string[] {
-  const raw = (
-    process.env.QA_DEVICE ||
-    SCRIPT_DEVICES[process.env.npm_lifecycle_event || ''] ||
-    ''
-  ).trim().toLowerCase();
-  if (!raw) return ['desktop-chrome'];
-  if (raw === 'all') return Object.keys(DEVICE_PROJECTS);
-  const names = raw
-    .split(',')
-    .map((n) => n.trim())
-    .filter(Boolean)
-    .map((n) => DEVICE_ALIASES[n] ?? n);
-  const unknown = names.filter((n) => !(n in DEVICE_PROJECTS));
-  if (unknown.length) {
-    throw new Error(
-      `QA_DEVICE có giá trị không hợp lệ: ${unknown.join(', ')}. ` +
-        `Hợp lệ: ${Object.keys(DEVICE_PROJECTS).join(', ')}, all (hoặc nhiều tên cách nhau dấu phẩy).`
-    );
-  }
-  return [...new Set(names)];
-}
-
-const selectedDevices = resolveDevices();
+const { names: selectedDevices, split: splitDevices } = resolveDevices(process.env);
 // Báo cho utils/evidence.ts (chạy trong worker, thừa hưởng env này): chỉ khi chạy
 // từ 2 thiết bị trở lên mới tách thư mục evidence theo thiết bị, để lượt chạy
 // một thiết bị giữ nguyên đường dẫn cũ `evidence/<TC_ID>/`.
-if (selectedDevices.length > 1) process.env.QA_DEVICE_SPLIT = '1';
+if (splitDevices) process.env.QA_DEVICE_SPLIT = '1';
 else delete process.env.QA_DEVICE_SPLIT;
 
 export default defineConfig({

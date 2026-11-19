@@ -41,7 +41,11 @@ Không truyền thì rơi về `.scratch/`.
 
 Biến `QA_DEVICE` (agent tự truyền): `desktop-chrome` (mặc định) · `mobile-android` · `mobile-ios` · `tablet` · `all`,
 hoặc nhiều tên cách nhau dấu phẩy. Tên sai -> config báo lỗi kèm danh sách hợp lệ.
-`mobile-ios`/`tablet` dùng WebKit: agent chạy `npx playwright install webkit` một lần.
+`mobile-ios`/`tablet` dùng WebKit: agent chạy `npx playwright install chromium webkit` một lần (người dùng không gõ lệnh).
+Script npm cũng chọn thiết bị (chạy được trên Windows, không cần cross-env): `test:e2e:mobile` (android + ios), `test:e2e:tablet`, `test:e2e:all`.
+`QA_DEVICE` thắng tên script. Alias cũ `chromium` = `desktop-chrome`. Logic chọn nằm ở `utils/devices.js` (có test).
+Ví dụ agent chạy: `QA_DEVICE=mobile-ios,tablet QA_TASK_SLUG=<slug> QA_RUN_ID=RUN-01_x npx playwright test -c automation/playwright.config.ts`.
+`run_result.md` có dòng `Thiết bị` ở đầu và cột `Device` cho từng dòng kết quả.
 Chạy từ 2 thiết bị trở lên, evidence nằm ở `evidence/<device>/<TC_ID>/`; một thiết bị giữ `evidence/<TC_ID>/`.
 
 > Cổng biên giới (`AGENTS.md` §1.5): **không** tự chạy tầng này sau Chặng 6.
