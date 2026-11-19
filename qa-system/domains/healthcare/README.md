@@ -23,6 +23,7 @@ The level names follow the domain-packs plan §3; the MSCI page was not reopened
 | HL7 FHIR (R5) — the Administration, Clinical, Medications, Diagnostics, Workflow, Financial, Security & Privacy modules | Entity vocabulary (Patient, Encounter, Observation, Claim…) in `vocab.md`, `datagen.json` | https://www.hl7.org/fhir/overview.html (opened; the page lists 14 modules) |
 | Encounter status codes (9 codes), Claim (4 codes) | The `encounter_status`, `claim_status` enums in `datagen.json` | https://www.hl7.org/fhir/encounter.html · https://www.hl7.org/fhir/claim.html (opened; only the first 100000 characters of each page were read) |
 | The full set of Observation status codes | Not used as an enum | Unknown (only the first 4 codes were seen) |
+| FHIR R5 Appointment, ObservationStatus, Consent, MedicationRequest status, Patient / LinkType, AuditEvent, Coverage, ClaimResponse, Security labels — VERIFIED code lists | `vocab.md` §3 states, the added enums in `datagen.json`, the risks citing `ref-fhir-*` | See `qa-system/domains/SOURCES.md` (one URL per resource) |
 
 ## 4. Regulations / standards that create risk
 | Regulation / standard | Scope of application | Source |
@@ -38,6 +39,9 @@ The level names follow the domain-packs plan §3; the MSCI page was not reopened
 - FHIR Claim: https://www.hl7.org/fhir/claim.html
 - ISO/IEC 25010 characteristic names: https://iso25000.com/index.php/en/iso-25000-standards/iso-25010
 - ISO/IEC 25010:2023 (official page, could not be opened): https://www.iso.org/standard/78176.html
+- FHIR resources read in the 2026-11-19 audit: https://www.hl7.org/fhir/appointment.html · https://www.hl7.org/fhir/valueset-observation-status.html · https://www.hl7.org/fhir/consent.html · https://www.hl7.org/fhir/valueset-medicationrequest-status.html · https://www.hl7.org/fhir/patient.html · https://www.hl7.org/fhir/valueset-link-type.html · https://www.hl7.org/fhir/auditevent.html · https://www.hl7.org/fhir/coverage.html · https://www.hl7.org/fhir/claimresponse.html · https://www.hl7.org/fhir/security-labels.html
+- HIPAA (hhs.gov) retried 2026-11-19: HTTP 403 — still Unknown
+- Reference register for every row of this pack (status VERIFIED / PARTIAL / UNKNOWN, access limitations, date 2026-11-19): `qa-system/domains/SOURCES.md`
 
 ## 6. Pack files
 | File | Read by | Used for |
@@ -48,3 +52,4 @@ The level names follow the domain-packs plan §3; the MSCI page was not reopened
 | `conflict_topics.json` | `npm run knowledge:conflicts` | Topics for detecting conflicts between features |
 | `datagen.json` | `npm run data:gen` | Fake generated data types / enum lists |
 | `units.json` | `npm run lint` (origin of numbers) | Units of measure (additions only) |
+| `coverage-matrix.md` | Pack authors and reviewers; not read by tools | Capability × risk × ISO 25010 × question × reference audit, with open gaps for a domain expert |

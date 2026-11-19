@@ -3,6 +3,7 @@
     "Kiểu dữ liệu sinh GIẢ của ngành y tế: mọi giá trị mang tiền tố SYN, không gắn với người thật.",
     "types.<tên> = { generator: <engine của generate-dataset>, defaults: { tham số } }.",
     "enums.encounter_status theo mã FHIR Encounter.status (https://www.hl7.org/fhir/encounter.html); enums.claim_status theo Claim.status (https://www.hl7.org/fhir/claim.html).",
+    "Added enums (FHIR R5 v5.0.0 code lists, verified 2026-11-19): appointment_status (Appointment.status), observation_status (ObservationStatus), consent_status / consent_decision (Consent), medication_request_status (MedicationRequest status), coverage_status / coverage_kind (Coverage), claim_response_outcome (ClaimResponse.outcome). Register: qa-system/domains/SOURCES.md.",
     "Ràng buộc nghiệp vụ của dự án (độ dài mã, giá trị hợp lệ) vẫn chép từ Field Map, không lấy ở đây."
   ],
   "types": {
@@ -39,6 +40,14 @@
   },
   "enums": {
     "encounter_status": ["planned", "in-progress", "on-hold", "discharged", "completed", "cancelled", "discontinued", "entered-in-error", "unknown"],
-    "claim_status": ["active", "cancelled", "draft", "entered-in-error"]
+    "claim_status": ["active", "cancelled", "draft", "entered-in-error"],
+    "appointment_status": ["proposed", "pending", "booked", "arrived", "fulfilled", "cancelled", "noshow", "entered-in-error", "checked-in", "waitlist"],
+    "observation_status": ["registered", "preliminary", "final", "amended", "corrected", "cancelled", "entered-in-error", "unknown"],
+    "consent_status": ["draft", "active", "inactive", "not-done", "entered-in-error", "unknown"],
+    "consent_decision": ["deny", "permit"],
+    "medication_request_status": ["active", "on-hold", "ended", "stopped", "completed", "cancelled", "entered-in-error", "draft", "unknown"],
+    "coverage_status": ["active", "cancelled", "draft", "entered-in-error"],
+    "coverage_kind": ["insurance", "self-pay", "other"],
+    "claim_response_outcome": ["queued", "complete", "error", "partial"]
   }
 }
