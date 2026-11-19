@@ -24,7 +24,7 @@
 | beneficiary-change | Changing the beneficiary | W5 | Who may change `<beneficiary>`, whose confirmation is needed, and does it take effect after a claim has been submitted? | Unknown |
 | notice-timing | Timing and channel of notices | W6 | After `<event>`, to which role, through which channel and when is the notice sent? | Unknown |
 | quote-expiry-rerating | Quote validity and re-rating | W4 | When does `<quote>` expire, and is `<premium>` re-rated if `<rating-factor>` changes before bind? | Unknown |
-| re-underwriting-trigger | Changes that trigger re-underwriting | W2 | Which changes to `<application>` after `<underwriting-decision>` send it back to underwriting? | Unknown |
+| re-underwriting-trigger | Changes that trigger re-underwriting | W2 | Which changes to `<application>` or an in-force `<policy>` after `<underwriting-decision>` (e.g. a changed `<risk-attribute>`, an added or replaced `<insured-party>`) send it back to underwriting or eligibility checks? | Unknown |
 | cooling-off | Cancellation in a cooling-off period | W4 | Does `<product>` have a `<cooling-off-period>`, counted from which event, and what is refunded inside it? | Unknown |
 | reserve-update | Updating claim reserves | W6 | Which `<event>`s change `<reserve>`, and who approves the change? | Unknown |
 | recovery-allocation | Allocating recoveries | W3 | Is a `<recovery>` netted against `<claim>` paid totals and limits, and in which order? | Unknown |

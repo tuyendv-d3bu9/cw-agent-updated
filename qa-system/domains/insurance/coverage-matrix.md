@@ -11,7 +11,7 @@
 | Application and underwriting | underwriting-bypass, application-answer-change, underwriting-authority | Functional Suitability, Security | Do answer changes after `<underwriting-decision>` re-trigger underwriting? | Issue with no decision; edit answers after acceptance | Unknown | none | covered; re-underwriting added now |
 | Issue and policy documents | policy-document-consistency, product-version-applicability | Functional Suitability | Which `<product-version>` applies at `<renewal>`? Is `<policy-schedule>` regenerated? | Renew a policy after the product changed; endorse and compare the document | Unknown | none | added now |
 | Parties and roles | party-role-consistency, beneficiary-change | Functional Suitability, Security | When `<policyholder>` differs from `<insured>`, whose consent applies? | Insured is a minor; change beneficiary after a claim | Unknown | none | covered (beneficiary); party roles added now |
-| Endorsements and mid-term changes | pro-rata-adjustment, endorsement-rules | Functional Suitability | Which `<field>`s may change in force, from which date? | Mid-term change on the boundary day | Unknown | none | covered |
+| Endorsements and mid-term changes | pro-rata-adjustment, endorsement-rules, re-underwriting-trigger | Functional Suitability | Which `<field>`s may change in force, from which date? | Mid-term change on the boundary day | Unknown | none | covered |
 | Premium collection, grace, lapse, reinstatement | payment-collection-failure, lapse-reinstatement | Reliability | Which state follows failed collection after `<grace-period>`? | Collection fails on the last grace day; reinstate after lapse | Unknown | none | covered |
 | Cancellation and cooling-off | cooling-off-cancellation, pro-rata-refund | Functional Suitability | Does `<product>` have a `<cooling-off-period>` (local regulation)? | Cancel inside and just after the period | Unknown | none | added now (rule content: open) |
 | Renewal | renewal-auto-process, batch-renewal-load | Functional Suitability, Performance Efficiency | How far in advance is renewal notice sent? | Renewal batch fails midway | Unknown | none | covered |
@@ -25,3 +25,11 @@
 | Data protection and audit | sensitive-data-exposure, audit-of-decisions | Security (Confidentiality, Accountability) | Which roles see sensitive `<field>`? Who may override a decision? | Agent opens a medical attachment of another agent's policy | ref-owasp-asvs-chapters | PARTIAL | covered |
 | Reinsurance, actuarial reserving, solvency reporting | (outside pack scope) | — | Does the project feed `<reinsurance>` or `<regulatory-report>`? | Unknown | Unknown | none | open — needs domain expert |
 | Product-line specifics (life benefits, motor, property catastrophe) | (no pack row) | — | Which `<line-of-business>` is in scope? | Unknown | Unknown | none | open — needs domain expert |
+
+## Validation note (2026-11-19)
+
+Agent-level validation on synthetic features (outside the repo) showed analysts missing failures of follow-up
+actions after a successful main action, time limits inside multi-party processes, and re-checks when parties are
+added. The rule patterns `downstream-side-effect-failure` / `side-effect-failure-compensation`, `dispute-time-limits`
+and the widened `re-underwriting-trigger` were added or extended for that reason. They are questions only; their
+Source stays `Unknown` until a verified reference or domain-expert review exists.

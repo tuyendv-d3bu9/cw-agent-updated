@@ -17,6 +17,7 @@
 | inventory-reservation | Inventory reservation and release | W4 | How long is `<reservation>` held and in which situations is it released? | Unknown |
 | concurrent-purchase | Simultaneous purchases when stock is nearly gone | W4 | When two `<actor>`s buy the last `<sku>` at the same time, who gets it? | Unknown |
 | order-state-transition | Valid / reversed order state transitions | W2 | Can `<state-B>` go back to `<state-A>`, and who can do it? | Unknown |
+| side-effect-failure-compensation | Failure of a follow-up action after an order state change | W6 | When `<order>` reaches `<state-B>` but `<follow-up-action>` (e.g. `<stock-restore>`, `<refund-trigger>`, `<notification>`) fails, is the state kept, retried or reversed, and who reconciles? | Unknown |
 | payment-fulfilment-coupling | Link between payment status and delivery | W2 | May an `<order>` be delivered when `<payment>` is in `<state-A>`? | Unknown |
 | partial-fulfilment-refund | Partial delivery, partial refund | W6 | When only part of an `<order>` is delivered / returned, how is the refunded `<amount>` computed? | Unknown |
 | duplicate-request-handling | Handling of resubmitted requests | W2 | Does resubmitting `<action>` on `<state-A>` create a new record? | Unknown |

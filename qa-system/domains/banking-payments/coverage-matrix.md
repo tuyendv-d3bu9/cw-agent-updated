@@ -14,7 +14,7 @@
 | Beneficiary management | new-beneficiary-risk, beneficiary-onboarding | Security | Does the first `<transfer>` to a new `<payee>` need extra checks? | Add a payee and transfer at once; edit a payee then transfer | Unknown | none | added now |
 | Scheduled and recurring payments | scheduled-payment-execution, non-business-day-scheduling | Reliability | When `<scheduled-date>` is a non-business day, is it moved, retried or failed? | Schedule on a holiday; insufficient funds on the run date | Unknown | none | added now |
 | Card authorisation, capture, settlement (Cards) | authorization-capture-mismatch, status-reversal, reconciliation-mismatch | Functional Suitability | May `<capture>` differ from `<authorization-hold>`; when does a hold expire? | Capture below / above the hold; never-captured hold | ref-bian-landscape-v12 | VERIFIED (names only) | covered (reversal, reconciliation); capture added now |
-| Disputes and chargebacks | dispute-chargeback-handling, dispute-lifecycle | Functional Suitability | Is `<provisional-credit>` given, and how is it reversed? | Dispute lost after provisional credit; duplicate dispute on one transaction | Unknown | none | added now |
+| Disputes and chargebacks | dispute-chargeback-handling, dispute-lifecycle, dispute-time-limits, downstream-side-effect-failure | Functional Suitability | Is `<provisional-credit>` given, and how is it reversed? | Dispute lost after provisional credit; duplicate dispute on one transaction | Unknown | none | added now |
 | Fraud detection and holds (Fraud Resolution) | fraud-alert-handling, fraud-hold-release | Security | Who may release a held `<transaction>`, and what does the customer see? | Held transaction released / rejected; customer retries while held | ref-bian-landscape-v12 | VERIFIED (names only) | added now |
 | Strong authentication and sessions | strong-auth-bypass, session-timeout-mid-transaction | Security (Authenticity) | Which transactions need step-up? What happens if the session ends mid-flow? | Call the execute step directly; session expires on the step-up screen | ref-owasp-asvs-chapters | PARTIAL | covered; session added now |
 | Maker-checker and authorisation | maker-checker-bypass, access-control-per-account | Security | May one person create and approve `<transaction>`? | Maker approves own item; access another `<account>` by id | ref-owasp-asvs-chapters | PARTIAL | covered |
@@ -25,3 +25,11 @@
 | Notifications and receipts | notification-correctness | Interaction Capability | Which `<field>`s does a receipt contain, in which state is it sent? | Receipt for a reversed transaction | Unknown | none | covered |
 | Lending (origination, repayment schedules, collections) | (no pack row) | — | Does the project include `<lending>` features? | Unknown | ref-bian-landscape-v12 | VERIFIED (domain name only) | open — needs domain expert |
 | Jurisdiction rules (AML thresholds, payment-scheme rules, consumer credit) | (no pack row) | — | Which `<regulation>` / `<scheme-rule>` applies in `<jurisdiction>`? | Unknown | Unknown | none | open — needs domain expert |
+
+## Validation note (2026-11-19)
+
+Agent-level validation on synthetic features (outside the repo) showed analysts missing failures of follow-up
+actions after a successful main action, time limits inside multi-party processes, and re-checks when parties are
+added. The rule patterns `downstream-side-effect-failure` / `side-effect-failure-compensation`, `dispute-time-limits`
+and the widened `re-underwriting-trigger` were added or extended for that reason. They are questions only; their
+Source stays `Unknown` until a verified reference or domain-expert review exists.

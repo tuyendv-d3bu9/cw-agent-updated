@@ -25,6 +25,8 @@
 | beneficiary-onboarding | Using a newly added payee | W2 | Is a new `<payee>` usable immediately, after `<cooling-period>`, or after extra authentication? | Unknown |
 | authorization-capture | Authorisation hold vs captured amount | W3 | May `<capture>` differ from `<authorization-hold>`, by how much, and when does an uncaptured hold expire? | ref-bian-landscape-v12 (service domain Card Authorization) |
 | dispute-lifecycle | Disputes and provisional credit | W2 | From which `<state>` can `<dispute>` be opened, and how is `<provisional-credit>` reversed? | Unknown |
+| dispute-time-limits | Time limits inside the dispute process | W4 | Which `<deadline>`s apply to `<dispute>` (customer filing, `<counterparty>` response, evidence submission, review), from which event is each counted, and what happens when one is missed? | Unknown |
+| downstream-side-effect-failure | Failure of a follow-up action after the main action succeeds | W6 | When `<main-action>` succeeds but `<follow-up-action>` (e.g. submission to `<external-scheme>`, `<card-block>`, `<notification>`) fails, is `<main-action>` kept, retried, compensated or rolled back, and who is told? | Unknown |
 | account-status-restriction | Operations per account status | W2 | Which `<operation>`s are allowed for `<account>` in `<state-A>`? | Unknown |
 | day-count-accrual | Day-count and accrual boundaries | W3 | Which `<day-count-convention>` applies, and is the boundary day included? | Unknown |
 | non-business-day-scheduling | Scheduled payments on non-business days | W4 | When `<scheduled-date>` falls on a non-business day, is it moved earlier, later, or failed? | Unknown |
