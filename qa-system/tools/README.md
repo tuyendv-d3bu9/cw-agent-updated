@@ -14,6 +14,7 @@ testcase/     ← gộp và xuất test case
 testdata/     ← sinh dữ liệu kiểm thử
 jira/         ← mọi giao tiếp với Jira
 system/       ← tự kiểm, tiến độ, bản đồ, cổng ASK
+exam/         ← tự kiểm bài thi tốt nghiệp (học viên) và chấm thi (giảng viên)
 ```
 
 ---
@@ -148,6 +149,23 @@ Exit `0` = sạch hoặc chỉ cảnh báo · `1` = có lỗi phải sửa.
 > Luật mới phải được thử trên deliverable thật trước khi bật.
 
 ---
+
+## `exam/` — bài thi tốt nghiệp (đặc tả: `docs/plans/graduation-project.md`)
+
+Engine công khai; chỉ `$GRADER_PRIVATE` (roster, benchmark, test ẩn, bundle) là bí mật.
+
+| Ai | Lệnh | Việc |
+|---|---|---|
+| Học viên | `npm run exam:check` | Tự kiểm trên cây làm việc: schema, preflight B-01…B-05 / G-01…G-08, các check công khai; PASS/FAIL + gợi ý sửa; ghi `.scratch/exam-check.json`; không tính điểm, không mạng |
+| Giảng viên | `npm run exam:grading-setup -- --exam <id>` | Biến clone hiện tại thành clone chấm: `pushurl DISABLED`, hook `pre-push` chặn `grading/*`, nhánh `grading/<id>` từ tag starter |
+| Giảng viên | `npm run exam:grade -- --exam <id> (--student <sid> \| --all) [--no-fetch] [--remote <r>]` | Fetch → roster → freeze + bundle → `git archive` → preflight → tool tin cậy của starter → container (Docker) → `GRADING/results/<sid>.json\|.html` + `summary.csv` |
+| Giảng viên | `npm run exam:score -- --exam <id> --student <sid> --criterion I1 --points 8 --level "6-8" --evidence <p> --comment "…" --reviewer <tên>` | Ghi `GRADING/instructor/<sid>.json` (JSON, có kiểm level + evidence), dựng lại kết quả. `--resolve-flag <id>` đóng một cờ toàn vẹn |
+| Giảng viên | `npm run exam:report -- --exam <id> [--student <sid>]` | Tính lại kết quả từ phần tự động đã lưu + file giảng viên (không chấm lại), dựng HTML + `summary.csv` |
+| Giảng viên | `node qa-system/tools/exam/make-instructor-tests.js --exam <id>` | Sinh fixture + test ẩn T1/T2 vào `$GRADER_PRIVATE/<id>/instructor-tests/` |
+
+Biến môi trường: `GRADER_PRIVATE` (mặc định `~/cw-grader-private`), `GRADING_TMP` (mặc định `~/.cache/cw-exam-grading`,
+phải là thư mục container mount được), `EXAM_CONTAINER=off` (ép không dùng container ⇒ check cần chạy code học viên = `PENDING_HUMAN_REVIEW`),
+`EXAM_CONTAINER_IMAGE` (mặc định `node:24-alpine`).
 
 ## `__tests__/` — test cho chính các tool
 

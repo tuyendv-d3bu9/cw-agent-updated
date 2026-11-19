@@ -38,3 +38,6 @@ test-results/
 
 # Worktree tạm của agent Claude Code (không phải file dự án)
 .claude/worktrees/
+
+# Kết quả chấm thi — chỉ nằm trên nhánh grading/<exam> của clone chấm thi (giảng viên force-add), không bao giờ commit lên nhánh học viên
+GRADING/

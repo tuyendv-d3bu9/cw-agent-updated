@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cw-agent/exam/instructor/1.0.0",
+  "description": "GRADING/instructor/<student-id>.json — instructor scores I1-I3 (JSON instead of YAML: no extra dependency). Written by `npm run exam:score`, merged into the result by `exam:report`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "exam_id", "student_id", "criteria", "resolved_flags"],
+  "$defs": {
+    "manual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["points", "level", "evidence", "comment", "reviewer", "scored_at"],
+      "properties": {
+        "points": { "type": "number", "minimum": 0 },
+        "level": { "type": "string", "minLength": 1, "maxLength": 20 },
+        "evidence": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 300 } },
+        "comment": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "reviewer": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "scored_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "exam_id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "student_id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "criteria": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "I1": { "$ref": "#/$defs/manual" },
+        "I2": { "$ref": "#/$defs/manual" },
+        "I3": { "$ref": "#/$defs/manual" }
+      }
+    },
+    "resolved_flags": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+  }
+}

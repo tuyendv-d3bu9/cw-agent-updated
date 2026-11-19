@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cw-agent/exam/submission/1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version","exam_id","student_id","branch","starter_commit","task_slug","t1_customized_agent","t2_new_agent","t3_pipeline","evidence"],
+  "$defs": {
+    "relpath": { "type": "string", "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[A-Za-z0-9._/-]+$", "maxLength": 300 },
+    "sha":     { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "anchor":  { "enum": ["done", "n/a"] }
+  },
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "exam_id":        { "const": "shopgo-refund-v1" },
+    "student_id":     { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "branch":         { "type": "string", "pattern": "^exams/[a-z0-9]+(-[a-z0-9]+)*$" },
+    "starter_commit": { "$ref": "#/$defs/sha" },
+    "task_slug":      { "const": "shopgo-refund" },
+    "t1_customized_agent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["agent_folder","decision_class","changed_files","anchors","anchor_reasons","tests_added","decision_record"],
+      "properties": {
+        "agent_folder":   { "$ref": "#/$defs/relpath" },
+        "decision_class": { "enum": ["A","B","C"] },
+        "changed_files":  { "type": "array", "items": { "$ref": "#/$defs/relpath" } },
+        "anchors": { "type": "object", "additionalProperties": false,
+          "required": ["N1","N2","N3","N4","N5","N6","N7"],
+          "properties": { "N1": {"$ref":"#/$defs/anchor"}, "N2": {"$ref":"#/$defs/anchor"}, "N3": {"$ref":"#/$defs/anchor"},
+                          "N4": {"$ref":"#/$defs/anchor"}, "N5": {"$ref":"#/$defs/anchor"}, "N6": {"$ref":"#/$defs/anchor"}, "N7": {"$ref":"#/$defs/anchor"} } },
+        "anchor_reasons": { "type": "object", "additionalProperties": { "type": "string", "minLength": 10 } },
+        "tests_added":    { "type": "array", "items": { "$ref": "#/$defs/relpath" } },
+        "decision_record":{ "type": "string" }
+      }
+    },
+    "t2_new_agent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["agent_folder","agent_file","skills","deliverable_prefix","example_output","registrations","tests_added","decision_record"],
+      "properties": {
+        "agent_folder":       { "type": "string", "pattern": "^qa-system/qa-[a-z0-9-]+$" },
+        "agent_file":         { "$ref": "#/$defs/relpath" },
+        "skills":             { "type": "array", "items": { "$ref": "#/$defs/relpath" } },
+        "deliverable_prefix": { "type": "string", "pattern": "^[0-9]{2}[a-z]?$" },
+        "example_output":     { "$ref": "#/$defs/relpath" },
+        "registrations":      { "type": "array", "items": { "$ref": "#/$defs/relpath" } },
+        "tests_added":        { "type": "array", "items": { "$ref": "#/$defs/relpath" } },
+        "decision_record":    { "type": "string" }
+      }
+    },
+    "t3_pipeline": {
+      "type": "object", "additionalProperties": false,
+      "required": ["input_dir","feature_knowledge","artifacts","gate_log"],
+      "properties": {
+        "input_dir":         { "const": "INPUT/shopgo-refund" },
+        "feature_knowledge": { "$ref": "#/$defs/relpath" },
+        "artifacts": {
+          "type": "object", "additionalProperties": false,
+          "required": ["00","01","02","03","04","05","06"],
+          "properties": {
+            "00": { "type": ["string","null"] }, "01": { "type": ["string","null"] }, "02": { "type": ["string","null"] },
+            "03": { "type": ["string","null"] }, "04": { "type": ["string","null"] }, "06": { "type": ["string","null"] },
+            "05": { "type": "object", "additionalProperties": false, "required": ["spec","blueprint","batches"],
+                    "properties": { "spec": { "type": ["string","null"] }, "blueprint": { "type": ["string","null"] },
+                                    "batches": { "type": "array", "items": { "type": "string" } } } }
+          }
+        },
+        "gate_log": { "type": ["string","null"] }
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["decisions","ai_use_declaration"],
+      "properties": { "decisions": { "const": "EXAM/DECISIONS.md" }, "ai_use_declaration": { "const": "EXAM/AI_USE.md" } }
+    }
+  }
+}
