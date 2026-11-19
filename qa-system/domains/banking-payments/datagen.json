@@ -59,6 +59,20 @@
         "step": 1,
         "locale": "en-US"
       }
+    },
+    "dispute_reference_synthetic": {
+      "_note": "Synthetic dispute / chargeback reference; format is not that of any card scheme or bank (real format: Unknown).",
+      "generator": "code",
+      "defaults": {
+        "prefixes": [
+          "TESTDSP-"
+        ],
+        "values": [
+          "000001",
+          "000002",
+          "999999"
+        ]
+      }
     }
   },
   "enums": {}

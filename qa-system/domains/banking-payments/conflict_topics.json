@@ -28,6 +28,11 @@
       "category": "Hiển thị số thẻ",
       "allow": ["hiển thị đầy đủ số thẻ", "hiện toàn bộ số thẻ", "show full card number", "unmasked card number"],
       "deny": ["che số thẻ", "ẩn số thẻ", "chỉ hiển thị 4 số cuối", "mask card number", "masked card number", "last four digits only"]
+    },
+    "provisionalCredit": {
+      "category": "Provisional credit during a dispute",
+      "allow": ["ghi có tạm thời", "provisional credit is given", "provisional credit granted"],
+      "deny": ["không ghi có tạm thời", "no provisional credit", "provisional credit is not given", "without provisional credit"]
     }
   }
 }
