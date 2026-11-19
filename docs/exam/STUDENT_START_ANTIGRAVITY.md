@@ -7,6 +7,9 @@
 
 ## Phần A — Dành cho học viên (đọc 2 phút)
 
+Tải file này tại: https://github.com/tuyendv-d3bu9/cw-agent-updated/blob/develop/docs/exam/STUDENT_START_ANTIGRAVITY.md
+(bấm nút **Download raw file** ở góc phải), rồi mở ứng dụng Antigravity.
+
 ### Bạn cần chuẩn bị (một lần)
 
 1. **Mã học viên** do giảng viên cấp (ví dụ `hv001`).
@@ -18,11 +21,16 @@
    - **Windows:** Git for Windows có sẵn Git Credential Manager — lần push đầu tiên sẽ mở cửa sổ trình duyệt
      để bạn đăng nhập GitHub. Chỉ cần bấm đăng nhập.
    - **macOS / Linux (hoặc nếu cách trên không hiện):** cài GitHub CLI (https://cli.github.com), rồi chạy
-     `gh auth login` và `gh auth setup-git` — tự bạn đăng nhập trên trình duyệt.
+     `gh auth login` và `gh auth setup-git` — **bạn tự gõ** hai lệnh này trong cửa sổ Terminal (hoặc nhờ trợ lý AI
+     mở Terminal cho bạn), rồi đăng nhập trên trình duyệt.
 
    **Không bao giờ gửi mật khẩu hay token vào khung chat.**
 
 Bạn không cần biết lệnh Git, nhánh (branch) hay JSON. Trợ lý AI sẽ làm và báo lại kết quả thật.
+
+**Lưu ý quan trọng:** bài làm nằm trong thư mục `cw-exam/cw-agent-updated` trong thư mục người dùng của bạn.
+**Đừng xoá thư mục này.** Phần bạn làm chỉ lên GitHub (giảng viên mới thấy) sau khi bạn gửi lệnh SUBMIT.
+Lần START đầu tiên mất vài phút vì phải tải thư viện.
 
 ### Bắt đầu (START)
 
@@ -52,7 +60,7 @@ chót là bài được chấm.
 | Bạn thấy | Nghĩa là |
 |---|---|
 | `SUCCESS` + `VALID_WITH_GAPS` | **Bình thường khi mới bắt đầu.** "GAP" = phần bài bạn chưa làm. |
-| `SUCCESS` + `VALID` | Bài đầy đủ về hình thức (chưa phải là điểm đạt). |
+| `SUCCESS` + `VALID` | Bài **đúng hình thức** — KHÔNG có nghĩa là đã làm xong hay đạt. Các giá trị mặc định (ví dụ `decision_class` = `"A"`) chỉ là chỗ trống để bạn tự quyết định. |
 | `NOT_AUTHENTICATED` | Máy chưa đăng nhập GitHub → làm bước 4 ở trên, rồi START lại. |
 | `NO_WRITE_ACCESS` | Tài khoản chưa được thêm vào repository → báo giảng viên, chấp nhận lời mời, rồi START lại. |
 | `GIT_IDENTITY` | Trợ lý sẽ hỏi họ tên + email GitHub của bạn (không phải mật khẩu). |
@@ -77,7 +85,8 @@ You are setting up and later submitting a graduation exam for a **beginner**. Ta
 | Exam id | `shopgo-refund-v1` (task slug `shopgo-refund`) |
 | Frozen starter tag | `exam/shopgo-refund-v1/starter` → commit `50c2a7fb690699a5bedfc13f5e296ecf9b9a5fc6` |
 | Student branch | `exams/<student-id>` |
-| Helper script | `docs/exam/student-setup.js` on branch `origin/develop` (copied into the git-ignored `.scratch/` folder) |
+| Helper script | `docs/exam/student-setup.js` on branch `origin/develop` (copied into `.scratch/`, which the helper excludes from git locally) |
+| Terminal | On Windows use **PowerShell**, not Git Bash (the exam self-check extracts files with `tar`, which fails on `C:\` paths under Git Bash) |
 | Workspace | `<HOME>/cw-exam/cw-agent-updated` (`<HOME>` = output of `node -p "require('os').homedir()"`) |
 
 ### B.1 Hard rules
@@ -176,8 +185,16 @@ fills them in. Say this to the student.
 
 ### B.4 Explain the three tasks (in Vietnamese)
 
-After a successful START, explain the following to the student, then point to the files in `EXAM/brief/`.
-Do not add requirements that are not in the brief.
+After a successful START, explain Phần C below to the student, then point to the files in `EXAM/brief/`.
+Do not add requirements that are not in the brief. Then close the conversation as in B.5.
+
+### B.5 Close the START conversation with
+
+- the GitHub link to the branch (`facts.web`);
+- "Trạng thái `VALID_WITH_GAPS` là bình thường lúc bắt đầu";
+- that the default values in `EXAM/submission.json` (`decision_class` `"A"`, anchors `n/a`, `qa-your-new-agent`) are
+  blanks for the student to decide, not answers;
+- the SUBMIT sentence from Phần A, and the deadline 2026-12-15 23:59 (UTC+07:00).
 
 ---
 
@@ -205,9 +222,3 @@ Ngoài các file bài làm, bạn tự điền:
 **Gợi ý thứ tự:** đọc `EXAM/brief/README.md` → làm **T3** (pipeline, vì T2 cần file `01` và `05`) →
 **T1** → **T2** → điền `DECISIONS.md`, `AI_USE.md` → gửi câu lệnh SUBMIT. Hãy nhờ trợ lý AI chạy lệnh và
 dán kết quả thật; bạn phải hiểu và giải thích được mọi thứ trong buổi bảo vệ.
-
-### B.5 Close the START conversation with
-
-- the GitHub link to the branch (`facts.web`);
-- "Trạng thái `VALID_WITH_GAPS` là bình thường lúc bắt đầu";
-- the SUBMIT sentence from Phần A, and the deadline 2026-12-15 23:59 (UTC+07:00).

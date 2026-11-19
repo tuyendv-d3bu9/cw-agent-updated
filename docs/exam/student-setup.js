@@ -58,7 +58,8 @@ const step = (n, s) => log(`\n[${n}] ${s}`);
 
 // ---------------------------------------------------------------- process helpers
 
-const ENV = { ...process.env, GIT_TERMINAL_PROMPT: '0', GCM_INTERACTIVE: 'never', LC_ALL: 'C' };
+// No hidden terminal prompts (the agent cannot answer them). GCM's browser login stays allowed (Windows).
+const ENV = { ...process.env, GIT_TERMINAL_PROMPT: '0', LC_ALL: 'C' };
 
 function run(cmd, args, opts = {}) {
   const r = spawnSync(cmd, args, {
@@ -68,7 +69,8 @@ function run(cmd, args, opts = {}) {
   });
   return { ok: r.status === 0, code: r.status, out: (r.stdout || '').trim(), err: (r.stderr || '').trim(), error: r.error };
 }
-const git = (ws, args, opts) => run('git', args, { ...opts, cwd: ws });
+// core.quotePath=false: Vietnamese file names come back as real paths, not "\303\272"-escaped strings.
+const git = (ws, args, opts) => run('git', ['-c', 'core.quotePath=false', ...args], { ...opts, cwd: ws });
 const gitOut = (ws, args) => { const r = git(ws, args); return r.ok ? r.out : null; };
 
 // ---------------------------------------------------------------- pure helpers (unit-tested)
@@ -601,7 +603,7 @@ function cmdSubmit() {
   return {
     status: 'SUCCESS', code: 'SUBMITTED',
     message_vi: `Bài đã được push lên GitHub: ${branch} @ ${remoteSha.slice(0, 12)}. Self-check: ${sc.status}.`,
-    next_vi: sc.status === 'VALID' ? 'Bài hợp lệ, không còn GAP. Bạn vẫn có thể push tiếp trước hạn chót.' : 'Còn GAP (phần chưa làm hoặc chưa khai báo). Bạn có thể làm tiếp và SUBMIT lại trước hạn chót 2026-12-15 23:59 (UTC+07).',
+    next_vi: sc.status === 'VALID' ? 'Bài đúng hình thức (không còn GAP). Điều này KHÔNG có nghĩa là bài đã làm xong hay đạt: nội dung T1/T2/T3, quyết định A/B/C và các lý do chỉ được chấm khi giảng viên chấm. Bạn vẫn có thể nộp tiếp trước hạn chót.' : 'Còn GAP (phần chưa làm hoặc chưa khai báo). Bạn có thể làm tiếp và SUBMIT lại trước hạn chót 2026-12-15 23:59 (UTC+07).',
     facts: { workspace: ws, branch, head: remoteSha, commit, synced, self_check: sc.status, gaps: sc.gaps, counts: sc.counts,
       unfilled_placeholders: inv.unfilled_placeholders, web: webUrl(branch) },
   };
