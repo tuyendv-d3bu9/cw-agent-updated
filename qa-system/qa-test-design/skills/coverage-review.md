@@ -1,54 +1,57 @@
 ---
 name: coverage-review
 description: >
-  Đối soát độ phủ test suite: mọi BR/FD/AF, MR đã chốt và TI "Giữ" có test case; cân bằng theo
-  viewpoint đã chọn ở Chặng 3; đủ chuỗi biên. Ra verdict PASS / FIX / ASK có điểm kết thúc.
+  Reconciles test-suite coverage: every BR/FD/AF, confirmed MR and "Giữ" (kept) TI has a test case; balance across
+  the viewpoints chosen in Stage 3; the boundary chain is complete. Gives a PASS / FIX / ASK verdict with an end point.
 ---
 
 # Skill: coverage-review
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (**verdict Chặng 6 §1** · guard §2 · nhãn §2.1 · FACT §3 ·
-> chuỗi biên §6 · knowledge §8 · ID §9 · nguồn §10).
+> Complies with `qa-system/core/QA_STANDARD.md` (**Stage 6 verdict §1** · guards §2 · labels §2.1 · FACT §3 ·
+> boundary chain §6 · knowledge §8 · IDs §9 · sources §10).
+>
+> The output format block (headings, column headers, `CHƯA COVER`, `Đạt`, the `FIX:` / `ASK:` prefixes, the
+> `## FIX` / `## ASK` tables) stays in Vietnamese: tools and the readiness check read it. Copy it verbatim.
 
-## Mục đích
-Chốt chặn cuối của test design: tìm mục chưa có test case và nói rõ vì sao — do chưa viết (sửa được)
-hay do thiếu thông tin (phải hỏi). Không đánh giá thay con người mức rủi ro chấp nhận được.
+## Purpose
+The final gate of test design: find the items without a test case and state clearly why — not written yet (fixable)
+or missing information (must be asked). It does not judge, in place of humans, which level of risk is acceptable.
 
-## Đầu vào
+## Inputs (Đầu vào)
 - `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `BR`, `FD`, `AF`.
-- `OUTPUT/<task-slug>/02_missing_rule_report.md` — `MR` và trạng thái.
-- `OUTPUT/<task-slug>/03_viewpoint_report.md` — VP đã chọn.
-- `OUTPUT/<task-slug>/04_test_idea_report.md` — TI `Giữ` / `Chờ MR`.
-- `OUTPUT/<task-slug>/05_test_case_spec.md` (hoặc `testcases/batch_*.md`).
-- `OUTPUT/<task-slug>/12_data_validation_traceability.md` nếu có.
-- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` — §7 (trạng thái MR), §8.
+- `OUTPUT/<task-slug>/02_missing_rule_report.md` — `MR` and their statuses.
+- `OUTPUT/<task-slug>/03_viewpoint_report.md` — the chosen VPs.
+- `OUTPUT/<task-slug>/04_test_idea_report.md` — TIs marked `Giữ` / `Chờ MR`.
+- `OUTPUT/<task-slug>/05_test_case_spec.md` (or `testcases/batch_*.md`).
+- `OUTPUT/<task-slug>/12_data_validation_traceability.md` if present.
+- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` — §7 (MR statuses), §8.
 
-## KHÔNG được (riêng skill này)
-- Đánh số lại / gộp mã của 01–05.
-- Để trống ô `Test Case IDs cover` — chưa có thì `CHƯA COVER`.
-- Đề xuất bổ sung kèm giá trị, chữ thông báo, expected tự chế. Đề xuất chỉ nêu **kịch bản + mã nguồn**;
-  giá trị dẫn về nguồn hoặc nhãn §2.1.
-- Đối chiếu viewpoint với danh mục nào khác ngoài các VP đã chọn ở 03.
-- Tự viết test case — gap sửa được thì trả `FIX` cho `test-case-generation`.
+## MUST NOT (specific to this skill)
+- Renumber / merge the codes of 01–05.
+- Leave the `Test Case IDs cover` cell empty — if there is none yet, write `CHƯA COVER` (not covered).
+- Propose additions that come with invented values, message texts or expected results. A proposal states only **the scenario + the source code**;
+  values point back to the sources or a §2.1 label.
+- Compare viewpoints against any list other than the VPs chosen in 03.
+- Write test cases yourself — a fixable gap is returned as `FIX` to `test-case-generation`.
 
-## Các bước
-1. **Lint** — chạy `npm run lint -- <task-slug>`, dán kết quả thật. Exit `1` ⇒ verdict `FIX`, liệt kê lỗi, dừng.
-2. **Ma trận** — một dòng cho mỗi `BR`/`FD`/`AF` của 01, mỗi `MR` `Confirmed`, mỗi `TI` `Giữ`. Cột cover lấy
-   các `TC_ID` có tag `Rule#<mã>` hoặc `TI#<mã>` tương ứng.
-3. **Phân loại gap** của mỗi dòng `CHƯA COVER`:
-   - Có TI `Giữ` hoặc nguồn đủ để viết ⇒ `FIX: <kịch bản> — dựa trên <mã>` (chuyển `test-case-generation`; chưa có TI thì chuyển `test-idea-design`).
-   - Chỉ có TI `Chờ MR`, hoặc thiếu thông tin ⇒ `ASK: MR-xx` (MR đã có) hoặc `ASK: cần MR cho <mã> × W<n>` (chuyển Chặng 2).
-4. **Cân bằng viewpoint** — mỗi VP ở 03 §2 có ít nhất một TC `Viewpoint#VP-xx` (một TC được mang nhiều tag `Viewpoint#`); TC mang VP không có trong 03 ⇒ `FIX`.
-5. **Chuỗi biên** — mỗi `FD` có min/max/độ dài trong nguồn: đủ điểm QA_STANDARD §6 có TC. `FD` không có ngưỡng
-   trong nguồn ⇒ không tính gap ở đây (đã là MR).
-6. **Dữ liệu** — có `12_` ⇒ ghi các TC `CHƯA CÓ DATA` (tham khảo, không đổi verdict).
-7. **Verdict** — theo QA_STANDARD §1 (Chặng 6): `PASS` khi lint sạch và không còn `CHƯA COVER`; còn gap
-   loại FIX ⇒ `FIX`; chỉ còn gap loại ASK ⇒ `ASK`. Có cả hai ⇒ `FIX` (sửa phần sửa được trước).
+## Steps
+1. **Lint** — run `npm run lint -- <task-slug>`, paste the real result. Exit `1` ⇒ verdict `FIX`, list the errors, stop.
+2. **Matrix** — one row for each `BR`/`FD`/`AF` of 01, each `Confirmed` `MR`, each `Giữ` `TI`. The cover column takes
+   the `TC_ID`s carrying the matching `Rule#<code>` or `TI#<code>` tag.
+3. **Classify the gap** of each `CHƯA COVER` row:
+   - There is a `Giữ` TI or the sources are sufficient to write it ⇒ `FIX: <kịch bản> — dựa trên <mã>` (FIX: <scenario> — based on <code>; hand to `test-case-generation`; if there is no TI yet, hand to `test-idea-design`).
+   - Only a `Chờ MR` TI, or information is missing ⇒ `ASK: MR-xx` (the MR exists) or `ASK: cần MR cho <mã> × W<n>` (an MR is needed for <code> × W<n>; hand to Stage 2).
+4. **Viewpoint balance** — each VP in 03 §2 has at least one TC tagged `Viewpoint#VP-xx` (one TC may carry several `Viewpoint#` tags); a TC carrying a VP not in 03 ⇒ `FIX`.
+5. **Boundary chain** — for each `FD` with min/max/length in the sources: every QA_STANDARD §6 point has a TC. An `FD` without a threshold
+   in the sources ⇒ not counted as a gap here (it is already an MR).
+6. **Data** — if `12_` exists ⇒ record the TCs marked `CHƯA CÓ DATA` (no data yet) (for reference; does not change the verdict).
+7. **Verdict** — per QA_STANDARD §1 (Stage 6): `PASS` when lint is clean and no `CHƯA COVER` is left; FIX-type gaps
+   remaining ⇒ `FIX`; only ASK-type gaps remaining ⇒ `ASK`. Both ⇒ `FIX` (fix the fixable part first).
 
-Vòng lặp hội tụ: mỗi lần `FIX` giảm số dòng `CHƯA COVER`; không còn gap ⇒ `PASS`. Không nghi ngờ suông khi không có gap.
+A converging loop: each `FIX` round reduces the number of `CHƯA COVER` rows; no gaps left ⇒ `PASS`. Do not raise vague doubts when there is no gap.
 
-## Format output
-Ghi ra `OUTPUT/<task-slug>/06_coverage_review.md`:
+## Output format
+Write `OUTPUT/<task-slug>/06_coverage_review.md`:
 
 ````markdown
 # Coverage Review · <task-slug>
@@ -89,12 +92,14 @@ Owner: qa-system/qa-test-design/skills/coverage-review.md · Nguồn: 01–05, k
 |---|---|---|---|
 ````
 
-`FD` dạng định dạng/độ dài dùng cột tương ứng của §6 (rỗng · 1 ký tự · đúng độ dài · quá độ dài · sai định dạng · ký tự đặc biệt).
-Mục không có dòng ⇒ không dựng bảng, ghi dòng văn bản `Không có`.
+(Sections: 1 lint result · 2 coverage matrix — `Đạt` = covered · 3 viewpoint balance · 4 boundary chain · 5 Human-Final.)
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Đã chạy lint và dán kết quả thật.
-- [ ] Ma trận có đủ mọi `BR`/`FD`/`AF` của 01, mọi `MR` `Confirmed`, mọi `TI` `Giữ`; không ô trống.
-- [ ] Mỗi gap mang `FIX:` hoặc `ASK:` kèm mã nguồn; không có giá trị tự chế.
-- [ ] Viewpoint chỉ đối chiếu với VP của 03.
-- [ ] Verdict đúng luật Chặng 6 (QA_STANDARD §1).
+A format/length `FD` uses the matching §6 columns (empty · 1 character · exact length · over length · wrong format · special characters).
+A section with no rows ⇒ do not build a table; write the text line `Không có` (none).
+
+## Acceptance gates (Quality Gates)
+- [ ] Lint has been run and its real result pasted.
+- [ ] The matrix contains every `BR`/`FD`/`AF` of 01, every `Confirmed` `MR`, every `Giữ` `TI`; no empty cells.
+- [ ] Every gap carries `FIX:` or `ASK:` with a source code; no invented values.
+- [ ] Viewpoints are compared only with the VPs of 03.
+- [ ] The verdict follows the Stage 6 rule (QA_STANDARD §1).

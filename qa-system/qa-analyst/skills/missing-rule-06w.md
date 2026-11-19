@@ -1,68 +1,71 @@
 ---
 name: missing-rule-06w
 description: >
-  Quét ma trận đóng 06W (mỗi BR/FD/AF × W1–W6) để tìm kẽ hở quy tắc, chuyển mọi OQ của Chặng 1
-  thành câu hỏi MR-xx cho BA/PO. Là cổng ASK của pipeline.
+  Scans the closed 06W matrix (each BR/FD/AF × W1–W6) to find rule gaps, and turns every OQ from Stage 1
+  into an MR-xx question for the BA/PO. It is the ASK gate of the pipeline.
 ---
 
 # Skill: missing-rule-06w
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict & cổng ASK §1 · guard §2 · FACT §3 · **06W §4** ·
-> knowledge §8 · bảng câu hỏi §9.4 · nguồn §10 · thang đo §11).
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict & ASK gate §1 · guards §2 · FACT §3 · **06W §4** ·
+> knowledge §8 · question table §9.4 · sources §10 · scales §11).
+>
+> The output format block, the cell values (`Nguồn: …`, `Không áp dụng`, `MR-xx`) and the text line `Không có`
+> stay in Vietnamese: `npm run scaffold`, `npm run lint` and `npm run gate` parse them. Copy them verbatim.
 
-## Mục đích
-Biến mọi chỗ nguồn **chưa trả lời** thành câu hỏi đóng `MR-xx` cho BA/PO. Cùng tài liệu + cùng knowledge
-⇒ cùng bộ câu hỏi, vì phép quét là ma trận đóng (QA_STANDARD §4), không phải tìm tự do.
+## Purpose
+Turn every place the sources **have not answered** into a closed question `MR-xx` for the BA/PO. Same documents + same knowledge
+⇒ same set of questions, because the scan is a closed matrix (QA_STANDARD §4), not a free search.
 
-## Đầu vào
-- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — danh sách `BR`, `FD`, `AF` (hàng của ma trận) và `OQ`.
-- `INPUT/<task-slug>/` **hoặc** `OUTPUT/<task-slug>/00_knowledge_digest.md` — để kiểm một ô có thật sự
-  thiếu trong nguồn trước khi kết luận `Có kẽ hở` (01 có thể đã nén mất chi tiết).
-- `OUTPUT/<task-slug>/01_conflict_warning.md` nếu có.
-- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` — §7 (câu đã hỏi), §8 (quyết định đã chốt), §9.
-- Chỉ khi `knowledge/_sut.json` có `domain`: các file `rule-patterns` mà `npm run domain` liệt kê (QA_STANDARD §10.3).
-  `_sut.json` không có `domain` ⇒ bỏ qua bước 2b.
+## Inputs (Đầu vào)
+- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — the list of `BR`, `FD`, `AF` (the matrix rows) and `OQ`.
+- `INPUT/<task-slug>/` **or** `OUTPUT/<task-slug>/00_knowledge_digest.md` — to check that a cell is really
+  missing from the sources before concluding `Có kẽ hở` (gap found) (01 may have compressed away details).
+- `OUTPUT/<task-slug>/01_conflict_warning.md` if present.
+- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` — §7 (questions already asked), §8 (confirmed decisions), §9.
+- Only when `knowledge/_sut.json` has a `domain`: the `rule-patterns` files listed by `npm run domain` (QA_STANDARD §10.3).
+  `_sut.json` has no `domain` ⇒ skip step 2b.
 
-## KHÔNG được (riêng skill này)
-- Sinh test idea / test case / test data / expected result.
-- Tìm kẽ hở ngoài ma trận. Quét xong ma trận là dừng.
-- Hỏi lại điều nguồn hoặc knowledge (§3 Confirmed, §8, §9) đã trả lời.
-- Viết câu hỏi mở chung chung ("hệ thống xử lý thế nào?"). Câu hỏi phải trả lời được bằng Có/Không,
-  một con số, hoặc chọn phương án.
-- Coi `Phương án gợi ý` là rule, hay dùng nó làm expected ở chặng sau.
-- Tự điền `Phản hồi chính thức`, `Người trả lời`, `Ngày`, hay đổi `Trạng thái` khi người dùng chưa chuyển lời BA/PO.
+## MUST NOT (specific to this skill)
+- Produce test ideas / test cases / test data / expected results.
+- Look for gaps outside the matrix. Once the matrix is scanned, stop.
+- Ask again about something the sources or knowledge (§3 Confirmed, §8, §9) already answer.
+- Write vague open questions ("how does the system handle it?"). A question must be answerable with Yes/No,
+  a number, or a choice between options.
+- Treat the `Phương án gợi ý` (suggested option) as a rule, or use it as an expected result in a later stage.
+- Fill in `Phản hồi chính thức`, `Người trả lời`, `Ngày` yourself, or change `Trạng thái`, before the user has relayed the BA/PO's words.
 
-## Các bước
-1. **Dựng ma trận bằng tool**, không tự dựng: `npm run scaffold -- <task-slug> 02`. Tool ghi khung `02_missing_rule_report.md` — mỗi
-   `BR`/`FD`/`AF` của 01 một hàng theo thứ tự cố định, ô không áp dụng (bảng §4) đã điền sẵn `Không áp dụng` và **không được sửa**,
-   ô cần phán đoán là `<điền>` (tên và trọng tâm W theo §4). File đã có thì không ghi đè (`--stdout` để xem khung).
-2. **Chấm từng ô** đúng một kết quả:
-   - `Nguồn: <mã hoặc file §mục>` — nguồn/knowledge đã trả lời (kiểm lại trong `INPUT/` hoặc digest).
-   - `Không áp dụng` — chiều W này không liên quan đối tượng (vd `W5` cho field không phụ thuộc actor).
-   - `MR-xx` — có kẽ hở. Một kẽ hở dùng chung cho nhiều ô ⇒ cùng một mã.
-   Field thiếu min/max/độ dài ⇒ một `MR` ở ô `W1` của `FD` đó (chuỗi biên thuộc §6, không hỏi từng điểm biên).
-2b. **Họ quy tắc của ngành** (chỉ khi có `domain`) — dùng `rule-patterns` làm lời nhắc khi chấm ô đúng nhóm W
-   của dòng pack, **không** thêm hàng hay cột ngoài ma trận. Ô đó nguồn chưa trả lời ⇒ `MR-xx`, `Nguồn phát hiện`
-   ghi thêm `[DOMAIN] <pack-id>/rule-patterns.md#<mục>`. Họ quy tắc **không bao giờ** thành `BR`, và không dùng
-   làm `Phương án gợi ý`.
-3. **Đối chiếu OQ** — mỗi `OQ-xx` của 01 ⇒ đúng một `MR-xx` (có thể trùng MR đã sinh ở bước 2), hoặc
-   `Nguồn: <...>` nếu nguồn/knowledge thực ra đã trả lời.
-4. **Cấp mã** — kẽ hở trùng một câu đã có ở knowledge §7 ⇒ **giữ mã cũ** và chép trạng thái/phản hồi hiện có.
-   Kẽ hở mới ⇒ ghi mã tạm `MR-?` rồi chạy `npm run ids -- <task-slug> --assign OUTPUT/<task-slug>/02_missing_rule_report.md`
-   (cùng nhãn `MR-?a` ⇒ cùng một số). Không tự đếm, không đánh lại từ `MR-01`.
-5. **Chi tiết hoá** mỗi `MR` mới (format §2) và ghi vào bảng câu hỏi §3.
-6. **Verdict** (bên dưới), FACT Self-Audit, ghi file và knowledge.
+## Steps
+1. **Build the matrix with the tool**, never by hand: `npm run scaffold -- <task-slug> 02`. The tool writes the frame of `02_missing_rule_report.md` — one
+   row per `BR`/`FD`/`AF` of 01 in a fixed order; the not-applicable cells (table §4) are pre-filled with `Không áp dụng` and **must not be edited**;
+   the cells needing judgement are `<điền>` (to be filled) (W names and focus per §4). An existing file is never overwritten (use `--stdout` to view the frame).
+2. **Score each cell** with exactly one result:
+   - `Nguồn: <mã hoặc file §mục>` — the sources/knowledge already answer it (re-check in `INPUT/` or the digest).
+   - `Không áp dụng` — this W dimension is not relevant to the object (e.g. `W5` for a field that does not depend on an actor).
+   - `MR-xx` — there is a gap. One gap shared by several cells ⇒ the same code.
+   A field missing min/max/length ⇒ one `MR` in the `W1` cell of that `FD` (the boundary chain belongs to §6; do not ask about each boundary point).
+2b. **Industry rule families** (only when a `domain` is set) — use `rule-patterns` as a prompt when scoring the cell of the matching W group
+   of the pack row; do **not** add rows or columns outside the matrix. If the sources have not answered that cell ⇒ `MR-xx`, and `Nguồn phát hiện` (where found)
+   additionally records `[DOMAIN] <pack-id>/rule-patterns.md#<section>`. A rule family **never** becomes a `BR`, and is never used
+   as the `Phương án gợi ý`.
+3. **Reconcile the OQs** — each `OQ-xx` from 01 ⇒ exactly one `MR-xx` (it may be an MR already produced in step 2), or
+   `Nguồn: <...>` if the sources/knowledge actually already answer it.
+4. **Assign codes** — a gap identical to a question already in knowledge §7 ⇒ **keep the old code** and copy its current status/response.
+   A new gap ⇒ write the temporary code `MR-?` then run `npm run ids -- <task-slug> --assign OUTPUT/<task-slug>/02_missing_rule_report.md`
+   (the same label `MR-?a` ⇒ the same number). Never count yourself, never renumber from `MR-01`.
+5. **Detail** each new `MR` (format §2) and record it in the question table §3.
+6. **Verdict** (below), FACT Self-Audit, write the file and knowledge.
 
-### Phân loại MR (một trong 5 nhóm)
+### MR classification (one of 5 groups)
 `Boundary & Edge` · `State & Lifecycle` · `Exception & Error Handling` · `Dependency & Side-Effect` · `Implicit & Authorization`.
 
 ## Verdict
-- `ASK` — còn ít nhất một `MR` trạng thái `New` hoặc `TREO` (§9.3). Cổng ASK đóng theo QA_STANDARD §1.
-- `PASS` — không có `MR`, hoặc mọi `MR` đều `Confirmed`/`Rejected`.
-- `FIX` — ma trận thiếu hàng/ô, OQ chưa đối chiếu ⇒ tự sửa rồi chạy lại.
+- `ASK` — at least one `MR` still has status `New` or `TREO` (pending) (§9.3). The ASK gate closes per QA_STANDARD §1.
+- `PASS` — no `MR`, or every `MR` is `Confirmed`/`Rejected`.
+- `FIX` — the matrix is missing rows/cells, or OQs are not reconciled ⇒ fix it yourself and re-run.
 
-## Format output
-Ghi ra `OUTPUT/<task-slug>/02_missing_rule_report.md`:
+## Output format
+Write `OUTPUT/<task-slug>/02_missing_rule_report.md`:
 
 ````markdown
 # Missing Rule Report · <task-slug>
@@ -95,33 +98,35 @@ Owner: qa-system/qa-analyst/skills/missing-rule-06w.md · Nguồn: 01_requiremen
 | OQ-02 | Nguồn: 05_communication/<file> §<mục> |
 ````
 
-Không có MR ⇒ §2 và §3 ghi dòng văn bản `Không có` (không dựng bảng). Không có OQ ⇒ §4 ghi dòng văn bản `Không có`.
+(Section §2 fields: basis · W · group · gap · risk if ignored · priority. §4 = OQ reconciliation.)
 
-## Ghi knowledge
-Theo QA_STANDARD §8: skill `02` chỉ **thêm** dòng mới vào §7 của `knowledge/features/<feature-slug>.md`,
-trạng thái `New`, đúng bảng §9.4. Không xoá, không sửa dòng cũ, không ghi §8.
+No MR ⇒ §2 and §3 contain the text line `Không có` (none) (no table). No OQ ⇒ §4 contains the text line `Không có`.
 
-Khi người dùng chuyển lời BA/PO: chép **nguyên văn** vào `Phản hồi chính thức` / `Người trả lời` / `Ngày`
-/ `Trạng thái` trong §3 của báo cáo, rồi chạy:
+## Writing knowledge
+Per QA_STANDARD §8: skill `02` only **adds** new rows to §7 of `knowledge/features/<feature-slug>.md`,
+with status `New`, in exactly the §9.4 table. Never delete or modify old rows, never write §8.
+
+When the user relays the BA/PO's words: copy them **verbatim** into `Phản hồi chính thức` / `Người trả lời` / `Ngày`
+/ `Trạng thái` (official response / answered by / date / status) in §3 of the report, then run:
 
 ```bash
 npm run knowledge:sync -- <task-slug> --write
 npm run gate <task-slug>
 ```
 
-Dán kết quả thật. Mọi MR đã `Confirmed`/`Rejected` ⇒ sửa dòng meta của 02 thành `Verdict: PASS`
-(không quét lại các hàng cũ), rồi chạy lại Chặng `01` để nâng MR đã chốt thành `BR`/`FD`/`AF` (nguồn `knowledge §8 #n`)
-và cập nhật §9 hằng số. **Đối tượng mới của 01 phải có hàng ma trận** (lint kiểm): lấy hàng khung bằng
-`npm run scaffold -- <task-slug> 02 --stdout`, chèn vào §1, chấm như bước 2 — ô đã được câu trả lời chốt ghi
-`Nguồn: knowledge §8 #n`. Ô có kẽ hở mới ⇒ `MR` số kế tiếp, verdict trở lại `ASK` (vòng lặp hội tụ: mỗi vòng chỉ hỏi phần mới).
+Paste the real result. Every MR is `Confirmed`/`Rejected` ⇒ change the 02 meta line to `Verdict: PASS`
+(do not re-scan the old rows), then re-run Stage `01` to promote the confirmed MRs into `BR`/`FD`/`AF` (source `knowledge §8 #n`)
+and update the §9 constants. **New objects from 01 must have a matrix row** (lint checks this): get the frame row with
+`npm run scaffold -- <task-slug> 02 --stdout`, insert it into §1 and score it as in step 2 — a cell already settled by the answer records
+`Nguồn: knowledge §8 #n`. A cell with a new gap ⇒ an `MR` with the next number, and the verdict goes back to `ASK` (a converging loop: each round only asks about the new part).
 
-Câu trả lời phải dùng được **nguyên văn**. Câu trả lời còn biến hoặc mẫu (`<tên trường>`, `X ký tự`,
-"tuỳ trường hợp") thì chưa phải giá trị cụ thể: để trạng thái `TREO`, ghi câu hỏi tiếp theo nêu rõ cần chữ/số gì.
-Câu trả lời chỉ nằm trong `OUTPUT/` sẽ mất ở lần chạy sau — vì vậy bước sync là bắt buộc.
+The answer must be usable **verbatim**. An answer that still contains variables or templates (`<tên trường>`, `X ký tự`,
+"it depends") is not a concrete value yet: keep the status `TREO`, and write a follow-up question stating exactly which text/number is needed.
+An answer that lives only in `OUTPUT/` is lost on the next run — that is why the sync step is mandatory.
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Ma trận có đủ mọi `BR`/`FD`/`AF` của 01; mọi ô có đúng một kết quả hợp lệ.
-- [ ] Mọi `OQ` của 01 có một dòng ở §4.
-- [ ] Mỗi `MR` ở ma trận có mục `###` ở §2 và một dòng ở §3; câu hỏi là câu đóng.
-- [ ] Không MR nào trùng câu đã có ở knowledge §7 mà mang mã mới.
-- [ ] Verdict khớp trạng thái các MR (§9.3); `npm run gate <slug>` đã chạy, kết quả thật được dán.
+## Acceptance gates (Quality Gates)
+- [ ] The matrix contains every `BR`/`FD`/`AF` of 01; every cell has exactly one valid result.
+- [ ] Every `OQ` of 01 has a row in §4.
+- [ ] Every `MR` in the matrix has a `###` entry in §2 and a row in §3; the question is a closed question.
+- [ ] No MR that duplicates a question already in knowledge §7 carries a new code.
+- [ ] The verdict matches the MR statuses (§9.3); `npm run gate <slug>` has been run and its real result pasted.

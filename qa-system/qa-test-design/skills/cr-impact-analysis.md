@@ -1,95 +1,99 @@
 ---
 name: cr-impact-analysis
 description: >
-  Phân tích tác động của Change Request (CR) hoặc tài liệu cập nhật trong 5 ngăn INPUT/<task-slug>/
-  lên kho tri thức và bộ Test Case hiện hành: chỉ rõ Delta (Cũ → Mới) trên BR/FD/AF/thông báo, gom
-  điểm mờ thành câu hỏi đóng MR-xx cho BA/PO, và phân loại từng Test Case bị ảnh hưởng (Sửa giá trị /
-  Viết lại / Chỉ chạy lại / Blocked).
+  Analyses the impact of a Change Request (CR) or updated documents in the 5 folders of INPUT/<task-slug>/
+  on the knowledge base and the current Test Case set: states the Delta (Old → New) on BR/FD/AF/messages, collects
+  unclear points into closed MR-xx questions for the BA/PO, and classifies each affected Test Case (Sửa giá trị /
+  Viết lại / Chỉ chạy lại / Blocked — update values / rewrite / re-run only / blocked).
 ---
 
 # Skill: cr-impact-analysis
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard & nhãn §2 · FACT §3 · chuỗi biên §6 ·
-> I/O §7 · knowledge §8 · mã & schema §9 · nguồn & ưu tiên §10 · thang đo §11).
-> Luật đã có ở QA_STANDARD thì **trỏ số mục**, không chép lại.
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict §1 · guards & labels §2 · FACT §3 · boundary chain §6 ·
+> I/O §7 · knowledge §8 · IDs & schemas §9 · sources & precedence §10 · scales §11).
+> Where a rule already exists in QA_STANDARD, **point to the section number**; do not copy it.
 >
-> **Skill = LÀM THẾ NÀO.** Quy trình + tham số + format output. Tái dùng được.
-> KHÔNG chứa danh tính/quyền hạn (đó là `AGENT.md`), KHÔNG nhắc lại ràng buộc chung
-> (đó là `qa-system/core/QA_STANDARD.md`).
+> **Skill = HOW.** Procedure + parameters + output format. Reusable.
+> It does NOT hold identity/permissions (that is `AGENT.md`) and does NOT repeat the shared constraints
+> (those are in `qa-system/core/QA_STANDARD.md`).
+>
+> The output format block, the column names and the action/status labels (`Sửa giá trị`, `Viết lại`, `Chỉ chạy lại`,
+> `Blocked — Chờ MR-xx`, `Sẵn sàng cập nhật`, `Sẵn sàng chạy lại`) stay in Vietnamese: they are the closed vocabulary of
+> the deliverable and the §3 question table is parsed by the tools. Copy them verbatim.
 
-## Mục đích
-Đánh giá tác động khi có Change Request (CR) hoặc tài liệu cập nhật mới (System Design, API Spec, SRS, Wireframe, biên bản họp) được bổ sung vào một tính năng đã có bộ Test Case. Xuất ra `OUTPUT/<task-slug>/16_cr_impact_analysis.md` gồm bảng Delta (Cũ → Mới) có trích nguyên văn, bảng câu hỏi `MR-xx` cho các điểm mờ, danh sách từng `TC_ID` bị ảnh hưởng kèm hành động bảo trì cụ thể và chỉ dẫn đồng bộ tri thức.
+## Purpose
+Assess the impact when a Change Request (CR) or new updated documents (System Design, API Spec, SRS, Wireframe, meeting minutes) are added to a feature that already has a Test Case set. Produce `OUTPUT/<task-slug>/16_cr_impact_analysis.md` containing a Delta table (Old → New) with verbatim quotes, a question table of `MR-xx` for the unclear points, the list of each affected `TC_ID` with a concrete maintenance action, and knowledge synchronisation instructions.
 
-## Đầu vào
-- `INPUT/<task-slug>/` — đủ 5 ngăn (`01_business/`, `02_ba/`, `03_dev/`, `04_design/`, `05_communication/`). **Không đọc** `<ngăn>/_superseded/`. Nếu tài liệu cập nhật còn nằm ở thư mục rời bên ngoài, chạy `npm run intake -- <đường-dẫn> --into <task-slug>` trước để phân nhóm tự động vào 5 ngăn.
-- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — bảng `BR`, `FD`, `AF` hiện hành và danh sách file nguồn tại dòng meta.
-- `OUTPUT/<task-slug>/02_missing_rule_report.md` (nếu có) — danh sách `MR` đã có của tính năng.
-- `OUTPUT/<task-slug>/05_test_case_spec.md` (hoặc `OUTPUT/<task-slug>/testcases/batch_*.md`) — bộ Test Case 8 trường hiện hành.
-- `OUTPUT/<task-slug>/06_coverage_review.md` (nếu có) — ma trận độ phủ `BR/FD/AF` ↔ `TC_ID` và bảng chuỗi biên.
-- `knowledge/_project.md` · `knowledge/features/<task-slug>.md` — §3, §7, §8, §9 (luôn nạp, QA_STANDARD §7).
+## Inputs (Đầu vào)
+- `INPUT/<task-slug>/` — all 5 folders (`01_business/`, `02_ba/`, `03_dev/`, `04_design/`, `05_communication/`). **Do not read** `<folder>/_superseded/`. If the updated documents are still in a separate folder outside, run `npm run intake -- <path> --into <task-slug>` first to sort them automatically into the 5 folders.
+- `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — the current `BR`, `FD`, `AF` tables and the list of source files in the meta line.
+- `OUTPUT/<task-slug>/02_missing_rule_report.md` (if present) — the feature's existing `MR` list.
+- `OUTPUT/<task-slug>/05_test_case_spec.md` (or `OUTPUT/<task-slug>/testcases/batch_*.md`) — the current set of 8-field Test Cases.
+- `OUTPUT/<task-slug>/06_coverage_review.md` (if present) — the `BR/FD/AF` ↔ `TC_ID` coverage matrix and the boundary chain table.
+- `knowledge/_project.md` · `knowledge/features/<task-slug>.md` — §3, §7, §8, §9 (always loaded, QA_STANDARD §7).
 
-> Thiếu `01_requirement_risk_summary.md`, thiếu `05_test_case_spec.md` (hoặc `testcases/batch_*.md`), hoặc không có tài liệu cập nhật mới nào trong 5 ngăn `INPUT/<task-slug>/` → DỪNG, không tự tưởng tượng nội dung.
+> `01_requirement_risk_summary.md` missing, `05_test_case_spec.md` (or `testcases/batch_*.md`) missing, or no new updated document in the 5 folders of `INPUT/<task-slug>/` → STOP; never imagine the content.
 
-## KHÔNG được (riêng skill này)
-> Chỉ ghi chốt chặn **riêng**. Guard chung ở `qa-system/core/QA_STANDARD.md` §2 — không lặp lại.
+## MUST NOT (specific to this skill)
+> Record only the **specific** gates. The shared guards are in `qa-system/core/QA_STANDARD.md` §2 — not repeated.
 
-- Không tự ý sửa trực tiếp `01_requirement_risk_summary.md`, `05_test_case_spec.md` hay `knowledge/features/<task-slug>.md` trong bước này — việc cập nhật chính thức thuộc các chặng `01`, `02`, `05`, `06` sau khi người dùng/BA xác nhận.
-- Không đọc hoặc trích dẫn từ thư mục `<ngăn>/_superseded/` (bản cũ đã bị thay thế).
-- Không tự đoán giá trị mới, ngưỡng mới hoặc chữ thông báo lỗi mới khi tài liệu cập nhật bỏ ngỏ hoặc hẹn bổ sung sau — bắt buộc gắn nhãn `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` (QA_STANDARD §2.1) và sinh câu hỏi đóng cho BA/PO.
-- Không bỏ sót bất kỳ `TC_ID` nào trong `05_test_case_spec.md` có gắn tag `Rule#<mã>` của `BR`/`FD`/`AF` nằm trong bảng Delta.
-- Không tự đếm nhẩm số thứ tự mã `MR-xx` (hoặc `BR-xx`, `FD-xx`, `AF-xx` mới) — phải dùng mã tạm rồi chạy `npm run ids -- <task-slug> --assign OUTPUT/<task-slug>/16_cr_impact_analysis.md`.
+- Do not directly modify `01_requirement_risk_summary.md`, `05_test_case_spec.md` or `knowledge/features/<task-slug>.md` in this step — the official update belongs to stages `01`, `02`, `05`, `06` after the user/BA confirms.
+- Do not read or quote from the `<folder>/_superseded/` folder (old, replaced versions).
+- Do not guess new values, new thresholds or new error message texts when the updated documents leave them open or promise them later — you must attach the label `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` (QA_STANDARD §2.1) and produce a closed question for the BA/PO.
+- Do not miss any `TC_ID` in `05_test_case_spec.md` tagged `Rule#<code>` with a `BR`/`FD`/`AF` code that is in the Delta table.
+- Do not count `MR-xx` numbers in your head (nor new `BR-xx`, `FD-xx`, `AF-xx`) — use temporary codes, then run `npm run ids -- <task-slug> --assign OUTPUT/<task-slug>/16_cr_impact_analysis.md`.
 
-## Quy tắc phân loại tác động lên Test Case (ma trận đóng)
-> Chỉ dùng trong skill này để bảo đảm hai lần chạy trên cùng đầu vào luôn ra cùng danh sách `TC_ID` và cùng nhãn hành động.
+## Rules for classifying the impact on Test Cases (closed matrix)
+> Used only in this skill, so that two runs on the same input always produce the same `TC_ID` list and the same action labels.
 
-1. **Quy tắc chọn dòng vào Bảng Delta (§2)**:
-   Quét bảng `BR` (§3), `FD` (§3b), `AF` (§5) của `01_requirement_risk_summary.md` và đưa vào Bảng Delta mọi mã thoả một trong hai điều kiện:
-   - **Thay đổi trực tiếp**: Tài liệu cập nhật sửa trực tiếp điều kiện, ngưỡng, độ dài, định dạng hoặc chữ thông báo của mã đó.
-   - **Thay đổi dẫn xuất**: Dòng của mã đó trong `01_requirement_risk_summary.md` có dẫn chiếu mã bị thay đổi trực tiếp **và** lặp lại con số ngưỡng/giá trị cũ bị thay đổi.
-2. **Quy tắc chọn `TC_ID` vào Bảng đánh giá tác động (§4.2)**:
-   Tập `TC_ID` đưa vào §4.2 (sắp xếp theo `TC_ID` tăng dần) gồm và **chỉ gồm**:
-   - **Nhóm theo Tag**: Mọi `TC_ID` trong `05_test_case_spec.md` có tag `Rule#<mã>` trùng với một `Mã đối tượng` trong Bảng Delta (§2).
-   - **Nhóm liên đới theo Expected Result**: Mọi `TC_ID` khác trong `05_test_case_spec.md` không mang tag của mã trong Bảng Delta nhưng có dòng trong `Expected Result` khẳng định trực tiếp hành vi của quy tắc nằm trong Bảng Delta.
-3. **Quy tắc gán nhãn cho từng `TC_ID` trong §4.2**:
-   Mỗi `TC_ID` nhận **đúng một** nhãn ở cột `Hành động` và **đúng một** nhãn ở cột `Trạng thái`:
+1. **Rule for selecting rows into the Delta table (§2)**:
+   Scan the `BR` (§3), `FD` (§3b) and `AF` (§5) tables of `01_requirement_risk_summary.md` and put into the Delta table every code meeting either condition:
+   - **Direct change**: the updated documents directly change that code's condition, threshold, length, format or message text.
+   - **Derived change**: that code's row in `01_requirement_risk_summary.md` references a directly changed code **and** repeats the old threshold/value that changed.
+2. **Rule for selecting `TC_ID`s into the impact assessment table (§4.2)**:
+   The set of `TC_ID`s put into §4.2 (sorted by ascending `TC_ID`) contains, and **only contains**:
+   - **Group by Tag**: every `TC_ID` in `05_test_case_spec.md` whose `Rule#<code>` tag matches a `Mã đối tượng` (object code) in the Delta table (§2).
+   - **Group linked through Expected Result**: every other `TC_ID` in `05_test_case_spec.md` that does not carry a tag of a code in the Delta table but has a line in `Expected Result` directly asserting the behaviour of a rule in the Delta table.
+3. **Rule for labelling each `TC_ID` in §4.2**:
+   Each `TC_ID` receives **exactly one** label in the `Hành động` (action) column and **exactly one** label in the `Trạng thái` (status) column:
 
-| Cột | Giá trị hợp lệ | Điều kiện áp dụng (ma trận đóng) |
+| Column | Valid value | Applies when (closed matrix) |
 |---|---|---|
-| `Hành động` | `Sửa giá trị` | TC có chứa trực tiếp con số ngưỡng cũ, điểm biên cũ (`min`, `max-1`, `max`, `max+1`) hoặc chữ thông báo cũ trong `Title`, `Test Steps`, `Test Data` hoặc `Expected Result`, và cấu trúc các bước thao tác (`Test Steps`) giữ nguyên (chỉ đổi con số/chuỗi sang giá trị mới). |
-| `Hành động` | `Viết lại` | Thay đổi điều kiện rẽ nhánh làm đổi kết quả nghiệp vụ của kịch bản, phải thêm/bớt bước thao tác trong `Test Steps`, hoặc cần tách lại kịch bản theo chuỗi biên chuẩn (QA_STANDARD §6). |
-| `Hành động` | `Chỉ chạy lại` | TC **không** chứa con số ngưỡng cũ hay chữ thông báo cũ (mọi dữ liệu và kết quả kỳ vọng trong TC vẫn đúng nguyên văn dưới quy tắc mới), chỉ dùng chung quy tắc hoặc kiểm tra hành vi liên đới trong `Expected Result` nên cần chạy hồi quy. |
-| `Trạng thái` | `Blocked — Chờ MR-xx` | Nội dung cần sửa hoặc kết quả kỳ vọng của `TC_ID` phụ thuộc trực tiếp vào một điểm mờ chưa chốt (`MR-xx` ở trạng thái `New` hoặc `TREO`). |
-| `Trạng thái` | `Sẵn sàng cập nhật` | Áp dụng cho TC có `Hành động` là `Sửa giá trị` hoặc `Viết lại` và mọi giá trị mới cần cho TC đó đã có đầy đủ trong nguồn hợp lệ. |
-| `Trạng thái` | `Sẵn sàng chạy lại` | Áp dụng cho TC có `Hành động` là `Chỉ chạy lại` và không phụ thuộc vào `MR-xx` nào đang treo. |
+| `Hành động` | `Sửa giá trị` (update values) | The TC directly contains the old threshold number, an old boundary point (`min`, `max-1`, `max`, `max+1`) or the old message text in `Title`, `Test Steps`, `Test Data` or `Expected Result`, and the structure of the action steps (`Test Steps`) stays the same (only the number/string changes to the new value). |
+| `Hành động` | `Viết lại` (rewrite) | A change in a branching condition changes the scenario's business outcome, steps must be added/removed in `Test Steps`, or the scenario must be re-split along the standard boundary chain (QA_STANDARD §6). |
+| `Hành động` | `Chỉ chạy lại` (re-run only) | The TC does **not** contain the old threshold number or old message text (all data and expected results in the TC remain verbatim correct under the new rule); it only shares the rule or checks a linked behaviour in `Expected Result`, so a regression run is needed. |
+| `Trạng thái` | `Blocked — Chờ MR-xx` (blocked, waiting on MR-xx) | The content to be changed or the expected result of the `TC_ID` depends directly on an unconfirmed unclear point (`MR-xx` with status `New` or `TREO`). |
+| `Trạng thái` | `Sẵn sàng cập nhật` (ready to update) | Applies to a TC whose `Hành động` is `Sửa giá trị` or `Viết lại` and every new value it needs is fully available in a valid source. |
+| `Trạng thái` | `Sẵn sàng chạy lại` (ready to re-run) | Applies to a TC whose `Hành động` is `Chỉ chạy lại` and which does not depend on any pending `MR-xx`. |
 
-## Các bước
-1. **Bước 1 — Tiếp nhận & Quét tài liệu cập nhật theo 5 ngăn (`INPUT/<task-slug>/`)**:
-   - Nếu tài liệu mới còn nằm ở thư mục rời (ví dụ `updates/`), chạy `npm run intake -- <đường-dẫn> --into <task-slug>` để chuyển sang `.md`, xếp vào đúng 5 ngăn (`01_business`, `02_ba`, `03_dev`, `04_design`, `05_communication`) và dời bản cũ vào `<ngăn>/_superseded/`.
-   - Quét 5 ngăn của `INPUT/<task-slug>/` (trừ `_superseded/`), đối chiếu với dòng meta `Nguồn:` của `01_requirement_risk_summary.md` và `knowledge/features/<task-slug>.md` để lập danh sách các file cập nhật mới theo từng ngăn.
-   - Kiểm tra ngày ban hành, người yêu cầu, trạng thái phê duyệt và áp thứ tự ưu tiên nguồn theo `QA_STANDARD` §10.2. Mục `## Annotations / Pending changes` hoặc tài liệu chưa phê duyệt được ghi nhận thành điểm mờ (`MR`).
-2. **Bước 2 — Đối chiếu Tri thức & Test Suite hiện có**:
-   - Đọc `knowledge/_project.md`, `knowledge/features/<task-slug>.md` (§3, §7, §8, §9) và `01_requirement_risk_summary.md` (§3 `BR`, §3b `FD`, §5 `AF`).
-   - Đọc toàn bộ `05_test_case_spec.md` (và `06_coverage_review.md` nếu có), lập danh sách ánh xạ từng mã `BR-xx`, `FD-xx`, `AF-xx` sang các `TC_ID` đang kiểm tra mã đó.
-3. **Bước 3 — Phân tích Delta (Cũ → Mới) & Bắt điểm mờ (`MR-xx`)**:
-   - Đối chiếu từng nội dung thay đổi trong tài liệu mới với các dòng `BR-xx`, `FD-xx`, `AF-xx` hiện có (sắp xếp theo mã tăng dần: `BR` → `FD` → `AF`).
-   - Lập bảng Delta (§2 của báo cáo): ghi rõ `Mã đối tượng`, `Loại thay đổi`, `Nội dung cũ (kèm nguồn cũ)`, `Nội dung mới`, `Nguồn mới (file §mục)` và `Trích nguyên văn` đúng từng chữ từ tài liệu mới.
-   - Chỗ nào tài liệu mới thiếu thông tin (ví dụ: đổi độ dài nhưng thông báo lỗi hẹn gửi sau), mâu thuẫn giữa các nguồn cùng cấp (`QA_STANDARD` §10.2), hoặc chưa rõ phạm vi áp dụng:
-     - Điền nhãn `[CHƯA CÓ TRONG TÀI LIỆU – MR-?a]` tại phần thiếu trong ô `Nội dung mới`.
-     - Thêm dòng câu hỏi đóng tương ứng vào bảng `## 3. DANH SÁCH CÂU HỎI CHO BA/PO (ĐIỂM MỜ)` theo đúng schema `QA_STANDARD` §9.4.
-4. **Bước 4 — Đánh giá tác động lên từng Test Case**:
-   - Tập hợp mọi `TC_ID` mang tag `Rule#<mã>` của các mã có trong bảng Delta (và các `TC_ID` có quy tắc phụ thuộc trực tiếp vào mã đó trong `01_requirement_risk_summary.md`), sắp xếp theo `TC_ID` tăng dần.
-   - Áp dụng bảng **Quy tắc phân loại tác động lên Test Case** ở trên để điền `Hành động` (`Sửa giá trị` / `Viết lại` / `Chỉ chạy lại`), `Trạng thái` (`Sẵn sàng cập nhật` / `Sẵn sàng chạy lại` / `Blocked — Chờ MR-xx`) và `Chi tiết thay đổi / Lý do` (chỉ rõ đổi từ giá trị nào sang giá trị nào hoặc chờ `MR-xx` nào).
-   - Kiểm tra chuỗi biên chuẩn (`QA_STANDARD` §6) cho các `FD-xx` hoặc ngưỡng `BR-xx` bị đổi: nếu sau khi sửa các TC hiện có mà vẫn thiếu điểm biên mới (có thể dùng `npm run boundary` để tính điểm biên từ ngưỡng mới), liệt kê vào mục `## 5. ĐỀ XUẤT TEST CASE BỔ SUNG (NẾU CÓ)`.
-5. **Bước 5 — Gán mã tự động, Chỉ dẫn đồng bộ Knowledge & Ra Verdict**:
-   - Ghi file `OUTPUT/<task-slug>/16_cr_impact_analysis.md`, rồi chạy `npm run ids -- <task-slug> --assign OUTPUT/<task-slug>/16_cr_impact_analysis.md` để đổi toàn bộ mã tạm (`MR-?a`, `BR-?a`…) sang số thứ tự tiếp theo (QA_STANDARD §9.1).
-   - Lập bảng chỉ dẫn đồng bộ vào `knowledge/features/<task-slug>.md` (tuân thủ luật ghi `QA_STANDARD` §8) và thứ tự các chặng cần chạy lại sau khi BA/PO xác nhận.
-   - Xác định Verdict theo `QA_STANDARD` §1:
-     - `ASK`: khi còn bất kỳ câu hỏi `MR-xx` mới nào ở trạng thái `New` / `TREO` (hoặc tài liệu cập nhật chưa được phê duyệt).
-     - `PASS`: khi tài liệu cập nhật đã phê duyệt, không phát sinh `MR-xx` treo, và đã liệt kê đủ 100% `TC_ID` bị ảnh hưởng.
-     - `FIX`: khi thiếu trích dẫn nguyên văn, để trống ô bảng không hợp lệ, hoặc bỏ sót `TC_ID` mang tag của mã bị thay đổi.
+## Steps
+1. **Step 1 — Take in & scan the updated documents across the 5 folders (`INPUT/<task-slug>/`)**:
+   - If the new documents are still in a separate folder (e.g. `updates/`), run `npm run intake -- <path> --into <task-slug>` to convert them to `.md`, sort them into the right 5 folders (`01_business`, `02_ba`, `03_dev`, `04_design`, `05_communication`) and move the old versions into `<folder>/_superseded/`.
+   - Scan the 5 folders of `INPUT/<task-slug>/` (except `_superseded/`), compare against the `Nguồn:` meta line of `01_requirement_risk_summary.md` and `knowledge/features/<task-slug>.md` to list the newly updated files per folder.
+   - Check the issue date, the requester, the approval status and apply the source precedence of `QA_STANDARD` §10.2. A `## Annotations / Pending changes` section or an unapproved document is recorded as an unclear point (`MR`).
+2. **Step 2 — Cross-check the existing knowledge & Test Suite**:
+   - Read `knowledge/_project.md`, `knowledge/features/<task-slug>.md` (§3, §7, §8, §9) and `01_requirement_risk_summary.md` (§3 `BR`, §3b `FD`, §5 `AF`).
+   - Read all of `05_test_case_spec.md` (and `06_coverage_review.md` if present) and build a mapping from each `BR-xx`, `FD-xx`, `AF-xx` code to the `TC_ID`s that test it.
+3. **Step 3 — Delta analysis (Old → New) & catching unclear points (`MR-xx`)**:
+   - Compare each change in the new documents with the existing `BR-xx`, `FD-xx`, `AF-xx` rows (sorted by ascending code: `BR` → `FD` → `AF`).
+   - Build the Delta table (§2 of the report): record `Mã đối tượng`, `Loại thay đổi`, `Nội dung cũ (kèm nguồn cũ)`, `Nội dung mới`, `Nguồn mới (file §mục)` and a word-for-word `Trích nguyên văn` from the new document (object code · change type · old content with old source · new content · new source · verbatim quote).
+   - Wherever the new documents lack information (e.g. the length changes but the error message is promised later), sources of the same level conflict (`QA_STANDARD` §10.2), or the scope of application is unclear:
+     - Put the label `[CHƯA CÓ TRONG TÀI LIỆU – MR-?a]` at the missing part of the `Nội dung mới` cell.
+     - Add the matching closed question row to the table `## 3. DANH SÁCH CÂU HỎI CHO BA/PO (ĐIỂM MỜ)` following exactly the `QA_STANDARD` §9.4 schema.
+4. **Step 4 — Assess the impact on each Test Case**:
+   - Collect every `TC_ID` tagged `Rule#<code>` for the codes in the Delta table (and the `TC_ID`s whose rules depend directly on that code in `01_requirement_risk_summary.md`), sorted by ascending `TC_ID`.
+   - Apply the **Rules for classifying the impact on Test Cases** table above to fill `Hành động` (`Sửa giá trị` / `Viết lại` / `Chỉ chạy lại`), `Trạng thái` (`Sẵn sàng cập nhật` / `Sẵn sàng chạy lại` / `Blocked — Chờ MR-xx`) and `Chi tiết thay đổi / Lý do` (change details / reason — state exactly which value changes to which, or which `MR-xx` it waits on).
+   - Check the standard boundary chain (`QA_STANDARD` §6) for changed `FD-xx`s or `BR-xx` thresholds: if, after fixing the existing TCs, new boundary points are still missing (you may use `npm run boundary` to compute boundary points from the new threshold), list them in section `## 5. ĐỀ XUẤT TEST CASE BỔ SUNG (NẾU CÓ)` (proposed additional test cases, if any).
+5. **Step 5 — Automatic code assignment, knowledge sync instructions & verdict**:
+   - Write the file `OUTPUT/<task-slug>/16_cr_impact_analysis.md`, then run `npm run ids -- <task-slug> --assign OUTPUT/<task-slug>/16_cr_impact_analysis.md` to turn every temporary code (`MR-?a`, `BR-?a`…) into the next sequence number (QA_STANDARD §9.1).
+   - Build the table of sync instructions into `knowledge/features/<task-slug>.md` (following the `QA_STANDARD` §8 writing rule) and the order of stages to re-run after the BA/PO confirms.
+   - Decide the verdict per `QA_STANDARD` §1:
+     - `ASK`: when any new `MR-xx` question is still `New` / `TREO` (or the updated documents are not yet approved).
+     - `PASS`: when the updated documents are approved, no pending `MR-xx` arises, and 100% of the affected `TC_ID`s are listed.
+     - `FIX`: when verbatim quotes are missing, table cells are invalidly empty, or a `TC_ID` tagged with a changed code is missed.
 
-## Format output
-Ghi ra `OUTPUT/<task-slug>/16_cr_impact_analysis.md`:
+## Output format
+Write `OUTPUT/<task-slug>/16_cr_impact_analysis.md`:
 
 ````markdown
 # CR & Update Impact Analysis · <task-slug>
@@ -145,14 +149,18 @@ Owner: qa-system/qa-test-design/skills/cr-impact-analysis.md · Nguồn: <danh s
 | 1 | §3 MR-01 | <nội dung câu hỏi cần chốt> | BA / PO |
 ````
 
-> Dòng 2 là dòng meta đúng QA_STANDARD §7 (một verdict, không in đậm). Mỗi bảng có cột nguồn hoặc mã trace (§9).
-> Mã mới lấy số từ `npm run ids -- <task-slug> --assign`; mã cũ giữ nguyên (§9.1). Ô thiếu dữ liệu điền nhãn §2.1.
-> Nếu mục §3 hoặc §5 hoặc `## ASK` không có dòng nào, ghi dòng văn bản `Không có` thay vì để bảng rỗng.
+(Sections: 1 updated documents scanned · 2 Delta analysis (old → new) · 3 questions for the BA/PO (unclear points) ·
+4 impact on test cases — 4.1 quick summary, 4.2 details per affected test case · 5 proposed additional test cases (if any) ·
+6 knowledge & pipeline update instructions (per QA_STANDARD §8).)
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] File xuất ra đúng `OUTPUT/<task-slug>/16_cr_impact_analysis.md`, dòng 2 là dòng meta đúng `QA_STANDARD` §7.
-- [ ] Mọi dòng trong `## 2. PHÂN TÍCH DELTA (CŨ → MỚI)` có đủ `Mã đối tượng`, `Nguồn mới (file §mục)` và `Trích nguyên văn` đúng từng chữ từ file trong `INPUT/<task-slug>/` (trừ `_superseded/`).
-- [ ] Không có giá trị mới, ngưỡng mới hay chữ thông báo lỗi mới nào tự chế: mọi chỗ tài liệu cập nhật bỏ ngỏ đều mang nhãn `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` và có dòng tương ứng trong `## 3`.
-- [ ] Mọi mã `MR-xx` mới lấy số tiếp theo qua `npm run ids -- <task-slug> --assign`, không trùng mã đã có trong `02_missing_rule_report.md` hoặc `knowledge/features/<task-slug>.md`.
-- [ ] 100% `TC_ID` trong `05_test_case_spec.md` có tag `Rule#<mã>` thuộc tập mã trong bảng Delta đều xuất hiện trong `## 4.2` với đúng một nhãn `Hành động` (`Sửa giá trị` / `Viết lại` / `Chỉ chạy lại`) và một `Trạng thái` hợp lệ.
-- [ ] Không có ô trống trong bất kỳ bảng nào (ngoài 3 cột `Phản hồi chính thức`, `Người trả lời`, `Ngày` của bảng câu hỏi §3); chạy `npm run lint -- <task-slug>` đạt 0 lỗi, 0 cảnh báo ô trống.
+> Line 2 is the meta line exactly per QA_STANDARD §7 (one verdict, not bold). Every table has a source column or a trace code (§9).
+> New codes take their numbers from `npm run ids -- <task-slug> --assign`; old codes stay unchanged (§9.1). A cell with missing data gets a §2.1 label.
+> If section §3, §5 or `## ASK` has no rows, write the text line `Không có` (none) instead of leaving an empty table.
+
+## Acceptance gates (Quality Gates)
+- [ ] The file is written exactly to `OUTPUT/<task-slug>/16_cr_impact_analysis.md`; line 2 is the meta line exactly per `QA_STANDARD` §7.
+- [ ] Every row of `## 2. PHÂN TÍCH DELTA (CŨ → MỚI)` has `Mã đối tượng`, `Nguồn mới (file §mục)` and a word-for-word `Trích nguyên văn` from a file in `INPUT/<task-slug>/` (except `_superseded/`).
+- [ ] No invented new value, new threshold or new error message text: every place the updated documents leave open carries the label `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` and has a matching row in `## 3`.
+- [ ] Every new `MR-xx` code takes the next number via `npm run ids -- <task-slug> --assign`, without colliding with codes already in `02_missing_rule_report.md` or `knowledge/features/<task-slug>.md`.
+- [ ] 100% of the `TC_ID`s in `05_test_case_spec.md` tagged `Rule#<code>` with a code from the Delta table appear in `## 4.2` with exactly one `Hành động` label (`Sửa giá trị` / `Viết lại` / `Chỉ chạy lại`) and one valid `Trạng thái`.
+- [ ] No empty cell in any table (except the 3 columns `Phản hồi chính thức`, `Người trả lời`, `Ngày` of the §3 question table); `npm run lint -- <task-slug>` reports 0 errors and 0 empty-cell warnings.

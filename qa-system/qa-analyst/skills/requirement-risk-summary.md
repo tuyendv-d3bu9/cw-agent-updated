@@ -1,94 +1,97 @@
 ---
 name: requirement-risk-summary
 description: >
-  Bóc tách tài liệu yêu cầu trong INPUT/<slug>/ (5 ngăn) thành báo cáo 10 phần có trích nguồn:
-  Business Rule, Field & ràng buộc, luồng phụ, điểm chưa rõ (OQ) và ma trận rủi ro. Là cửa ngõ
-  đầu tiên của pipeline QA.
+  Extracts the requirement documents in INPUT/<slug>/ (5 folders) into a 10-part report with quoted sources:
+  Business Rules, Fields & constraints, alternate flows, open points (OQ) and the risk matrix. It is the first
+  gateway of the QA pipeline.
 ---
 
 # Skill: requirement-risk-summary
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · FACT §3 · risk §5 · knowledge §8 ·
-> ID & schema §9 · nguồn & ưu tiên §10 · thang đo §11). Skill này **trích**, không sáng tác.
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict §1 · guards §2 · FACT §3 · risk §5 · knowledge §8 ·
+> IDs & schemas §9 · sources & precedence §10 · scales §11). This skill **quotes**; it does not invent.
+>
+> The output format block below is kept in Vietnamese on purpose: its headings, column headers and
+> labels are parsed by `npm run lint` / `npm run gate` / `npm run boundary`. Copy it verbatim.
 
-## Mục đích
-Chuyển tài liệu nguồn thành `01_requirement_risk_summary.md`: mọi rule, field, luồng phụ đều có
-nguồn + trích nguyên văn; điều chưa rõ thành `OQ-xx` để Chặng 2 xử lý. Đây là đầu vào của mọi chặng sau.
+## Purpose
+Turn the source documents into `01_requirement_risk_summary.md`: every rule, field and alternate flow has
+a source + a verbatim quote; anything unclear becomes `OQ-xx` for Stage 2 to handle. This is the input of every later stage.
 
-## Đầu vào
-- `INPUT/<task-slug>/` — đủ 5 ngăn (bảng dưới). Ngăn trống thì ghi nhận, không dừng — trừ `02_ba/`.
-  **Không đọc** `<ngăn>/_superseded/` (bản đã bị thay) và không trích dẫn từ đó.
-- **Hoặc** `OUTPUT/<task-slug>/00_knowledge_digest.md` nếu có (skill `knowledge-digest`). Digest giữ
-  nguồn + trích nguyên văn gốc từng dòng; mở lại tài liệu gốc khi cần kiểm một dòng.
-- `OUTPUT/<task-slug>/01_conflict_warning.md` nếu có (`qa-system/tools/knowledge/conflict-detector.js`).
-- `OUTPUT/<task-slug>/jira_defects_summary.md` nếu có — chỉ dùng chấm Likelihood.
+## Inputs (Đầu vào)
+- `INPUT/<task-slug>/` — all 5 folders (table below). An empty folder is recorded, not a reason to stop — except `02_ba/`.
+  **Do not read** `<folder>/_superseded/` (replaced versions) and never quote from it.
+- **Or** `OUTPUT/<task-slug>/00_knowledge_digest.md` if present (skill `knowledge-digest`). The digest keeps
+  the source + the original verbatim quote for each line; reopen the original document when a line needs checking.
+- `OUTPUT/<task-slug>/01_conflict_warning.md` if present (`qa-system/tools/knowledge/conflict-detector.js`).
+- `OUTPUT/<task-slug>/jira_defects_summary.md` if present — used only to score Likelihood.
 - `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (QA_STANDARD §7, §8).
-- Chỉ khi `knowledge/_sut.json` có `domain`: các file `risks` mà `npm run domain` liệt kê — checklist, không phải
-  nguồn (QA_STANDARD §10.3). `_sut.json` không có `domain` ⇒ bỏ qua phần pack ở bước 7.
+- Only when `knowledge/_sut.json` has a `domain`: the `risks` files listed by `npm run domain` — a checklist, not a
+  source (QA_STANDARD §10.3). `_sut.json` has no `domain` ⇒ skip the pack part of step 7.
 
-> Thiếu `02_ba/` và không có digest → DỪNG, báo thiếu tài liệu nghiệp vụ (verdict `ASK`).
+> `02_ba/` missing and no digest → STOP, report that the business documents are missing (verdict `ASK`).
 
-### Ngăn → lấy gì
-| Ngăn | Lấy gì | Ghi vào mục |
+### Folder → what to take
+| Folder | What to take | Written to section |
 |---|---|---|
-| `01_business/` | Mục tiêu, bối cảnh, người dùng, con số kinh doanh **có ghi** | §1, §8, §9 |
-| `02_ba/` | Rule, luồng chính, luồng phụ, actor, loại trừ tường minh | §2–§6 |
-| `03_dev/` | Kiểu, độ dài, định dạng, bắt buộc của field; mã phản hồi API | §3b, §5 |
-| `04_design/` | Field trên màn hình, nhãn, chữ thông báo hiển thị | §3b (`Thông báo khi sai`), §5 |
-| `05_communication/` | CR, Q&A, biên bản có ngày — ghi đè phần nó nói tới nếu mới hơn spec | §3, §3b, §5, §7 |
+| `01_business/` | Goals, context, users, business figures **that are written down** | §1, §8, §9 |
+| `02_ba/` | Rules, main flow, alternate flows, actors, explicit exclusions | §2–§6 |
+| `03_dev/` | Field type, length, format, required-ness; API response codes | §3b, §5 |
+| `04_design/` | On-screen fields, labels, displayed message text | §3b (`Thông báo khi sai`), §5 |
+| `05_communication/` | Dated CRs, Q&A, minutes — they override what they address if newer than the spec | §3, §3b, §5, §7 |
 
-Khi các ngăn nói khác nhau: áp **QA_STANDARD §10.2**. Không xác định được bản nào thắng ⇒ ghi `OQ`, không tự chọn.
-Phần `## Annotations / Pending changes` (comment, tracked changes, "DRAFT") **chưa phải sự thật** ⇒ mỗi mục một `OQ`.
+When folders disagree: apply **QA_STANDARD §10.2**. Cannot tell which version wins ⇒ record an `OQ`, do not choose yourself.
+The `## Annotations / Pending changes` section (comments, tracked changes, "DRAFT") **is not yet fact** ⇒ one `OQ` per item.
 
-## KHÔNG được (riêng skill này)
-- Sinh câu hỏi 06W, viewpoint, test idea, test case — việc của `02`→`05`.
-- Ghi rule/field/thông báo không trích được nguyên văn. Không trích được ⇒ là `OQ`, không phải `BR`.
-- Tách một rule có điều kiện ghép (AND/OR, ngoại lệ "trừ khi…") thành nhiều dòng làm mất điều kiện.
-  Một `BR` = một **tổ hợp điều kiện → hành vi** đầy đủ như nguồn viết.
-- Ghi vào Out of Scope điều tài liệu **không nhắc** (QA_STANDARD §2 luật 8).
-- Ước đoán con số doanh thu, lượt dùng, SLA (QA_STANDARD §5).
-- Dừng pipeline vì có `OQ` — cổng ở Chặng 2, không ở đây.
+## MUST NOT (specific to this skill)
+- Produce 06W questions, viewpoints, test ideas or test cases — that is the work of `02`→`05`.
+- Record a rule/field/message that cannot be quoted verbatim. Cannot be quoted ⇒ it is an `OQ`, not a `BR`.
+- Split a rule with combined conditions (AND/OR, "unless…" exceptions) into several rows in a way that loses the condition.
+  One `BR` = one complete **combination of conditions → behaviour**, exactly as the source writes it.
+- Put into Out of Scope something the documents **do not mention** (QA_STANDARD §2 rule 8).
+- Estimate revenue, usage or SLA figures (QA_STANDARD §5).
+- Stop the pipeline because of an `OQ` — the gate is at Stage 2, not here.
 
-## Mã định danh
-- **Không tự đếm số.** Viết mã tạm theo thứ tự đọc nguồn (`BR-?`, `FD-?`, `AF-?`, `OQ-?`, `RK-?`; cùng một nhãn như `BR-?a` ⇒ cùng một số), ghi file, rồi chạy `npm run ids -- <task-slug> --assign OUTPUT/<task-slug>/01_requirement_risk_summary.md`. Tool đánh số thật, tiếp nối số đang có.
-- Rule/field đã có trong knowledge §3/§3b (cùng nguồn, cùng nội dung) ⇒ **giữ mã cũ**. Mới ⇒ số kế tiếp.
-- MR đã chốt ở knowledge §8 sinh ra rule mới ⇒ cấp `BR` số kế tiếp, `Nguồn` = `knowledge §8 #n`, `Trích nguyên văn` để trống.
-- `BR` cũ trong knowledge mà đoạn trích không còn tìm thấy trong `INPUT/` hiện tại ⇒ giữ mã, thêm một `OQ`
-  "Rule `BR-xx` không còn trong tài liệu hiện hành — còn hiệu lực không?".
+## Identifiers
+- **Never count numbers yourself.** Write temporary codes in the order you read the sources (`BR-?`, `FD-?`, `AF-?`, `OQ-?`, `RK-?`; the same label such as `BR-?a` ⇒ the same number), write the file, then run `npm run ids -- <task-slug> --assign OUTPUT/<task-slug>/01_requirement_risk_summary.md`. The tool assigns the real numbers, continuing from the existing ones.
+- A rule/field already in knowledge §3/§3b (same source, same content) ⇒ **keep the old code**. New ⇒ the next number.
+- A confirmed MR in knowledge §8 that produces a new rule ⇒ assign the next `BR` number, `Nguồn` (source) = `knowledge §8 #n`, leave `Trích nguyên văn` (verbatim quote) empty.
+- An old `BR` in knowledge whose quote can no longer be found in the current `INPUT/` ⇒ keep the code and add an `OQ`
+  "Rule `BR-xx` is no longer in the current documents — is it still in force?".
 
-## Các bước
-| # | Bước | Yêu cầu |
+## Steps
+| # | Step | Requirement |
 |---|---|---|
-| 0 | Nạp nguồn | Đọc knowledge, rồi từng ngăn theo bảng trên. Ghi danh sách file đã đọc vào dòng meta |
-| 1 | Feature Overview | 1–2 câu, kèm nguồn |
-| 2 | Actor & Role | Chỉ actor có trong nguồn, kèm nguồn |
-| 3 | Business Rules | Bảng §9.6, mỗi dòng có `Trích nguyên văn` đúng từng chữ |
-| 3b | Field & ràng buộc | Bảng §9.6. Ô không có trong nguồn ⇒ `[CHƯA CÓ TRONG TÀI LIỆU]`. `Thông báo khi sai` chỉ ghi khi nguồn có chữ thông báo nguyên văn |
-| 4 | Happy Path | Các bước có trong nguồn, kèm nguồn |
-| 5 | Alternate Flows | Luồng phụ / lỗi **có trong nguồn**, phản hồi nguyên văn nếu có |
-| 6 | Out of Scope | Chỉ loại trừ tường minh, kèm trích. Không có ⇒ không dựng bảng, ghi dòng văn bản `Không có loại trừ tường minh` |
-| 7 | Điểm chưa rõ | `OQ-xx` từ: chỗ mơ hồ, mâu thuẫn §10.2 không phân xử được, Annotations, `01_conflict_warning.md`, BR cũ mất nguồn, và (khi có `domain`) mục `risks` mà tài liệu **có chạm tới** (cột "Dấu hiệu" khớp đối tượng/hành vi trong nguồn) nhưng **không nói** cách xử lý — `Vị trí trong nguồn` ghi `[DOMAIN] <pack-id>/risks.md#<mục>` kèm file §mục nơi tính năng chạm tới. Mục pack không bao giờ thành `BR`/`RK`. Không quota, có thể rỗng |
-| 8 | Business Criticality | Trích từ `01_business/` hoặc `_project.md` (dòng đã khai). Không có ⇒ `[CONTEXT_MISSING]` |
-| 9 | Missing Risk Context | 5 khía cạnh (bảng dưới): có gì / thiếu gì, kèm nguồn |
-| 10 | Risk Analysis | Ma trận QA_STANDARD §5. `Nguồn` = mã `BR`/`FD`/`AF`/`OQ` liên quan |
-| 11 | FACT Self-Audit | QA_STANDARD §3, rồi ghi file + knowledge |
+| 0 | Load sources | Read knowledge, then each folder per the table above. Record the list of files read in the meta line |
+| 1 | Feature Overview | 1–2 sentences, with source |
+| 2 | Actor & Role | Only actors present in the sources, with source |
+| 3 | Business Rules | Table §9.6, every row has a word-for-word `Trích nguyên văn` |
+| 3b | Fields & constraints | Table §9.6. A cell not present in the source ⇒ `[CHƯA CÓ TRONG TÀI LIỆU]`. Fill `Thông báo khi sai` (message when invalid) only when the source has the verbatim message text |
+| 4 | Happy Path | The steps present in the sources, with source |
+| 5 | Alternate Flows | Alternate / error flows **present in the sources**, with the verbatim response if any |
+| 6 | Out of Scope | Only explicit exclusions, with a quote. None ⇒ do not build the table; write the text line `Không có loại trừ tường minh` (no explicit exclusions) |
+| 7 | Open points | `OQ-xx` from: ambiguities, §10.2 conflicts that cannot be resolved, Annotations, `01_conflict_warning.md`, old BRs that lost their source, and (when a `domain` is set) `risks` items that the documents **do touch** (the "Dấu hiệu" (signal) column matches an object/behaviour in the sources) but **do not say** how to handle — `Vị trí trong nguồn` (location in source) records `[DOMAIN] <pack-id>/risks.md#<section>` plus the file §section where the feature touches it. A pack item never becomes a `BR`/`RK`. No quota; may be empty |
+| 8 | Business Criticality | Quoted from `01_business/` or `_project.md` (declared lines). None ⇒ `[CONTEXT_MISSING]` |
+| 9 | Missing Risk Context | 5 aspects (table below): what is there / what is missing, with source |
+| 10 | Risk Analysis | QA_STANDARD §5 matrix. `Nguồn` = the related `BR`/`FD`/`AF`/`OQ` codes |
+| 11 | FACT Self-Audit | QA_STANDARD §3, then write the file + knowledge |
 
-### Bước 9 — 5 khía cạnh
-`User` (nhóm người dùng) · `Usage` (tần suất, tải, cao điểm) · `Financial` (giá trị giao dịch) ·
-`Operational` (vận hành, SLA) · `Criticality` (vai trò của tính năng). Thiếu ⇒ `[CONTEXT_MISSING]`.
+### Step 9 — 5 aspects
+`User` (user groups) · `Usage` (frequency, load, peaks) · `Financial` (transaction value) ·
+`Operational` (operations, SLA) · `Criticality` (the feature's role). Missing ⇒ `[CONTEXT_MISSING]`.
 
-### Bước 10 — chấm rủi ro
-- Likelihood: từ số điều kiện ghép, số nhánh, số `OQ` liên quan, lịch sử lỗi trong `jira_defects_summary.md`.
-- Impact: từ tác động **tài liệu mô tả**. Severity theo thang §11 (`Critical`/`Major`/`Minor`/`Trivial`).
-- Bối cảnh §8/§9 thiếu ⇒ vẫn chấm, `Cờ tin cậy` = `SEVERITY_CONFIDENCE_LOW`; đủ ⇒ `SEVERITY_CONFIDENCE_HIGH`.
+### Step 10 — scoring risk
+- Likelihood: from the number of combined conditions, number of branches, number of related `OQ`s, defect history in `jira_defects_summary.md`.
+- Impact: from the impact **the documents describe**. Severity on the §11 scale (`Critical`/`Major`/`Minor`/`Trivial`).
+- Context in §8/§9 missing ⇒ still score, `Cờ tin cậy` (confidence flag) = `SEVERITY_CONFIDENCE_LOW`; complete ⇒ `SEVERITY_CONFIDENCE_HIGH`.
 
 ## Verdict
-- `PASS` — đủ 10 phần đúng format. `OQ` **không** chặn (Chặng 2 xử lý).
-- `FIX` — sai format / thiếu trích dẫn sửa được từ nguồn đang có ⇒ tự sửa rồi chạy lại.
-- `ASK` — chỉ khi không có tài liệu nghiệp vụ để đọc (thiếu `02_ba/` và không có digest).
+- `PASS` — all 10 parts in the correct format. `OQ` does **not** block (Stage 2 handles it).
+- `FIX` — wrong format / missing quotes that can be fixed from the sources at hand ⇒ fix it yourself and re-run.
+- `ASK` — only when there are no business documents to read (`02_ba/` missing and no digest).
 
-## Format output
-Ghi ra `OUTPUT/<task-slug>/01_requirement_risk_summary.md`, đúng thứ tự 10 phần:
+## Output format
+Write `OUTPUT/<task-slug>/01_requirement_risk_summary.md`, in exactly this order of 10 parts:
 
 ````markdown
 # Requirement & Risk Summary · <task-slug>
@@ -146,25 +149,26 @@ Owner: qa-system/qa-analyst/skills/requirement-risk-summary.md · Nguồn: <các
 | RK-01 | <rủi ro> | HIGH | MEDIUM | HIGH | Major | SEVERITY_CONFIDENCE_LOW | BR-01, OQ-02 |
 ````
 
-Mục không có dòng nào ⇒ **không** dựng bảng, ghi một dòng văn bản `Không có` ngay dưới heading. Ô thiếu ⇒ nhãn QA_STANDARD §2.1.
+A section with no rows ⇒ do **not** build a table; write a single text line `Không có` (none) right under the heading. A missing cell ⇒ a QA_STANDARD §2.1 label.
+The `<…>` slots are placeholders to replace with quoted content; the cell values themselves may be in the source documents' language.
 
-## Ghi knowledge
-Theo QA_STANDARD §8 (skill `01` ghi §1–§6, §9, §10 của `knowledge/features/<feature-slug>.md`; tạo từ
-`knowledge/_template.md` nếu chưa có). Chỉ ghi dữ kiện có nguồn §10.1. **Không** ghi §7, §8, không ghi `OQ`.
-Không xoá dòng cũ — rule mất nguồn giữ nguyên, đã có `OQ` ở báo cáo.
+## Writing knowledge
+Per QA_STANDARD §8 (skill `01` writes §1–§6, §9, §10 of `knowledge/features/<feature-slug>.md`; create it from
+`knowledge/_template.md` if it does not exist). Write only facts with a §10.1 source. Do **not** write §7 or §8, and do not write `OQ`s.
+Never delete old rows — a rule that lost its source stays as is; the report already has an `OQ` for it.
 
-| Mục knowledge | Lấy từ |
+| Knowledge section | Taken from |
 |---|---|
-| §1 · §2 · §4 | phần 1, 2, 4 |
-| §3 · §3b | phần 3, 3b (trạng thái `Confirmed` khi có trích nguyên văn hoặc nguồn `knowledge §8 #n`) |
-| §5 · §6 | phần 5, 6 |
-| §9 | hằng số có trong nguồn (min/max, định dạng, đơn vị) — kèm nguồn |
-| §10 | mã `BR`/`FD`/`AF` + nguồn |
+| §1 · §2 · §4 | parts 1, 2, 4 |
+| §3 · §3b | parts 3, 3b (status `Confirmed` when there is a verbatim quote or the source `knowledge §8 #n`) |
+| §5 · §6 | parts 5, 6 |
+| §9 | constants present in the sources (min/max, format, unit) — with source |
+| §10 | `BR`/`FD`/`AF` codes + source |
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Dòng 1–2 đúng QA_STANDARD §7; đủ 10 phần (cộng §3b), đúng tiêu đề và cột như format.
-- [ ] Mọi `BR`/`FD`/`AF` có `Nguồn` và `Trích nguyên văn` tìm thấy trong `INPUT/` (hoặc nguồn `knowledge §8 #n`) — `npm run lint -- <slug>` kiểm.
-- [ ] Đã đọc đủ 5 ngăn; mâu thuẫn và Annotations đã thành `OQ` hoặc phân xử theo §10.2 (ghi rõ nguồn thắng).
-- [ ] Mã giữ ổn định với knowledge; mã mới lấy từ `npm run ids`.
-- [ ] Out of Scope chỉ có loại trừ tường minh.
-- [ ] Không có con số kinh doanh nào không trích được nguồn.
+## Acceptance gates (Quality Gates)
+- [ ] Lines 1–2 follow QA_STANDARD §7; all 10 parts present (plus §3b), with the headings and columns exactly as in the format.
+- [ ] Every `BR`/`FD`/`AF` has a `Nguồn` and a `Trích nguyên văn` that can be found in `INPUT/` (or the source `knowledge §8 #n`) — checked by `npm run lint -- <slug>`.
+- [ ] All 5 folders read; conflicts and Annotations turned into `OQ`s or resolved per §10.2 (stating which source wins).
+- [ ] Codes stable against knowledge; new codes taken from `npm run ids`.
+- [ ] Out of Scope contains only explicit exclusions.
+- [ ] No business figure that cannot be quoted from a source.

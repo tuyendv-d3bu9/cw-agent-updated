@@ -1,66 +1,71 @@
 ---
 name: test-idea-design
 description: >
-  Chuyển viewpoint thành Test Idea (mỗi idea đúng 1 câu, gắn mã nguồn BR/FD/AF/MR) và sàng lọc
-  Giữ / Bỏ / Chờ MR theo thứ tự ưu tiên cố định.
+  Turns viewpoints into Test Ideas (each idea exactly 1 sentence, tied to a BR/FD/AF/MR source code) and filters
+  them into Giữ / Bỏ / Chờ MR (keep / drop / waiting on MR) following a fixed order of precedence.
 ---
 
 # Skill: test-idea-design
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (cổng ASK §1 · guard §2 · FACT §3 · chuỗi biên §6 ·
-> knowledge §8 · ID §9 · nguồn §10).
+> Complies with `qa-system/core/QA_STANDARD.md` (ASK gate §1 · guards §2 · FACT §3 · boundary chain §6 ·
+> knowledge §8 · IDs §9 · sources §10).
+>
+> The column names (`Kỹ thuật`, `Giữ/Bỏ`, `Lý do filter`), the values `Giữ` · `Bỏ` · `Chờ MR` and the
+> `Lý do filter` templates stay in Vietnamese: `npm run lint` and `npm run readiness` read them. Copy them verbatim.
 
-## Mục đích
-Sinh **Test Idea** — một câu mô tả một điều kiện cần kiểm, có mã nguồn — và lọc theo luật cố định để
-cùng đầu vào ra cùng bộ idea. *Test Case* đầy đủ là việc của `qa-system/qa-test-design`.
+## Purpose
+Produce **Test Ideas** — one sentence describing one condition to check, with a source code — and filter them by fixed rules so that
+the same input yields the same set of ideas. The full *Test Case* is the job of `qa-system/qa-test-design`.
 
-## Đầu vào
+## Inputs (Đầu vào)
 - `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `BR`, `FD`, `AF`, §6 Out of Scope, `RK`.
-- `OUTPUT/<task-slug>/02_missing_rule_report.md` — `MR` và trạng thái.
-- `OUTPUT/<task-slug>/03_viewpoint_report.md` — viewpoint, phạm vi mã của từng VP, quy ước sở hữu.
-- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` — §7/§8 (câu trả lời BA đã chốt).
+- `OUTPUT/<task-slug>/02_missing_rule_report.md` — `MR` and their statuses.
+- `OUTPUT/<task-slug>/03_viewpoint_report.md` — viewpoints, the code scope of each VP, the ownership convention.
+- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` — §7/§8 (confirmed BA answers).
 
-> Trước khi chạy: `npm run gate <task-slug>` phải exit `0` (QA_STANDARD §1).
+> Before running: `npm run gate <task-slug>` must exit `0` (QA_STANDARD §1).
 
-## KHÔNG được (riêng skill này)
-- Mở rộng thành Test Case (Precondition, Steps, Test Data, Expected).
-- Viết idea dài hơn một câu, hoặc idea không có mã nguồn.
-- Gán `State Transition` khi nguồn không mô tả trạng thái; gán `Decision Table` cho rule một điều kiện.
-- Đánh `Bỏ` một idea vì nguồn mơ hồ — đó là `Chờ MR`.
-- Đánh `Ngoài scope` khi 01 §6 không có dòng loại trừ tương ứng.
+## MUST NOT (specific to this skill)
+- Expand into a Test Case (Precondition, Steps, Test Data, Expected).
+- Write an idea longer than one sentence, or an idea without a source code.
+- Assign `State Transition` when the sources do not describe states; assign `Decision Table` to a single-condition rule.
+- Mark an idea `Bỏ` (drop) because the source is ambiguous — that is `Chờ MR` (waiting on MR).
+- Mark `Ngoài scope` (out of scope) when 01 §6 has no matching exclusion row.
 
-## Kỹ thuật (cột `Kỹ thuật`)
-| Kỹ thuật | Dùng khi (căn cứ trong nguồn) |
+## Techniques (column `Kỹ thuật`)
+| Technique | Use when (basis in the sources) |
 |---|---|
-| `Use Case` | Luồng chính (01 §4) và luồng phụ `AF` |
-| `EP` | Field/điều kiện có các nhóm giá trị rời rạc |
-| `BVA` | `FD` có min/max/độ dài trong nguồn — chuỗi theo QA_STANDARD §6 |
-| `Decision Table` | `BR` có từ 2 điều kiện ghép (AND/OR) |
-| `State Transition` | Nguồn mô tả trạng thái và điều kiện chuyển |
-| `Error Guessing` | Lỗi lịch sử (`jira_defects_summary.md`) hoặc `MR` đã chốt về tình huống bất thường |
+| `Use Case` | The main flow (01 §4) and the alternate `AF` flows |
+| `EP` | A field/condition with discrete value groups |
+| `BVA` | An `FD` with min/max/length in the sources — chain per QA_STANDARD §6 |
+| `Decision Table` | A `BR` with 2 or more combined conditions (AND/OR) |
+| `State Transition` | The sources describe states and transition conditions |
+| `Error Guessing` | Historical defects (`jira_defects_summary.md`) or a confirmed `MR` about an abnormal situation |
 
-## Luật lọc — áp theo thứ tự, gặp luật đầu tiên đúng thì dừng
-| # | Kết quả | Khi nào | Cột `Lý do filter` |
+## Filter rules — apply in order, stop at the first rule that holds
+| # | Result | When | Column `Lý do filter` |
 |---|---|---|---|
-| 1 | `Bỏ` | Trùng hoàn toàn một idea đã `Giữ` (cùng mã nguồn, cùng VP, cùng điều kiện) | `Trùng lặp: TI-xx` |
-| 2 | `Bỏ` | Chạm đúng nội dung một dòng ở 01 §6 | `Ngoài scope: 01 §6 "<nội dung loại trừ>"` |
-| 3 | `Chờ MR` | Hành vi cần kiểm phụ thuộc thông tin chưa có / `MR` chưa `Confirmed` | `Chờ MR: MR-xx` |
-| 4 | `Bỏ` | **Trivial**: chỉ kiểm điều đã là tiền điều kiện hoặc bước bắt buộc của một idea `Giữ` khác. **Thêm VP của idea bị bỏ vào cột VP của idea `Giữ` đó** (cột VP nhận nhiều mã, cách nhau dấu phẩy) | `Trivial: bao hàm trong TI-xx` |
-| 5 | `Giữ` | Còn lại | `Kiểm tra rule có nguồn: <mã>` (thêm `· RK-xx` nếu Risk Level `CRITICAL`/`HIGH`) |
+| 1 | `Bỏ` | Fully duplicates an idea already marked `Giữ` (same source code, same VP, same condition) | `Trùng lặp: TI-xx` |
+| 2 | `Bỏ` | Hits exactly the content of a row in 01 §6 | `Ngoài scope: 01 §6 "<nội dung loại trừ>"` |
+| 3 | `Chờ MR` | The behaviour to check depends on information not yet available / an `MR` not yet `Confirmed` | `Chờ MR: MR-xx` |
+| 4 | `Bỏ` | **Trivial**: only checks something that is already a precondition or a mandatory step of another `Giữ` idea. **Add the dropped idea's VP to the VP column of that `Giữ` idea** (the VP column takes several codes, comma-separated) | `Trivial: bao hàm trong TI-xx` |
+| 5 | `Giữ` | Everything else | `Kiểm tra rule có nguồn: <mã>` (add `· RK-xx` if the Risk Level is `CRITICAL`/`HIGH`) |
 
-Thiếu chữ thông báo hay giá trị cụ thể **không** làm idea thành `Chờ MR` — hành vi đã rõ thì `Giữ`;
-Chặng 5 ghi nhãn `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` ở ô giá trị.
-Idea cần thông tin mà chưa có `MR` nào hỏi ⇒ không ghi idea; thêm dòng ở `## ASK` ("cần MR cho <mã> × W<n>",
-chuyển Chặng 2) và verdict `ASK`.
+(Template meanings: duplicate of TI-xx · out of scope per 01 §6 · waiting on MR-xx · trivial, contained in TI-xx · checks a sourced rule.)
 
-## Các bước
-1. Với mỗi VP ở 03, đi qua từng mã trong phạm vi của VP đó, chọn kỹ thuật theo bảng, sinh idea (một câu, một điều kiện).
-2. Mã `TI` cấp số kế tiếp (`npm run ids -- <task-slug>`); idea giữ nguyên nội dung so với lần chạy trước thì giữ mã.
-3. Lọc theo bảng luật, đúng thứ tự.
-4. Kiểm: mọi mã trong phạm vi VP có ít nhất một idea `Giữ` hoặc `Chờ MR`.
+A missing message text or concrete value does **not** make an idea `Chờ MR` — if the behaviour is clear, it is `Giữ`;
+Stage 5 writes the label `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` in the value cell.
+An idea that needs information no `MR` has asked about yet ⇒ do not record the idea; add a row to `## ASK` ("cần MR cho <mã> × W<n>" — an MR is needed for <code> × W<n>,
+hand over to Stage 2) and set the verdict to `ASK`.
 
-## Format output
-Ghi ra `OUTPUT/<task-slug>/04_test_idea_report.md`:
+## Steps
+1. For each VP in 03, go through every code in that VP's scope, choose the technique per the table, and produce ideas (one sentence, one condition).
+2. `TI` codes take the next number (`npm run ids -- <task-slug>`); an idea whose content is unchanged from the previous run keeps its code.
+3. Filter with the rule table, in exactly that order.
+4. Check: every code in a VP's scope has at least one `Giữ` or `Chờ MR` idea.
+
+## Output format
+Write `OUTPUT/<task-slug>/04_test_idea_report.md`:
 
 ````markdown
 # Test Idea Report · <task-slug>
@@ -73,8 +78,8 @@ Owner: qa-system/qa-analyst/skills/test-idea-design.md · Nguồn: 01_requiremen
 | TI-03 | <một câu> | VP-02 | AF-01 | EP | Chờ MR | Chờ MR: MR-04 |
 ````
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] `npm run gate <slug>` exit `0`; dòng meta đúng QA_STANDARD §7.
-- [ ] Mỗi idea một câu, có mã nguồn, VP thuộc registry/03, `Kỹ thuật` thuộc bảng trên.
-- [ ] `Giữ/Bỏ` ∈ `Giữ` · `Bỏ` · `Chờ MR`; `Lý do filter` đúng mẫu của luật đã áp.
-- [ ] Mọi mã trong phạm vi các VP của 03 có idea `Giữ` hoặc `Chờ MR`.
+## Acceptance gates (Quality Gates)
+- [ ] `npm run gate <slug>` exits `0`; the meta line follows QA_STANDARD §7.
+- [ ] Each idea is one sentence, with a source code, a VP from the registry/03, and a `Kỹ thuật` from the table above.
+- [ ] `Giữ/Bỏ` ∈ `Giữ` · `Bỏ` · `Chờ MR`; `Lý do filter` follows the template of the rule applied.
+- [ ] Every code in the scope of the VPs of 03 has a `Giữ` or `Chờ MR` idea.

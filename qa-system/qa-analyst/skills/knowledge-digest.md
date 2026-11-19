@@ -1,79 +1,82 @@
 ---
 name: knowledge-digest
 description: >
-  Chưng cất khối tài liệu lớn (hàng chục tới hàng trăm file trong INPUT/<slug>/) theo từng lô vừa
-  context: mỗi tài liệu ra một thẻ quy tắc có trích nguồn, rồi gộp thành 00_knowledge_digest.md
-  để skill 01 đọc thay cho tài liệu thô. Chạy lại chỉ xử lý tài liệu mới hoặc đã đổi.
+  Distils a large body of documents (tens to hundreds of files in INPUT/<slug>/) in context-sized
+  batches: each document yields a rule card with quoted sources, which are then merged into 00_knowledge_digest.md
+  for skill 01 to read instead of the raw documents. A re-run only processes new or changed documents.
 ---
 
 # Skill: knowledge-digest
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md` (verdict §1 · guard §2 · FACT §3 · luật knowledge §8 · nguồn & ưu tiên §10).
+> Complies with `qa-system/core/QA_STANDARD.md` (verdict §1 · guards §2 · FACT §3 · knowledge rules §8 · sources & precedence §10).
+>
+> The output format blocks, the `### DOC:` / `Phiên bản:` lines and the `Loại` (type) values stay in Vietnamese:
+> `npm run knowledge:digest` reads the stamp lines back, and skill `01` copies the rest. Copy them verbatim.
 
-## Mục đích
-Skill `requirement-risk-summary` đọc một lượt toàn bộ tài liệu thô. Với vài file thì ổn, với 100–200
-file thì tràn context hoặc agent chỉ đọc lướt và bỏ sót quy tắc. Skill này chia việc thành hai pha:
+## Purpose
+Skill `requirement-risk-summary` reads all the raw documents in one pass. That is fine for a few files; with 100–200
+files it overflows the context or the agent only skims and misses rules. This skill splits the work into two phases:
 
-- **Trích (từng lô):** đọc đúng các tài liệu trong một lô, mỗi tài liệu ra một thẻ ngắn gồm quy tắc,
-  hằng số, luồng, điểm mơ hồ. Mỗi dòng ghi vị trí nguồn **và đoạn trích nguyên văn** — skill `01` chép
-  đoạn này vào cột `Trích nguyên văn`, `npm run lint` dò lại nó trong `INPUT/`.
-- **Gộp:** đọc mọi thẻ còn hiệu lực rồi hợp nhất thành `00_knowledge_digest.md`: gộp ý trùng, phơi
-  mâu thuẫn giữa các tài liệu.
+- **Extract (per batch):** read exactly the documents in one batch; each document yields a short card of rules,
+  constants, flows and ambiguities. Every line records the source location **and the verbatim quote** — skill `01` copies
+  this passage into its `Trích nguyên văn` (verbatim quote) column, and `npm run lint` searches for it again in `INPUT/`.
+- **Merge:** read every card still in force and consolidate them into `00_knowledge_digest.md`: merge duplicate points and expose
+  conflicts between documents.
 
-## Đầu vào
-- `OUTPUT/<task-slug>/00_digest_plan.md` — do `npm run knowledge:digest <slug>` sinh ra: lô nào cần chạy,
-  tài liệu nào trong lô, thẻ cũ nào phải bỏ.
-- Các tài liệu liệt kê trong lô đang chạy, **chỉ những tài liệu đó** (tool đã bỏ `_superseded/` — bản cũ không vào lô).
-- `OUTPUT/<task-slug>/knowledge_digest/batch_*.md` — thẻ của các lần chạy trước (pha Gộp).
-- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` nếu có.
-- Pha Gộp, chỉ khi `knowledge/_sut.json` có `domain`: các file `vocab` mà `npm run domain` liệt kê (QA_STANDARD §10.3).
-  `_sut.json` không có `domain` ⇒ bỏ qua bước 9 và mục §5.
+## Inputs (Đầu vào)
+- `OUTPUT/<task-slug>/00_digest_plan.md` — produced by `npm run knowledge:digest <slug>`: which batches need to run,
+  which documents are in each batch, which old cards must be dropped.
+- The documents listed in the batch being run, **only those documents** (the tool already excludes `_superseded/` — old versions never enter a batch).
+- `OUTPUT/<task-slug>/knowledge_digest/batch_*.md` — the cards from previous runs (Merge phase).
+- `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` if present.
+- Merge phase, only when `knowledge/_sut.json` has a `domain`: the `vocab` files listed by `npm run domain` (QA_STANDARD §10.3).
+  `_sut.json` has no `domain` ⇒ skip step 9 and section §5.
 
-> Chưa có `00_digest_plan.md` → chạy `npm run knowledge:digest <slug>` trước. Không tự chia lô bằng mắt.
-> Tài liệu quá lớn đã được tool cắt sẵn theo heading: ghi chú lô dạng `phần k/n: dòng a–b (§ heading)` —
-> chỉ đọc đúng khoảng dòng đó, không tự cắt lại.
+> No `00_digest_plan.md` yet → run `npm run knowledge:digest <slug>` first. Never split batches by eye.
+> A document that is too large has already been cut by heading by the tool: the batch note reads `phần k/n: dòng a–b (§ heading)` (part k/n: lines a–b) —
+> read exactly that line range, do not re-cut it yourself.
 
-## KHÔNG được (riêng skill này)
-- **Không ghi `knowledge/`.** Theo §8 chỉ skill `01` và `02` được ghi. Skill này bàn giao digest cho `01`.
-- Không đọc tài liệu ngoài lô đang chạy trong pha Trích. Nạp thêm là phá đúng thứ skill này sinh ra để tránh.
-- Không ghi một dòng nào không có vị trí nguồn và trích nguyên văn. Không tìm được mục/đoạn → không ghi.
-- Không diễn đạt lại ở cột `Trích nguyên văn` — chép đúng từng chữ, kể cả lỗi chính tả của nguồn.
-- Không coi phần `## Annotations / Pending changes` (comment, tracked changes, "DRAFT") là quy tắc —
-  ghi `Loại` = `Chưa chốt`. Tracked change trong thân bài hiện dạng `{--cũ--}{++mới++}`: ghi **cả hai** giá trị,
-  `Loại` = `Chưa chốt` — không chọn giá trị nào.
-- Không tự phân xử theo cảm tính khi hai tài liệu nói khác nhau — chỉ theo QA_STANDARD §10.2 (bước 7).
-- Không đánh rủi ro, không sinh viewpoint hay test idea. Đó là việc của `01`→`04`.
+## MUST NOT (specific to this skill)
+- **Never write `knowledge/`.** Per §8 only skills `01` and `02` may write it. This skill hands the digest over to `01`.
+- Never read documents outside the batch being run in the Extract phase. Loading more defeats exactly what this skill exists to avoid.
+- Never write a line without a source location and a verbatim quote. Cannot find the section/passage → do not write it.
+- Never paraphrase in the `Trích nguyên văn` column — copy word for word, including the source's spelling mistakes.
+- Never treat the `## Annotations / Pending changes` section (comments, tracked changes, "DRAFT") as a rule —
+  record `Loại` = `Chưa chốt` (not confirmed). A tracked change in the body appears as `{--old--}{++new++}`: record **both** values,
+  `Loại` = `Chưa chốt` — do not pick either value.
+- Never arbitrate by feel when two documents disagree — only per QA_STANDARD §10.2 (step 7).
+- Never score risks, never produce viewpoints or test ideas. That is the work of `01`→`04`.
 
-## Các bước
+## Steps
 
-### Pha Trích — lặp cho từng lô trong `00_digest_plan.md` §2
-1. Đọc các tài liệu của lô. Tài liệu ghi chú *"quá ngân sách, tách theo mục"* → đọc lần lượt từng
-   mục lớn, không nạp cả file một lần.
-2. Mỗi tài liệu ra **một khối thẻ**, mở đầu bằng dòng đóng dấu chép **nguyên văn** đường dẫn và sha256
-   từ kế hoạch. Tool đọc lại dòng này để biết tài liệu đã xong:
+### Extract phase — repeat for each batch in `00_digest_plan.md` §2
+1. Read the documents of the batch. A document noted *"quá ngân sách, tách theo mục"* (over budget, split by section) → read it one
+   major section at a time, never load the whole file at once.
+2. Each document yields **one card block**, opened by a stamp line that copies the path and sha256 **verbatim**
+   from the plan. The tool reads this line back to know the document is done:
    `### DOC: <đường dẫn> · sha256:<12 ký tự>`
-   Ngay dưới, một dòng `Phiên bản: <version/ngày ghi trong tài liệu, hoặc [CHƯA CÓ TRONG TÀI LIỆU]>` —
-   dùng để phân xử bản mới hơn ở pha Gộp.
-3. Tài liệu không có nội dung nghiệp vụ (biên bản họp lạc đề, ảnh trống…) vẫn ghi khối thẻ với một dòng
-   `Không có nội dung nghiệp vụ`, để lần sau không bị đưa vào lô nữa.
-4. Ghi ra `OUTPUT/<task-slug>/knowledge_digest/<tên lô>.md`, đúng tên lô trong kế hoạch.
+   Right below, a line `Phiên bản: <version/ngày ghi trong tài liệu, hoặc [CHƯA CÓ TRONG TÀI LIỆU]>` (the version/date written in the document) —
+   used to decide which version is newer in the Merge phase.
+3. A document with no business content (off-topic meeting minutes, a blank image…) still gets a card block with the single line
+   `Không có nội dung nghiệp vụ` (no business content), so that it is not put into a batch again next time.
+4. Write `OUTPUT/<task-slug>/knowledge_digest/<batch name>.md`, using exactly the batch name in the plan.
 
-### Pha Gộp — một lần, sau khi mọi lô đã xong
-5. Đọc mọi `batch_*.md`. **Bỏ** các khối thẻ được liệt kê ở `00_digest_plan.md` §3 (bản cũ của tài liệu
-   đã đổi, hoặc tài liệu đã gỡ).
-6. Hợp nhất: cùng một ý từ nhiều tài liệu → một dòng, cột nguồn liệt kê đủ các tài liệu.
-7. Cùng một chủ đề mà giá trị khác nhau (ngưỡng, thông báo, quyền…) → đưa vào §3 Mâu thuẫn và áp
-   QA_STANDARD §10.2: phân xử được (khác mức ưu tiên, hoặc cùng mức nhưng phiên bản/ngày rõ ràng) ⇒ ghi
-   bên thắng + lý do; không phân xử được ⇒ `Chưa phân xử`. Skill `01` biến dòng `Chưa phân xử` thành `OQ`.
-8. Tổng thẻ quá lớn để đọc một lượt → gộp theo từng ngăn (`01_business`…`05_communication`) trước,
-   rồi gộp các bản ngăn.
-9. **Thuật ngữ ngành** (chỉ khi có `domain`) — thuật ngữ của `vocab` **có xuất hiện** trong thẻ ⇒ một dòng §5,
-   kèm nơi xuất hiện. Đây là gợi ý cho người dự án điền `knowledge/_glossary.md`, không phải quy tắc; thuật ngữ
-   không xuất hiện trong tài liệu thì không ghi.
+### Merge phase — once, after every batch is done
+5. Read every `batch_*.md`. **Drop** the card blocks listed in `00_digest_plan.md` §3 (old versions of changed
+   documents, or removed documents).
+6. Consolidate: the same point from several documents → one line, with the source column listing all the documents.
+7. Same topic with different values (thresholds, messages, permissions…) → put it in §3 Conflicts and apply
+   QA_STANDARD §10.2: resolvable (different priority level, or same level with a clear version/date) ⇒ record
+   the winner + reason; not resolvable ⇒ `Chưa phân xử` (unresolved). Skill `01` turns each `Chưa phân xử` line into an `OQ`.
+8. The cards are too large in total to read in one pass → merge per folder (`01_business`…`05_communication`) first,
+   then merge the folder versions.
+9. **Industry terminology** (only when a `domain` is set) — a `vocab` term that **does appear** in the cards ⇒ one §5 line,
+   with where it appears. This is a hint for the project people filling in `knowledge/_glossary.md`, not a rule; terms
+   that do not appear in the documents are not recorded.
 
-## Format output
+## Output format
 
-Thẻ của một lô — `OUTPUT/<task-slug>/knowledge_digest/batch_NN.md`:
+Cards of one batch — `OUTPUT/<task-slug>/knowledge_digest/batch_NN.md`:
 
 ````markdown
 # THẺ CHƯNG CẤT · <task-slug> · batch_NN
@@ -87,10 +90,11 @@ Phiên bản: <version/ngày, hoặc [CHƯA CÓ TRONG TÀI LIỆU]>
 | 2 | Mơ hồ | <điều tài liệu không nói rõ> | §<mục> | <đoạn liên quan> |
 ````
 
-`Loại` ∈ `Quy tắc` · `Field` · `Hằng số` · `Luồng` · `Tác nhân` · `Ngoài phạm vi` · `Mơ hồ` · `Chưa chốt`.
-`Ngoài phạm vi` chỉ dùng khi tài liệu **nói rõ** là không làm.
+`Loại` ∈ `Quy tắc` · `Field` · `Hằng số` · `Luồng` · `Tác nhân` · `Ngoài phạm vi` · `Mơ hồ` · `Chưa chốt`
+(rule · field · constant · flow · actor · out of scope · ambiguous · not confirmed).
+`Ngoài phạm vi` is used only when the document **explicitly states** that something is not done.
 
-Bản gộp — `OUTPUT/<task-slug>/00_knowledge_digest.md`:
+Merged version — `OUTPUT/<task-slug>/00_knowledge_digest.md`:
 
 ````markdown
 # BẢN CHƯNG CẤT TRI THỨC · <task-slug>
@@ -124,17 +128,19 @@ Owner: qa-system/qa-analyst/skills/knowledge-digest.md · Nguồn: knowledge_dig
 | <thuật ngữ> | `[DOMAIN] <pack-id>/vocab.md#<mục>` | `<file>` <mục> |
 ````
 
-Mục trống ghi `Không có`, không để bảng rỗng. **Verdict**: `PASS` khi mọi lô đã gộp đủ và mọi dòng có nguồn +
-trích; `FIX` khi còn thiếu. Mâu thuẫn **không** làm digest thành `ASK` — chúng đi tiếp thành `OQ` ở 01 rồi `MR` ở 02.
+(Sections: 1 scope · 2 merged rules & constants · 3 conflicts between documents · 4 ambiguities & unconfirmed points for skill 01 · 5 industry terms found in the documents.)
 
-## Bàn giao
-- `00_knowledge_digest.md` → `requirement-risk-summary` đọc thay cho tài liệu thô, giữ nguyên cột nguồn và trích nguyên văn.
-- §3 dòng `Chưa phân xử` + §4 → `requirement-risk-summary` ghi thành `OQ-xx`.
+An empty section contains `Không có` (none); never leave an empty table. **Verdict**: `PASS` when every batch has been fully merged and every line has a source +
+quote; `FIX` when something is still missing. Conflicts do **not** turn the digest into `ASK` — they carry on as `OQ` in 01 and then `MR` in 02.
 
-## Chốt chặn nghiệm thu (Quality Gates)
-- [ ] Mọi tài liệu trong các lô của `00_digest_plan.md` §2 đều có đúng một dòng `### DOC:` với sha256 khớp kế hoạch. Chạy lại `npm run knowledge:digest <slug>` phải ra `0` lô.
-- [ ] Mỗi dòng thẻ và mỗi dòng bản gộp có vị trí nguồn cụ thể (file + mục/bảng/đoạn) và trích nguyên văn có thật trong tài liệu.
-- [ ] Không khối thẻ nào ở `00_digest_plan.md` §3 lọt vào bản gộp.
-- [ ] Mâu thuẫn được ghi ở §3 với cả hai phía và cột phân xử theo §10.2.
-- [ ] Không có thay đổi nào trong `knowledge/` do skill này tạo ra.
-- [ ] File xuất đúng `OUTPUT/<task-slug>/knowledge_digest/batch_NN.md` và `OUTPUT/<task-slug>/00_knowledge_digest.md`.
+## Handover
+- `00_knowledge_digest.md` → `requirement-risk-summary` reads it instead of the raw documents, keeping the source and verbatim-quote columns as they are.
+- §3 lines marked `Chưa phân xử` + §4 → `requirement-risk-summary` records them as `OQ-xx`.
+
+## Acceptance gates (Quality Gates)
+- [ ] Every document in the batches of `00_digest_plan.md` §2 has exactly one `### DOC:` line with a sha256 matching the plan. Re-running `npm run knowledge:digest <slug>` must report `0` batches.
+- [ ] Every card line and every merged line has a specific source location (file + section/table/paragraph) and a verbatim quote that really exists in the document.
+- [ ] No card block listed in `00_digest_plan.md` §3 slips into the merged version.
+- [ ] Conflicts are recorded in §3 with both sides and the arbitration column per §10.2.
+- [ ] This skill made no change in `knowledge/`.
+- [ ] The files are written exactly to `OUTPUT/<task-slug>/knowledge_digest/batch_NN.md` and `OUTPUT/<task-slug>/00_knowledge_digest.md`.
