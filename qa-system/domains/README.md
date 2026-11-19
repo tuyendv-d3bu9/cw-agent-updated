@@ -8,7 +8,12 @@
 
 | Pack id | Ngành (GICS) | Trạng thái |
 |---|---|---|
-| `ecommerce-retail` | Consumer Discretionary · Distribution & Retail | stub — mới có `conflict_topics.json`, `datagen.json`, `units.json` (chuyển từ mặc định cũ của tool) |
+| `ecommerce-retail` | Consumer Discretionary · Distribution & Retail | draft — 3 file JSON là bản sao tương thích của mặc định cũ (test khoá từng byte) |
+| `banking-payments` | Financials · Banks / Financial Services | draft — BIAN, GICS chưa mở được trang ⇒ phần phụ thuộc ghi `Unknown` |
+| `insurance` | Financials · Insurance | draft — ACORD chưa mở được trang ⇒ phần phụ thuộc ghi `Unknown` |
+| `healthcare` | Health Care · Health Care Equipment & Services | draft — HIPAA chưa kiểm được (hhs.gov 403) ⇒ `Unknown` |
+
+Phase 2/3 (telecom, saas-b2b, logistics-transport, edtech, gaming, automotive) chỉ làm sau một lần review riêng — xem `docs/plans/domain-packs.md`.
 
 Phân loại ngành theo GICS: https://www.msci.com/index/methodology/latest/GICS
 

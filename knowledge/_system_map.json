@@ -160,7 +160,10 @@
     "selected_in": "knowledge/_sut.json → domain",
     "rule": "qa-system/core/QA_STANDARD.md §10.3 — pack là checklist, không phải nguồn sự thật",
     "packs": {
-      "ecommerce-retail": "qa-system/domains/ecommerce-retail/"
+      "banking-payments": "qa-system/domains/banking-payments/",
+      "ecommerce-retail": "qa-system/domains/ecommerce-retail/",
+      "healthcare": "qa-system/domains/healthcare/",
+      "insurance": "qa-system/domains/insurance/"
     }
   }
 }
