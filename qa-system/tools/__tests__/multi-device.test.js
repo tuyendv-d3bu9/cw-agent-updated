@@ -9,7 +9,7 @@ const path = require('path');
 
 const AUTO = path.resolve(__dirname, '../../templates/automation');
 const { resolveDevices, DEVICE_NAMES, SCRIPT_DEVICES } = require(path.join(AUTO, 'utils/devices.js'));
-const { parseRunResult } = require('../jira/jira-client');
+const { parseRunResult, mergeDeviceRows } = require('../jira/jira-client');
 
 const names = (env) => resolveDevices(env).names;
 
@@ -115,4 +115,27 @@ test('template run_result.md có Device ở header và bảng, và parse đượ
   const tpl = fs.readFileSync(path.resolve(__dirname, '../../templates/run/run_result.md'), 'utf-8');
   assert.match(tpl, /Thiết bị \(Device\)/);
   assert.match(tpl, /\| TC ID \| Device \|/);
+});
+
+test('jira sync: one row per TC across devices, worst status wins', () => {
+  const rows = [
+    { tcId: 'TC-01', status: 'PASS', actual: 'ok', evidence: 'd.png', device: 'desktop-chrome' },
+    { tcId: 'TC-01', status: 'FAIL', actual: 'button hidden', evidence: 'm.png', device: 'mobile-ios' },
+    { tcId: 'TC-02', status: 'PASS', actual: 'ok', evidence: 'x.png', device: '' },
+    { tcId: 'TC-01', status: 'PASS', actual: 'ok', evidence: 't.png', device: 'tablet' },
+  ];
+  const merged = mergeDeviceRows(rows);
+  assert.deepStrictEqual(merged.map((r) => r.tcId), ['TC-01', 'TC-02']);
+  assert.strictEqual(merged[0].status, 'FAIL');
+  assert.strictEqual(merged[0].evidence, 'm.png');
+  assert.strictEqual(merged[0].device, 'desktop-chrome, mobile-ios, tablet');
+  assert.match(merged[0].actual, /\[mobile-ios\] FAIL: button hidden/);
+  assert.strictEqual(merged[1], rows[2]); // single row passes through untouched
+});
+
+test('jira sync: BLOCKED outranks PASS, FAIL outranks BLOCKED', () => {
+  const m = (a, b) => mergeDeviceRows([{ tcId: 'T-1', status: a, actual: '', evidence: '', device: 'x' }, { tcId: 'T-1', status: b, actual: '', evidence: '', device: 'y' }])[0].status;
+  assert.strictEqual(m('PASS', 'BLOCKED'), 'BLOCKED');
+  assert.strictEqual(m('BLOCKED', 'FAIL'), 'FAIL');
+  assert.strictEqual(m('PASS', 'PASS'), 'PASS');
 });
