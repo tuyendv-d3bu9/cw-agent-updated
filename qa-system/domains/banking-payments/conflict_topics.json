@@ -1,0 +1,33 @@
+{
+  "_comment": [
+    "Chủ đề dò xung đột giữa các tính năng của ngành ngân hàng / thanh toán — cùng định dạng knowledge/_conflict_topics.json.",
+    "Cụm từ chỉ để phát hiện hai tài liệu nói ngược nhau; không phải quy tắc nghiệp vụ."
+  ],
+  "topics": {
+    "reversibility": {
+      "category": "Huỷ / hoàn giao dịch",
+      "allow": ["có thể hủy", "có thể huỷ", "được hoàn", "cho phép hoàn", "reversible", "can be reversed", "refundable"],
+      "deny": ["không thể hủy", "không thể huỷ", "không được hoàn", "không hoàn lại", "irreversible", "cannot be reversed", "non-refundable", "final once submitted"]
+    },
+    "approvalRequirement": {
+      "category": "Duyệt giao dịch (maker-checker)",
+      "allow": ["không cần duyệt", "tự động duyệt", "duyệt tự động", "no approval required", "auto-approved", "self-approval allowed"],
+      "deny": ["bắt buộc duyệt", "cần người duyệt", "phải được duyệt", "không được tự duyệt", "approval required", "four-eyes", "must be approved", "self-approval not allowed"]
+    },
+    "strongAuthentication": {
+      "category": "Xác thực bổ sung (OTP)",
+      "allow": ["không yêu cầu otp", "không cần otp", "bỏ qua otp", "no otp required", "skip otp", "otp not required"],
+      "deny": ["bắt buộc otp", "yêu cầu otp", "phải xác thực otp", "otp required", "must verify otp", "strong authentication required"]
+    },
+    "limitScope": {
+      "category": "Phạm vi hạn mức",
+      "allow": ["không giới hạn", "không áp dụng hạn mức", "no limit", "unlimited", "limit not applied"],
+      "deny": ["giới hạn theo ngày", "áp dụng hạn mức", "tối đa mỗi giao dịch", "daily limit applies", "per-transaction limit applies", "limit applied"]
+    },
+    "cardDataDisplay": {
+      "category": "Hiển thị số thẻ",
+      "allow": ["hiển thị đầy đủ số thẻ", "hiện toàn bộ số thẻ", "show full card number", "unmasked card number"],
+      "deny": ["che số thẻ", "ẩn số thẻ", "chỉ hiển thị 4 số cuối", "mask card number", "masked card number", "last four digits only"]
+    }
+  }
+}
