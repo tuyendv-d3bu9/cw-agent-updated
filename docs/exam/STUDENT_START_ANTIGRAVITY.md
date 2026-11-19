@@ -35,7 +35,7 @@ hoặc ngắn hơn:
 > Tôi là học viên hv001. Hãy thiết lập bài thi cuối khóa cho tôi theo file hướng dẫn.
 
 Chạy lại câu này bao nhiêu lần cũng được: bài đã làm **không bị xoá hay ghi đè**. START chỉ commit các file
-nộp bài mà nó vừa tạo lần đầu; phần bạn đang làm dở được giữ nguyên trên máy và chỉ được đưa lên GitHub khi
+nộp bài chưa từng được commit (lần tạo đầu tiên); phần bạn đang làm dở được giữ nguyên trên máy và chỉ được đưa lên GitHub khi
 bạn dùng lệnh SUBMIT.
 
 ### Nộp bài (SUBMIT)
@@ -123,7 +123,7 @@ Run every command yourself; replace `<WS>` with the absolute workspace path and 
    `exams/<ID>` from the starter, **or** resume it (local or GitHub) without losing work → create
    `EXAM/submission.json`, `EXAM/DECISIONS.md`, `EXAM/AI_USE.md` from the official templates **only if they
    are missing** (student id, branch and starter commit filled in) → `npm ci` → `npm run exam:check` →
-   commit **only the files it just created** (never the student's in-progress edits) → push `exams/<ID>` →
+   commit **only those of the three files that were never committed** (never edits to committed files) → push `exams/<ID>` →
    confirm it on GitHub with `git ls-remote`.
 6. **Read the last line** `RESULT {...}`:
    - `"status":"SUCCESS"` → tell the student (in Vietnamese) the branch, the GitHub link (`facts.web`), the

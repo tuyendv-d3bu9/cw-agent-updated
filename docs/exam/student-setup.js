@@ -409,6 +409,7 @@ function cmdStart(rawId) {
   probeWriteAccess(ws, branch, remoteBefore || starterSha);
   log('  Có quyền push ✔');
 
+  checkIdentity(ws); // before anything is created, so a first run never stops half-way at commit time
   step(5, `Chuẩn bị nhánh ${branch}`);
   const b = ensureBranch(ws, id, starterSha);
   log({ created: `  Đã tạo nhánh mới từ tag đề thi (${starterSha.slice(0, 12)}).`,
@@ -436,9 +437,11 @@ function cmdStart(rawId) {
 
   step(9, 'Commit và push nhánh của bạn');
   checkIdentity(ws);
-  // Only files created by this run are committed: edits the student is making stay uncommitted (SUBMIT publishes them).
-  const commit = files.created.length ? commitPaths(ws, files.created, `exam(${id}): start ${EXAM.id} from starter`) : null;
-  log(commit ? `  Commit ${commit.slice(0, 12)} (chỉ ${files.created.join(', ')})` : '  Không tạo commit mới (bài đang làm dở giữ nguyên, chưa commit).');
+  // Only EXAM files never committed yet (untracked) are committed — created now or by an earlier START that
+  // stopped before its commit. Edits to already-committed files stay uncommitted (SUBMIT publishes them).
+  const untracked = EXAM_FILES.filter((f) => !git(ws, ['ls-files', '--error-unmatch', '--', f]).ok);
+  const commit = untracked.length ? commitPaths(ws, untracked, `exam(${id}): start ${EXAM.id} from starter`) : null;
+  log(commit ? `  Commit ${commit.slice(0, 12)} (chỉ ${untracked.join(', ')})` : '  Không tạo commit mới (bài đang làm dở giữ nguyên, chưa commit).');
   const remoteSha = pushAndVerify(ws, branch);
 
   return {
