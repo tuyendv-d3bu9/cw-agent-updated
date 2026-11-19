@@ -1,0 +1,33 @@
+{
+  "_comment": [
+    "Chủ đề dò xung đột giữa các tính năng của ngành y tế — cùng định dạng knowledge/_conflict_topics.json.",
+    "topics.<key> = { category, allow[], deny[] }. Cụm chỉ là từ khoá dò mâu thuẫn, không phải quy tắc nghiệp vụ."
+  ],
+  "topics": {
+    "recordDeletion": {
+      "category": "Xoá hồ sơ / đính chính",
+      "allow": ["được xoá", "cho phép xoá", "xoá hồ sơ", "can delete", "delete allowed"],
+      "deny": ["không được xoá", "không cho xoá", "chỉ đính chính", "không xoá", "cannot delete", "amend only", "no deletion"]
+    },
+    "consentRequired": {
+      "category": "Đồng ý của người bệnh",
+      "allow": ["không cần đồng ý", "không yêu cầu đồng ý", "no consent needed", "consent not required"],
+      "deny": ["bắt buộc đồng ý", "cần sự đồng ý", "phải có đồng ý", "consent required", "must have consent"]
+    },
+    "emergencyAccess": {
+      "category": "Truy cập khẩn cấp / vượt quyền",
+      "allow": ["cho phép truy cập khẩn cấp", "vượt quyền", "break-glass", "emergency access allowed"],
+      "deny": ["không cho phép vượt quyền", "không truy cập khẩn cấp", "no break-glass", "no emergency access"]
+    },
+    "roleAccess": {
+      "category": "Phân quyền xem hồ sơ theo vai trò",
+      "allow": ["mọi nhân viên được xem", "tất cả vai trò xem được", "all staff can view", "any role can view"],
+      "deny": ["chỉ vai trò được phân công", "chỉ bác sĩ điều trị", "restricted to assigned", "role-restricted", "only assigned staff"]
+    },
+    "billingAfterCancel": {
+      "category": "Thanh toán sau khi huỷ lượt khám",
+      "allow": ["vẫn tạo claim", "vẫn tính phí", "claim still created", "still billed"],
+      "deny": ["không tạo claim", "không tính phí", "huỷ thì không thu", "no claim", "not billed"]
+    }
+  }
+}
