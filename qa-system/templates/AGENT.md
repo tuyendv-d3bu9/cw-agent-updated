@@ -1,54 +1,55 @@
-# Agent: <Tên agent>  (<chuyên môn ngắn>)
+# Agent: <Agent name>  (<short specialty>)
 
-> Tuân thủ `qa-system/core/QA_STANDARD.md`.
+> Complies with `qa-system/core/QA_STANDARD.md`.
 >
-> **AGENT.md = LÀ AI.** Chỉ danh tính, quyền hạn, ranh giới, bàn giao.
-> KHÔNG viết các bước thực thi (đó là `skills/`), KHÔNG chứa tri thức nền (đó là `knowledge/`),
-> KHÔNG nhắc lại ràng buộc chung (đó là `qa-system/core/QA_STANDARD.md`).
+> **AGENT.md = WHO IT IS.** Only identity, permissions, boundaries, handover.
+> It does NOT describe execution steps (those are in `skills/`), does NOT hold background knowledge (that is `knowledge/`),
+> and does NOT repeat shared constraints (those are in `qa-system/core/QA_STANDARD.md`).
 
-## Là ai
-<Agent này là ai, đứng ở node nào trong pipeline, nhận từ ai và bàn giao cho ai.>
+## Who it is
+<Who this agent is, which node of the pipeline it sits at, whom it receives from and whom it hands over to.>
 
-> **Phân biệt với `<agent dễ nhầm>`**: <agent này làm X> khác <agent kia làm Y>.
+> **How it differs from `<easily confused agent>`**: <this agent does X>, unlike <that agent, which does Y>.
 
-## Skill sở hữu
-- `<ten-skill>` — <một dòng: vào gì → ra gì>
-- `<ten-skill>` — <một dòng>
+## Skill sở hữu (owned skills)
+<!-- Keep the word "Skill" in this heading: `npm run agent:check` finds the skill list under any `##` heading containing the word "Skill". -->
+- `<skill-name>` — <one line: what goes in → what comes out>
+- `<skill-name>` — <one line>
 
-Chuỗi chạy: `<skill-1> → <skill-2>`. Mỗi skill chỉ chạy khi output của skill trước đã có.
+Run order: `<skill-1> → <skill-2>`. Each skill runs only once the previous skill's output exists.
 
 ## Knowledge
-- **Đọc**: `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (nếu có)
-- **Ghi**: <mục nào theo bảng luật ghi QA_STANDARD §8 — HOẶC "không">
+- **Reads**: `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (if present)
+- **Writes**: <which sections per the writing-rule table in QA_STANDARD §8 — OR "nothing">
 
-> Agent mới mặc định **không ghi**. Ai ghi mục nào chỉ định nghĩa ở `qa-system/core/QA_STANDARD.md` §8.
+> A new agent **writes nothing** by default. Who writes which section is defined only in `qa-system/core/QA_STANDARD.md` §8.
 
-## Được làm
-- <Việc được phép>
-- <Loại artifact được đọc>
-- <Loại output được tạo>
+## May do
+- <Permitted work>
+- <Types of artifact it may read>
+- <Types of output it may create>
 
-## KHÔNG được
-> Chỉ ghi ranh giới **riêng** của agent này. Guard chung ở `qa-system/core/QA_STANDARD.md` §2 — không lặp lại.
+## MUST NOT
+> Record only the boundaries **specific** to this agent. The shared guards are in `qa-system/core/QA_STANDARD.md` §2 — do not repeat them.
 
-- Không làm việc của `<agent/skill bước sau>` — <ranh giới cụ thể>.
-- <Ranh giới riêng khác>
+- Do not do the work of `<later-step agent/skill>` — <the concrete boundary>.
+- <Other specific boundary>
 
 ## Verdict
-Theo `qa-system/core/QA_STANDARD.md` §1.
-<Nếu agent có luật verdict riêng thì ghi ở đây, vd ngoại lệ của skill 06. Không có thì bỏ dòng này.>
+Per `qa-system/core/QA_STANDARD.md` §1.
+<If the agent has its own verdict rule, write it here, e.g. the skill 06 exception. If not, delete this line.>
 
-## Human-Final — không tự quyết
-- <Quyết định luôn thuộc con người: mức rủi ro chấp nhận, độ nghiêm trọng, Go/No-Go, ranh giới scope…>
+## Human-Final — not decided by the agent
+- <Decisions that always belong to humans: accepted risk level, severity, Go/No-Go, scope boundaries…>
 - <…>
 
-## Đầu vào / Đầu ra
-- **Vào**: <artifact agent được đọc> + `knowledge/_project.md` + `knowledge/features/<slug>.md` (QA_STANDARD §7)
-- **Ra**: `OUTPUT/<task-slug>/<NN>_*.md` (một file mỗi skill) + tick `00_plan.md`
+## Inputs / Outputs
+- **In**: <artifacts the agent reads> + `knowledge/_project.md` + `knowledge/features/<slug>.md` (QA_STANDARD §7)
+- **Out**: `OUTPUT/<task-slug>/<NN>_*.md` (one file per skill) + tick `00_plan.md`
 
-## Bàn giao
-- `<NN>` (<tên deliverable>) → `<agent/skill nhận>`
+## Handover
+- `<NN>` (<deliverable name>) → `<receiving agent/skill>`
 
-## Cách gọi
-- Theo agent: "<Tên agent>, <hành động cụ thể>."
-- Theo skill: "Chạy `<ten-skill>` với <input>."
+## How to call it
+- By agent: "<Agent name>, <concrete action>."
+- By skill: "Run `<skill-name>` with <input>."

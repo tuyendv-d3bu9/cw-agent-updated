@@ -1,116 +1,122 @@
-# QA STANDARD — Spine dùng chung
+# QA STANDARD — Shared spine
 
-> Mọi `AGENT.md` và `skills/*.md` trong `qa-system/qa-*/` đều tuân thủ file này.
-> Ràng buộc chung CHỈ nằm ở đây — skill và AGENT.md **trỏ tới**, không chép lại.
+> Every `AGENT.md` and `skills/*.md` under `qa-system/qa-*/` complies with this file.
+> Shared constraints live ONLY here — skills and AGENT.md files **point to** them, they do not copy them.
 > Frameworks: RCTFC (Role-Context-Task-Format-Constraint) · FACT (Factual-Accurate-Complete-Testable).
 >
-> **Nguyên tắc gốc**: agent chỉ được **trích** (có nguồn) hoặc **hỏi** (thành câu hỏi cho BA/PO).
-> Không được **sáng tác** giá trị, rule, thông báo, ngưỡng. Thiếu thì nói thiếu — nói thiếu là đạt chuẩn.
+> **Root principle**: an agent may only **quote** (with a source) or **ask** (as a question for the BA/PO).
+> It must not **invent** values, rules, messages or thresholds. If something is missing, say it is missing — saying so meets the standard.
+>
+> Vietnamese literals kept on purpose: labels, status words, column headers and cell values below
+> (e.g. `[CHƯA CÓ TRONG TÀI LIỆU]`, `TREO`, `Phản hồi chính thức`, `Không áp dụng`) are read by the tools in
+> `qa-system/tools/` — copy them **verbatim** into deliverables; English glosses are given in brackets only.
 
 ---
 
 ## 1. Verdict — PASS / FIX / ASK
 
-| Verdict | Khi nào | Cách xử lý | Trạng thái Pipeline |
+| Verdict | When | How to handle | Pipeline state |
 |---|---|---|---|
-| **PASS** | Đủ thông tin và đạt checklist | Ghi nhận đạt | Mở chặng kế tiếp |
-| **FIX** | Đủ thông tin nhưng sai format / trace / thiếu độ phủ **sửa được từ nguồn đang có** | Viết bản sửa cụ thể | Agent tự sửa ngay rồi chạy lại |
-| **ASK** | Thiếu thông tin nghiệp vụ, chỉ người (BA/PO) trả lời được | Ghi câu hỏi theo schema §9.4, nêu cần ai | **Dừng pipeline** — cấm nhảy sang chặng sau |
+| **PASS** | Enough information and the checklist is met | Record as passed | Next stage opens |
+| **FIX** | Enough information, but wrong format / trace / missing coverage that **can be fixed from the sources at hand** | Write the concrete fix | The agent fixes it immediately and re-runs |
+| **ASK** | Business information is missing that only a person (BA/PO) can answer | Write the question in the §9.4 schema, state who is needed | **Stop the pipeline** — jumping to a later stage is forbidden |
 
-Luật cổng `ASK` (định nghĩa duy nhất — nơi khác chỉ trỏ về đây):
+`ASK` gate rules (the single definition — everywhere else only points here):
 
-1. Chặng 2 ra `ASK` ⇒ **không** sinh deliverable Chặng 3→6. Người dùng giục *"cứ làm tiếp"* cũng
-   không mở được: giải thích rằng test case dựng trên logic chưa chốt sẽ phải đoán, rồi liệt kê câu hỏi treo.
-2. Cổng chỉ mở khi mọi câu hỏi ở knowledge §7 có trạng thái `Confirmed` hoặc `Rejected` (§9.3)
-   hoặc có quyết định ở knowledge §8 kèm người phê duyệt và ngày.
-3. Cổng được **thi hành bằng máy**: trước khi sinh deliverable Chặng 3 trở đi, chạy `npm run gate <slug>`
-   (exit `1` ⇒ dừng). Thiếu file `02` hoặc không đọc được verdict ⇒ cổng **đóng** (fail-closed).
-   Khi người dùng giục làm tiếp, chạy lệnh và dán kết quả thật — đừng tranh luận suông.
-4. Agent **không** tự điền câu trả lời, trạng thái `Confirmed`, hay quyết định §8 thay BA/PO.
+1. Stage 2 returns `ASK` ⇒ **do not** produce Stage 3→6 deliverables. Even if the user pushes *"just keep going"*
+   the gate does not open: explain that test cases built on unconfirmed logic would have to guess, then list the pending questions.
+2. The gate opens only when every question in knowledge §7 has status `Confirmed` or `Rejected` (§9.3)
+   or has a decision in knowledge §8 with an approver and a date.
+3. The gate is **enforced by machine**: before producing any deliverable from Stage 3 onwards, run `npm run gate <slug>`
+   (exit `1` ⇒ stop). A missing `02` file or an unreadable verdict ⇒ the gate is **closed** (fail-closed).
+   When the user pushes to continue, run the command and paste the real result — do not argue in the abstract.
+4. The agent **never** fills in an answer, a `Confirmed` status, or a §8 decision on behalf of the BA/PO.
 
-**Verdict của `coverage-review` (Chặng 6)** — luật riêng, có điểm kết thúc:
-- `PASS` — mọi mục trong ma trận độ phủ (BR, MR đã chốt, AF, TI "Giữ") đều có test case và
-  `npm run lint` sạch. Phần quyết định của con người vẫn ghi ở mục Human-Final, không chặn verdict.
-- `FIX` — còn mục chưa cover mà nguồn **đủ** để viết test case.
-- `ASK` — còn mục chưa cover vì **thiếu** thông tin (kèm câu hỏi theo §9.4).
-
----
-
-## 2. Guard chung — áp cho mọi skill
-
-1. **Factual** — chỉ kết luận từ nguồn hợp lệ (§10.1). Không tự chế rule, giá trị, thông báo lỗi,
-   mã phản hồi, ngưỡng, định dạng. Kiến thức chung về "ngành này thường làm thế" **không phải nguồn**.
-2. **Không quota** — không ép số lượng ("≥5 câu hỏi", "≥X test case", "≥1 NULL"). Số lượng là hệ
-   quả của nguồn, không phải chỉ tiêu.
-3. **Nhãn khi thiếu** — dùng đúng bộ nhãn §2.1. Gắn nhãn tường minh luôn tốt hơn lấp chỗ trống.
-4. **Traceability** — mọi item (rule, câu hỏi, viewpoint, test idea, test case, record data) có cột
-   hoặc tag nguồn theo §9. Không gắn được nguồn ⇒ item đó là câu hỏi, không phải dữ kiện.
-5. **Chống Scope Creep** — không làm việc của bước sau (mục "KHÔNG được" của từng skill).
-6. **Không ghi đè nguồn** — không sửa `INPUT/` và deliverable của agent khác.
-7. **Không để trống ô bảng** — điền nhãn §2.1.
-8. **Out of Scope = loại trừ tường minh** — chỉ những gì nguồn **nói rõ** là không làm, kèm trích
-   nguồn. Điều tài liệu **không nhắc tới** là **câu hỏi**, không phải ngoài phạm vi.
-
-### 2.1. Bộ nhãn chuẩn
-
-| Nhãn | Dùng khi | Ví dụ |
-|---|---|---|
-| `[CHƯA CÓ TRONG TÀI LIỆU]` | Cần một giá trị cụ thể (chữ thông báo, số, mã lỗi, định dạng) mà nguồn không có. Có câu hỏi rồi thì kèm mã: `[CHƯA CÓ TRONG TÀI LIỆU – MR-03]` — mã MR phải là câu hỏi có thật ở 02 §3 hoặc knowledge §7 (lint kiểm) | Expected: `Hiển thị thông báo lỗi [CHƯA CÓ TRONG TÀI LIỆU – MR-03]` |
-| `[GIẢ ĐỊNH]` | Một suy luận của agent, kèm lý do. **Không** dùng để bịa giá trị cụ thể, và **cấm** trong ô giá trị (Precondition, Test Steps, Test Data, Expected Result) — lint báo lỗi; ở đó dùng `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` | `[GIẢ ĐỊNH] Field này không có vòng đời trạng thái vì tài liệu chỉ mô tả nhập liệu` |
-| `[CONTEXT_MISSING]` | Thiếu bối cảnh kinh doanh (người dùng, tải, doanh thu, SLA) | Ô Usage Context của skill 01 |
-| `[ĐỀ XUẤT]` | Agent đề nghị, chờ người duyệt (Human-Final) | `[ĐỀ XUẤT] Automated` |
-| `CHƯA COVER` / `CHƯA CÓ DATA` | Ô ma trận chưa có test case / dữ liệu | Ma trận Chặng 6, Chặng 12 |
+**Verdict of `coverage-review` (Stage 6)** — its own rule, with an end point:
+- `PASS` — every item in the coverage matrix (BR, confirmed MR, AF, TI marked "Giữ" (keep)) has a test case and
+  `npm run lint` is clean. The human decision part is still recorded in the Human-Final section and does not block the verdict.
+- `FIX` — some items are not covered yet but the sources are **sufficient** to write the test cases.
+- `ASK` — some items are not covered because information is **missing** (with questions per §9.4).
 
 ---
 
-## 3. FACT Self-Audit — chạy trước khi xuất kết quả
+## 2. Shared guards — apply to every skill
 
-| | Tiêu chuẩn | Câu hỏi tự kiểm |
+1. **Factual** — draw conclusions only from valid sources (§10.1). Do not invent rules, values, error messages,
+   response codes, thresholds or formats. General knowledge of "what this industry usually does" **is not a source**.
+2. **No quotas** — never force a count ("≥5 questions", "≥X test cases", "≥1 NULL"). Quantity is a
+   consequence of the sources, not a target.
+3. **Labels when something is missing** — use exactly the label set of §2.1. An explicit label is always better than filling a gap.
+4. **Traceability** — every item (rule, question, viewpoint, test idea, test case, data record) has a source
+   column or tag per §9. If no source can be attached ⇒ the item is a question, not a fact.
+5. **No scope creep** — do not do a later step's work (see each skill's "MUST NOT" section).
+6. **Never overwrite sources** — do not modify `INPUT/` or another agent's deliverables.
+7. **Never leave a table cell empty** — fill it with a §2.1 label.
+8. **Out of Scope = explicit exclusion** — only what the source **explicitly states** is not done, with a quote
+   of the source. Something the documents **do not mention** is a **question**, not out of scope.
+
+### 2.1. Standard label set
+
+The label strings are kept in Vietnamese because `npm run lint` matches them literally.
+
+| Label | Use when | Example |
 |---|---|---|
-| **F** | Factual | Mọi giá trị/rule có nguồn §10.1 không? Chỗ không có đã gắn nhãn §2.1 chưa? Có giá trị nào "nghe hợp lý" nhưng không trích được không? |
-| **A** | Accurate | Diễn đạt một nghĩa? Mã/tên/chữ thông báo lấy **đúng nguyên văn** nguồn? |
-| **C** | Complete | Đủ cấu trúc và trường bắt buộc? Không sót nhánh nghiệp vụ **có trong nguồn**? |
-| **T** | Testable | Mọi item có tiêu chí phân định Pass/Fail, hoặc có nhãn chỉ rõ phần tiêu chí còn thiếu? |
-
-**Thiếu nguồn mà đã gắn nhãn tường minh ⇒ F và C vẫn ĐẠT.** Lấp chỗ trống bằng giá trị tự chế ⇒
-F **TRƯỢT** dù trông đầy đủ. Tiêu chí trượt thì sửa trước khi xuất.
+| `[CHƯA CÓ TRONG TÀI LIỆU]` (not in the documents) | A concrete value is needed (message text, number, error code, format) that the source does not have. If a question already exists, attach its code: `[CHƯA CÓ TRONG TÀI LIỆU – MR-03]` — the MR code must be a real question in 02 §3 or knowledge §7 (lint checks this) | Expected: `Hiển thị thông báo lỗi [CHƯA CÓ TRONG TÀI LIỆU – MR-03]` |
+| `[GIẢ ĐỊNH]` (assumption) | An inference by the agent, with its reason. **Not** for inventing concrete values, and **forbidden** in value cells (Precondition, Test Steps, Test Data, Expected Result) — lint reports an error; there use `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` | `[GIẢ ĐỊNH] Field này không có vòng đời trạng thái vì tài liệu chỉ mô tả nhập liệu` |
+| `[CONTEXT_MISSING]` | Business context is missing (users, load, revenue, SLA) | The Usage Context cell of skill 01 |
+| `[ĐỀ XUẤT]` (proposal) | The agent proposes, awaiting human approval (Human-Final) | `[ĐỀ XUẤT] Automated` |
+| `CHƯA COVER` / `CHƯA CÓ DATA` (not covered / no data yet) | A matrix cell with no test case / no data yet | Stage 6 matrix, Stage 12 |
 
 ---
 
-## 4. Kỹ thuật 06W
+## 3. FACT Self-Audit — run before releasing output
 
-> Định nghĩa duy nhất của 06W. Mã `W1…W6` dùng để trace; **tên** không được đổi.
-
-| # | Tên (chuẩn — không đổi) | Trọng tâm kiểm tra |
+| | Criterion | Self-check question |
 |---|---|---|
-| **W1** | What if input lạ | Sai định dạng · quá dài · ký tự đặc biệt · rỗng/null · hoa-thường · khoảng trắng thừa · ngoài khoảng cho phép |
-| **W2** | What if state lạ | Trạng thái chưa xử lý · tiền điều kiện thiếu · session/quyền đổi giữa chừng · thao tác lặp trên trạng thái đã có |
-| **W3** | What if data lạ | Dữ liệu nền edge case · dữ liệu bẩn · mâu thuẫn giữa các nguồn · quy tắc làm tròn/ép kiểu |
-| **W4** | What when timing | Hết hạn giữa chừng · đồng thời · timeout · timezone · thứ tự trước–sau · re-validate tại thời điểm chốt |
-| **W5** | Who else actor | Actor khác cùng flow · phân quyền · phụ thuộc module/service/bên thứ ba · tác động chéo dữ liệu |
-| **W6** | What happens after | Side-effect · trạng thái thay đổi · rollback/hoàn tác · kỳ vọng ngầm về bảo mật, toàn vẹn dữ liệu |
+| **F** | Factual | Does every value/rule have a §10.1 source? Are the places without one labelled per §2.1? Is there any value that "sounds reasonable" but cannot be quoted? |
+| **A** | Accurate | Is each statement unambiguous? Are codes/names/message texts taken **verbatim** from the source? |
+| **C** | Complete | Are the structure and required fields complete? Is no business branch **present in the source** left out? |
+| **T** | Testable | Does every item have a Pass/Fail criterion, or a label stating which part of the criterion is still missing? |
 
-**Cách quét — ma trận đóng** (để cùng tài liệu cho cùng bộ câu hỏi):
-quét **từng đối tượng** (mỗi `BR-xx`, mỗi `FD-xx`, mỗi `AF-xx`) × **W1→W6**. Mỗi ô nhận đúng một
-kết quả: `Có kẽ hở` (⇒ sinh một `MR-xx`) · `Nguồn đã trả lời` (ghi mã nguồn) · `Không áp dụng`.
-Câu hỏi chỉ sinh từ ô `Có kẽ hở`. Quét xong ma trận là **dừng** — không tìm thêm ngoài ma trận.
+**Missing sources that are explicitly labelled ⇒ F and C still PASS.** Filling a gap with an invented value ⇒
+F **FAILS** even if it looks complete. Fix any failing criterion before releasing.
 
-**Bảng áp dụng** (cố định, để số ô cần phán đoán không do model quyết). Ô ngoài bảng mặc định `Không áp dụng` và
-**không sửa**; `npm run scaffold -- <slug> 02` dựng sẵn khung theo bảng này.
+---
 
-| Đối tượng | W cần phán đoán | W cố định `Không áp dụng` |
+## 4. The 06W technique
+
+> The single definition of 06W. The codes `W1…W6` are used for tracing; the **names** must not change.
+
+| # | Name (standard — do not change) | Focus of the check |
+|---|---|---|
+| **W1** | What if input lạ | Wrong format · too long · special characters · empty/null · upper/lower case · extra whitespace · outside the allowed range |
+| **W2** | What if state lạ | Unprocessed state · missing precondition · session/permission changing midway · repeated action on an existing state |
+| **W3** | What if data lạ | Edge-case baseline data · dirty data · conflicts between sources · rounding/type-casting rules |
+| **W4** | What when timing | Expiry midway · concurrency · timeout · timezone · before–after ordering · re-validation at commit time |
+| **W5** | Who else actor | Other actors in the same flow · permissions · dependency on modules/services/third parties · cross-data impact |
+| **W6** | What happens after | Side effects · state changes · rollback/undo · implicit expectations about security and data integrity |
+
+**How to scan — a closed matrix** (so the same documents yield the same set of questions):
+scan **each object** (every `BR-xx`, every `FD-xx`, every `AF-xx`) × **W1→W6**. Each cell takes exactly one
+result: `Có kẽ hở` (gap found ⇒ produces one `MR-xx`) · `Nguồn đã trả lời` (the source already answers it; record the source code) · `Không áp dụng` (not applicable).
+Questions are produced only from `Có kẽ hở` cells. Once the matrix is scanned, **stop** — do not look for more outside the matrix.
+
+**Applicability table** (fixed, so the number of cells needing judgement is not decided by the model). Cells outside the table default to `Không áp dụng` and
+**must not be edited**; `npm run scaffold -- <slug> 02` builds the frame from this table.
+
+| Object | W needing judgement | W fixed as `Không áp dụng` |
 |---|---|---|
 | `BR-xx` | W1 W2 W3 W4 W5 W6 | — |
-| `FD-xx` | W1 W3 | W2 W4 W5 W6 (kẽ hở về trạng thái/thời gian/actor/hậu quả nằm ở `BR`/`AF` liên quan) |
+| `FD-xx` | W1 W3 | W2 W4 W5 W6 (gaps about state/timing/actor/consequence belong to the related `BR`/`AF`) |
 | `AF-xx` | W2 W6 | W1 W3 W4 W5 |
 
-> Chuỗi biên min/max của một field thuộc §6, không lặp thành câu hỏi W riêng.
+> The min/max boundary chain of a field belongs to §6; do not repeat it as a separate W question.
 
 ---
 
-## 5. Ma trận rủi ro 3x3
+## 5. 3x3 risk matrix
 
-**Risk Level = Likelihood × Impact**, mỗi trục `HIGH / MEDIUM / LOW`.
+**Risk Level = Likelihood × Impact**, each axis `HIGH / MEDIUM / LOW`.
 
 | | Impact HIGH | Impact MEDIUM | Impact LOW |
 |---|---|---|---|
@@ -118,47 +124,49 @@ Câu hỏi chỉ sinh từ ô `Có kẽ hở`. Quét xong ma trận là **dừng
 | **Likelihood MEDIUM** | HIGH | MEDIUM | LOW |
 | **Likelihood LOW** | MEDIUM | LOW | LOW |
 
-- **Likelihood** chấm từ chính tài liệu: số điều kiện ghép, số nhánh, số kẽ hở `MR` liên quan.
-- **Impact** chấm từ tác động **tài liệu mô tả** (mất tiền, sai dữ liệu, chặn luồng chính…).
-- Bối cảnh kinh doanh (doanh thu, quy mô, SLA) chỉ dùng khi có trong nguồn hoặc `_project.md` đã khai.
-  Không có ⇒ vẫn chấm từ tài liệu, gắn `[SEVERITY_CONFIDENCE_LOW]` + ghi khía cạnh thiếu là `[CONTEXT_MISSING]`.
-  **Không** ước đoán con số doanh thu, lượt dùng.
+- **Likelihood** is scored from the documents themselves: number of combined conditions, number of branches, number of related `MR` gaps.
+- **Impact** is scored from the impact **the documents describe** (money lost, wrong data, main flow blocked…).
+- Business context (revenue, scale, SLA) is used only when it is in the sources or declared in `_project.md`.
+  If absent ⇒ still score from the documents, attach `[SEVERITY_CONFIDENCE_LOW]` + record the missing aspect as `[CONTEXT_MISSING]`.
+  **Never** estimate revenue or usage figures.
 
 ---
 
-## 6. Chuỗi biên chuẩn (Boundary Completeness)
+## 6. Standard boundary chain (Boundary Completeness)
 
-> Định nghĩa duy nhất — skill dữ liệu và coverage-review dùng đúng chuỗi này.
+> The single definition — data skills and coverage-review use exactly this chain.
 
-Field có **khoảng giá trị (min/max)** → 7 điểm: `min-1` · `min` · `min+1` · giá trị giữa ·
+A field with a **value range (min/max)** → 7 points: `min-1` · `min` · `min+1` · a middle value ·
 `max-1` · `max` · `max+1`.
 
-Field có **rule định dạng / độ dài** → rỗng · 1 ký tự · đúng độ dài · quá độ dài · sai định dạng · ký tự đặc biệt.
+A field with a **format / length rule** → empty · 1 character · exact length · over length · wrong format · special characters.
 
-Kèm Equivalence Partition: hợp lệ · dưới hạn · trên hạn · sai định dạng · rỗng/null · ký tự đặc biệt.
+Plus Equivalence Partitions: valid · below range · above range · wrong format · empty/null · special characters.
 
-**Chỉ dựng chuỗi biên khi min/max/độ dài có trong nguồn.** Không có ⇒ không tự đặt ngưỡng:
-ghi `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` và để Chặng 2 hỏi.
+**Build the boundary chain only when min/max/length is in the sources.** If not ⇒ do not set a threshold yourself:
+write `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` and let Stage 2 ask.
 
 ---
 
-## 7. Quy ước Input / Output
+## 7. Input / Output conventions
 
-**Input** — mỗi skill khai "Đầu vào". Ngoài danh sách đó, **mọi skill luôn nạp**:
-`knowledge/_project.md` và `knowledge/features/<slug>.md` (§8). Thiếu artifact bắt buộc → DỪNG.
+**Input** — each skill declares its "Đầu vào" (inputs). Besides that list, **every skill always loads**:
+`knowledge/_project.md` and `knowledge/features/<slug>.md` (§8). A required artifact is missing → STOP.
 
-**Output** — mỗi skill ghi **đúng một** file trong `OUTPUT/<task-slug>/`. Dòng thứ 2 của mọi file
-là **dòng meta**, viết thường (không in đậm, không backtick), đúng một verdict:
+**Output** — each skill writes **exactly one** file in `OUTPUT/<task-slug>/`. Line 2 of every file
+is the **meta line**, written plain (no bold, no backticks), with exactly one verdict:
 
 ```md
 # <Tên deliverable> · <task-slug>
 Owner: <agent/skill> · Nguồn: <file đã đọc> · Verdict: PASS
 ```
 
-Ghi xong deliverable thì tick `- [x]` đúng chặng đó trong `OUTPUT/<task-slug>/00_plan.md`.
+(`Nguồn:` = sources read. Keep the meta line exactly in this shape — the tools parse it.)
 
-Tool chỉ đọc verdict từ dòng meta này (trong 10 dòng đầu). Viết khác đi ⇒ tool coi là **không đọc
-được** và đóng cổng. Cuối file, nếu có, thêm bảng `## FIX` và `## ASK`:
+Once the deliverable is written, tick `- [x]` for exactly that stage in `OUTPUT/<task-slug>/00_plan.md`.
+
+Tools read the verdict only from this meta line (within the first 10 lines). Written any other way ⇒ the tool treats it as **unreadable**
+and closes the gate. At the end of the file, if needed, add the `## FIX` and `## ASK` tables (headers kept verbatim):
 
 ```md
 ## FIX
@@ -170,72 +178,74 @@ Tool chỉ đọc verdict từ dòng meta này (trong 10 dòng đầu). Viết k
 |---|---|---|---|
 ```
 
+(FIX columns: location · problem · proposed fix. ASK columns: location · what is needed · forward to whom.)
+
 ---
 
-## 8. Knowledge — tri thức nền
+## 8. Knowledge — background knowledge
 
-| Loại | Nội dung | Ở đâu | Ai ghi |
+| Type | Content | Where | Who writes |
 |---|---|---|---|
-| **Registry / technique** | 06W · risk 3x3 · chuỗi biên · 8 viewpoint · nhãn · ID · thang đo | File này (≥2 skill dùng) hoặc trong skill (1 skill dùng) | Người bảo trì hệ thống |
-| **Project knowledge** | Quy ước cả dự án | `knowledge/_project.md` | Con người |
-| **Feature knowledge** | Dữ kiện của một tính năng | `knowledge/features/<slug>.md` (từ `knowledge/_template.md`) | Xem luật ghi |
+| **Registry / technique** | 06W · 3x3 risk · boundary chain · 8 viewpoints · labels · IDs · scales | This file (used by ≥2 skills) or inside the skill (used by 1 skill) | System maintainer |
+| **Project knowledge** | Project-wide conventions | `knowledge/_project.md` | Humans |
+| **Feature knowledge** | Facts about one feature | `knowledge/features/<slug>.md` (from `knowledge/_template.md`) | See the writing rule |
 
-### Luật đọc
-- Mọi skill đọc `_project.md` và `features/<slug>.md` trước khi chạy.
-- Dòng còn chứa `<điền>` hoặc ô trống = **chưa khai báo** ⇒ coi như không có (`[CONTEXT_MISSING]`).
-- Dữ kiện đã có trong knowledge (§3 Confirmed, §8, §9 có nguồn) **thắng** suy luận của agent và
-  không bị hỏi lại.
-- Pack ngành (`qa-system/domains/`, `knowledge/_domain.md`) không phải knowledge của dự án: xem §10.3.
+### Reading rule
+- Every skill reads `_project.md` and `features/<slug>.md` before running.
+- A line that still contains `<điền>` (to be filled) or an empty cell = **not declared** ⇒ treat as absent (`[CONTEXT_MISSING]`).
+- Facts already in knowledge (§3 Confirmed, §8, §9 with a source) **win over** the agent's inference and
+  are not asked again.
+- Domain packs (`qa-system/domains/`, `knowledge/_domain.md`) are not project knowledge: see §10.3.
 
-### Luật ghi (một luật duy nhất)
-| Mục knowledge | Ai ghi | Điều kiện |
+### Writing rule (one single rule)
+| Knowledge section | Who writes | Condition |
 |---|---|---|
-| §1–§6, §9, §10 | skill `01` | Chỉ dữ kiện có nguồn §10.1 |
-| §7 (câu hỏi) | skill `02` | Thêm dòng mới trạng thái `New`. Không xoá dòng cũ |
-| Cột trả lời của §7 + §8 | **Con người** (BA/PO trả lời, người dùng chuyển lời) — agent chỉ chép lại nguyên văn khi người dùng đưa câu trả lời, rồi chạy `npm run knowledge:sync -- <slug> --write` | Phải có người phê duyệt + ngày |
-| Rule mới sinh từ MR đã chốt | skill `01` lần chạy kế tiếp → §3, cấp `BR` số tiếp theo, nguồn = `knowledge §8 #n` | — |
+| §1–§6, §9, §10 | skill `01` | Only facts with a §10.1 source |
+| §7 (questions) | skill `02` | Add new rows with status `New`. Never delete old rows |
+| The answer column of §7 + §8 | **Humans** (the BA/PO answers, the user relays it) — the agent only copies verbatim when the user provides the answer, then runs `npm run knowledge:sync -- <slug> --write` | Must have an approver + date |
+| New rules arising from a confirmed MR | skill `01` on its next run → §3, assigned the next `BR` number, source = `knowledge §8 #n` | — |
 
-Không xoá dòng cũ — đổi `Trạng thái`. `OUTPUT/` là kết quả một lần chạy; `knowledge/` là thứ tích luỹ.
+Never delete old rows — change the `Trạng thái` (status). `OUTPUT/` is the result of one run; `knowledge/` is what accumulates.
 
 ---
 
-## 9. Mã định danh & schema dùng chung
+## 9. Identifiers & shared schemas
 
-> Tool (`gate`, `lint`, `knowledge:sync`, `readiness`, `merge`, `export`) đọc đúng các schema này
-> qua một module chung `qa-system/tools/lib/schema.js`. Skill viết khác schema ⇒ tool không đọc được.
+> Tools (`gate`, `lint`, `knowledge:sync`, `readiness`, `merge`, `export`) read exactly these schemas
+> through one shared module `qa-system/tools/lib/schema.js`. A skill that deviates from the schema ⇒ the tools cannot read it.
 
-### 9.1. Họ mã
+### 9.1. ID families
 
-| Mã | Là gì | Cấp ở | Ghi chú |
+| Code | What it is | Assigned in | Notes |
 |---|---|---|---|
-| `BR-xx` | Business rule đã có nguồn | 01 | Nguồn: tài liệu, hoặc `knowledge §8 #n` |
-| `FD-xx` | Field & ràng buộc (kiểu, bắt buộc, min/max, định dạng, chữ thông báo) | 01 | Đầu vào cho 06W, chuỗi biên, nhánh dữ liệu |
-| `AF-xx` | Luồng phụ / lỗi có trong nguồn | 01 | |
-| `OQ-xx` | Điểm chưa rõ phát hiện khi đọc tài liệu | 01 | Không phải cổng. Mọi OQ phải được 02 chuyển thành MR hoặc ghi "nguồn đã trả lời" |
-| `MR-xx` | Câu hỏi chính thức gửi BA/PO (kẽ hở) | 02 | **Họ mã duy nhất mà cổng ASK theo dõi** |
-| `RK-xx` | Rủi ro | 01 | 03 kế thừa, chỉ cấp tiếp số mới cho rủi ro từ MR |
-| `VP-01…VP-08` | Viewpoint registry | Cố định (bảng §9.2) | Ngoài registry: `VP-9x` + `[GIẢ ĐỊNH]` |
+| `BR-xx` | Business rule with a source | 01 | Source: documents, or `knowledge §8 #n` |
+| `FD-xx` | Field & constraints (type, required, min/max, format, message text) | 01 | Input for 06W, the boundary chain, the data branch |
+| `AF-xx` | Alternative / error flow present in the sources | 01 | |
+| `OQ-xx` | Unclear point found while reading the documents | 01 | Not a gate. Every OQ must be turned by 02 into an MR or recorded as "nguồn đã trả lời" (source already answers it) |
+| `MR-xx` | Formal question sent to the BA/PO (a gap) | 02 | **The only ID family the ASK gate tracks** |
+| `RK-xx` | Risk | 01 | 03 inherits them, and only assigns new numbers for risks arising from MRs |
+| `VP-01…VP-08` | Viewpoint registry | Fixed (table §9.2) | Outside the registry: `VP-9x` + `[GIẢ ĐỊNH]` |
 | `TI-xx` | Test idea | 04 | |
-| `<MODULE>-NNN` | Test case, vd `AUTH-001` | 05 | `MODULE` 2–6 ký tự hoa lấy theo `_project.md` §1 |
+| `<MODULE>-NNN` | Test case, e.g. `AUTH-001` | 05 | `MODULE` is 2–6 uppercase characters taken from `_project.md` §1 |
 
-**Ổn định qua các lần chạy**: mã đã có trong knowledge **giữ nguyên**. Mã mới cấp **số tiếp theo**
-sau số lớn nhất đang có (trong knowledge và OUTPUT của task). Không bao giờ đánh số lại từ 01.
-Ít nhất 2 chữ số (`BR-01`, `MR-12`).
+**Stable across runs**: IDs already in knowledge **stay unchanged**. New IDs take the **next number**
+after the highest existing one (in knowledge and the task's OUTPUT). Never renumber from 01.
+At least 2 digits (`BR-01`, `MR-12`).
 
-### 9.2. Registry viewpoint (mã cố định)
+### 9.2. Viewpoint registry (fixed codes)
 `VP-01` Happy Path · `VP-02` Negative · `VP-03` Boundary · `VP-04` Security · `VP-05` UX/Usability ·
 `VP-06` Performance · `VP-07` Accessibility · `VP-08` Integration.
 
-### 9.3. Trạng thái câu hỏi
+### 9.3. Question statuses
 
-| Chuẩn | Tool chấp nhận thêm | Ý nghĩa | Cổng |
+| Standard | Also accepted by the tools | Meaning | Gate |
 |---|---|---|---|
-| `New` | Mới, Chờ trả lời | Chưa hỏi / chưa có trả lời | Đóng |
-| `TREO` | Pending, Treo | Đã hỏi, BA chưa chốt | Đóng |
-| `Confirmed` | Đã xác nhận, Đã chốt | BA/PO trả lời, ô `Phản hồi chính thức` có nội dung | Mở |
-| `Rejected` | Loại, Không xử lý | BA/PO quyết định không cần xử lý | Mở |
+| `New` | Mới, Chờ trả lời | Not asked yet / no answer yet | Closed |
+| `TREO` | Pending, Treo | Asked, the BA has not confirmed yet | Closed |
+| `Confirmed` | Đã xác nhận, Đã chốt | The BA/PO answered; the `Phản hồi chính thức` (official response) cell has content | Open |
+| `Rejected` | Loại, Không xử lý | The BA/PO decided no action is needed | Open |
 
-### 9.4. Bảng câu hỏi (dùng chung cho 02 §3 và knowledge §7)
+### 9.4. Question table (shared by 02 §3 and knowledge §7)
 
 ```md
 | ID | Kẽ hở | Nhóm 06W | Nguồn phát hiện | Phương án gợi ý (chưa phải rule) | Câu hỏi cho BA/PO | Phản hồi chính thức | Người trả lời | Ngày | Trạng thái |
@@ -243,70 +253,77 @@ sau số lớn nhất đang có (trong knowledge và OUTPUT của task). Không 
 | MR-01 | ... | W2 | BR-03 × W2 | ... | ... |  |  |  | New |
 ```
 
-Tool đọc cột **theo tên tiêu đề**, không theo vị trí. Bắt buộc có: `ID`, `Câu hỏi cho BA/PO`,
-`Phản hồi chính thức`, `Trạng thái`. "Phương án gợi ý" chỉ để BA trả lời nhanh; nó **chỉ thành rule**
-khi BA chọn nó và câu trả lời được ghi vào `Phản hồi chính thức`.
+(Columns, in English: ID · gap · 06W group · where found · suggested option (not yet a rule) · question for BA/PO ·
+official response · answered by · date · status. The header row must stay in Vietnamese exactly as above.)
 
-### 9.5. Bảng quyết định (knowledge §8)
+Tools read columns **by header name**, not by position. Required: `ID`, `Câu hỏi cho BA/PO`,
+`Phản hồi chính thức`, `Trạng thái`. The "Phương án gợi ý" (suggested option) exists only to let the BA answer quickly; it **becomes a rule only**
+when the BA picks it and the answer is recorded in `Phản hồi chính thức`.
+
+### 9.5. Decision table (knowledge §8)
 ```md
 | # | Mã liên quan | Câu hỏi | Quyết định chính thức | Người phê duyệt | Ngày chốt |
 ```
-Thiếu `Người phê duyệt` hoặc `Ngày chốt` ⇒ tool coi là chưa chốt.
+(Columns: related code · question · official decision · approver · date decided.)
+Missing `Người phê duyệt` (approver) or `Ngày chốt` (date decided) ⇒ the tool treats it as not confirmed.
 
-### 9.6. Bảng BR và FD (01 §3, §3b) — có trích nguyên văn
+### 9.6. BR and FD tables (01 §3, §3b) — with verbatim quotes
 ```md
 | ID | Điều kiện | Hành vi / Kết quả | Nguồn (file §mục) | Trích nguyên văn |
 | ID | Field | Kiểu | Bắt buộc | Ràng buộc (min/max/định dạng) | Thông báo khi sai | Nguồn (file §mục) | Trích nguyên văn |
 ```
-`Trích nguyên văn` là một đoạn chép **đúng từng chữ** từ file nguồn trong `INPUT/<slug>/`.
-`npm run lint` dò lại đoạn này trong `INPUT/`; không tìm thấy ⇒ lỗi. Nguồn là knowledge §8 ⇒ ghi
-`knowledge §8 #n` và để trống trích dẫn. Ô không có trong nguồn ⇒ nhãn §2.1.
+(BR columns: condition · behaviour / result · source (file §section) · verbatim quote. FD columns: field · type ·
+required · constraint (min/max/format) · message when invalid · source (file §section) · verbatim quote.)
+
+`Trích nguyên văn` (verbatim quote) is a passage copied **word for word** from a source file in `INPUT/<slug>/`.
+`npm run lint` searches for this passage in `INPUT/`; not found ⇒ error. If the source is knowledge §8 ⇒ write
+`knowledge §8 #n` and leave the quote empty. A cell not present in the source ⇒ a §2.1 label.
 
 ---
 
-## 10. Nguồn hợp lệ & thứ tự ưu tiên
+## 10. Valid sources & order of precedence
 
-### 10.1. Nguồn hợp lệ
-1. `INPUT/<slug>/` — 5 ngăn đã qua intake (hoặc `00_knowledge_digest.md`, giữ cột nguồn).
-2. `knowledge/features/<slug>.md` — §3 Confirmed, §8 có người phê duyệt, §9 có nguồn.
-3. `knowledge/_project.md` — chỉ dòng đã khai (không còn `<điền>`).
-4. Deliverable các chặng trước **trong cùng task** (chúng đã trace về 1–3).
+### 10.1. Valid sources
+1. `INPUT/<slug>/` — the 5 folders that went through intake (or `00_knowledge_digest.md`, which keeps the source column).
+2. `knowledge/features/<slug>.md` — §3 Confirmed, §8 with an approver, §9 with a source.
+3. `knowledge/_project.md` — only declared lines (no `<điền>` left).
+4. Deliverables of earlier stages **in the same task** (they already trace back to 1–3).
 
-Không phải nguồn: hiểu biết chung về ngành, pack ngành (§10.3), ví dụ trong skill/template, output
-của task khác, output của người khác đưa vào làm mẫu.
+Not sources: general industry knowledge, domain packs (§10.3), examples in skills/templates, output
+of other tasks, output from other people supplied as a model.
 
-### 10.2. Khi các nguồn khác nhau
-| Ưu tiên | Nguồn | Thắng về |
+### 10.2. When sources differ
+| Priority | Source | Wins on |
 |---|---|---|
-| 1 | knowledge §8 (có người phê duyệt + ngày) | Mọi thứ |
-| 2 | `05_communication/` — CR, Q&A, biên bản có ngày | Phần nó nói tới, nếu mới hơn spec |
-| 3 | `02_ba/` — bản có version/ngày mới nhất | Logic nghiệp vụ |
-| 4 | `03_dev/` | Ràng buộc kỹ thuật của field, API, mã phản hồi |
-| 5 | `04_design/` | Bố cục, chữ hiển thị trên màn hình |
-| 6 | `01_business/` | Mục tiêu, bối cảnh |
+| 1 | knowledge §8 (with approver + date) | Everything |
+| 2 | `05_communication/` — dated CRs, Q&A, minutes | What it addresses, if newer than the spec |
+| 3 | `02_ba/` — the version with the latest version number/date | Business logic |
+| 4 | `03_dev/` | Technical constraints of fields, APIs, response codes |
+| 5 | `04_design/` | Layout, text displayed on screen |
+| 6 | `01_business/` | Goals, context |
 
-- Không xác định được bản nào mới hơn, hoặc hai nguồn cùng mức mâu thuẫn ⇒ **sinh MR**, không tự chọn.
-- Phần `## Annotations / Pending changes` do intake trích ra (comment, tracked changes, "DRAFT") **chưa
-  phải sự thật** ⇒ sinh MR để BA xác nhận.
+- Cannot tell which version is newer, or two sources at the same level conflict ⇒ **produce an MR**, do not choose yourself.
+- The `## Annotations / Pending changes` section extracted by intake (comments, tracked changes, "DRAFT") **is not yet
+  fact** ⇒ produce an MR for the BA to confirm.
 
-### 10.3. Pack ngành — checklist, không phải nguồn
-Pack ngành (`qa-system/domains/<id>/`, chọn ở `knowledge/_sut.json` → `domain`; bổ sung của dự án ở
-`knowledge/_domain.md`) là **checklist**. Dự án chưa chọn ngành ⇒ bỏ qua mọi bước dùng pack.
-- Một mục của pack chỉ được thành: câu hỏi (`OQ` → `MR`), ứng viên viewpoint (chỉ chọn khi đã có mã nguồn
-  §10.1), hoặc từ vựng / kiểu dữ liệu sinh test data.
-- Gắn nhãn nguồn gốc `[DOMAIN] <id>/<file>#<mục>`. `[DOMAIN]` không phải nhãn lấp ô §2.1, và **không bao
-  giờ** là `Nguồn` của `BR`/`FD`/`AF` — `npm run lint` báo lỗi. `BR`/`FD` luôn trích từ nguồn §10.1.
+### 10.3. Domain packs — a checklist, not a source
+A domain pack (`qa-system/domains/<id>/`, selected in `knowledge/_sut.json` → `domain`; project additions in
+`knowledge/_domain.md`) is a **checklist**. If the project has not selected a domain ⇒ skip every step that uses a pack.
+- A pack item may only become: a question (`OQ` → `MR`), a viewpoint candidate (chosen only once a §10.1 source code
+  exists), or vocabulary / a data type for generating test data.
+- Tag it with the provenance label `[DOMAIN] <id>/<file>#<section>`. `[DOMAIN]` is not a §2.1 gap-filling label, and is **never**
+  the `Nguồn` (source) of a `BR`/`FD`/`AF` — `npm run lint` reports an error. `BR`/`FD` are always quoted from a §10.1 source.
 
 ---
 
-## 11. Thang đo dùng chung
+## 11. Shared scales
 
-| Đại lượng | Giá trị hợp lệ | Ghi chú |
+| Quantity | Valid values | Notes |
 |---|---|---|
 | Likelihood / Impact | `HIGH` / `MEDIUM` / `LOW` | §5 |
 | Risk Level | `CRITICAL` / `HIGH` / `MEDIUM` / `LOW` | §5 |
-| Severity (bug, rủi ro) | `Critical` / `Major` / `Minor` / `Trivial` | |
-| Ưu tiên câu hỏi MR | `High` / `Medium` / `Low` | |
-| Priority test case | `High` / `Medium` / `Low` | **Ánh xạ cố định** từ Risk Level cao nhất của RK liên quan: CRITICAL/HIGH → `High`, MEDIUM → `Medium`, LOW → `Low`. Không có RK ⇒ `Medium` + `[ĐỀ XUẤT]`. Người phụ trách được quyền đổi (Human-Final) |
-| Automated/Manual | Tag `Manual` mặc định; `[ĐỀ XUẤT] Automated` khi bước kiểm được hoàn toàn bằng UI/API, không cần phán đoán của người | Human-Final |
-| Ngày | `YYYY-MM-DD` trừ khi `_project.md` §2 khai khác | |
+| Severity (bug, risk) | `Critical` / `Major` / `Minor` / `Trivial` | |
+| MR question priority | `High` / `Medium` / `Low` | |
+| Test case Priority | `High` / `Medium` / `Low` | **Fixed mapping** from the highest Risk Level of the related RKs: CRITICAL/HIGH → `High`, MEDIUM → `Medium`, LOW → `Low`. No RK ⇒ `Medium` + `[ĐỀ XUẤT]`. The owner may change it (Human-Final) |
+| Automated/Manual | Tag `Manual` by default; `[ĐỀ XUẤT] Automated` when the step can be checked entirely through UI/API without human judgement | Human-Final |
+| Date | `YYYY-MM-DD` unless `_project.md` §2 declares otherwise | |
