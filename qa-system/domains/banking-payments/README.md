@@ -33,7 +33,7 @@ giá trị hạn mức / phí / giờ chốt cụ thể của bất kỳ ngân h
 - https://www.pcisecuritystandards.org/standards/pci-dss/ — đã mở
 - https://istqb.org/certifications/certification-list — đã mở
 - https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 — đã mở
-- https://docs.stripe.com/testing — đã mở (số thẻ TEST trong datagen.json)
+- https://docs.stripe.com/testing — đã mở. **TEST ONLY**: `card_pan_test` trong `datagen.json` chỉ chứa số thẻ sandbox công bố của Stripe, không phải dữ liệu thẻ thật
 - https://digital-portfolio.opengroup.org/archimate-bian/latest/01-doc/chap03.html — URL của plan §8, chưa mở được
 - https://www.msci.com/index/methodology/latest/GICS — URL của plan §8, PDF không đọc được
 - https://www.iso.org/standard/78176.html — URL của plan §8, trả 403

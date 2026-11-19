@@ -35,3 +35,6 @@ test-results/
 **/runs/*/report/
 **/runs/*/results.json
 **/evidence/.last-run.json
+
+# Worktree tạm của agent Claude Code (không phải file dự án)
+.claude/worktrees/
