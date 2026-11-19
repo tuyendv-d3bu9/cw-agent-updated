@@ -1,42 +1,45 @@
 ---
 name: verify-testcase
-title: "Nghiệm thu test suite"
-description: "Chỉ rà soát độ phủ Chặng 6 và kiểm tay, không sinh mới."
+title: "Test suite acceptance"
+description: "Only the Stage 6 coverage review plus manual checks; nothing new is generated."
 format: legacy
 triggers:
   - "nghiệm thu test case"
   - "kiểm tra bộ test trước khi bàn giao"
   - "rà soát lại bộ test case"
+  - "accept the test cases"
+  - "check the test suite before handover"
+  - "review the test case set again"
 ---
 
-# RUNBOOK — Nghiệm thu test suite (không sinh mới)
+# RUNBOOK — Test suite acceptance (nothing new generated)
 
-> Chỉ đọc và đánh giá. File được ghi mới duy nhất: `06_coverage_review.md`.
+> Read and assess only. The only newly written file: `06_coverage_review.md`.
 
-## 1. Tiền đề
-- [ ] Có `01`, `02`, `04`, `05` trong `OUTPUT/<slug>/` — thiếu ⇒ **dừng**, không có gốc để đối soát.
-- [ ] `npm run gate <slug>` exit `0` và `npm run lint -- <slug>` exit `0`.
-- [ ] Có `12` thì đưa vào; không có thì ghi rõ trong `06` là chưa đánh giá gap dữ liệu.
+## 1. Prerequisites
+- [ ] `01`, `02`, `04`, `05` exist in `OUTPUT/<slug>/` — missing ⇒ **stop**; there is no baseline to reconcile against.
+- [ ] `npm run gate <slug>` exits `0` and `npm run lint -- <slug>` exits `0`.
+- [ ] If `12` exists, include it; if not, state clearly in `06` that the data gaps were not assessed.
 
-## 2. Khối lệnh
+## 2. Command block
 ```
-Chạy qa-system/qa-test-design/skills/coverage-review.md cho <slug>.
-Verdict theo qa-system/core/QA_STANDARD.md §1 (luật riêng của coverage-review).
-Không sinh test case mới, không sửa 01–05, không đổi trạng thái trong knowledge.
-Tick 00_plan.md và in verdict.
+Run qa-system/qa-test-design/skills/coverage-review.md for <slug>.
+Verdict per qa-system/core/QA_STANDARD.md §1 (the dedicated rule of coverage-review).
+Do not generate new test cases, do not edit 01–05, do not change statuses in knowledge.
+Tick 00_plan.md and print the verdict.
 ```
 
-## 3. Kiểm tay — con người làm, không giao agent tự chấm
+## 3. Manual checks — done by humans, never delegated to the agent to self-grade
 
-| # | Mũi kiểm | Đạt khi |
+| # | Check | Passes when |
 |---|---|---|
-| 1 | Truy vết ngược 3 TC: `Tags` → `04` → `03` → `01`/knowledge → `INPUT/<slug>/` | Không đứt chặng nào |
-| 2 | Truy vết xuôi 3 `BR-xx`/`FD-xx` | Có TC, hoặc `CHƯA COVER` ở `06` |
-| 3 | Một field có min/max trong nguồn | Đủ chuỗi biên QA_STANDARD §6 |
-| 4 | 3 TC negative | Expected trích nguồn, hoặc nhãn `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` |
+| 1 | Trace 3 TCs backwards: `Tags` → `04` → `03` → `01`/knowledge → `INPUT/<slug>/` | No stage is broken |
+| 2 | Trace 3 `BR-xx`/`FD-xx` forwards | They have a TC, or `CHƯA COVER` (not covered) in `06` |
+| 3 | A field with min/max in the sources | The full QA_STANDARD §6 boundary chain |
+| 4 | 3 negative TCs | The Expected is quoted from a source, or labelled `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` |
 
-Mũi nào trượt ⇒ ghi vào bảng FIX của `06` và trả về bước tương ứng.
+Any failing check ⇒ record it in the FIX table of `06` and send it back to the matching step.
 
 ## 4. Human-Final
-Mục Human-Final của `06` (mức chấp nhận rủi ro, tác động liên hệ thống, thăm dò thêm) do người phụ trách ký.
-Cần thăm dò ⇒ `qa-system/qa-automation/skills/exploratory-charter.md`, không nhồi vào bộ scripted.
+The Human-Final section of `06` (accepted risk level, cross-system impact, further exploration) is signed off by the person in charge.
+Exploration needed ⇒ `qa-system/qa-automation/skills/exploratory-charter.md`; do not cram it into the scripted set.

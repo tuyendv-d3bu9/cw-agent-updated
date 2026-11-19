@@ -1,7 +1,7 @@
 ---
 name: run-req-to-testcase
-title: "Phân tích yêu cầu có cổng ASK và sinh test case"
-description: "Phân tích rủi ro và kẽ hở 06W, qua cổng ASK sau Chặng 2, rồi viết viewpoint, test idea, test case và rà soát độ phủ."
+title: "Requirement analysis with the ASK gate, then test cases"
+description: "Analyse risks and 06W gaps, pass the ASK gate after Stage 2, then write viewpoints, test ideas, test cases and review coverage."
 format: v1
 
 triggers:
@@ -9,6 +9,9 @@ triggers:
   - "dựa vào thông tin thì tạo testcase đi"
   - "dựa vào thông tin tạo testcase"
   - "cần tạo test case từ thông tin"
+  - "need to create test cases"
+  - "create test cases from this information"
+  - "turn this information into test cases"
 
 steps:
   - agent: qa-analyst
@@ -38,13 +41,13 @@ steps:
     output: 06_coverage_review.md
 ---
 
-# Phân tích yêu cầu có cổng ASK và sinh test case
+# Requirement analysis with the ASK gate, then test cases
 
-## Khi nào dùng
-Có tài liệu ban đầu, cần đi từ phân tích tới bộ test case đã rà soát độ phủ (Mode 1).
+## When to use
+You have the initial documents and need to go from analysis to a coverage-reviewed test case set (Mode 1).
 
-## Điểm dừng
-- Trước bước 3: cổng `ask` (`npm run gate <slug>`). Luật cổng: `qa-system/core/QA_STANDARD.md` §1.
-- Trước bước 6: cổng `lint` (`npm run lint -- <slug>`).
+## Stop points
+- Before step 3: the `ask` gate (`npm run gate <slug>`). Gate rules: `qa-system/core/QA_STANDARD.md` §1.
+- Before step 6: the `lint` gate (`npm run lint -- <slug>`).
 
-Dừng ở Chặng 6. Có chạy nhánh dữ liệu thì dùng `run-testcase`.
+Stops at Stage 6. To run the data branch as well, use `run-testcase`.

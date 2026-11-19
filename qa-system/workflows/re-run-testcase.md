@@ -1,57 +1,60 @@
 ---
 name: re-run-testcase
-title: "Chạy lại sau khi BA trả lời"
-description: "Chạy lại từ bước bị ảnh hưởng sau khi BA chốt câu hỏi hoặc sau verdict FIX."
+title: "Re-run after the BA answers"
+description: "Re-runs from the affected step after the BA settles the questions or after a FIX verdict."
 format: legacy
 triggers:
   - "BA đã trả lời chạy lại"
   - "chạy lại sau khi BA chốt"
   - "làm lại sau khi có câu trả lời"
+  - "the BA answered, re-run"
+  - "re-run after the BA confirmed"
+  - "redo after getting the answers"
 ---
 
-# RUNBOOK — Chạy lại sau khi BA trả lời / sau verdict FIX
+# RUNBOOK — Re-run after the BA answers / after a FIX verdict
 
-> Ai ghi mục nào của knowledge: `qa-system/core/QA_STANDARD.md` §8. Mã định danh giữ nguyên: §9.1.
+> Who writes which knowledge section: `qa-system/core/QA_STANDARD.md` §8. Identifiers stay unchanged: §9.1.
 
-## 1. Đưa câu trả lời vào knowledge
+## 1. Put the answers into knowledge
 
-Câu trả lời là của **con người**. Agent chỉ chép **nguyên văn** điều người dùng đưa:
+The answers belong to **humans**. The agent only copies **verbatim** what the user provides:
 
-- [ ] §7 `knowledge/features/<slug>.md`: đúng dòng `MR-xx`, điền `Phản hồi chính thức`, `Người trả lời`, `Ngày`,
-      đổi `Trạng thái` → `Confirmed` / `Rejected` / `TREO`. Không xoá dòng cũ.
-- [ ] Quyết định nghiệp vụ không gắn với một MR → §8, **bắt buộc** có người phê duyệt + ngày (QA_STANDARD §9.5).
-- [ ] Quy ước cả dự án → báo người dùng sửa `knowledge/_project.md`.
-- [ ] `npm run knowledge:sync -- <slug> --write` (gom câu trả lời còn kẹt trong `OUTPUT/`), rồi `npm run gate <slug>`.
+- [ ] §7 of `knowledge/features/<slug>.md`: on the right `MR-xx` row, fill in `Phản hồi chính thức`, `Người trả lời`, `Ngày`
+      (official response, answered by, date), and change `Trạng thái` (status) → `Confirmed` / `Rejected` / `TREO`. Never delete old rows.
+- [ ] A business decision not tied to an MR → §8, **must** have an approver + date (QA_STANDARD §9.5).
+- [ ] A project-wide convention → tell the user to edit `knowledge/_project.md`.
+- [ ] `npm run knowledge:sync -- <slug> --write` (collects answers still stuck in `OUTPUT/`), then `npm run gate <slug>`.
 
-Không tự thêm `BR-xx` vào §3: skill `01` lần chạy kế tiếp sẽ chuyển MR đã chốt thành BR (nguồn `knowledge §8 #n` / §7).
+Do not add `BR-xx` to §3 yourself: skill `01` on its next run turns confirmed MRs into BRs (source `knowledge §8 #n` / §7).
 
-## 2. Chạy lại từ đâu
+## 2. Where to re-run from
 
-| Thay đổi | Chạy lại từ |
+| Change | Re-run from |
 |---|---|
-| BA trả lời MR / thêm quyết định §8 / đổi `_project.md` | `01` (để MR đã chốt thành BR, rủi ro tính lại) |
-| Tài liệu trong `INPUT/<slug>/` đổi | intake rồi `01` |
-| Verdict `FIX` ở một bước | Đúng bước đó |
+| The BA answers an MR / adds a §8 decision / `_project.md` changes | `01` (so confirmed MRs become BRs and risks are recomputed) |
+| Documents in `INPUT/<slug>/` changed | intake, then `01` |
+| A `FIX` verdict at one step | That exact step |
 
-Mọi bước **sau** bước bắt đầu đều chạy lại. Cổng `ask` vẫn áp trước `03`.
+Every step **after** the starting step is re-run. The `ask` gate still applies before `03`.
 
-## 3. Khối lệnh
+## 3. Command block
 
 ```
-Trước khi chạy: chép OUTPUT/<slug>/ sang OUTPUT/<slug>.bak/ (không xoá file cũ trước khi chép).
-Chạy từ bước đã chọn tới hết nhánh A, mỗi bước tick 00_plan.md và in verdict.
-Mã đã có giữ nguyên; mã mới lấy từ `npm run ids -- <slug>`.
-Dừng và báo nếu: MR đã Confirmed/Rejected bị hỏi lại · quyết định §8 bị gắn lại [GIẢ ĐỊNH] ·
-giá trị đã khai ở knowledge bị gắn [CONTEXT_MISSING]. Đó là dấu hiệu agent không đọc knowledge.
+Before running: copy OUTPUT/<slug>/ to OUTPUT/<slug>.bak/ (never delete old files before copying).
+Run from the chosen step to the end of branch A; tick 00_plan.md after each step and print the verdict.
+Existing IDs stay unchanged; new IDs come from `npm run ids -- <slug>`.
+Stop and report if: a Confirmed/Rejected MR is asked again · a §8 decision is tagged [GIẢ ĐỊNH] again ·
+a value already declared in knowledge is tagged [CONTEXT_MISSING]. Those are signs the agent did not read knowledge.
 ```
 
-## 4. So sánh lần 1 và lần 2
+## 4. Compare run 1 and run 2
 
-| Tiêu chí | Đạt khi |
+| Criterion | Passes when |
 |---|---|
-| MR `New`/`TREO` ở `02` | Chỉ còn câu chưa được trả lời; không có câu đã chốt bị hỏi lại |
-| Verdict `02` | `PASS` khi mọi MR đã `Confirmed`/`Rejected` |
-| Mã `BR`/`MR`/`TI`/TC cũ | Giữ nguyên số; khác biệt nào cũng phải giải thích được bằng câu trả lời mới |
-| Ô `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` | MR nào đã chốt thì ô đó đã có giá trị trích từ knowledge |
+| `New`/`TREO` MRs in `02` | Only unanswered questions remain; no confirmed question is asked again |
+| Verdict of `02` | `PASS` when every MR is `Confirmed`/`Rejected` |
+| Old `BR`/`MR`/`TI`/TC codes | Numbers unchanged; every difference must be explained by the new answers |
+| `[CHƯA CÓ TRONG TÀI LIỆU – MR-xx]` cells | For every confirmed MR, the cell now holds a value quoted from knowledge |
 
-Số lượng test case **không** phải tiêu chí (QA_STANDARD §2 — không quota).
+The number of test cases is **not** a criterion (QA_STANDARD §2 — no quotas).

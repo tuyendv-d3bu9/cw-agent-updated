@@ -1,16 +1,18 @@
 ---
 name: flow
-title: "Luồng phân tích và thiết kế tự động"
-description: "Chỉ mục cũ, giữ để cụm kích hoạt cũ vẫn chạy. Luồng thật là run-req-to-testcase."
+title: "Automatic analysis and design flow"
+description: "Old index, kept so that the old triggers still work. The real flow is run-req-to-testcase."
 format: legacy
 triggers:
   - "chạy luồng phân tích tự động"
   - "luồng thiết kế kiểm thử tự động"
+  - "run the automatic analysis flow"
+  - "automatic test design flow"
 ---
 
-# FLOW — chỉ mục cũ
+# FLOW — old index
 
-Runbook này đã được thay bằng `qa-system/workflows/run-req-to-testcase.md` (`01`→`06`, cổng `ask` sau `02`,
-cổng `lint` trước `06`). Khi được gọi: chạy `npm run workflow -- start run-req-to-testcase --slug <slug>` rồi làm theo checklist.
+This runbook has been replaced by `qa-system/workflows/run-req-to-testcase.md` (`01`→`06`, the `ask` gate after `02`,
+the `lint` gate before `06`). When called: run `npm run workflow -- start run-req-to-testcase --slug <slug>` and follow the checklist.
 
-Bảng chặng, đầu vào, đầu ra: `qa-system/workflows/WORKFLOW.md`.
+Table of stages, inputs and outputs: `qa-system/workflows/WORKFLOW.md`.

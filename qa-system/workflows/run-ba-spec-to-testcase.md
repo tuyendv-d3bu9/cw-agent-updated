@@ -1,13 +1,16 @@
 ---
 name: run-ba-spec-to-testcase
-title: "Tài liệu BA mới đến test case có cổng"
-description: "Khi BA gửi tài liệu mới: phân tích, hỏi BA nếu còn kẽ hở, rồi mới sinh test case và kiểm chuẩn."
+title: "New BA documents to test cases, with gates"
+description: "When the BA sends new documents: analyse, ask the BA about any remaining gaps, and only then generate and check test cases."
 format: v1
 
 triggers:
   - "BA gửi tài liệu mới"
   - "có tài liệu mới cần làm test case"
   - "làm test case cho tài liệu BA vừa gửi"
+  - "the BA sent new documents"
+  - "new documents need test cases"
+  - "write test cases for the new BA documents"
 
 steps:
   - agent: qa-analyst
@@ -37,14 +40,14 @@ steps:
     output: 06_coverage_review.md
 ---
 
-# Tài liệu BA mới đến test case có cổng
+# New BA documents to test cases, with gates
 
-## Khi nào dùng
-BA vừa gửi tài liệu yêu cầu mới và bạn muốn đi từ phân tích đến bộ test case đã kiểm chuẩn,
-mà không bao giờ sinh test case trên nền nghiệp vụ còn mơ hồ.
+## When to use
+The BA has just sent new requirement documents and you want to go from analysis to a checked test case set,
+without ever generating test cases on top of business logic that is still ambiguous.
 
-## Điểm dừng
-- Trước bước 3: cổng `ask` (`npm run gate <slug>`). Luật cổng: `qa-system/core/QA_STANDARD.md` §1.
-- Trước bước 6: cổng `lint`.
+## Stop points
+- Before step 3: the `ask` gate (`npm run gate <slug>`). Gate rules: `qa-system/core/QA_STANDARD.md` §1.
+- Before step 6: the `lint` gate.
 
-Dừng ở Chặng 6. Sang automation cần `readiness` và xác nhận riêng (`AGENTS.md` §1.5).
+Stops at Stage 6. Moving on to automation needs `readiness` and a separate confirmation (`AGENTS.md` §1.5).

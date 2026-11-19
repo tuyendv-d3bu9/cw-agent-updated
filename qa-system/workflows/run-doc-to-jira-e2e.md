@@ -1,7 +1,7 @@
 ---
 name: run-doc-to-jira-e2e
-title: "Quy trình kiểm thử trọn gói từ tài liệu đến Automation và Jira"
-description: "Từ tài liệu đến test case, nghiệm thu, đẩy Jira, chạy automation E2E, cập nhật Jira và xuất báo cáo."
+title: "End-to-end testing process from documents to Automation and Jira"
+description: "From documents to test cases, acceptance, push to Jira, run E2E automation, update Jira and produce the report."
 format: v1
 
 triggers:
@@ -9,6 +9,10 @@ triggers:
   - "từ tài liệu đến tự động test và jira"
   - "kiểm thử trọn gói đẩy jira và automation"
   - "chạy pipeline testcase automation jira"
+  - "run the end-to-end testing package"
+  - "from documents to automated tests and jira"
+  - "full testing with jira and automation"
+  - "run the testcase automation jira pipeline"
 
 steps:
   - agent: qa-analyst
@@ -39,7 +43,7 @@ steps:
 
   - tool: jira:push
     output: jira_testcase_mapping.md
-    note: "Đẩy bộ test case lên Jira tạo task/test issue và sinh bảng ánh xạ TC ID ↔ Jira Key."
+    note: "Push the test case set to Jira to create task/test issues and produce the TC ID ↔ Jira Key mapping table."
 
   - agent: qa-automation
     skill: test-runner-evidence
@@ -47,31 +51,31 @@ steps:
       - readiness
       - confirm
     output: runs/RUN-01/run_result.md
-    note: "Cần readiness GO và người dùng xác nhận kèm URL môi trường (AGENTS.md §1.5)."
+    note: "Needs readiness GO and user confirmation with the environment URL (AGENTS.md §1.5)."
 
   - tool: jira:sync
     args: "{slug} RUN-01"
-    note: "Đồng bộ kết quả test, đính kèm screenshot bằng chứng và cập nhật trạng thái các issue trên Jira."
+    note: "Sync the test results, attach the evidence screenshots and update the issue statuses in Jira."
 
   - agent: qa-reporter
     skill: gen-daily-summary
-    note: "Báo cáo 4 section, ghi vào OUTPUT/reports/ (theo skill gen-daily-summary)."
+    note: "4-section report, written to OUTPUT/reports/ (per the gen-daily-summary skill)."
 ---
 
-# Quy Trình Kiểm Thử Trọn Gói: Từ Tài Liệu Đến Automation Và Jira
+# End-to-End Testing Process: From Documents to Automation and Jira
 
-## Khi nào dùng
-Khi bạn có tài liệu yêu cầu ban đầu (PRD/SRS/User Story) và muốn đi trọn vẹn chu trình kiểm thử:
-1. Phân tích yêu cầu, bóc tách rủi ro và phát hiện kẽ hở logic 06W.
-2. Thiết kế Viewpoint và Test Idea.
-3. Sinh Test Case chi tiết chuẩn 8 trường FACT và kiểm tra độ phủ.
-4. Đẩy danh mục Test Case lên Jira (tạo issues và bảng mapping).
-5. Thực thi tự động với Playwright, chụp ảnh bằng chứng (Evidence).
-6. Gửi kết quả chạy test và cập nhật trạng thái (Transition) trên Jira.
-7. Xuất báo cáo tổng kết chất lượng (Daily/Run Summary).
+## When to use
+When you have the initial requirement documents (PRD/SRS/User Story) and want to go through the whole testing cycle:
+1. Analyse the requirements, extract the risks and find 06W logic gaps.
+2. Design Viewpoints and Test Ideas.
+3. Generate detailed 8-field FACT-standard Test Cases and check coverage.
+4. Push the Test Case catalogue to Jira (create issues and the mapping table).
+5. Execute automatically with Playwright, capturing evidence screenshots.
+6. Send the test run results and update the statuses (Transitions) in Jira.
+7. Produce the quality summary report (Daily/Run Summary).
 
-## Điểm dừng
-- Trước bước 3: cổng `ask` (`npm run gate <slug>`). Luật cổng: `qa-system/core/QA_STANDARD.md` §1.
-- Trước bước 6: cổng `lint`.
-- Trước bước 8: `npm run readiness -- <slug>` phải ra `GO` **và** người dùng xác nhận kèm URL môi trường
-  (`AGENTS.md` §1.5). `CONDITIONAL GO` chưa đủ.
+## Stop points
+- Before step 3: the `ask` gate (`npm run gate <slug>`). Gate rules: `qa-system/core/QA_STANDARD.md` §1.
+- Before step 6: the `lint` gate.
+- Before step 8: `npm run readiness -- <slug>` must return `GO` **and** the user must confirm with the environment URL
+  (`AGENTS.md` §1.5). `CONDITIONAL GO` is not enough.

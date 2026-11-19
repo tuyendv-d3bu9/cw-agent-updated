@@ -1,24 +1,27 @@
 ---
 name: run-jira-sync
-title: "Đồng bộ Jira và Redmine"
-description: "Xuất CSV, đẩy test case lên Jira, hoặc kéo danh sách bug về phân tích."
+title: "Jira and Redmine sync"
+description: "Export CSV, push test cases to Jira, or pull the bug list for analysis."
 format: legacy
 triggers:
   - "đồng bộ Jira"
   - "đẩy test case lên Jira"
   - "kéo bug từ Jira về"
+  - "sync with Jira"
+  - "push test cases to Jira"
+  - "pull bugs from Jira"
 ---
 
-# Đồng bộ Jira & Redmine
+# Jira & Redmine sync
 
-| Người dùng nói | Agent | Lệnh | Ra |
+| The user says | Agent | Command | Output |
 |---|---|---|---|
-| *"Xuất test case ra file cho Jira Xray / Redmine"* | `qa-test-design` | `npm run testcases:export <slug>` | `OUTPUT/<slug>/export_jira_xray.csv` · `export_redmine.csv` (UTF-8 BOM) |
-| *"Đẩy test case lên Jira"* | `qa-test-design` | `npm run jira:push <slug>` | Có `.env` ⇒ đẩy qua REST API; chưa có ⇒ báo vị trí file CSV để import |
-| *"Kéo bug từ Jira/Redmine về"* | `qa-reporter` | `npm run jira:pull <slug>` | `OUTPUT/<slug>/jira_defects_summary.md` |
-| *"Đẩy kết quả chạy lên Jira"* | `qa-automation` | `npm run jira:sync <slug> <run-id>` | Kết quả + ảnh evidence gắn vào issue |
+| *"Export the test cases to a file for Jira Xray / Redmine"* | `qa-test-design` | `npm run testcases:export <slug>` | `OUTPUT/<slug>/export_jira_xray.csv` · `export_redmine.csv` (UTF-8 BOM) |
+| *"Push the test cases to Jira"* | `qa-test-design` | `npm run jira:push <slug>` | With `.env` ⇒ pushed via the REST API; without ⇒ report where the CSV file is for import |
+| *"Pull the bugs from Jira/Redmine"* | `qa-reporter` | `npm run jira:pull <slug>` | `OUTPUT/<slug>/jira_defects_summary.md` |
+| *"Push the run results to Jira"* | `qa-automation` | `npm run jira:sync <slug> <run-id>` | Results + evidence images attached to the issues |
 
-Trước khi export/push: `npm run lint -- <slug>` phải exit `0`.
-Bug kéo về là **dữ liệu tham khảo** cho rủi ro; nó không phải nguồn rule (`qa-system/core/QA_STANDARD.md` §10.1) —
-điều bug gợi ý mà tài liệu chưa nói thì thành câu hỏi ở `02`.
-Cấu hình MCP: `qa-system/integrations/jira-mcp-guide.md`.
+Before export/push: `npm run lint -- <slug>` must exit `0`.
+Pulled bugs are **reference data** for risks; they are not a source of rules (`qa-system/core/QA_STANDARD.md` §10.1) —
+anything a bug suggests that the documents do not yet say becomes a question in `02`.
+MCP configuration: `qa-system/integrations/jira-mcp-guide.md`.

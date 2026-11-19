@@ -1,13 +1,16 @@
 ---
 name: run-testcase
-title: "Chạy trọn bộ test design và dữ liệu"
-description: "Chạy Chặng 1 đến 5, nhánh dữ liệu 09 đến 12, rồi Chặng 6 có gom gap dữ liệu của 12."
+title: "Full test design and data run"
+description: "Runs Stages 1 to 5, the data branch 09 to 12, then Stage 6 including the data gaps found by 12."
 format: v1
 
 triggers:
   - "chạy trọn bộ test case"
   - "làm đầy đủ test case kèm dữ liệu"
   - "chạy toàn bộ quy trình kiểm thử"
+  - "run the complete test suite with data"
+  - "full test cases plus datasets"
+  - "run every testing stage including data"
 
 steps:
   - agent: qa-analyst
@@ -51,26 +54,26 @@ steps:
     skill: coverage-review
     gate: lint
     output: 06_coverage_review.md
-    note: "Đọc thêm 12 để gom gap CHƯA CÓ DATA và record mồ côi."
+    note: "Also read 12 to collect the CHƯA CÓ DATA (no data yet) gaps and orphan records."
 ---
 
-# Chạy trọn bộ (`01 → 05` + `09 → 12` + `06`)
+# Full run (`01 → 05` + `09 → 12` + `06`)
 
-## Khi nào dùng
-Cần bộ test suite kèm dữ liệu, sẵn sàng thực thi (Mode 2).
+## When to use
+You need a test suite with data, ready to execute (Mode 2).
 
-## Điểm dừng
-- Trước bước 3: cổng `ask` (`npm run gate <slug>`). Luật cổng: `qa-system/core/QA_STANDARD.md` §1.
-- Trước bước 10 (`06`): cổng `lint`.
-- `06` chạy **sau** `12` vì `12` phát hiện test case `CHƯA CÓ DATA` và record mồ côi — đầu vào cho gap của `06`.
-  Đã có `06` từ trước thì chạy lại.
+## Stop points
+- Before step 3: the `ask` gate (`npm run gate <slug>`). Gate rules: `qa-system/core/QA_STANDARD.md` §1.
+- Before step 10 (`06`): the `lint` gate.
+- `06` runs **after** `12` because `12` finds the test cases marked `CHƯA CÓ DATA` (no data yet) and the orphan records — input for the gaps of `06`.
+  If `06` already exists, re-run it.
 
-## Nghiệm thu — truy vết ngược một test case cần data
-`12` (record nào cấp data) → `Tags` → `04` → `03` → `01` / `knowledge/features/<slug>.md` → `INPUT/<slug>/`.
+## Acceptance — trace back one test case that needs data
+`12` (which record supplies the data) → `Tags` → `04` → `03` → `01` / `knowledge/features/<slug>.md` → `INPUT/<slug>/`.
 
-## Lỗi hay gặp
-| Hiện tượng | Xử lý |
+## Common problems
+| Symptom | Handling |
 |---|---|
-| Nhánh B đầy `[CONTEXT_MISSING]` | `knowledge/_project.md` còn `<điền>` — đó là thiếu thật, không tự lấp; hỏi người dùng |
-| `12` báo nhiều `CHƯA CÓ DATA` | Xem bảng đối chiếu biên ở `11` trước khi chạy lại `12` |
-| Agent dồn nhiều bước vào 1 file | Một skill một file — QA_STANDARD §7 |
+| Branch B full of `[CONTEXT_MISSING]` | `knowledge/_project.md` still contains `<điền>` (to be filled) — that is genuinely missing, do not fill it yourself; ask the user |
+| `12` reports many `CHƯA CÓ DATA` | Check the boundary reconciliation table in `11` before re-running `12` |
+| The agent crams several steps into 1 file | One skill, one file — QA_STANDARD §7 |
