@@ -225,9 +225,9 @@ function studentFiles(env, id, kind) {
   ];
   // T1: skill declares the 9th field; lint validates the value; a test proves it.
   f['qa-system/qa-test-design/skills/test-case-generation.md'] = read(env, 'qa-system/qa-test-design/skills/test-case-generation.md')
-    .replace('## 8 trường', '## Định dạng 9 trường bắt buộc')
+    .replace(/## (?:The 8 fields \(8 trường\)|8 trường)/, '## Định dạng 9 trường bắt buộc') // heading text is language-independent for the fixture
     .replace(/(\| `Tags` \|[^\n]*\n)/, '$1| `Risk Ref` | RK-xx của 01, hoặc `N/A — <lý do>` |\n');
-  f['qa-system/tools/system/lint-deliverables.js'] = read(env, 'qa-system/tools/system/lint-deliverables.js').replace('      // Nguồn gốc giá trị:', LINT_PATCH);
+  f['qa-system/tools/system/lint-deliverables.js'] = read(env, 'qa-system/tools/system/lint-deliverables.js').replace(/      \/\/ (?:Nguồn gốc giá trị|Value provenance):/, (m) => LINT_PATCH.replace('      // Nguồn gốc giá trị:', m));
   f['qa-system/tools/__tests__/risk-ref.test.js'] = RISK_TEST;
 
   // T2: new agent, registered in 5 places.
