@@ -33,6 +33,14 @@ Thực thi kiểm thử tự động cho một đợt chạy cụ thể (Run Ses
    - Khi có lỗi / assertion failure: Tự động ghi nhận ảnh kết quả lỗi có hậu tố `_result` và lưu Playwright Trace.
 3. **Thực thi ngầm**:
    - Chạy test headless: `npx playwright test automation/tests/<task-slug>_<run-id>.spec.ts`.
+   - **Chọn thiết bị** (agent tự chạy, người dùng không gõ lệnh) bằng biến `QA_DEVICE`, phân tách bằng dấu phẩy:
+     `desktop-chrome` · `mobile-android` (Pixel 7) · `mobile-ios` (iPhone 14) · `tablet` (iPad gen 7) · `all`.
+     Không truyền = chỉ `desktop-chrome` (hành vi cũ). Giá trị lạ thì config báo lỗi kèm danh sách hợp lệ.
+     Ví dụ: `QA_DEVICE=mobile-ios,tablet npx playwright test ...` (macOS/Linux; Windows đặt biến bằng `set`/`$env:`), hoặc script — chạy được trên mọi hệ điều hành — `npm run test:e2e:mobile` / `test:e2e:tablet` / `test:e2e:all`.
+   - **WebKit**: `mobile-ios` và `tablet` chạy bằng WebKit. Lần đầu dùng, agent tự chạy `npx playwright install webkit`
+     (và `chromium` nếu chưa có) rồi báo kết quả; không bắt người dùng gõ.
+   - **Đường dẫn evidence**: chạy 1 thiết bị thì giữ `evidence/<TC_ID>/`; chạy từ 2 thiết bị trở lên thì thành
+     `evidence/<device>/<TC_ID>/` để ảnh không ghi đè nhau. `run_result.md` phải ghi rõ thiết bị cho từng kết quả.
 4. **Tổng hợp kết quả ra Run Result**:
    - Ghi vào `OUTPUT/<task-slug>/runs/<run-id>/run_result.md`.
    - Nếu có lỗi, liệt kê vào `OUTPUT/<task-slug>/runs/<run-id>/run_defects.md` để `qa-reporter` xử lý tiếp.
@@ -44,7 +52,7 @@ Ghi ra `OUTPUT/<task-slug>/runs/<run-id>/run_result.md` theo mẫu chuẩn:
 
 ## Chốt chặn nghiệm thu (Quality Gates)
 - [ ] Mọi test case đều có trạng thái nhị phân rõ ràng (PASS / FAIL).
-- [ ] Mỗi test case có một folder riêng trong `evidence/<TC_ID>/`.
+- [ ] Mỗi test case có một folder riêng trong `evidence/<TC_ID>/` (hoặc `evidence/<device>/<TC_ID>/` khi chạy nhiều thiết bị).
 - [ ] Nếu `evidence_video=OFF`: có đầy đủ ảnh các bước (đánh số 01, 02...) và ảnh kết quả có hậu tố `_result`.
 - [ ] Nếu `evidence_video=ON`: có file video ghi lại luồng test case trong folder `evidence/<TC_ID>/`.
 - [ ] Toàn bộ các test case FAIL bắt buộc có bằng chứng ghi nhận lỗi giao diện trong thư mục `evidence/<TC_ID>/`.

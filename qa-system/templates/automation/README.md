@@ -37,5 +37,12 @@ OUTPUT/<task>/runs/RUN-XX/       KẾT QUẢ — xoá và chạy lại được
 Agent truyền `QA_TASK_SLUG` và `QA_RUN_ID` để config biết ghi vào đâu.
 Không truyền thì rơi về `.scratch/`.
 
+## Chạy trên thiết bị khác
+
+Biến `QA_DEVICE` (agent tự truyền): `desktop-chrome` (mặc định) · `mobile-android` · `mobile-ios` · `tablet` · `all`,
+hoặc nhiều tên cách nhau dấu phẩy. Tên sai -> config báo lỗi kèm danh sách hợp lệ.
+`mobile-ios`/`tablet` dùng WebKit: agent chạy `npx playwright install webkit` một lần.
+Chạy từ 2 thiết bị trở lên, evidence nằm ở `evidence/<device>/<TC_ID>/`; một thiết bị giữ `evidence/<TC_ID>/`.
+
 > Cổng biên giới (`AGENTS.md` §1.5): **không** tự chạy tầng này sau Chặng 6.
 > Cần `npm run readiness` cho khuyến nghị GO **và** người dùng yêu cầu rõ kèm URL môi trường.

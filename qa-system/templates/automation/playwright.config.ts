@@ -16,6 +16,8 @@ import fs from 'fs';
  *   QA_BASE_URL   — ghi đè URL của SUT (mặc định lấy từ knowledge/_system_map.json)
  *   QA_TASK_SLUG  — task đang chạy, ví dụ `cart-quantity`
  *   QA_RUN_ID     — mã lượt chạy, ví dụ `RUN-01_smoke`
+ *   QA_DEVICE     — thiết bị chạy, phân tách bằng dấu phẩy: `mobile-ios,tablet` hoặc `all`.
+ *                   Không truyền = chỉ `desktop-chrome` (hành vi cũ, không đổi).
  *
  * Không truyền gì thì rơi về `.scratch/` ở gốc repo — đã gitignore. Tên nói rõ
  * đây là chạy nháp chưa gắn vào task nào, và nó KHÔNG nằm trong OUTPUT/ vì
@@ -86,6 +88,65 @@ const runDir = slug
   ? path.join(ROOT, 'OUTPUT', slug, 'runs', runId)
   : path.join(ROOT, '.scratch', runId);
 
+/**
+ * Các thiết bị có thể chọn qua QA_DEVICE.
+ *
+ * Vì sao dựng dạng bảng tên -> preset: học viên không gõ lệnh, agent truyền tên
+ * ngắn dễ nhớ; preset thật (viewport, userAgent, touch, trình duyệt) lấy từ
+ * `devices` của Playwright nên không phải tự đoán số đo.
+ * Lưu ý: iPhone/iPad dùng WebKit -> cần `npx playwright install webkit` (agent tự chạy).
+ */
+const DEVICE_PROJECTS: Record<string, { use: Record<string, unknown> }> = {
+  'desktop-chrome': { use: { ...devices['Desktop Chrome'] } },
+  'mobile-android': { use: { ...devices['Pixel 7'] } },
+  'mobile-ios': { use: { ...devices['iPhone 14'] } },
+  tablet: { use: { ...devices['iPad (gen 7)'] } },
+};
+// Tên cũ của project; ai còn truyền `chromium` vẫn chạy được.
+const DEVICE_ALIASES: Record<string, string> = { chromium: 'desktop-chrome' };
+
+/**
+ * Script npm -> thiết bị. Không đặt biến kiểu `QA_DEVICE=... playwright` trong package.json
+ * vì cú pháp đó không chạy trên Windows cmd; npm luôn đặt `npm_lifecycle_event` = tên script
+ * trên mọi hệ điều hành, nên config tự suy ra thiết bị mà không cần thêm thư viện (cross-env).
+ */
+const SCRIPT_DEVICES: Record<string, string> = {
+  'test:e2e:mobile': 'mobile-android,mobile-ios',
+  'test:e2e:tablet': 'tablet',
+  'test:e2e:all': 'all',
+};
+
+/** Đọc QA_DEVICE (ưu tiên) hoặc tên script npm -> danh sách tên project. Giá trị lạ thì báo lỗi, không đoán. */
+function resolveDevices(): string[] {
+  const raw = (
+    process.env.QA_DEVICE ||
+    SCRIPT_DEVICES[process.env.npm_lifecycle_event || ''] ||
+    ''
+  ).trim().toLowerCase();
+  if (!raw) return ['desktop-chrome'];
+  if (raw === 'all') return Object.keys(DEVICE_PROJECTS);
+  const names = raw
+    .split(',')
+    .map((n) => n.trim())
+    .filter(Boolean)
+    .map((n) => DEVICE_ALIASES[n] ?? n);
+  const unknown = names.filter((n) => !(n in DEVICE_PROJECTS));
+  if (unknown.length) {
+    throw new Error(
+      `QA_DEVICE có giá trị không hợp lệ: ${unknown.join(', ')}. ` +
+        `Hợp lệ: ${Object.keys(DEVICE_PROJECTS).join(', ')}, all (hoặc nhiều tên cách nhau dấu phẩy).`
+    );
+  }
+  return [...new Set(names)];
+}
+
+const selectedDevices = resolveDevices();
+// Báo cho utils/evidence.ts (chạy trong worker, thừa hưởng env này): chỉ khi chạy
+// từ 2 thiết bị trở lên mới tách thư mục evidence theo thiết bị, để lượt chạy
+// một thiết bị giữ nguyên đường dẫn cũ `evidence/<TC_ID>/`.
+if (selectedDevices.length > 1) process.env.QA_DEVICE_SPLIT = '1';
+else delete process.env.QA_DEVICE_SPLIT;
+
 export default defineConfig({
   testDir: './tests',
   timeout: 45000,
@@ -111,7 +172,9 @@ export default defineConfig({
     // - OFF: chụp ảnh từng bước và ảnh kết quả có hậu tố "_result" (screenshot: 'on', video: 'off')
     screenshot: isVideoMode ? 'off' : 'on',
     video: isVideoMode ? 'on' : 'off',
-    viewport: { width: 1280, height: 800 },
+    // KHÔNG đặt `viewport` ở đây: `use` của project đè lên `use` cấp trên, nên viewport
+    // cố định sẽ bị preset thiết bị ghi đè (và với desktop thì preset 1280x720 vốn đã thắng).
+    // Viewport do preset của từng thiết bị quyết định.
   },
   // Artifact nội bộ của Playwright (trace, ảnh test-finished, file đính kèm).
   //
@@ -120,10 +183,6 @@ export default defineConfig({
   // đợt trước — đã xảy ra thật và mất 2 thư mục evidence chưa commit.
   // Bằng chứng nộp cho khách do `utils/evidence.ts` tự ghi vào `evidence/<TC_ID>/`.
   outputDir: path.join(runDir, '_playwright'),
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-  ],
+  // Mỗi thiết bị một project; outputDir của Playwright tự tách theo tên project.
+  projects: selectedDevices.map((name) => ({ name, ...DEVICE_PROJECTS[name] })),
 });

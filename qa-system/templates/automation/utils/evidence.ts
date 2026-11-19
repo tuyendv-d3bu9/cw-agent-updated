@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, test } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -82,9 +82,22 @@ export function resolveEvidenceBaseDir(options?: EvidenceOptions): string {
   const slug = options?.slug || process.env.QA_TASK_SLUG?.trim();
   const runId = options?.runId || process.env.QA_RUN_ID?.trim() || 'RUN-local';
 
-  return slug
+  const base = slug
     ? path.join(ROOT, 'OUTPUT', slug, 'runs', runId, 'evidence')
     : path.join(ROOT, '.scratch', runId, 'evidence');
+  // Chạy nhiều thiết bị (config đặt QA_DEVICE_SPLIT) -> mỗi thiết bị một thư mục con,
+  // nếu không ảnh của iPhone sẽ ghi đè ảnh của desktop cùng TC_ID. Một thiết bị thì giữ
+  // đường dẫn cũ để không phá bàn giao hiện có.
+  return process.env.QA_DEVICE_SPLIT === '1' ? path.join(base, currentProjectName()) : base;
+}
+
+/** Tên project (thiết bị) của test đang chạy; ngoài ngữ cảnh test thì rơi về 'device'. */
+function currentProjectName(): string {
+  try {
+    return test.info().project.name || 'device'; // tên project do config đặt, đã an toàn làm tên thư mục
+  } catch {
+    return 'device'; // gọi ngoài test (ví dụ script) — không có test.info()
+  }
 }
 
 /**
