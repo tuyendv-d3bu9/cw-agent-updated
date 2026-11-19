@@ -1,50 +1,50 @@
-# Pack ngành · healthcare
+# Domain pack · healthcare
 
-> Pack là **checklist**, không phải nguồn sự thật (QA_STANDARD §10.3). Không ghi mã `BR`/`FD`/`AF`/`OQ`/`MR`/`RK`/`TI` có số vào bất kỳ file nào của pack.
+> A pack is a **checklist**, not a source of truth (QA_STANDARD §10.3). Never write a numbered `BR`/`FD`/`AF`/`OQ`/`MR`/`RK`/`TI` code into any file of the pack.
 
 STATUS: draft
 
-## 1. Phạm vi
-Phủ: phần mềm chăm sóc sức khoẻ có dữ liệu người bệnh — đăng ký / định danh, lượt khám (encounter), kết quả quan sát, chỉ định thuốc, đặt lịch, thanh toán / bồi hoàn (claim), phân quyền truy cập hồ sơ.
-Không phủ: thiết bị y tế nhúng, quy trình lâm sàng cụ thể, ngưỡng / liều / giá trị chuẩn lâm sàng, luật y tế của từng quốc gia. Mọi giá trị cụ thể phải lấy từ tài liệu dự án.
-Dữ liệu thử trong pack luôn là dữ liệu **giả, dễ nhận ra** (tiền tố `SYN-`); không dùng định danh người bệnh thật.
+## 1. Scope
+Covers: healthcare software holding patient data — registration / identification, encounters, observation results, medication orders, scheduling, billing / reimbursement (claims), access control on records.
+Does not cover: embedded medical devices, specific clinical procedures, clinical thresholds / doses / reference values, the health laws of each country. Every concrete value must come from the project's documents.
+Test data in the pack is always **fake and easy to recognise** (prefix `SYN-`); real patient identifiers are never used.
 
-## 2. Phân loại ngành (GICS)
-| Cấp | Giá trị | Nguồn |
+## 2. Industry classification (GICS)
+| Level | Value | Source |
 |---|---|---|
 | Sector | Health Care | https://www.msci.com/index/methodology/latest/GICS |
 | Industry group / Industry | Health Care Equipment & Services | https://www.msci.com/index/methodology/latest/GICS |
 
-Tên cấp lấy theo plan domain-packs §3; trang MSCI chưa được mở lại trong lượt viết pack này: Unknown (chưa tự kiểm).
+The level names follow the domain-packs plan §3; the MSCI page was not reopened while writing this pack: Unknown (not verified first-hand).
 
-## 3. Mô hình tham chiếu của ngành
-| Mô hình | Dùng để | Nguồn |
+## 3. Industry reference models
+| Model | Used for | Source |
 |---|---|---|
-| HL7 FHIR (R5) — module Administration, Clinical, Medications, Diagnostics, Workflow, Financial, Security & Privacy | Từ vựng thực thể (Patient, Encounter, Observation, Claim…) trong `vocab.md`, `datagen.json` | https://www.hl7.org/fhir/overview.html (đã mở; trang liệt kê 14 module) |
-| Mã trạng thái Encounter (9 mã), Claim (4 mã) | Enum `encounter_status`, `claim_status` trong `datagen.json` | https://www.hl7.org/fhir/encounter.html · https://www.hl7.org/fhir/claim.html (đã mở; chỉ đọc 100000 ký tự đầu mỗi trang) |
-| Tập mã trạng thái Observation đầy đủ | Không dùng làm enum | Unknown (chỉ thấy 4 mã đầu) |
+| HL7 FHIR (R5) — the Administration, Clinical, Medications, Diagnostics, Workflow, Financial, Security & Privacy modules | Entity vocabulary (Patient, Encounter, Observation, Claim…) in `vocab.md`, `datagen.json` | https://www.hl7.org/fhir/overview.html (opened; the page lists 14 modules) |
+| Encounter status codes (9 codes), Claim (4 codes) | The `encounter_status`, `claim_status` enums in `datagen.json` | https://www.hl7.org/fhir/encounter.html · https://www.hl7.org/fhir/claim.html (opened; only the first 100000 characters of each page were read) |
+| The full set of Observation status codes | Not used as an enum | Unknown (only the first 4 codes were seen) |
 
-## 4. Quy định / chuẩn tạo rủi ro
-| Quy định / chuẩn | Phạm vi áp dụng | Nguồn |
+## 4. Regulations / standards that create risk
+| Regulation / standard | Scope of application | Source |
 |---|---|---|
-| HIPAA (Hoa Kỳ) | Dữ liệu sức khoẻ có thể định danh; trang hhs.gov trả HTTP 403, chưa kiểm được | Unknown |
-| Luật dữ liệu sức khoẻ địa phương | Tuỳ quốc gia triển khai | Unknown |
-| ISO/IEC 25010:2023 (9 đặc tính) | Cột đặc tính trong `risks.md` | https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 (đã mở, trang bên thứ ba; trang iso.org trả 403) |
+| HIPAA (United States) | Identifiable health data; the hhs.gov page returned HTTP 403, not verified | Unknown |
+| Local health data laws | Depends on the country of deployment | Unknown |
+| ISO/IEC 25010:2023 (9 characteristics) | The characteristic column in `risks.md` | https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 (opened, third-party page; iso.org returned 403) |
 
-## 5. Nguồn
+## 5. Sources
 - GICS: https://www.msci.com/index/methodology/latest/GICS
 - HL7 FHIR overview: https://www.hl7.org/fhir/overview.html
 - FHIR Encounter: https://www.hl7.org/fhir/encounter.html
 - FHIR Claim: https://www.hl7.org/fhir/claim.html
-- Tên đặc tính ISO/IEC 25010: https://iso25000.com/index.php/en/iso-25000-standards/iso-25010
-- ISO/IEC 25010:2023 (trang chính thức, chưa mở được): https://www.iso.org/standard/78176.html
+- ISO/IEC 25010 characteristic names: https://iso25000.com/index.php/en/iso-25000-standards/iso-25010
+- ISO/IEC 25010:2023 (official page, could not be opened): https://www.iso.org/standard/78176.html
 
-## 6. File của pack
-| File | Ai đọc | Dùng làm |
+## 6. Pack files
+| File | Read by | Used for |
 |---|---|---|
-| `vocab.md` | `knowledge-digest`, `test-case-generation`, `dataset-generation` | Gợi ý thuật ngữ cho `knowledge/_glossary.md` — người dự án duyệt |
-| `risks.md` | `requirement-risk-summary`, `viewpoint-selection` | Rủi ro ngành ⇒ câu hỏi `OQ`, ứng viên viewpoint |
-| `rule-patterns.md` | `missing-rule-06w` | Họ quy tắc hay bị thiếu ⇒ câu hỏi `MR`, không bao giờ thành `BR` |
-| `conflict_topics.json` | `npm run knowledge:conflicts` | Chủ đề dò xung đột giữa các tính năng |
-| `datagen.json` | `npm run data:gen` | Kiểu dữ liệu sinh giả / danh sách enum |
-| `units.json` | `npm run lint` (nguồn gốc con số) | Đơn vị đo lường (chỉ thêm) |
+| `vocab.md` | `knowledge-digest`, `test-case-generation`, `dataset-generation` | Term suggestions for `knowledge/_glossary.md` — reviewed by the project people |
+| `risks.md` | `requirement-risk-summary`, `viewpoint-selection` | Industry risks ⇒ `OQ` questions, viewpoint candidates |
+| `rule-patterns.md` | `missing-rule-06w` | Rule families that are often missing ⇒ `MR` questions, never a `BR` |
+| `conflict_topics.json` | `npm run knowledge:conflicts` | Topics for detecting conflicts between features |
+| `datagen.json` | `npm run data:gen` | Fake generated data types / enum lists |
+| `units.json` | `npm run lint` (origin of numbers) | Units of measure (additions only) |

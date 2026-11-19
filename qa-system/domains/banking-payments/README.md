@@ -1,49 +1,49 @@
-# Pack ngành · banking-payments
+# Domain pack · banking-payments
 
-> Pack là **checklist**, không phải nguồn sự thật (QA_STANDARD §10.3). Không ghi mã `BR`/`FD`/`AF`/`OQ`/`MR`/`RK`/`TI` có số vào bất kỳ file nào của pack.
+> A pack is a **checklist**, not a source of truth (QA_STANDARD §10.3). Never write a numbered `BR`/`FD`/`AF`/`OQ`/`MR`/`RK`/`TI` code into any file of the pack.
 
 STATUS: draft
 
-## 1. Phạm vi
-Ngân hàng bán lẻ / thanh toán: tài khoản, chuyển tiền, thanh toán thẻ, đối soát.
-KHÔNG phủ: chứng khoán, bảo hiểm (xem pack `insurance`), quy định cụ thể từng quốc gia (ghi "local regulation", chi tiết `Unknown`),
-giá trị hạn mức / phí / giờ chốt cụ thể của bất kỳ ngân hàng nào.
+## 1. Scope
+Retail banking / payments: accounts, money transfers, card payments, reconciliation.
+Does NOT cover: securities, insurance (see the `insurance` pack), the specific regulations of each country (recorded as "local regulation", details `Unknown`),
+the concrete limit / fee / cut-off values of any bank.
 
-## 2. Phân loại ngành (GICS)
-| Cấp | Giá trị | Nguồn |
+## 2. Industry classification (GICS)
+| Level | Value | Source |
 |---|---|---|
-| Sector | Financials (tên lấy từ plan §3) | Unknown — trang MSCI trả PDF không đọc được. Trang tham chiếu: https://www.msci.com/index/methodology/latest/GICS |
-| Industry group / Industry | Banks / Financial Services (tên lấy từ plan §3) | Unknown (như trên) |
+| Sector | Financials (name taken from plan §3) | Unknown — the MSCI page returns a PDF that could not be read. Reference page: https://www.msci.com/index/methodology/latest/GICS |
+| Industry group / Industry | Banks / Financial Services (name taken from plan §3) | Unknown (as above) |
 
-## 3. Mô hình tham chiếu của ngành
-| Mô hình | Dùng để | Nguồn |
+## 3. Industry reference models
+| Model | Used for | Source |
 |---|---|---|
-| BIAN Service Landscape (business areas → business domains → service domains) | Gợi ý nhóm từ vựng / vùng rủi ro theo miền dịch vụ ngân hàng. Cấu trúc ba cấp lấy từ plan §3; nội dung trang `Unknown` vì chưa mở được | https://digital-portfolio.opengroup.org/archimate-bian/latest/01-doc/chap03.html (WebFetch bị chuyển sang trang đăng nhập) |
-| ISTQB Certified Tester Finance Testing (CT-FT) | Nhắc rằng kiểm thử hệ thống tài chính là chuyên ngành riêng. Trang chỉ nói CT-FT tập trung vào kiến thức kiểm thử cho hệ thống trong lĩnh vực dịch vụ tài chính; nội dung syllabus `Unknown` | https://istqb.org/certifications/certification-list (đã mở) |
+| BIAN Service Landscape (business areas → business domains → service domains) | Suggests vocabulary groups / risk areas by banking service domain. The three-level structure is taken from plan §3; the page content is `Unknown` because it could not be opened | https://digital-portfolio.opengroup.org/archimate-bian/latest/01-doc/chap03.html (WebFetch was redirected to a login page) |
+| ISTQB Certified Tester Finance Testing (CT-FT) | A reminder that testing financial systems is a specialism of its own. The page only says CT-FT focuses on testing knowledge for systems in the financial services sector; the syllabus content is `Unknown` | https://istqb.org/certifications/certification-list (opened) |
 
-## 4. Quy định / chuẩn tạo rủi ro
-| Quy định / chuẩn | Phạm vi áp dụng | Nguồn |
+## 4. Regulations / standards that create risk
+| Regulation / standard | Scope of application | Source |
 |---|---|---|
-| PCI DSS | Dữ liệu tài khoản thẻ thanh toán; do PCI Security Standards Council ban hành. Phiên bản, số điều khoản: `Unknown` | https://www.pcisecuritystandards.org/standards/pci-dss/ (đã mở) |
-| AML/KYC (local regulation) | Theo quốc gia; ngưỡng, thời hạn lưu, danh sách giám sát: `Unknown` | Unknown |
-| Quy định thanh toán / ngân hàng nhà nước (local regulation) | Theo quốc gia: `Unknown` | Unknown |
-| ISO/IEC 25010:2023 (đặc tính ở risks.md) | Tên đặc tính đối chiếu từ trang tóm tắt iso25000.com, không phải trang ISO (trả 403) | https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 (đã mở) |
+| PCI DSS | Payment card account data; issued by the PCI Security Standards Council. Version, clause numbers: `Unknown` | https://www.pcisecuritystandards.org/standards/pci-dss/ (opened) |
+| AML/KYC (local regulation) | Per country; thresholds, retention periods, watch lists: `Unknown` | Unknown |
+| Payment / central bank regulations (local regulation) | Per country: `Unknown` | Unknown |
+| ISO/IEC 25010:2023 (characteristics in risks.md) | Characteristic names checked against the iso25000.com summary page, not the ISO page (which returns 403) | https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 (opened) |
 
-## 5. Nguồn
-- https://www.pcisecuritystandards.org/standards/pci-dss/ — đã mở
-- https://istqb.org/certifications/certification-list — đã mở
-- https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 — đã mở
-- https://docs.stripe.com/testing — đã mở. **TEST ONLY**: `card_pan_test` trong `datagen.json` chỉ chứa số thẻ sandbox công bố của Stripe, không phải dữ liệu thẻ thật
-- https://digital-portfolio.opengroup.org/archimate-bian/latest/01-doc/chap03.html — URL của plan §8, chưa mở được
-- https://www.msci.com/index/methodology/latest/GICS — URL của plan §8, PDF không đọc được
-- https://www.iso.org/standard/78176.html — URL của plan §8, trả 403
+## 5. Sources
+- https://www.pcisecuritystandards.org/standards/pci-dss/ — opened
+- https://istqb.org/certifications/certification-list — opened
+- https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 — opened
+- https://docs.stripe.com/testing — opened. **TEST ONLY**: `card_pan_test` in `datagen.json` contains only Stripe's published sandbox card numbers, not real card data
+- https://digital-portfolio.opengroup.org/archimate-bian/latest/01-doc/chap03.html — URL from plan §8, could not be opened
+- https://www.msci.com/index/methodology/latest/GICS — URL from plan §8, the PDF could not be read
+- https://www.iso.org/standard/78176.html — URL from plan §8, returns 403
 
-## 6. File của pack
-| File | Ai đọc | Dùng làm |
+## 6. Pack files
+| File | Read by | Used for |
 |---|---|---|
-| `vocab.md` | `knowledge-digest`, `test-case-generation`, `dataset-generation` | Gợi ý thuật ngữ cho `knowledge/_glossary.md` — người dự án duyệt |
-| `risks.md` | `requirement-risk-summary`, `viewpoint-selection` | Rủi ro ngành ⇒ câu hỏi `OQ`, ứng viên viewpoint |
-| `rule-patterns.md` | `missing-rule-06w` | Họ quy tắc hay bị thiếu ⇒ câu hỏi `MR`, không bao giờ thành `BR` |
-| `conflict_topics.json` | `npm run knowledge:conflicts` | Chủ đề dò xung đột giữa các tính năng |
-| `datagen.json` | `npm run data:gen` | Kiểu dữ liệu sinh |
-| `units.json` | `npm run lint` (nguồn gốc con số) | Đơn vị đo / tiền tệ (chỉ thêm) |
+| `vocab.md` | `knowledge-digest`, `test-case-generation`, `dataset-generation` | Term suggestions for `knowledge/_glossary.md` — reviewed by the project people |
+| `risks.md` | `requirement-risk-summary`, `viewpoint-selection` | Industry risks ⇒ `OQ` questions, viewpoint candidates |
+| `rule-patterns.md` | `missing-rule-06w` | Rule families that are often missing ⇒ `MR` questions, never a `BR` |
+| `conflict_topics.json` | `npm run knowledge:conflicts` | Topics for detecting conflicts between features |
+| `datagen.json` | `npm run data:gen` | Generated data types |
+| `units.json` | `npm run lint` (origin of numbers) | Units of measure / currencies (additions only) |

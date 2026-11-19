@@ -1,47 +1,47 @@
-# Pack ngành · ecommerce-retail
+# Domain pack · ecommerce-retail
 
-> Pack là **checklist**, không phải nguồn sự thật (QA_STANDARD §10.3). Không ghi mã `BR`/`FD`/`AF`/`OQ`/`MR`/`RK`/`TI` có số vào bất kỳ file nào của pack.
+> A pack is a **checklist**, not a source of truth (QA_STANDARD §10.3). Never write a numbered `BR`/`FD`/`AF`/`OQ`/`MR`/`RK`/`TI` code into any file of the pack.
 
 STATUS: draft
 
-## 1. Phạm vi
-Phủ: bán lẻ trực tuyến — giỏ hàng, định giá / thuế, khuyến mãi (cộng dồn, phạm vi giảm), khách vãng lai và thành viên, tồn kho giữ chỗ, vòng đời đơn / thanh toán / giao hàng, huỷ, đổi trả, hoàn tiền và hoàn quyền lợi.
-Không phủ: bán lẻ tại cửa hàng (POS), sàn đa người bán, quy định thuế cụ thể của từng nước. Mọi giá trị cụ thể (ngưỡng, tỷ lệ, thời hạn) phải lấy từ tài liệu dự án.
-Ba file JSON của pack là bản chuyển nguyên trạng từ mặc định cũ của tool (test giữ hai bên không lệch) — không sửa.
+## 1. Scope
+Covers: online retail — cart, pricing / tax, promotions (stacking, discount scope), guest and member customers, inventory reservation, the order / payment / delivery lifecycle, cancellation, returns, refunds and benefit restoration.
+Does not cover: in-store retail (POS), multi-vendor marketplaces, the specific tax regulations of each country. Every concrete value (thresholds, rates, time limits) must come from the project's documents.
+The pack's three JSON files are as-is copies of the tool's old defaults (tests keep both sides in sync) — do not edit them.
 
-## 2. Phân loại ngành (GICS)
-| Cấp | Giá trị | Nguồn |
+## 2. Industry classification (GICS)
+| Level | Value | Source |
 |---|---|---|
 | Sector | Consumer Discretionary | https://www.msci.com/index/methodology/latest/GICS |
 | Industry group / Industry | Consumer Discretionary Distribution & Retail | https://www.msci.com/index/methodology/latest/GICS |
 
-Tên cấp lấy theo plan domain-packs §3; trang MSCI chưa được mở lại trong lượt viết pack này: Unknown (chưa tự kiểm).
+The level names follow the domain-packs plan §3; the MSCI page was not reopened while writing this pack: Unknown (not verified first-hand).
 
-## 3. Mô hình tham chiếu của ngành
-| Mô hình | Dùng để | Nguồn |
+## 3. Industry reference models
+| Model | Used for | Source |
 |---|---|---|
-| Unknown (mô hình tham chiếu bán lẻ chưa được kiểm) | Không có phần nào của pack lấy từ mô hình này | Unknown |
+| Unknown (no retail reference model verified yet) | No part of the pack comes from this model | Unknown |
 
-## 4. Quy định / chuẩn tạo rủi ro
-| Quy định / chuẩn | Phạm vi áp dụng | Nguồn |
+## 4. Regulations / standards that create risk
+| Regulation / standard | Scope of application | Source |
 |---|---|---|
-| PCI DSS | Dữ liệu thẻ thanh toán; trang chủ PCI SSC xác nhận có PCI Data Security Standard, nội dung yêu cầu cụ thể chưa đọc | https://www.pcisecuritystandards.org/ (đã mở) |
-| Luật bảo vệ người tiêu dùng, thuế | Tuỳ quốc gia triển khai | Unknown |
-| ISO/IEC 25010:2023 (9 đặc tính) | Cột đặc tính trong `risks.md` | https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 (đã mở, trang bên thứ ba; trang iso.org trả 403) |
+| PCI DSS | Payment card data; the PCI SSC home page confirms the PCI Data Security Standard exists, the specific requirements were not read | https://www.pcisecuritystandards.org/ (opened) |
+| Consumer protection law, tax | Depends on the country of deployment | Unknown |
+| ISO/IEC 25010:2023 (9 characteristics) | The characteristic column in `risks.md` | https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 (opened, third-party page; iso.org returned 403) |
 
-## 5. Nguồn
+## 5. Sources
 - GICS: https://www.msci.com/index/methodology/latest/GICS
 - PCI Security Standards Council: https://www.pcisecuritystandards.org/
-- Tên đặc tính ISO/IEC 25010: https://iso25000.com/index.php/en/iso-25000-standards/iso-25010
-- ISO/IEC 25010:2023 (trang chính thức, chưa mở được): https://www.iso.org/standard/78176.html
-- Mô hình tham chiếu bán lẻ: Unknown
+- ISO/IEC 25010 characteristic names: https://iso25000.com/index.php/en/iso-25000-standards/iso-25010
+- ISO/IEC 25010:2023 (official page, could not be opened): https://www.iso.org/standard/78176.html
+- Retail reference model: Unknown
 
-## 6. File của pack
-| File | Ai đọc | Dùng làm |
+## 6. Pack files
+| File | Read by | Used for |
 |---|---|---|
-| `vocab.md` | `knowledge-digest`, `test-case-generation`, `dataset-generation` | Gợi ý thuật ngữ cho `knowledge/_glossary.md` — người dự án duyệt |
-| `risks.md` | `requirement-risk-summary`, `viewpoint-selection` | Rủi ro ngành ⇒ câu hỏi `OQ`, ứng viên viewpoint |
-| `rule-patterns.md` | `missing-rule-06w` | Họ quy tắc hay bị thiếu ⇒ câu hỏi `MR`, không bao giờ thành `BR` |
-| `conflict_topics.json` | `npm run knowledge:conflicts` | Chuyển từ `DEFAULT_TOPICS` của `conflict-detector.js` |
-| `datagen.json` | `npm run data:gen` | Chuyển từ kiểu `voucher_code`, `currency_vnd`, `bank_vn` của `generate-dataset.js` |
-| `units.json` | `npm run lint` (nguồn gốc con số) | Đơn vị tiền `vnđ`, `vnd`, `đồng`, `đ` của `provenance.js` |
+| `vocab.md` | `knowledge-digest`, `test-case-generation`, `dataset-generation` | Term suggestions for `knowledge/_glossary.md` — reviewed by the project people |
+| `risks.md` | `requirement-risk-summary`, `viewpoint-selection` | Industry risks ⇒ `OQ` questions, viewpoint candidates |
+| `rule-patterns.md` | `missing-rule-06w` | Rule families that are often missing ⇒ `MR` questions, never a `BR` |
+| `conflict_topics.json` | `npm run knowledge:conflicts` | Moved from `DEFAULT_TOPICS` of `conflict-detector.js` |
+| `datagen.json` | `npm run data:gen` | Moved from the `voucher_code`, `currency_vnd`, `bank_vn` types of `generate-dataset.js` |
+| `units.json` | `npm run lint` (origin of numbers) | The currency units `vnđ`, `vnd`, `đồng`, `đ` from `provenance.js` |

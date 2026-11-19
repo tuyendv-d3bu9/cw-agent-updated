@@ -1,23 +1,23 @@
-# Họ quy tắc hay bị thiếu · banking-payments
+# Rule families that are often missing · banking-payments
 
-> Danh sách nhắc cho ma trận 06W (QA_STANDARD §4). Một họ quy tắc ở đây **không phải rule**: thấy tài liệu thiếu ⇒
-> câu hỏi `MR` ở 02, không bao giờ thành `BR` (QA_STANDARD §10.3). Chỉ dùng chỗ giữ chỗ trung tính (`<field>`,
-> `<trạng thái>`, `<ngưỡng>`) — không ghi giá trị, ngưỡng hay chữ thông báo cụ thể.
-> Nguồn `Unknown` = kinh nghiệm chung của ngành, chưa có URL đã kiểm.
+> A reminder list for the 06W matrix (QA_STANDARD §4). A rule family here is **not a rule**: if the documents lack it ⇒
+> an `MR` question in 02, never a `BR` (QA_STANDARD §10.3). Use only neutral placeholders (`<field>`,
+> `<state>`, `<threshold>`) — never concrete values, thresholds or message texts.
+> Source `Unknown` = general industry experience, no verified URL yet.
 
-| Mục | Họ quy tắc | Nhóm 06W | Câu hỏi khung (trung tính) | Nguồn |
+| Key | Rule family | 06W group | Template question (neutral) | Source |
 |---|---|---|---|---|
-| state-transition-reversal | Chuyển trạng thái ngược / huỷ / hoàn | W2 | Từ `<trạng thái A>`, có được chuyển về `<trạng thái B>` hoặc `<reverse>` không, bởi ai? | Unknown |
-| idempotency-duplicate | Chống gửi trùng một lệnh | W2 | Hai lệnh giống nhau trong `<khoảng thời gian>` được coi là một hay hai? | Unknown |
-| cut-off-time | Giờ chốt, ngày làm việc, múi giờ | W4 | Lệnh gửi sau `<cut-off>` hoặc vào ngày nghỉ được xử lý khi nào? | Unknown |
-| rounding-precision | Làm tròn và độ chính xác của số tiền | W3 | `<amount>` làm tròn theo hướng nào, mấy chữ số thập phân, ở bước nào? | Unknown |
-| limits-per-period | Hạn mức theo giao dịch / ngày / kỳ | W1 | `<limit>` áp cho đối tượng nào, tính theo `<kỳ>` nào, vượt thì xử lý ra sao? | Unknown |
-| maker-checker | Tạo - duyệt tách vai | W5 | `<action>` nào cần người duyệt khác người tạo, và duyệt nhiều cấp theo `<ngưỡng>` nào? | Unknown |
-| reconciliation | Đối soát với đối tác / sao kê | W3 | Khoản lệch trong đối soát với `<partner>` được xử lý theo quy trình và thời hạn nào? | Unknown |
-| fee-and-fx | Phí và quy đổi ngoại tệ | W3 | `<fee>` tính trên đối tượng nào, và `<fx-rate>` lấy ở thời điểm nào? | Unknown |
-| authentication-step-up | Xác thực bổ sung theo rủi ro | W2 | Khi `<điều kiện>` xảy ra, có yêu cầu xác thực thêm không, và thất bại `<n>` lần thì sao? | Unknown |
-| status-visibility-timeout | Trạng thái chưa rõ khi quá thời gian chờ | W4 | Khi không có phản hồi sau `<timeout>`, `<transaction>` hiển thị trạng thái nào cho người dùng? | Unknown |
-| data-masking-retention | Che dữ liệu nhạy cảm và thời hạn lưu | W6 | `<field>` được che / lưu bao lâu ở từng nơi (màn hình, log, export)? | https://www.pcisecuritystandards.org/standards/pci-dss/ |
-| audit-trace | Truy vết thao tác | W6 | Thao tác `<action>` ghi lại những gì và ai được xem nhật ký? | Unknown |
-| aml-kyc-trigger | Điều kiện kích hoạt kiểm tra AML/KYC (local regulation) | W2 | Điều kiện nào đưa `<transaction>` / `<customer>` vào diện xem xét, và trạng thái trong lúc chờ là gì? | Unknown |
-| partial-refund | Hoàn một phần / nhiều lần | W2 | Tổng các lần hoàn có bị chặn bởi `<amount>` gốc không, và phí có hoàn theo không? | Unknown |
+| state-transition-reversal | Reverse state transitions / cancellation / refund | W2 | From `<state A>`, may it move back to `<state B>` or be `<reverse>`d, and by whom? | Unknown |
+| idempotency-duplicate | Preventing duplicate submission of an instruction | W2 | Are two identical instructions within `<time window>` treated as one or two? | Unknown |
+| cut-off-time | Cut-off time, business days, time zones | W4 | When is an instruction sent after `<cut-off>` or on a holiday processed? | Unknown |
+| rounding-precision | Rounding and precision of amounts | W3 | In which direction, to how many decimals, and at which step is `<amount>` rounded? | Unknown |
+| limits-per-period | Limits per transaction / day / period | W1 | To whom does `<limit>` apply, over which `<period>` is it computed, and how is an excess handled? | Unknown |
+| maker-checker | Separated create - approve roles | W5 | Which `<action>`s need an approver other than the creator, and at which `<threshold>` does multi-level approval apply? | Unknown |
+| reconciliation | Reconciliation with partners / statements | W3 | By which procedure and deadline are reconciliation differences with `<partner>` handled? | Unknown |
+| fee-and-fx | Fees and currency conversion | W3 | On what is `<fee>` computed, and at which moment is `<fx-rate>` taken? | Unknown |
+| authentication-step-up | Risk-based additional authentication | W2 | When `<condition>` occurs, is additional authentication required, and what happens after `<n>` failures? | Unknown |
+| status-visibility-timeout | Unknown status after a timeout | W4 | When there is no response after `<timeout>`, which status of `<transaction>` is shown to the user? | Unknown |
+| data-masking-retention | Masking of sensitive data and retention periods | W6 | How is `<field>` masked / how long is it kept in each place (screen, log, export)? | https://www.pcisecuritystandards.org/standards/pci-dss/ |
+| audit-trace | Operation traceability | W6 | What does the `<action>` operation record, and who may view the log? | Unknown |
+| aml-kyc-trigger | Conditions that trigger an AML/KYC check (local regulation) | W2 | Which conditions put `<transaction>` / `<customer>` under review, and what is the status while waiting? | Unknown |
+| partial-refund | Partial / multiple refunds | W2 | Is the total of the refunds capped by the original `<amount>`, and is the fee refunded too? | Unknown |

@@ -1,26 +1,26 @@
-# Rủi ro ngành · healthcare
+# Industry risks · healthcare
 
-> Checklist. Mỗi dòng chỉ được thành: câu hỏi `OQ` (01) → `MR` (02), hoặc ứng viên viewpoint (03) khi đã có mã nguồn
-> của dự án. Không phải rủi ro `RK` của tính năng (QA_STANDARD §10.3). Tham chiếu một dòng: `[DOMAIN] healthcare/risks.md#<mục>`.
-> Cột đặc tính ghi đúng tên trong ISO/IEC 25010:2023, đối chiếu tại https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 (https://www.iso.org/standard/78176.html chưa mở được).
-> Rủi ro tuân thủ / truy vết xếp vào Security (Accountability, Non-repudiation, Integrity theo trang đối chiếu).
+> Checklist. Each row may only become: an `OQ` question (01) → `MR` (02), or a viewpoint candidate (03) once the project has a
+> source code. It is not a feature `RK` risk (QA_STANDARD §10.3). Referencing a row: `[DOMAIN] healthcare/risks.md#<key>`.
+> The characteristic column uses the exact names of ISO/IEC 25010:2023, checked at https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 (https://www.iso.org/standard/78176.html could not be opened).
+> Compliance / traceability risks are filed under Security (Accountability, Non-repudiation, Integrity per the reference page).
 
-| Mục | Rủi ro (một câu) | Đặc tính ISO/IEC 25010:2023 | Dấu hiệu tính năng có chạm tới | Câu hỏi đóng gợi ý cho BA | Nguồn |
+| Key | Risk (one sentence) | ISO/IEC 25010:2023 characteristic | Signal that a feature touches it | Suggested closed question for the BA | Source |
 |---|---|---|---|---|---|
-| unauthorized-record-access | Người không đúng vai trò xem được hồ sơ `<entity>` | Security | Phân vai, màn hình xem hồ sơ | `<role>` có được xem `<field>` của `<entity>` không? | Unknown |
-| access-audit-trail | Truy cập / sửa dữ liệu không để lại vết truy được | Security | Nhật ký, báo cáo kiểm toán | Mọi lần `<action>` trên `<entity>` có ghi nhật ký (ai, khi nào) không? | Unknown |
-| break-glass-abuse | Truy cập khẩn cấp bị lạm dụng hoặc không bị soát | Security | Chức năng vượt quyền | Truy cập khẩn cấp có bắt buộc nhập lý do và bị soát lại không? | Unknown |
-| consent-not-enforced | Hệ thống bỏ qua việc người bệnh từ chối / rút `<consent>` | Security | Chia sẻ dữ liệu, thông báo | Khi `<consent>` ở `<state-A>`, `<action>` có bị chặn không? | Unknown |
-| phi-in-logs-or-exports | Dữ liệu định danh lộ ở log, email, tệp xuất | Security | Xuất tệp, thông báo, log | `<field>` có bị che / loại khỏi `<output>` không? | Unknown |
-| record-integrity-after-amend | Đính chính làm mất bản gốc hoặc không truy được | Security | Lịch sử phiên bản | Bản gốc của `<entity>` có còn xem được sau đính chính không? | Unknown |
-| data-retention-disposal | Giữ hoặc xoá dữ liệu sai thời hạn quy định | Security | Lưu trữ, xoá, ẩn danh | `<entity>` giữ bao lâu và xử lý thế nào khi hết hạn? | Unknown |
-| wrong-patient-match | Gộp nhầm hoặc tách nhầm hồ sơ người bệnh | Functional suitability | Đăng ký, tìm kiếm, gộp hồ sơ | Hai hồ sơ trùng `<field>` có bị coi là một người không? | Unknown |
-| record-deletion-vs-amend | Xoá làm mất lịch sử thay vì đính chính | Functional suitability | Nút xoá / sửa hồ sơ | `<entity>` đã `<state-A>` thì đính chính, xoá, hay không cho sửa? | Unknown |
-| clinical-billing-state-drift | Trạng thái lâm sàng và thanh toán lệch nhau | Functional suitability | Encounter có claim | Khi `<entity>` sang `<state-A>`, claim liên quan có đổi trạng thái không? | https://www.hl7.org/fhir/claim.html |
-| unit-conversion-error | Nhầm đơn vị hoặc làm tròn giá trị đo | Functional suitability | Giá trị đo, liều, nhập tay | `<field>` nhận những đơn vị nào và có tự quy đổi không? | Unknown |
-| timezone-misplacement | Thời điểm lượt khám lệch múi giờ hoặc ngày | Functional suitability | Ngày giờ hẹn, khám, báo cáo | `<datetime>` lưu theo múi giờ nào, hiển thị theo múi giờ nào? | Unknown |
-| duplicate-submission | Gửi lặp một yêu cầu tạo ra bản ghi đôi | Reliability | Đặt lịch, gửi claim, bấm nhiều lần | Gửi lại `<action>` có tạo bản ghi thứ hai không? | Unknown |
-| concurrent-edit-conflict | Hai người sửa cùng hồ sơ, bản sau ghi đè bản trước | Reliability | Sửa đồng thời | Hai người sửa `<entity>` cùng lúc thì xử lý ra sao? | Unknown |
-| downtime-continuity | Không truy cập được hồ sơ khi hệ thống ngừng | Reliability | Chức năng cần dùng ngay khi khám | Có phương án dùng `<function>` khi hệ thống ngừng không? | Unknown |
-| interface-message-loss | Mất hoặc lặp thông điệp với hệ thống ngoài | Compatibility | Tích hợp lab, bên chi trả | Khi `<system>` không phản hồi, `<entity>` ở trạng thái nào? | Unknown |
-| order-entry-error-protection | Giao diện dễ nhập nhầm `<field>` quan trọng | Interaction capability | Form chỉ định, nhập liều | Thao tác `<action>` có bước xác nhận trước khi lưu không? | https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 |
+| unauthorized-record-access | Someone without the right role can view the `<entity>` record | Security | Role assignment, record viewing screens | May `<role>` view the `<field>` of `<entity>`? | Unknown |
+| access-audit-trail | Data access / edits leave no traceable record | Security | Logs, audit reports | Is every `<action>` on `<entity>` logged (who, when)? | Unknown |
+| break-glass-abuse | Emergency access is abused or not reviewed | Security | Permission-override functions | Does emergency access require a reason to be entered, and is it reviewed afterwards? | Unknown |
+| consent-not-enforced | The system ignores a patient refusing / withdrawing `<consent>` | Security | Data sharing, notifications | When `<consent>` is in `<state-A>`, is `<action>` blocked? | Unknown |
+| phi-in-logs-or-exports | Identifying data exposed in logs, emails, exported files | Security | File exports, notifications, logs | Is `<field>` masked / removed from `<output>`? | Unknown |
+| record-integrity-after-amend | An amendment loses the original or makes it untraceable | Security | Version history | Can the original of `<entity>` still be viewed after an amendment? | Unknown |
+| data-retention-disposal | Data kept or deleted outside the required retention period | Security | Archiving, deletion, anonymisation | How long is `<entity>` kept and how is it handled when the period ends? | Unknown |
+| wrong-patient-match | Patient records wrongly merged or wrongly split | Functional suitability | Registration, search, record merging | Are two records with the same `<field>` treated as one person? | Unknown |
+| record-deletion-vs-amend | Deletion loses the history instead of amending it | Functional suitability | Delete / edit record buttons | Once `<entity>` is `<state-A>`, is it amended, deleted, or locked against edits? | Unknown |
+| clinical-billing-state-drift | Clinical and billing statuses diverge | Functional suitability | Encounters with a claim | When `<entity>` moves to `<state-A>`, does the related claim change status? | https://www.hl7.org/fhir/claim.html |
+| unit-conversion-error | Wrong unit or rounding of measured values | Functional suitability | Measured values, doses, manual entry | Which units does `<field>` accept, and is conversion automatic? | Unknown |
+| timezone-misplacement | Encounter times shifted by time zone or date | Functional suitability | Appointment, visit, report dates and times | In which time zone is `<datetime>` stored, and in which is it displayed? | Unknown |
+| duplicate-submission | Resubmitting a request creates a duplicate record | Reliability | Scheduling, claim submission, repeated clicks | Does resubmitting `<action>` create a second record? | Unknown |
+| concurrent-edit-conflict | Two people edit the same record and the later one overwrites the earlier | Reliability | Concurrent editing | How is it handled when two people edit `<entity>` at the same time? | Unknown |
+| downtime-continuity | Records cannot be accessed while the system is down | Reliability | Functions needed immediately during a visit | Is there a way to use `<function>` while the system is down? | Unknown |
+| interface-message-loss | Messages with external systems are lost or duplicated | Compatibility | Lab and payer integrations | When `<system>` does not respond, which state is `<entity>` in? | Unknown |
+| order-entry-error-protection | The UI makes it easy to mis-enter an important `<field>` | Interaction capability | Order forms, dose entry | Does the `<action>` operation have a confirmation step before saving? | https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 |
