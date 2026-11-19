@@ -1,9 +1,9 @@
-# Họ quy tắc hay bị thiếu · <to be filled: pack-id>
+# Rule families that are often missing · <to be filled: pack-id>
 
-> Danh sách nhắc cho ma trận 06W (QA_STANDARD §4). Một họ quy tắc ở đây **không phải rule**: thấy tài liệu thiếu ⇒
-> câu hỏi `MR` ở 02, không bao giờ thành `BR` (QA_STANDARD §10.3). Chỉ dùng chỗ giữ chỗ trung tính (`<field>`,
-> `<trạng thái>`, `<ngưỡng>`) — không ghi giá trị, ngưỡng hay chữ thông báo cụ thể.
+> A reminder list for the 06W matrix (QA_STANDARD §4). A rule family here is **not a rule**: if the documents lack it ⇒
+> an `MR` question in 02, never a `BR` (QA_STANDARD §10.3). Use only neutral placeholders (`<field>`,
+> `<state>`, `<threshold>`) — never concrete values, thresholds or message texts.
 
-| Mục | Họ quy tắc | Nhóm 06W | Câu hỏi khung (trung tính) | Nguồn |
+| Key | Rule family | 06W group | Template question (neutral) | Source |
 |---|---|---|---|---|
-| <to be filled: key-kebab> | <to be filled> | <to be filled: W1–W6> | <to be filled: vd "Khi `<thực thể>` ở `<trạng thái>`, có được `<hành động>` không?"> | <to be filled: source URL, hoặc `Unknown`> |
+| <to be filled: key-kebab> | <to be filled> | <to be filled: W1–W6> | <to be filled: e.g. "When `<entity>` is in `<state>`, may it `<action>`?"> | <to be filled: source URL, or `Unknown`> |

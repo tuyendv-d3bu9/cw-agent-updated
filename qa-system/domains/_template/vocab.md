@@ -1,19 +1,19 @@
-# Từ vựng ngành · <to be filled: pack-id>
+# Industry vocabulary · <to be filled: pack-id>
 
-> Gợi ý thuật ngữ, không phải định nghĩa của dự án. Skill chép sang `knowledge/_glossary.md` với nhãn `[DOMAIN]`,
-> người dự án duyệt lại theo tài liệu thật (QA_STANDARD §10.3). Nghĩa trong tài liệu dự án luôn thắng.
+> Term suggestions, not the project's definitions. Skills copy them to `knowledge/_glossary.md` with the `[DOMAIN]` label,
+> and the project people review them against the real documents (QA_STANDARD §10.3). The meaning in the project's documents always wins.
 
-## 1. Vai trò (actor)
-| Mục | Thuật ngữ | Nghĩa ngắn | Nguồn |
+## 1. Roles (actors)
+| Key | Term | Short meaning | Source |
 |---|---|---|---|
-| <to be filled: key-kebab> | <to be filled> | <to be filled> | <to be filled: source URL, hoặc `Unknown`> |
+| <to be filled: key-kebab> | <to be filled> | <to be filled> | <to be filled: source URL, or `Unknown`> |
 
-## 2. Thực thể
-| Mục | Thuật ngữ | Nghĩa ngắn | Nguồn |
+## 2. Entities
+| Key | Term | Short meaning | Source |
 |---|---|---|---|
-| <to be filled: key-kebab> | <to be filled> | <to be filled> | <to be filled: source URL, hoặc `Unknown`> |
+| <to be filled: key-kebab> | <to be filled> | <to be filled> | <to be filled: source URL, or `Unknown`> |
 
-## 3. Trạng thái & vòng đời
-| Mục | Thực thể | Các trạng thái (theo thứ tự) | Nguồn |
+## 3. States & lifecycles
+| Key | Entity | States (in order) | Source |
 |---|---|---|---|
-| <to be filled: key-kebab> | <to be filled> | <to be filled: `<trạng thái A>` → `<trạng thái B>`> | <to be filled: source URL, hoặc `Unknown`> |
+| <to be filled: key-kebab> | <to be filled> | <to be filled: `<state A>` → `<state B>`> | <to be filled: source URL, or `Unknown`> |

@@ -1,27 +1,27 @@
-# Rủi ro ngành · ecommerce-retail
+# Industry risks · ecommerce-retail
 
-> Checklist. Mỗi dòng chỉ được thành: câu hỏi `OQ` (01) → `MR` (02), hoặc ứng viên viewpoint (03) khi đã có mã nguồn
-> của dự án. Không phải rủi ro `RK` của tính năng (QA_STANDARD §10.3). Tham chiếu một dòng: `[DOMAIN] ecommerce-retail/risks.md#<mục>`.
-> Cột đặc tính ghi đúng tên trong ISO/IEC 25010:2023, đối chiếu tại https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 (https://www.iso.org/standard/78176.html chưa mở được).
-> Rủi ro tuân thủ / truy vết xếp vào Security (Accountability, Integrity theo trang đối chiếu).
+> Checklist. Each row may only become: an `OQ` question (01) → `MR` (02), or a viewpoint candidate (03) once the project has a
+> source code. It is not a feature `RK` risk (QA_STANDARD §10.3). Referencing a row: `[DOMAIN] ecommerce-retail/risks.md#<key>`.
+> The characteristic column uses the exact names of ISO/IEC 25010:2023, checked at https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 (https://www.iso.org/standard/78176.html could not be opened).
+> Compliance / traceability risks are filed under Security (Accountability, Integrity per the reference page).
 
-| Mục | Rủi ro (một câu) | Đặc tính ISO/IEC 25010:2023 | Dấu hiệu tính năng có chạm tới | Câu hỏi đóng gợi ý cho BA | Nguồn |
+| Key | Risk (one sentence) | ISO/IEC 25010:2023 characteristic | Signal that a feature touches it | Suggested closed question for the BA | Source |
 |---|---|---|---|---|---|
-| promotion-stacking-conflict | Nhiều khuyến mãi áp cùng lúc cho ra giảm sai hoặc vượt `<amount>` | Functional suitability | Mã giảm giá, khuyến mãi tự động | `<promotion-A>` và `<promotion-B>` có được áp cùng một đơn không? | Unknown |
-| discount-scope-shipping-vs-subtotal | Giảm giá áp nhầm vào phí ship hay tiền hàng | Functional suitability | Mã giảm, freeship | `<promotion>` giảm trên `<subtotal>`, `<shipping-fee>`, hay cả hai? | Unknown |
-| guest-vs-member-eligibility | Khách vãng lai hưởng hoặc mất quyền lợi sai | Functional suitability | Mua không đăng nhập, mã thành viên | `<benefit>` có áp dụng cho khách chưa đăng nhập không? | Unknown |
-| benefit-restore-on-cancel | Huỷ đơn không hoàn (hoặc hoàn lặp) mã / điểm đã dùng | Functional suitability | Huỷ, đổi trả, hoàn tiền | Khi `<order>` ở `<state-A>` bị huỷ, `<benefit>` có được hoàn không? | Unknown |
-| rounding-and-tax-mismatch | Làm tròn / thuế lệch giữa dòng hàng và tổng đơn | Functional suitability | Giá, thuế, hoá đơn | `<amount>` làm tròn ở từng dòng hay trên tổng, theo quy tắc nào? | Unknown |
-| price-change-after-add | Giá đổi sau khi thêm vào giỏ nhưng trước khi thanh toán | Functional suitability | Giỏ hàng, bước thanh toán | Giá chốt ở thời điểm thêm giỏ, vào checkout, hay lúc trả tiền? | Unknown |
-| oversell-inventory | Bán vượt tồn khi nhiều người mua cùng lúc | Reliability | Đặt hàng đồng thời, flash sale | Khi `<sku>` còn không đủ, đơn đến sau bị xử lý thế nào? | Unknown |
-| reservation-expiry | Giữ chỗ tồn kho không nhả hoặc nhả sớm | Reliability | Giỏ, thanh toán chờ | `<reservation>` hết hạn sau bao lâu và nhả khi nào? | Unknown |
-| duplicate-order-submission | Bấm hai lần hoặc gửi lại tạo hai đơn / hai lần thu | Reliability | Nút đặt hàng, callback thanh toán | Gửi lại `<action>` có tạo đơn hay khoản thu thứ hai không? | Unknown |
-| payment-state-mismatch | Trạng thái đơn và thanh toán lệch (đã thu nhưng đơn chưa xác nhận) | Reliability | Callback cổng thanh toán | Khi `<payment>` ở `<state-A>` mà `<order>` ở `<state-B>`, hệ thống xử lý ra sao? | Unknown |
-| provider-timeout | Cổng thanh toán / vận chuyển không phản hồi | Compatibility | Tích hợp bên ngoài | Khi `<provider>` quá thời gian chờ, `<order>` giữ trạng thái nào? | Unknown |
-| card-data-exposure | Dữ liệu thẻ lộ ở log, DB, email | Security | Nhập thẻ, lưu thẻ | `<system>` có được lưu `<field>` của thẻ không, và ở đâu? | https://www.pcisecuritystandards.org/ |
-| voucher-abuse | Dò mã, dùng lặp, dùng vượt giới hạn | Security | Nhập mã giảm giá | Hệ thống giới hạn số lần thử / dùng `<voucher>` bằng cách nào? | Unknown |
-| order-access-control | Người dùng xem hoặc sửa đơn của người khác | Security | Tra cứu đơn, link theo dõi | `<role>` có được xem `<order>` của người khác không? | Unknown |
-| order-audit-trail | Đổi giá, hoàn tiền, huỷ thủ công không có vết | Security | Thao tác của nhân viên | Mỗi lần `<action>` thủ công có ghi người làm và thời điểm không? | Unknown |
-| return-refund-eligibility | Hoàn tiền / đổi trả sai điều kiện, sai số tiền | Functional suitability | Đổi trả, hoàn tiền một phần | `<order>` ở `<state-A>` có được trả hàng và hoàn `<amount>` bao nhiêu? | Unknown |
-| cart-merge-on-login | Mất hoặc nhân đôi hàng khi khách đăng nhập | Functional suitability | Giỏ khách vãng bị gộp vào tài khoản | Giỏ trước đăng nhập gộp, thay thế, hay giữ riêng với giỏ của tài khoản? | Unknown |
-| checkout-error-protection | Khách khó sửa lỗi nhập ở bước thanh toán | Interaction capability | Form địa chỉ, thanh toán | Khi `<field>` sai, khách có sửa được mà không mất giỏ không? | https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 |
+| promotion-stacking-conflict | Several promotions applied at once give a wrong discount or exceed `<amount>` | Functional suitability | Discount codes, automatic promotions | May `<promotion-A>` and `<promotion-B>` be applied to the same order? | Unknown |
+| discount-scope-shipping-vs-subtotal | A discount is wrongly applied to the shipping fee or the goods amount | Functional suitability | Discount codes, free shipping | Does `<promotion>` discount `<subtotal>`, `<shipping-fee>`, or both? | Unknown |
+| guest-vs-member-eligibility | Guest customers wrongly receive or lose benefits | Functional suitability | Checkout without login, member codes | Does `<benefit>` apply to customers who are not logged in? | Unknown |
+| benefit-restore-on-cancel | Cancelling an order does not restore (or restores twice) the codes / points used | Functional suitability | Cancellation, returns, refunds | When an `<order>` in `<state-A>` is cancelled, is `<benefit>` restored? | Unknown |
+| rounding-and-tax-mismatch | Rounding / tax differs between line items and the order total | Functional suitability | Prices, tax, invoices | Is `<amount>` rounded per line or on the total, and by which rule? | Unknown |
+| price-change-after-add | The price changes after adding to the cart but before payment | Functional suitability | Cart, checkout step | Is the price fixed when added to the cart, at checkout, or at payment? | Unknown |
+| oversell-inventory | Selling beyond stock when many people buy at the same time | Reliability | Concurrent orders, flash sales | When `<sku>` stock is insufficient, how is the later order handled? | Unknown |
+| reservation-expiry | An inventory reservation is not released, or is released too early | Reliability | Cart, pending payment | How long until `<reservation>` expires, and when is it released? | Unknown |
+| duplicate-order-submission | A double click or a resubmission creates two orders / two charges | Reliability | Order button, payment callback | Does resubmitting `<action>` create a second order or charge? | Unknown |
+| payment-state-mismatch | Order and payment statuses diverge (charged but the order is not confirmed) | Reliability | Payment gateway callback | When `<payment>` is in `<state-A>` while `<order>` is in `<state-B>`, how does the system handle it? | Unknown |
+| provider-timeout | The payment / shipping gateway does not respond | Compatibility | External integrations | When `<provider>` times out, which state does `<order>` keep? | Unknown |
+| card-data-exposure | Card data exposed in logs, the DB or emails | Security | Card entry, saved cards | May `<system>` store the card's `<field>`, and where? | https://www.pcisecuritystandards.org/ |
+| voucher-abuse | Code guessing, repeated use, use beyond the limit | Security | Discount code entry | How does the system limit the number of attempts / uses of `<voucher>`? | Unknown |
+| order-access-control | A user views or edits someone else's order | Security | Order lookup, tracking link | May `<role>` view another person's `<order>`? | Unknown |
+| order-audit-trail | Manual price changes, refunds or cancellations leave no trace | Security | Staff actions | Does each manual `<action>` record who did it and when? | Unknown |
+| return-refund-eligibility | Refunds / returns under the wrong conditions or for the wrong amount | Functional suitability | Returns, partial refunds | May an `<order>` in `<state-A>` be returned, and how much `<amount>` is refunded? | Unknown |
+| cart-merge-on-login | Items lost or duplicated when the guest logs in | Functional suitability | Guest cart merged into the account | Is the pre-login cart merged with, replacing, or kept separate from the account's cart? | Unknown |
+| checkout-error-protection | Customers struggle to correct input errors at the checkout step | Interaction capability | Address and payment forms | When `<field>` is wrong, can the customer fix it without losing the cart? | https://iso25000.com/index.php/en/iso-25000-standards/iso-25010 |

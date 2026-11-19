@@ -1,46 +1,47 @@
-# Từ vựng ngành · healthcare
+# Industry vocabulary · healthcare
 
-> Gợi ý thuật ngữ, không phải định nghĩa của dự án. Skill chép sang `knowledge/_glossary.md` với nhãn `[DOMAIN]`,
-> người dự án duyệt lại theo tài liệu thật (QA_STANDARD §10.3). Nghĩa trong tài liệu dự án luôn thắng.
-> Tên thực thể theo từ vựng HL7 FHIR (https://www.hl7.org/fhir/overview.html). Thuật ngữ không kiểm được ghi `Unknown` ở cột Nguồn.
+> Term suggestions, not the project's definitions. Skills copy them to `knowledge/_glossary.md` with the `[DOMAIN]` label,
+> and the project people review them against the real documents (QA_STANDARD §10.3). The meaning in the project's documents always wins.
+> Entity names follow the HL7 FHIR vocabulary (https://www.hl7.org/fhir/overview.html). Terms that could not be verified record `Unknown` in the Source column.
+> The Term column keeps the Vietnamese equivalent in brackets so the term can be spotted in Vietnamese documents.
 
-## 1. Vai trò (actor)
-| Mục | Thuật ngữ | Nghĩa ngắn | Nguồn |
+## 1. Roles (actors)
+| Key | Term | Short meaning | Source |
 |---|---|---|---|
-| patient | Patient (người bệnh) | Người nhận dịch vụ chăm sóc | https://www.hl7.org/fhir/overview.html |
-| practitioner | Practitioner (nhân sự y tế) | Người cung cấp dịch vụ chăm sóc | https://www.hl7.org/fhir/overview.html |
-| front-desk | Registrar (lễ tân, đăng ký) | Người đăng ký, đặt lịch | Unknown |
-| billing-staff | Billing staff (nhân viên thanh toán) | Người lập và theo dõi claim | Unknown |
-| payer | Payer (bên chi trả) | Bảo hiểm / đơn vị chi trả dịch vụ | Unknown |
-| privacy-officer | Privacy officer / auditor (phụ trách quyền riêng tư) | Người soát nhật ký truy cập | Unknown |
+| patient | Patient (người bệnh) | The person receiving care | https://www.hl7.org/fhir/overview.html |
+| practitioner | Practitioner (nhân sự y tế) | The person providing care | https://www.hl7.org/fhir/overview.html |
+| front-desk | Registrar (lễ tân, đăng ký) | The person handling registration and scheduling | Unknown |
+| billing-staff | Billing staff (nhân viên thanh toán) | The person preparing and tracking claims | Unknown |
+| payer | Payer (bên chi trả) | The insurer / organisation paying for the services | Unknown |
+| privacy-officer | Privacy officer / auditor (phụ trách quyền riêng tư) | The person reviewing the access logs | Unknown |
 
-## 2. Thực thể
-| Mục | Thuật ngữ | Nghĩa ngắn | Nguồn |
+## 2. Entities
+| Key | Term | Short meaning | Source |
 |---|---|---|---|
-| patient-record | Patient (hồ sơ hành chính) | Thông tin hành chính của người bệnh | https://www.hl7.org/fhir/overview.html |
-| encounter | Encounter (lượt khám) | Một lần tiếp xúc giữa người bệnh và cơ sở y tế | https://www.hl7.org/fhir/encounter.html |
-| observation | Observation (quan sát / kết quả) | Một phép đo hoặc nhận định | https://www.hl7.org/fhir/overview.html |
-| claim | Claim (yêu cầu thanh toán) | Yêu cầu bồi hoàn gửi bên chi trả | https://www.hl7.org/fhir/claim.html |
-| medication-request | MedicationRequest (chỉ định thuốc) | Chỉ định thuốc cho người bệnh | https://www.hl7.org/fhir/overview.html |
-| appointment | Appointment (lịch hẹn) | Lịch hẹn giữa người bệnh và nhân sự | https://www.hl7.org/fhir/overview.html |
-| consent | Consent (đồng ý) | Ghi nhận đồng ý / từ chối của người bệnh | https://www.hl7.org/fhir/overview.html |
-| audit-event | AuditEvent (nhật ký truy cập) | Ghi ai truy cập dữ liệu nào, khi nào | https://www.hl7.org/fhir/overview.html |
-| patient-identifier | Patient identifier / MRN (mã người bệnh) | Mã định danh người bệnh trong một cơ sở | Unknown |
-| unit-of-measure | Unit of measure (đơn vị đo) | Đơn vị đi kèm giá trị đo / liều | Unknown |
-| break-glass | Break-glass access (truy cập khẩn cấp) | Vượt quyền thường lệ nhưng có ghi vết | Unknown |
-| amendment | Amendment (đính chính) | Sửa nội dung nhưng giữ lịch sử | Unknown |
-| duplicate-record | Duplicate record (hồ sơ trùng) | Một người có nhiều hồ sơ | Unknown |
-| merge-records | Merge (gộp hồ sơ) | Hợp nhất các hồ sơ trùng | Unknown |
-| referral | Referral (chuyển tuyến / giới thiệu) | Chuyển người bệnh sang đơn vị khác | Unknown |
-| discharge | Discharge (ra viện / kết thúc lượt khám) | Kết thúc một lượt khám | https://www.hl7.org/fhir/encounter.html |
-| entered-in-error | Entered-in-error (nhập nhầm) | Bản ghi bị đánh dấu nhập sai | https://www.hl7.org/fhir/encounter.html |
-| synthetic-data | Synthetic data (dữ liệu giả) | Dữ liệu thử không gắn với người thật | Unknown |
+| patient-record | Patient (hồ sơ hành chính) | The patient's administrative information | https://www.hl7.org/fhir/overview.html |
+| encounter | Encounter (lượt khám) | One contact between the patient and the healthcare facility | https://www.hl7.org/fhir/encounter.html |
+| observation | Observation (quan sát / kết quả) | A measurement or an assessment | https://www.hl7.org/fhir/overview.html |
+| claim | Claim (yêu cầu thanh toán) | A reimbursement request sent to the payer | https://www.hl7.org/fhir/claim.html |
+| medication-request | MedicationRequest (chỉ định thuốc) | A medication order for the patient | https://www.hl7.org/fhir/overview.html |
+| appointment | Appointment (lịch hẹn) | An appointment between the patient and staff | https://www.hl7.org/fhir/overview.html |
+| consent | Consent (đồng ý) | A record of the patient's consent / refusal | https://www.hl7.org/fhir/overview.html |
+| audit-event | AuditEvent (nhật ký truy cập) | Records who accessed which data, and when | https://www.hl7.org/fhir/overview.html |
+| patient-identifier | Patient identifier / MRN (mã người bệnh) | The patient's identifier within one facility | Unknown |
+| unit-of-measure | Unit of measure (đơn vị đo) | The unit attached to a measured value / dose | Unknown |
+| break-glass | Break-glass access (truy cập khẩn cấp) | Overriding the usual permissions, with a recorded trace | Unknown |
+| amendment | Amendment (đính chính) | Changing content while keeping the history | Unknown |
+| duplicate-record | Duplicate record (hồ sơ trùng) | One person with several records | Unknown |
+| merge-records | Merge (gộp hồ sơ) | Combining duplicate records | Unknown |
+| referral | Referral (chuyển tuyến / giới thiệu) | Transferring the patient to another unit | Unknown |
+| discharge | Discharge (ra viện / kết thúc lượt khám) | Ending an encounter | https://www.hl7.org/fhir/encounter.html |
+| entered-in-error | Entered-in-error (nhập nhầm) | A record marked as entered in error | https://www.hl7.org/fhir/encounter.html |
+| synthetic-data | Synthetic data (dữ liệu giả) | Test data not linked to a real person | Unknown |
 
-## 3. Trạng thái & vòng đời
-| Mục | Thực thể | Các trạng thái (theo thứ tự) | Nguồn |
+## 3. States & lifecycles
+| Key | Entity | States (in order) | Source |
 |---|---|---|---|
-| encounter-status | Encounter | Mã FHIR, không có thứ tự cứng: `planned`, `in-progress`, `on-hold`, `discharged`, `completed`, `cancelled`, `discontinued`, `entered-in-error`, `unknown` | https://www.hl7.org/fhir/encounter.html |
-| claim-status | Claim | Mã FHIR: `active`, `cancelled`, `draft`, `entered-in-error` | https://www.hl7.org/fhir/claim.html |
-| observation-status | Observation | `registered` → `preliminary` → `final` → `amended` (mới thấy 4 mã đầu; đầy đủ: Unknown) | https://www.hl7.org/fhir/observation.html |
-| appointment-lifecycle | Appointment | `<trạng thái A>` → `<trạng thái B>`: Unknown | Unknown |
-| record-lifecycle | Patient record | `<hoạt động>` → `<đã gộp / ngưng dùng>`: Unknown | Unknown |
+| encounter-status | Encounter | FHIR codes, no fixed order: `planned`, `in-progress`, `on-hold`, `discharged`, `completed`, `cancelled`, `discontinued`, `entered-in-error`, `unknown` | https://www.hl7.org/fhir/encounter.html |
+| claim-status | Claim | FHIR codes: `active`, `cancelled`, `draft`, `entered-in-error` | https://www.hl7.org/fhir/claim.html |
+| observation-status | Observation | `registered` → `preliminary` → `final` → `amended` (only the first 4 codes were seen; the full set: Unknown) | https://www.hl7.org/fhir/observation.html |
+| appointment-lifecycle | Appointment | `<state A>` → `<state B>`: Unknown | Unknown |
+| record-lifecycle | Patient record | `<active>` → `<merged / inactive>`: Unknown | Unknown |
