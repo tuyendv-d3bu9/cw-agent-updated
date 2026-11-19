@@ -12,9 +12,14 @@
 1. **Mã học viên** do giảng viên cấp (ví dụ `hv001`).
 2. **Tài khoản GitHub** đã được giảng viên thêm vào repository bài thi
    (bạn gửi tên tài khoản GitHub cho giảng viên → mở email/thông báo GitHub → bấm **Accept invitation**).
-3. Máy đã cài **Git** (https://git-scm.com/downloads) và **Node.js LTS** (https://nodejs.org, bản 22 hoặc 24).
-4. Máy đã **đăng nhập GitHub cho Git**. Cách dễ nhất: cài GitHub CLI (https://cli.github.com), rồi chạy
-   `gh auth login` và `gh auth setup-git` — tự bạn đăng nhập trên trình duyệt.
+3. Máy đã cài **Git** (https://git-scm.com/downloads) và **Node.js** bản 20 trở lên
+   (khuyên dùng bản LTS mới nhất từ https://nodejs.org).
+4. Máy đã **đăng nhập GitHub cho Git**:
+   - **Windows:** Git for Windows có sẵn Git Credential Manager — lần push đầu tiên sẽ mở cửa sổ trình duyệt
+     để bạn đăng nhập GitHub. Chỉ cần bấm đăng nhập.
+   - **macOS / Linux (hoặc nếu cách trên không hiện):** cài GitHub CLI (https://cli.github.com), rồi chạy
+     `gh auth login` và `gh auth setup-git` — tự bạn đăng nhập trên trình duyệt.
+
    **Không bao giờ gửi mật khẩu hay token vào khung chat.**
 
 Bạn không cần biết lệnh Git, nhánh (branch) hay JSON. Trợ lý AI sẽ làm và báo lại kết quả thật.
@@ -29,7 +34,9 @@ hoặc ngắn hơn:
 
 > Tôi là học viên hv001. Hãy thiết lập bài thi cuối khóa cho tôi theo file hướng dẫn.
 
-Chạy lại câu này bao nhiêu lần cũng được: bài đã làm **không bị xoá hay ghi đè**.
+Chạy lại câu này bao nhiêu lần cũng được: bài đã làm **không bị xoá hay ghi đè**. START chỉ commit các file
+nộp bài mà nó vừa tạo lần đầu; phần bạn đang làm dở được giữ nguyên trên máy và chỉ được đưa lên GitHub khi
+bạn dùng lệnh SUBMIT.
 
 ### Nộp bài (SUBMIT)
 
@@ -49,7 +56,11 @@ chót là bài được chấm.
 | `NOT_AUTHENTICATED` | Máy chưa đăng nhập GitHub → làm bước 4 ở trên, rồi START lại. |
 | `NO_WRITE_ACCESS` | Tài khoản chưa được thêm vào repository → báo giảng viên, chấp nhận lời mời, rồi START lại. |
 | `GIT_IDENTITY` | Trợ lý sẽ hỏi họ tên + email GitHub của bạn (không phải mật khẩu). |
-| `DIVERGED`, `STARTER_MISMATCH`, `NOT_FROM_STARTER` | Dừng lại, gửi thông báo cho giảng viên. Không xoá thư mục. |
+| `BAD_STUDENT_ID` | Mã học viên sai dạng (chỉ chữ thường, số, dấu gạch ngang, không dấu cách) → gửi lại đúng mã. |
+| `NETWORK` | Mất mạng hoặc bị chặn GitHub → kiểm tra Wi-Fi/VPN rồi chạy lại. |
+| `SELF_CHECK_INVALID` | Bài có lỗi chặn (ví dụ sửa nhầm file trong `INPUT/` hoặc `EXAM/brief/`). Chưa có gì được push. Trợ lý sẽ chỉ lệnh khôi phục — đồng ý thì nó chạy. |
+| `NOT_ON_STUDENT_BRANCH` | Thư mục đang không ở nhánh bài thi → gửi lại câu lệnh START. |
+| `DIRTY_OTHER_BRANCH`, `BEHIND_WITH_CHANGES`, `DIVERGED`, `STARTER_MISMATCH`, `NOT_FROM_STARTER`, `PUSH_FAILED` | Dừng lại, gửi thông báo cho giảng viên. **Không xoá thư mục, không làm lại từ đầu.** |
 
 ---
 
@@ -91,7 +102,8 @@ Run every command yourself; replace `<WS>` with the absolute workspace path and 
 
 1. **Student id.** Take it from the student's message. Lower-case it. It must match
    `^[a-z0-9]+(-[a-z0-9]+)*$` (for example `hv001`). If it is missing or invalid, ask the student for it and stop.
-2. **Tools.** Run `git --version`, `node --version`, `npm --version`. Node must be ≥ 20. If one is missing,
+2. **Tools.** Run `git --version`, `node --version`, `npm --version`. Node must be ≥ 20.
+   Never use `sudo`, and do not install software yourself unless the student asks you to. If one is missing,
    tell the student what to install (Phần A, item 3) and stop.
 3. **Workspace.**
    - If `<WS>` does not exist: `git clone https://github.com/tuyendv-d3bu9/cw-agent-updated.git "<WS>"`
@@ -102,7 +114,8 @@ Run every command yourself; replace `<WS>` with the absolute workspace path and 
    git -C "<WS>" fetch origin develop
    node -e "const cp=require('child_process'),fs=require('fs'),p=require('path');const ws=process.argv[1];const src=cp.execFileSync('git',['-C',ws,'show','origin/develop:docs/exam/student-setup.js']);fs.mkdirSync(p.join(ws,'.scratch'),{recursive:true});fs.writeFileSync(p.join(ws,'.scratch','student-setup.js'),src);console.log('helper ready')" "<WS>"
    ```
-5. **Run the setup** (from `<WS>`): `node .scratch/student-setup.js start <ID>`
+5. **Run the setup** (from `<WS>`), with the id in double quotes: `node .scratch/student-setup.js start "<ID>"`
+   (`.scratch/` is excluded from git locally by the helper; it is never committed).
 
    It does, in order, and stops with a clear Vietnamese message at the first problem:
    validate the id → check tools → verify the origin is the official repository → fetch and verify the
@@ -110,7 +123,8 @@ Run every command yourself; replace `<WS>` with the absolute workspace path and 
    `exams/<ID>` from the starter, **or** resume it (local or GitHub) without losing work → create
    `EXAM/submission.json`, `EXAM/DECISIONS.md`, `EXAM/AI_USE.md` from the official templates **only if they
    are missing** (student id, branch and starter commit filled in) → `npm ci` → `npm run exam:check` →
-   commit **only those three files** → push `exams/<ID>` → confirm it on GitHub with `git ls-remote`.
+   commit **only the files it just created** (never the student's in-progress edits) → push `exams/<ID>` →
+   confirm it on GitHub with `git ls-remote`.
 6. **Read the last line** `RESULT {...}`:
    - `"status":"SUCCESS"` → tell the student (in Vietnamese) the branch, the GitHub link (`facts.web`), the
      self-check status, then do **B.4** (explain the three tasks) and B.5.
@@ -148,8 +162,10 @@ fills them in. Say this to the student.
    | `t2_new_agent.registrations` | Those of the five registration files (T2 brief §2 + `qa-system/README.md`) that the student actually changed for T2 | `[]` |
 
    Do not touch any other field. Do not create or edit exam artifacts, `DECISIONS.md` or `AI_USE.md` in this
-   workflow. If `read_only_changed` is not empty, tell the student those files must be restored (the helper
-   prints the exact command) — do not restore them without the student's yes.
+   workflow. If `read_only_changed` is not empty, `submit` stops with `SELF_CHECK_INVALID` and its `next_vi`
+   lists the exact per-file commands: `git restore` for starter files that were edited or deleted, and
+   "move out of the read-only folder" for files the student added there. Run them only after the student
+   says yes; never delete a file.
 3. Run `node .scratch/student-setup.js submit`. It re-verifies the branch and starter, syncs the factual
    fields (identity, starter commit, stage paths or `null`, batches, blueprint, gate log), runs
    `npm run exam:check`, **refuses to commit if the result is `INVALID`**, otherwise commits everything on

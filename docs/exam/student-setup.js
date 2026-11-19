@@ -169,7 +169,9 @@ function workspace() {
     throw need('NOT_A_REPO', `Thư mục ${start} không phải bản clone của repository bài thi.`,
       'Làm lại bước "Clone repository" trong file hướng dẫn rồi chạy lại.');
   }
-  return path.resolve(top.out);
+  const ws = path.resolve(top.out);
+  excludeScratch(ws);
+  return ws;
 }
 
 function checkTools() {
@@ -213,9 +215,22 @@ function fetchAndVerifyStarter(ws) {
   return sha;
 }
 
+/** The helper lives in .scratch/. Some branches (e.g. the default `main`) do not ignore it,
+ *  so exclude it locally (.git/info/exclude is never committed or pushed). */
+function excludeScratch(ws) {
+  const rel = gitOut(ws, ['rev-parse', '--git-path', 'info/exclude']);
+  if (!rel) return;
+  const file = path.resolve(ws, rel);
+  const cur = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  if (!/^\/?\.scratch\/?$/m.test(cur)) {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.appendFileSync(file, `${cur && !cur.endsWith('\n') ? '\n' : ''}.scratch/\n`);
+  }
+}
+
 function dirtyPaths(ws) {
   const s = gitOut(ws, ['status', '--porcelain', '--untracked-files=all']) || '';
-  return s.split('\n').filter(Boolean).map((l) => l.slice(3));
+  return s.split('\n').filter(Boolean).map((l) => l.slice(3)).filter((p) => !p.startsWith('.scratch/'));
 }
 
 const refSha = (ws, ref) => gitOut(ws, ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]);
@@ -268,12 +283,15 @@ function ensureBranch(ws, id, starterSha) {
     how = 'resumed-local';
     if (remote && remote !== local) {
       if (isAncestor(ws, local, remote)) {
-        if (dirtyPaths(ws).length) {
-          throw need('BEHIND_WITH_CHANGES', `GitHub có commit mới hơn trên ${branch}, và máy này còn file chưa commit.`,
-            'Chạy lệnh SUBMIT để commit phần đang làm trước, hoặc hỏi giảng viên. Không xoá file.');
-        }
+        // Fast-forward keeps uncommitted edits; git refuses (and changes nothing) if one would be overwritten.
         const r = git(ws, ['merge', '--ff-only', `origin/${branch}`]);
-        if (!r.ok) throw fail('FF_FAILED', 'Không cập nhật được nhánh từ GitHub.', 'Gửi thông báo lỗi cho giảng viên.', { git: r.err });
+        if (!r.ok) {
+          if (dirtyPaths(ws).length) {
+            throw need('BEHIND_WITH_CHANGES', `GitHub có commit mới hơn trên ${branch} (làm ở máy khác), và chúng sửa cùng file mà máy này đang sửa dở. Tôi không cập nhật để tránh mất bài.`,
+              'Không xoá, không force-push. Gửi thông báo này cho giảng viên để được hướng dẫn gộp hai phần bài an toàn.', { git: r.err });
+          }
+          throw fail('FF_FAILED', 'Không cập nhật được nhánh từ GitHub.', 'Gửi thông báo lỗi cho giảng viên.', { git: r.err });
+        }
         how = 'resumed-updated-from-github';
       } else if (!isAncestor(ws, remote, local)) {
         throw need('DIVERGED', `Nhánh ${branch} trên máy và trên GitHub đã tách nhau (cả hai đều có commit riêng).`,
@@ -418,12 +436,13 @@ function cmdStart(rawId) {
 
   step(9, 'Commit và push nhánh của bạn');
   checkIdentity(ws);
-  const commit = commitPaths(ws, EXAM_FILES, `exam(${id}): start ${EXAM.id} from starter`);
-  log(commit ? `  Commit ${commit.slice(0, 12)} (chỉ ${EXAM_FILES.join(', ')})` : '  Không có thay đổi mới cần commit.');
+  // Only files created by this run are committed: edits the student is making stay uncommitted (SUBMIT publishes them).
+  const commit = files.created.length ? commitPaths(ws, files.created, `exam(${id}): start ${EXAM.id} from starter`) : null;
+  log(commit ? `  Commit ${commit.slice(0, 12)} (chỉ ${files.created.join(', ')})` : '  Không tạo commit mới (bài đang làm dở giữ nguyên, chưa commit).');
   const remoteSha = pushAndVerify(ws, branch);
 
   return {
-    status: 'SUCCESS', code: b.how === 'created' ? 'STARTED' : 'RESUMED',
+    status: 'SUCCESS', code: remoteBefore ? 'RESUMED' : 'STARTED',
     message_vi: `Môi trường thi đã sẵn sàng. Nhánh ${branch} có trên GitHub tại commit ${remoteSha.slice(0, 12)}.`,
     next_vi: 'Mở EXAM/brief/README.md, T1.md, T2.md, T3.md và bắt đầu từ T3 (chạy pipeline) hoặc T1. Khi xong, dùng lệnh SUBMIT.',
     facts: { workspace: ws, student_id: id, branch, starter_commit: starterSha, head: remoteSha, branch_state: b.how,
@@ -458,7 +477,7 @@ function collectInventory(ws, starterSha) {
   const newAgents = changed.filter((c) => c.status === 'A' && /^qa-system\/qa-[a-z0-9-]+\/AGENT\.md$/.test(c.path)).map((c) => path.dirname(c.path));
   const placeholders = Object.fromEntries(['EXAM/DECISIONS.md', 'EXAM/AI_USE.md'].map((f) => {
     const t = exists(f) ? fs.readFileSync(path.join(ws, f), 'utf8') : null;
-    return [f, t === null ? 'missing' : (t.match(/<[^<>\n]{1,40}>/g) || []).length];
+    return [f, t === null ? 'missing' : (t.match(/<…>|<student-id>|<YYYY-MM-DD>/g) || []).length];
   }));
   const readOnlyChanged = changed.filter((c) => READ_ONLY.some((p) => c.path.startsWith(p))).map((c) => c.path);
   return {
@@ -487,6 +506,21 @@ function cmdInventory() {
   if (inv.read_only_changed.length) log(`  ⚠ Đã sửa file chỉ-đọc (B-05): ${inv.read_only_changed.join(', ')}`);
   return { status: 'SUCCESS', code: 'INVENTORY', message_vi: 'Đã thu thập dữ kiện bài làm (không thay đổi file nào).',
     next_vi: 'Cập nhật các trường cần đánh giá trong EXAM/submission.json đúng theo dữ kiện này và EXAM/DECISIONS.md, rồi chạy submit.', facts: inv };
+}
+
+/** Exact per-file recovery for changed read-only paths. Added files are never deleted for the student. */
+function restoreAdvice(ws, files) {
+  const inStarter = (f) => git(ws, ['cat-file', '-e', `${EXAM.starterSha}:${f}`]).ok;
+  const restore = files.filter(inStarter);
+  const added = files.filter((f) => !inStarter(f));
+  const parts = [];
+  if (restore.length) {
+    parts.push(`Khôi phục file chỉ-đọc đã bị sửa/xoá (được học viên đồng ý thì chạy): ${restore.map((f) => `\`git restore --source ${EXAM.tag} --staged --worktree -- "${f}"\``).join(' ; ')}.`);
+  }
+  if (added.length) {
+    parts.push(`File MỚI nằm trong thư mục chỉ-đọc (không có trong đề): ${added.join(', ')}. Hỏi học viên rồi chuyển chúng ra ngoài thư mục đó (ví dụ vào OUTPUT/${EXAM.slug}/notes/) — không xoá.`);
+  }
+  return `${parts.join(' ')} Sau đó chạy lại SUBMIT.`;
 }
 
 function cmdSubmit() {
@@ -543,8 +577,8 @@ function cmdSubmit() {
   if (sc.status === 'INVALID') {
     throw need('SELF_CHECK_INVALID', 'Self-check báo lỗi CHẶN (B-xx): bài này sẽ KHÔNG được chấm nếu nộp như vậy. Tôi chưa commit/push.',
       inv.read_only_changed.length
-        ? `Bạn đã sửa file chỉ-đọc: ${inv.read_only_changed.join(', ')}. Khôi phục bằng \`git restore --source ${EXAM.tag} -- <file>\` (chỉ những file đó), rồi chạy lại SUBMIT.`
-        : 'Sửa từng lỗi B-xx theo dòng "fix" trong output của `npm run exam:check`, rồi chạy lại SUBMIT.',
+        ? restoreAdvice(ws, inv.read_only_changed)
+        :'Sửa từng lỗi B-xx theo dòng "fix" trong output của `npm run exam:check`, rồi chạy lại SUBMIT.',
       { blocking: sc.blocking });
   }
 
@@ -571,9 +605,15 @@ function cmdSubmit() {
 }
 
 function main(argv) {
-  const [cmd, arg] = argv.filter((a, i, all) => a !== '--dir' && all[i - 1] !== '--dir');
+  const pos = argv.filter((a, i, all) => a !== '--dir' && all[i - 1] !== '--dir');
+  const [cmd, arg] = pos;
   let result;
   try {
+    const expected = cmd === 'start' ? 2 : 1;
+    if (pos.length > expected) {
+      throw need(cmd === 'start' ? 'BAD_STUDENT_ID' : 'USAGE', `Thừa tham số: "${pos.slice(1).join(' ')}". Mã học viên phải là MỘT từ, không có dấu cách (ví dụ: hv001).`,
+        'Hỏi lại học viên mã chính xác rồi chạy lại, đặt mã trong dấu ngoặc kép: start "hv001".');
+    }
     if (cmd === 'start') result = cmdStart(arg);
     else if (cmd === 'inventory') result = cmdInventory();
     else if (cmd === 'submit') result = cmdSubmit();

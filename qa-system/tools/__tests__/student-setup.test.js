@@ -71,3 +71,14 @@ test('scrubSecrets hides credentials in URLs and tokens', () => {
   const s = S.scrubSecrets(`https://user:${'p'.repeat(8)}@github.com/x and ghp_${'A'.repeat(36)}`);
   assert.ok(!s.includes('pppppppp') && !s.includes('AAAA'), s);
 });
+
+test('main rejects extra positional arguments before touching anything (unquoted "HV 001")', () => {
+  const orig = process.stdout.write;
+  let out = '';
+  process.stdout.write = (s) => { out += s; return true; };
+  let code;
+  try { code = S.main(['start', 'HV', '001']); } finally { process.stdout.write = orig; }
+  assert.equal(code, 2);
+  assert.match(out, /"code":"BAD_STUDENT_ID"/);
+  assert.doesNotMatch(out, /\[1\]/, 'no setup step may run');
+});
