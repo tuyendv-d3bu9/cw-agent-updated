@@ -28,6 +28,16 @@
       "category": "Tái tục tự động",
       "allow": ["tự động tái tục", "tái tục tự động", "auto-renew", "automatically renewed"],
       "deny": ["không tự động tái tục", "phải tái tục thủ công", "không tái tục tự động", "manual renewal only", "no auto-renewal"]
+    },
+    "preauthorizationRequired": {
+      "category": "Prior approval before a covered service",
+      "allow": ["cần phê duyệt trước", "phải phê duyệt trước", "preauthorization required", "prior authorization required", "prior approval required"],
+      "deny": ["không cần phê duyệt trước", "không phải phê duyệt trước", "no preauthorization required", "preauthorization not required", "no prior authorization required", "prior authorization not required", "no prior approval required", "prior approval not required"]
+    },
+    "waitingPeriodApplies": {
+      "category": "Waiting period before benefits",
+      "allow": ["áp dụng thời gian chờ", "waiting period applies", "subject to a waiting period"],
+      "deny": ["không áp dụng thời gian chờ", "không có thời gian chờ", "no waiting period", "waiting period does not apply", "waiting period waived"]
     }
   }
 }

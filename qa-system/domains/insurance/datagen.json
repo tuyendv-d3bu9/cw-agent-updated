@@ -25,6 +25,22 @@
     "sum_insured_amount": {
       "generator": "money",
       "defaults": { "min": 1000, "max": 10000000, "step": 1000, "locale": "en-US" }
+    },
+    "quote_number_synthetic": {
+      "_note": "Synthetic quote reference; not the format of any insurer (real format: Unknown).",
+      "generator": "code",
+      "defaults": {
+        "prefixes": ["QTE-", "TESTQTE-"],
+        "values": ["2026-000001", "2026-000002", "2026-999999"]
+      }
+    },
+    "endorsement_number_synthetic": {
+      "_note": "Synthetic endorsement reference; not the format of any insurer (real format: Unknown).",
+      "generator": "code",
+      "defaults": {
+        "prefixes": ["END-", "TESTEND-"],
+        "values": ["2026-000001", "2026-000002", "2026-999999"]
+      }
     }
   },
   "enums": {}
