@@ -47,6 +47,7 @@ system/       ← tự kiểm, tiến độ, bản đồ, cổng ASK
 | **Số kế tiếp cho từng họ mã** (BR/FD/AF/OQ/MR/RK/TI/TC) — mã ổn định qua các lần chạy, QA_STANDARD §9.1 | `npm run ids -- <slug>` | xem script `ids` trong `package.json` |
 | **Lấy một nhánh của file JSON** (system map, manifest, metrics…) — không nạp cả file | `npm run json -- <file> <đường.dẫn> [--keys]` | `qa-system/tools/system/json.js` |
 | **Tra bản đồ hệ thống theo từ khoá** | `npm run map -- <từ khoá>` | `qa-system/tools/system/map.js` |
+| **Dự án chọn pack ngành nào** (`knowledge/_sut.json` → `domain`) và skill cần đọc file nào của pack | `npm run domain [-- --json]` | `qa-system/tools/system/domain.js` |
 | **Lint trước mỗi `git commit`** (mọi công cụ AI; chặn deliverable bịa/sai định dạng vào lịch sử) | `npm run hooks:install` (init cài sẵn) | `qa-system/tools/system/precommit.js` |
 | **Điểm biên của từng field** do máy tính từ ràng buộc FD (agent chép, không tự tính) | `npm run boundary -- <slug> [FD-xx]` | `qa-system/tools/system/boundary.js` |
 | **Dựng khung 02** (ma trận 06W đủ dòng, ô cố định điền sẵn) | `npm run scaffold -- <slug> 02` | `qa-system/tools/system/scaffold.js` |
@@ -72,6 +73,7 @@ Trước khi viết một hàm tiện ích mới, kiểm tra ở đây đã có 
 | `env.js` | `loadEnv()`, `jiraConfig()` | `loadEnv()` từng bị chép nguyên văn ở 4 file Jira. |
 | `jira-api.js` | `request()`, `jiraRequest()`, `jiraAttach()`, `adf()` | Từng có 4 bản `makeRequest` khác chữ ký, chỉ 2 bản có timeout. |
 | `doc-converter.js` | Chuyển docx/xlsx/pdf/yaml/txt → markdown sạch | Thư viện dùng chung của `intake/` — không phải tool chạy riêng. |
+| `domain.js` | `loadDomain({ root })` → `{ ids, packs, conflictTopics, datagen, units, files, override }` · `validatePack()` | Một loader cho pack ngành (`qa-system/domains/`). `conflict-detector`, `generate-dataset`, `lint` (đơn vị) và `agent:check` cùng đọc một lựa chọn ngành. Chưa chọn ngành ⇒ `ids` rỗng, `conflictTopics` null ⇒ mọi tool chạy như trước. Id không có ⇒ báo lỗi kèm danh sách id, không đoán. |
 
 ---
 

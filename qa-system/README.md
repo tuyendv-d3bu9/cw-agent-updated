@@ -11,6 +11,7 @@
 | `tools/` | Công cụ nội bộ — xem [tools/README.md](tools/README.md) |
 | `templates/` | Khuôn mẫu agent/skill/workflow — xem [templates/README.md](templates/README.md) |
 | `workflows/` | Bản đồ pipeline (`WORKFLOW.md`) và các runbook |
+| `domains/` | Pack ngành — checklist theo ngành, dự án chọn ở `knowledge/_sut.json` → `domain` (QA_STANDARD §10.3) — xem [domains/README.md](domains/README.md) |
 | `integrations/` | Dùng trên Antigravity / Cursor / Claude Code, Jira MCP |
 
 Muốn nâng cấp, cứ nói bằng lời: *"Tôi muốn skill sinh test case có thêm trường X"*.

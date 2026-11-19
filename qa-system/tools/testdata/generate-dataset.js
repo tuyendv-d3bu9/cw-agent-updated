@@ -18,6 +18,13 @@
  * - boundary: Boundary value sets (min-1, min, nominal, max, max+1)
  * - enum: Pick from value list
  * - negative / invalid: Edge cases (empty, whitespace, null, special chars, injection)
+ *
+ * Engine trung tính cho pack ngành (qa-system/domains/<id>/datagen.json):
+ * - code: ghép `prefixes` + `values` · money: `min`/`max`/`step`, định dạng theo `locale` + `unit`
+ * - bank_account: tên ngân hàng / số tài khoản từ danh sách `banks`
+ * - enum với `enum: "<tên>"`: lấy danh sách giá trị từ `enums` của pack
+ * Pack khai `types.<tên> = { generator, defaults }`. Không chọn ngành ⇒ mọi kiểu cũ ở trên chạy như trước
+ * (voucher_code, bank_vn, currency_vnd vẫn ở đây cho dự án cũ — không gỡ).
  * 
  * Usage:
  *   node qa-system/tools/testdata/generate-dataset.js --slug <task-slug> --schema <schema.json> --count 50 --format md --seed 42
@@ -28,6 +35,7 @@ const fs = require('fs');
 const path = require('path');
 const { faker, fakerVI } = require('@faker-js/faker');
 const { parsePhoneNumber } = require('libphonenumber-js');
+const { loadDomain } = require('../lib/domain');
 
 // ───────────── VIETNAMESE CONSTANTS & DICTIONARIES ─────────────
 
@@ -237,9 +245,9 @@ function generateCCCD(spec) {
   return `${provinceCode}${genderCode}${birthYear}${randomSuffix}`;
 }
 
-function generateBankVN(spec) {
+function generateBankVN(spec, banks = VN_BANKS) {
   const field = (spec.field || 'bank_name').toLowerCase();
-  const bank = spec.bank || randomItem(VN_BANKS);
+  const bank = spec.bank || randomItem(banks);
   const accNo = `${Math.floor(1000 + rand() * 9000)}${randomDigits(randomItem([6, 8, 10]))}`;
 
   if (field === 'account_number' || field === 'stk') return accNo;
@@ -302,6 +310,24 @@ function generateField(spec, index) {
       const day = String(Math.floor(rand() * 28) + 1).padStart(2, '0');
       return spec.format === 'DD/MM/YYYY' ? `${day}/${month}/${year}` : `${year}-${month}-${day}`;
 
+    // Engine trung tính — pack ngành trỏ kiểu của mình vào đây (resolveSpec). Thứ tự gọi rand() giữ y
+    // như voucher_code / currency_vnd / bank_vn để cùng seed ra cùng giá trị.
+    case 'code':
+      return `${randomItem(spec.prefixes || [])}${randomItem(spec.values || [])}`;
+
+    case 'money': {
+      const mMin = spec.min || 0;
+      const mMax = spec.max || 0;
+      const mStep = spec.step || 1;
+      const mVal = Math.floor((rand() * (mMax - mMin) + mMin) / mStep) * mStep;
+      if (!spec.formatted) return mVal;
+      const text = mVal.toLocaleString(spec.locale || 'en-US');
+      return spec.unit ? `${text} ${spec.unit}` : text;
+    }
+
+    case 'bank_account':
+      return generateBankVN(spec, spec.banks || []);
+
     case 'enum':
       const valuesList = spec.values || ['Active', 'Inactive', 'Pending'];
       return valuesList[index % valuesList.length];
@@ -339,8 +365,38 @@ function generateField(spec, index) {
   }
 }
 
+// Tên engine mà `generator` của một kiểu trong pack được phép trỏ tới (agent-doctor kiểm).
+const ENGINES = [
+  'code', 'money', 'bank_account', 'enum', 'boundary', 'negative', 'email', 'date', 'date_vn',
+  'name', 'person', 'vietnamese_name', 'phone', 'phone_vn', 'address', 'address_vn', 'location',
+  'citizen_id', 'cccd_vn', 'bank', 'bank_vn', 'voucher_code', 'currency_vnd',
+];
+
+/**
+ * Kiểu của pack ngành ⇒ engine + tham số. Tham số của schema thắng mặc định của pack theo đúng phép `||`
+ * mà generator cũ dùng (`spec.min || 10000`), nên pack ecommerce-retail cho ra đúng giá trị cũ.
+ * Chưa chọn ngành (datagen rỗng) ⇒ trả nguyên spec, không đổi gì.
+ */
+function resolveSpec(spec, datagen) {
+  if (!datagen) return spec;
+  let out = spec;
+  const def = datagen.types && datagen.types[spec.type];
+  if (def) {
+    if (!ENGINES.includes(def.generator)) throw new Error(`Kiểu "${spec.type}" của pack ngành trỏ tới engine không có: "${def.generator}"`);
+    out = { ...spec, type: def.generator };
+    for (const [k, v] of Object.entries(def.defaults || {})) out[k] = spec[k] || v;
+  }
+  if (out.type === 'enum' && out.enum && !out.values) {
+    const values = datagen.enums && datagen.enums[out.enum];
+    if (!Array.isArray(values)) throw new Error(`enum "${out.enum}" không có trong pack ngành đã chọn — khai \`values\` trong schema hoặc chọn pack có enum này`);
+    out = { ...out, values };
+  }
+  return out;
+}
+
 function generateDataset(schema, count = 10, opts = {}) {
   if (opts.seed !== undefined && opts.seed !== null) setSeed(opts.seed);
+  const datagen = opts.datagen || null;
   const rows = [];
   // Keys starting with `_` are schema annotations, not data fields.
   const fields = Object.keys(schema).filter((k) => !k.startsWith('_'));
@@ -348,7 +404,7 @@ function generateDataset(schema, count = 10, opts = {}) {
   for (let i = 0; i < count; i++) {
     const row = {};
     for (const field of fields) {
-      row[field] = generateField(schema[field], i);
+      row[field] = generateField(datagen ? resolveSpec(schema[field], datagen) : schema[field], i);
     }
     rows.push(row);
   }
@@ -431,7 +487,11 @@ function main() {
     process.exit(1);
   }
 
-  const dataset = generateDataset(schema, count, { seed });
+  // Pack ngành đã chọn ở knowledge/_sut.json (nếu có) thêm kiểu/enum; không chọn ⇒ datagen rỗng, chạy như cũ.
+  // Không chọn ngành và không có knowledge/_domain.md ⇒ datagen = null, đi đúng đường cũ từng byte.
+  const domain = loadDomain();
+  const datagen = domain.ids.length || domain.override ? domain.datagen : null;
+  const dataset = generateDataset(schema, count, { seed, datagen });
 
   let resultString = '';
   if (format === 'json') {
@@ -458,6 +518,8 @@ if (require.main === module) {
 }
 
 module.exports = {
+  ENGINES,
+  resolveSpec,
   generateDataset,
   setSeed,
   exportToMarkdownTable,

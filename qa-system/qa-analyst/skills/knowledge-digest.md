@@ -26,6 +26,8 @@ file thì tràn context hoặc agent chỉ đọc lướt và bỏ sót quy tắ
 - Các tài liệu liệt kê trong lô đang chạy, **chỉ những tài liệu đó** (tool đã bỏ `_superseded/` — bản cũ không vào lô).
 - `OUTPUT/<task-slug>/knowledge_digest/batch_*.md` — thẻ của các lần chạy trước (pha Gộp).
 - `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` nếu có.
+- Pha Gộp, chỉ khi `knowledge/_sut.json` có `domain`: các file `vocab` mà `npm run domain` liệt kê (QA_STANDARD §10.3).
+  `_sut.json` không có `domain` ⇒ bỏ qua bước 9 và mục §5.
 
 > Chưa có `00_digest_plan.md` → chạy `npm run knowledge:digest <slug>` trước. Không tự chia lô bằng mắt.
 > Tài liệu quá lớn đã được tool cắt sẵn theo heading: ghi chú lô dạng `phần k/n: dòng a–b (§ heading)` —
@@ -65,6 +67,9 @@ file thì tràn context hoặc agent chỉ đọc lướt và bỏ sót quy tắ
    bên thắng + lý do; không phân xử được ⇒ `Chưa phân xử`. Skill `01` biến dòng `Chưa phân xử` thành `OQ`.
 8. Tổng thẻ quá lớn để đọc một lượt → gộp theo từng ngăn (`01_business`…`05_communication`) trước,
    rồi gộp các bản ngăn.
+9. **Thuật ngữ ngành** (chỉ khi có `domain`) — thuật ngữ của `vocab` **có xuất hiện** trong thẻ ⇒ một dòng §5,
+   kèm nơi xuất hiện. Đây là gợi ý cho người dự án điền `knowledge/_glossary.md`, không phải quy tắc; thuật ngữ
+   không xuất hiện trong tài liệu thì không ghi.
 
 ## Format output
 
@@ -112,6 +117,11 @@ Owner: qa-system/qa-analyst/skills/knowledge-digest.md · Nguồn: knowledge_dig
 | ID | Điểm mơ hồ | Nguồn |
 |---|---|---|
 | A-01 | <câu> | `<file>` <mục> |
+
+## 5. Thuật ngữ ngành gặp trong tài liệu (chỉ khi có `domain`)
+| Thuật ngữ | Mục pack | Xuất hiện ở |
+|---|---|---|
+| <thuật ngữ> | `[DOMAIN] <pack-id>/vocab.md#<mục>` | `<file>` <mục> |
 ````
 
 Mục trống ghi `Không có`, không để bảng rỗng. **Verdict**: `PASS` khi mọi lô đã gộp đủ và mọi dòng có nguồn +

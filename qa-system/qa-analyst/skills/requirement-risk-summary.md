@@ -23,6 +23,8 @@ nguồn + trích nguyên văn; điều chưa rõ thành `OQ-xx` để Chặng 2 
 - `OUTPUT/<task-slug>/01_conflict_warning.md` nếu có (`qa-system/tools/knowledge/conflict-detector.js`).
 - `OUTPUT/<task-slug>/jira_defects_summary.md` nếu có — chỉ dùng chấm Likelihood.
 - `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` (QA_STANDARD §7, §8).
+- Chỉ khi `knowledge/_sut.json` có `domain`: các file `risks` mà `npm run domain` liệt kê — checklist, không phải
+  nguồn (QA_STANDARD §10.3). `_sut.json` không có `domain` ⇒ bỏ qua phần pack ở bước 7.
 
 > Thiếu `02_ba/` và không có digest → DỪNG, báo thiếu tài liệu nghiệp vụ (verdict `ASK`).
 
@@ -65,7 +67,7 @@ Phần `## Annotations / Pending changes` (comment, tracked changes, "DRAFT") **
 | 4 | Happy Path | Các bước có trong nguồn, kèm nguồn |
 | 5 | Alternate Flows | Luồng phụ / lỗi **có trong nguồn**, phản hồi nguyên văn nếu có |
 | 6 | Out of Scope | Chỉ loại trừ tường minh, kèm trích. Không có ⇒ không dựng bảng, ghi dòng văn bản `Không có loại trừ tường minh` |
-| 7 | Điểm chưa rõ | `OQ-xx` từ: chỗ mơ hồ, mâu thuẫn §10.2 không phân xử được, Annotations, `01_conflict_warning.md`, BR cũ mất nguồn. Không quota, có thể rỗng |
+| 7 | Điểm chưa rõ | `OQ-xx` từ: chỗ mơ hồ, mâu thuẫn §10.2 không phân xử được, Annotations, `01_conflict_warning.md`, BR cũ mất nguồn, và (khi có `domain`) mục `risks` mà tài liệu **có chạm tới** (cột "Dấu hiệu" khớp đối tượng/hành vi trong nguồn) nhưng **không nói** cách xử lý — `Vị trí trong nguồn` ghi `[DOMAIN] <pack-id>/risks.md#<mục>` kèm file §mục nơi tính năng chạm tới. Mục pack không bao giờ thành `BR`/`RK`. Không quota, có thể rỗng |
 | 8 | Business Criticality | Trích từ `01_business/` hoặc `_project.md` (dòng đã khai). Không có ⇒ `[CONTEXT_MISSING]` |
 | 9 | Missing Risk Context | 5 khía cạnh (bảng dưới): có gì / thiếu gì, kèm nguồn |
 | 10 | Risk Analysis | Ma trận QA_STANDARD §5. `Nguồn` = mã `BR`/`FD`/`AF`/`OQ` liên quan |

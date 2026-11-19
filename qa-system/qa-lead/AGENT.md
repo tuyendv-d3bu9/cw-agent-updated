@@ -32,6 +32,7 @@ Tra `npm run map -- <từ khoá>` (không mở cả `_system_map.json`) trước
 | Bug report · daily summary | `qa-reporter` | `gen-bug-report` · `gen-daily-summary` | `OUTPUT/reports/bug-report-<slug>.md` · `OUTPUT/reports/daily-summary-<audience>.md` |
 | Kéo bug / đẩy test case Jira | `qa-reporter` / `qa-test-design` | `npm run jira:pull` · `jira:push` · `jira:sync` | `jira_defects_summary.md` · `jira_testcase_mapping.md` |
 | Tạo / chạy workflow | `qa-lead` | `workflow-authoring` + `npm run workflow` | `qa-system/workflows/run-<tên>.md` · checklist trong `00_plan.md` |
+| Pack ngành (checklist theo ngành, QA_STANDARD §10.3) | `qa-lead` | `npm run domain` (đọc) · thêm pack: `system-upgrade-governance` + `qa-system/domains/README.md` §5 | Không có deliverable — `knowledge/_sut.json` → `domain` do con người chọn · pack mới ở `qa-system/domains/<id>/` |
 | Nâng cấp hệ thống agent | `qa-lead` | `system-upgrade-governance` | Thay đổi trong `qa-system/qa-<x>/`, `WORKFLOW.md`, `_system_map.json` · biên bản ngoài repo |
 
 ## 2.1. Skill sở hữu của QA Leader
@@ -91,5 +92,7 @@ Tra `npm run map -- <từ khoá>` (không mở cả `_system_map.json`) trước
 | *"Tạo workflow: mỗi khi … thì …"* | `workflow-authoring` TẠO: `validate` xanh, trình bày, **chờ** |
 | Câu ngắn khớp cụm kích hoạt · *"Chạy workflow [tên]"* | `workflow-authoring` CHẠY: `find` → `start` → từng bước, dừng ở mọi cổng |
 | *"Có những workflow nào?"* | `npm run workflow -- list` |
+| *"Dự án này thuộc ngành nào?"* · *"Đang dùng pack ngành nào?"* | `npm run domain`, báo nguyên văn. Chưa chọn ⇒ hỏi người dùng id trong danh sách in ra rồi **người dùng** quyết; ghi `domain` vào `knowledge/_sut.json` chỉ khi người dùng nói rõ id. Không tự đoán ngành từ tài liệu |
+| *"Thêm pack ngành [X]"* · *"Hệ thống chưa có ngành [X]"* | `system-upgrade-governance` (`PHAN_TICH` trước) + `qa-system/domains/README.md` §5; xong chạy `npm run agent:check` |
 | *"Nâng cấp skill [tên]"* · *"Thêm agent về [X]"* · *"Nên thêm agent hay skill?"* | `system-upgrade-governance` (`PHAN_TICH` khi chỉ hỏi ý kiến) |
 | *"Sửa xong, hệ thống còn chạy không?"* | `system-upgrade-governance` chế độ `NGHIEM_THU` |

@@ -76,7 +76,20 @@ if (fs.existsSync(outputDir)) {
   });
 }
 
+// Danh mục pack ngành: đọc từ đĩa để bản đồ không lệch khi thêm pack (qa-system/domains/README.md §5).
+// Dự án chọn pack nào nằm ở knowledge/_sut.json, không ở đây — bản đồ là của khung.
+const { listPacks } = require('../lib/domain');
+const domainsDir = path.join(PATHS.SYSTEM, 'domains');
+mapData.domains_index = {
+  catalogue: 'qa-system/domains/README.md',
+  template: 'qa-system/domains/_template/',
+  selected_in: 'knowledge/_sut.json → domain',
+  rule: 'qa-system/core/QA_STANDARD.md §10.3 — pack là checklist, không phải nguồn sự thật',
+  packs: Object.fromEntries(listPacks(domainsDir).map((id) => [id, `qa-system/domains/${id}/`])),
+};
+
 fs.writeFileSync(mapPath, JSON.stringify(mapData, null, 2), 'utf8');
 console.log('✅ Successfully synchronized system map:');
 console.log(`  -> ${mapPath}`);
 console.log(`  -> Updated ${Object.keys(mapData.features_inventory).length} feature(s) in system inventory.`);
+console.log(`  -> Indexed ${Object.keys(mapData.domains_index.packs).length} domain pack(s): ${Object.keys(mapData.domains_index.packs).join(', ') || '(none)'}.`);

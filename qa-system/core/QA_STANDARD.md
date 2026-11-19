@@ -185,6 +185,7 @@ Tool chỉ đọc verdict từ dòng meta này (trong 10 dòng đầu). Viết k
 - Dòng còn chứa `<điền>` hoặc ô trống = **chưa khai báo** ⇒ coi như không có (`[CONTEXT_MISSING]`).
 - Dữ kiện đã có trong knowledge (§3 Confirmed, §8, §9 có nguồn) **thắng** suy luận của agent và
   không bị hỏi lại.
+- Pack ngành (`qa-system/domains/`, `knowledge/_domain.md`) không phải knowledge của dự án: xem §10.3.
 
 ### Luật ghi (một luật duy nhất)
 | Mục knowledge | Ai ghi | Điều kiện |
@@ -271,8 +272,8 @@ Thiếu `Người phê duyệt` hoặc `Ngày chốt` ⇒ tool coi là chưa ch�
 3. `knowledge/_project.md` — chỉ dòng đã khai (không còn `<điền>`).
 4. Deliverable các chặng trước **trong cùng task** (chúng đã trace về 1–3).
 
-Không phải nguồn: hiểu biết chung về ngành, ví dụ trong skill/template, output của task khác,
-output của người khác đưa vào làm mẫu.
+Không phải nguồn: hiểu biết chung về ngành, pack ngành (§10.3), ví dụ trong skill/template, output
+của task khác, output của người khác đưa vào làm mẫu.
 
 ### 10.2. Khi các nguồn khác nhau
 | Ưu tiên | Nguồn | Thắng về |
@@ -287,6 +288,14 @@ output của người khác đưa vào làm mẫu.
 - Không xác định được bản nào mới hơn, hoặc hai nguồn cùng mức mâu thuẫn ⇒ **sinh MR**, không tự chọn.
 - Phần `## Annotations / Pending changes` do intake trích ra (comment, tracked changes, "DRAFT") **chưa
   phải sự thật** ⇒ sinh MR để BA xác nhận.
+
+### 10.3. Pack ngành — checklist, không phải nguồn
+Pack ngành (`qa-system/domains/<id>/`, chọn ở `knowledge/_sut.json` → `domain`; bổ sung của dự án ở
+`knowledge/_domain.md`) là **checklist**. Dự án chưa chọn ngành ⇒ bỏ qua mọi bước dùng pack.
+- Một mục của pack chỉ được thành: câu hỏi (`OQ` → `MR`), ứng viên viewpoint (chỉ chọn khi đã có mã nguồn
+  §10.1), hoặc từ vựng / kiểu dữ liệu sinh test data.
+- Gắn nhãn nguồn gốc `[DOMAIN] <id>/<file>#<mục>`. `[DOMAIN]` không phải nhãn lấp ô §2.1, và **không bao
+  giờ** là `Nguồn` của `BR`/`FD`/`AF` — `npm run lint` báo lỗi. `BR`/`FD` luôn trích từ nguồn §10.1.
 
 ---
 

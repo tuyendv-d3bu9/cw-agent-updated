@@ -9,7 +9,7 @@ qa-system/
   core/QA_STANDARD.md
   qa-lead/  qa-analyst/  qa-test-design/  qa-test-data/  qa-ui-review/
   qa-reporter/  qa-automation/  qa-readiness-evaluator/
-  tools/  templates/  workflows/
+  tools/  templates/  workflows/  domains/
 knowledge/  _project.md · _glossary.md · _template.md · _system_map.json · features/<slug>.md
 INPUT/<slug>/   01_business · 02_ba · 03_dev · 04_design · 05_communication
 OUTPUT/<slug>/  00_plan.md · 01_…16_ · testcases/ · runs/
@@ -43,18 +43,20 @@ OUTPUT/<slug>/  00_plan.md · 01_…16_ · testcases/ · runs/
 
 Cột **Vào** chỉ liệt kê deliverable; mọi chặng còn nạp `knowledge/_project.md` + `knowledge/features/<slug>.md`
 (QA_STANDARD §7). Danh sách đầu vào chính xác nằm ở mục "Đầu vào" của từng skill.
+`+ pack:<file>` = file của pack ngành, **chỉ khi** `knowledge/_sut.json` có `domain` (`npm run domain`); không có thì bỏ qua.
+Pack là checklist, không phải nguồn (QA_STANDARD §10.3).
 
 ### Nhánh A
 
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
-| 0 | `qa-analyst` | `knowledge-digest` *(chỉ khi tài liệu quá nhiều)* | `00_digest_plan.md` + tài liệu trong lô | `knowledge_digest/batch_NN.md` · `00_knowledge_digest.md` |
-| 1 | `qa-analyst` | `requirement-risk-summary` | `INPUT/<slug>/` (5 ngăn) hoặc `00_knowledge_digest.md` | `01_requirement_risk_summary.md` |
-| 2 | `qa-analyst` | `missing-rule-06w` | `01` + nguồn `INPUT/<slug>/` / digest + `01_conflict_warning.md` (nếu có) | `02_missing_rule_report.md` |
+| 0 | `qa-analyst` | `knowledge-digest` *(chỉ khi tài liệu quá nhiều)* | `00_digest_plan.md` + tài liệu trong lô + pack:`vocab` | `knowledge_digest/batch_NN.md` · `00_knowledge_digest.md` |
+| 1 | `qa-analyst` | `requirement-risk-summary` | `INPUT/<slug>/` (5 ngăn) hoặc `00_knowledge_digest.md` + pack:`risks` | `01_requirement_risk_summary.md` |
+| 2 | `qa-analyst` | `missing-rule-06w` | `01` + nguồn `INPUT/<slug>/` / digest + `01_conflict_warning.md` (nếu có) + pack:`rule-patterns` | `02_missing_rule_report.md` |
 | — | *cổng* | `npm run gate <slug>` | | exit `0` mới sang 3 |
-| 3 | `qa-analyst` | `viewpoint-selection` | `01` + `02` | `03_viewpoint_report.md` |
+| 3 | `qa-analyst` | `viewpoint-selection` | `01` + `02` + pack:`risks` | `03_viewpoint_report.md` |
 | 4 | `qa-analyst` | `test-idea-design` | `01` + `02` + `03` | `04_test_idea_report.md` |
-| 5 | `qa-test-design` | `test-case-generation` | `01` + `03` + `04` | `05_test_case_spec.md` (lớn: `05_test_blueprint.json` + `testcases/batch_NN.md`) |
+| 5 | `qa-test-design` | `test-case-generation` | `01` + `03` + `04` + pack:`vocab` | `05_test_case_spec.md` (lớn: `05_test_blueprint.json` + `testcases/batch_NN.md`) |
 | — | *cổng* | `npm run lint -- <slug>` | | exit `0` mới báo xong 5 |
 | 6 | `qa-test-design` | `coverage-review` | `01` + `02` + `04` + `05` + `12` (nếu có) + kết quả lint | `06_coverage_review.md` |
 
@@ -63,7 +65,7 @@ Cột **Vào** chỉ liệt kê deliverable; mọi chặng còn nạp `knowledge
 | # | Agent | Skill | Vào | Ra |
 |---|---|---|---|---|
 | 9 | `qa-test-data` | `data-class-map` | `01` (mục FD) | `09_data_class_map.md` |
-| 10 | `qa-test-data` | `dataset-generation` | `09` | `10_dataset.md` |
+| 10 | `qa-test-data` | `dataset-generation` | `09` + pack:`datagen`, `vocab` | `10_dataset.md` |
 | 11 | `qa-test-data` | `boundary-negative-dataset` | `09` | `11_boundary_negative_dataset.md` |
 | 12 | `qa-test-data` | `data-validation-traceability` | `10` + `11` + `05` | `12_data_validation_traceability.md` |
 

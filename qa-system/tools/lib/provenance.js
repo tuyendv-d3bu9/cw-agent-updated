@@ -16,6 +16,18 @@ const S = require('./schema');
 
 // Đơn vị / ngữ cảnh khiến một con số là "giới hạn nghiệp vụ" chứ không phải số thứ tự bước.
 const UNIT_AFTER = /^\s*(?:lần|phút|giây|giờ|ngày|tuần|tháng|năm|ký tự|kí tự|chữ số|vnđ|vnd|đồng|đ(?![\p{L}\p{N}])|%|mb\b|kb\b|gb\b|chars?\b|characters?\b|seconds?\b|minutes?\b|hours?\b|days?\b|times\b|attempts?\b|bản ghi|dòng|tệp|file\b)/iu;
+
+/**
+ * Tập đơn vị = đơn vị sẵn có ở trên + đơn vị của pack ngành đã chọn (units.json / knowledge/_domain.md).
+ * Chỉ CỘNG thêm: không có đơn vị thêm ⇒ trả đúng UNIT_AFTER, lint chạy y như dự án chưa chọn ngành.
+ */
+function unitPattern(extra = []) {
+  const words = [...new Set((extra || []).map((u) => String(u).normalize('NFC').trim().toLowerCase()).filter(Boolean))];
+  if (!words.length) return UNIT_AFTER;
+  const esc = words.sort((a, b) => b.length - a.length).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return new RegExp(`${UNIT_AFTER.source}|^\\s*(?:${esc.join('|')})(?![\\p{L}\\p{N}])`, UNIT_AFTER.flags);
+}
+
 const CONTEXT_BEFORE = /(?:tối đa|tối thiểu|ít nhất|nhiều nhất|giới hạn|không quá|vượt quá|quá|sau|trong vòng|max(?:imum)?|min(?:imum)?|limit|after|within)\s*[:=]?\s*$/iu;
 
 /** Bỏ những thứ chứa số nhưng không phải con số nghiệp vụ: ngày, giờ, email, URL, mã ID, chuỗi lặp. */
@@ -38,7 +50,7 @@ function parseNumber(tok) {
 }
 
 /** [{value, unitAttached, raw}] — các con số nghiệp vụ trong một đoạn văn. */
-function numbersIn(text) {
+function numbersIn(text, unitRe = UNIT_AFTER) {
   const clean = stripNoise(text);
   const out = [];
   // Sau số không được là chữ số/gạch dưới; chữ cái chỉ được đi liền khi đó là đơn vị ("500.000đ", "15phút"),
@@ -49,9 +61,9 @@ function numbersIn(text) {
     const value = parseNumber(m[1]);
     if (value === null) continue;
     const after = clean.slice(m.index + m[1].length, m.index + m[1].length + 14);
-    if (/^\p{L}/u.test(after) && !UNIT_AFTER.test(after)) continue;
+    if (/^\p{L}/u.test(after) && !unitRe.test(after)) continue;
     const before = clean.slice(Math.max(0, m.index - 16), m.index);
-    out.push({ value, raw: m[1], unitAttached: UNIT_AFTER.test(after) || CONTEXT_BEFORE.test(before) });
+    out.push({ value, raw: m[1], unitAttached: unitRe.test(after) || CONTEXT_BEFORE.test(before) });
   }
   return out;
 }
@@ -76,9 +88,11 @@ function cellsOf(text, num, titleRe) {
 
 /**
  * Tập nguồn của một task: văn bản đã chuẩn hoá để dò chuỗi + tập con số cho phép.
- * @param {{t01: string|null, k: object}} ctx  context của lint (t01 = nội dung 01, k = readKnowledge)
+ * @param {{t01: string|null, k: object, units?: string[]}} ctx  context của lint (t01 = nội dung 01,
+ *   k = readKnowledge, units = đơn vị thêm của pack ngành)
  */
 function buildSources(ctx) {
+  const unitRe = unitPattern(ctx.units);
   const cells = [];
   if (ctx.t01) {
     for (const n of ['3', '3b', '5', '6']) cells.push(...cellsOf(ctx.t01, n));
@@ -95,7 +109,7 @@ function buildSources(ctx) {
   const allowed = new Set();
   const add = (v) => { allowed.add(v - 1); allowed.add(v); allowed.add(v + 1); };
   for (const c of cleaned) {
-    const nums = numbersIn(c).map((n) => n.value);
+    const nums = numbersIn(c, unitRe).map((n) => n.value);
     nums.forEach(add);
     // Giá trị giữa của khoảng min–max trong cùng một ô.
     for (let i = 0; i < nums.length; i++) {
@@ -106,7 +120,7 @@ function buildSources(ctx) {
       }
     }
   }
-  return { text, allowed, empty: cleaned.length === 0 };
+  return { text, allowed, empty: cleaned.length === 0, unitRe };
 }
 
 const VALUE_FIELDS = ['Precondition', 'Test Steps', 'Test Data', 'Expected Result'];
@@ -163,7 +177,7 @@ function checkTestCase(get, sources, knownMr) {
     let body = S.stripMd(v);
     if (f === 'Expected Result') body = body.replace(/["“«][^"”»\n]{3,}?["”»]/g, ' ');
     const seen = new Set();
-    for (const n of numbersIn(body)) {
+    for (const n of numbersIn(body, sources.unitRe || UNIT_AFTER)) {
       if (sources.allowed.has(n.value) || seen.has(n.raw)) continue;
       seen.add(n.raw);
       if (n.unitAttached) {
@@ -180,11 +194,11 @@ function checkTestCase(get, sources, knownMr) {
  * Con số trong các ô nghiệp vụ của một dòng 01 mà câu trích nguyên văn KHÔNG chứa.
  * Bắt trường hợp: Điều kiện ghi "khoá 30 phút" nhưng câu trích chỉ là "Khoá tài khoản tạm thời".
  */
-function numbersMissingFromQuote(rowText, quote) {
-  const inQuote = new Set(numbersIn(quote).map((n) => n.value));
+function numbersMissingFromQuote(rowText, quote, unitRe = UNIT_AFTER) {
+  const inQuote = new Set(numbersIn(quote, unitRe).map((n) => n.value));
   const missing = [];
-  for (const n of numbersIn(rowText)) if (!inQuote.has(n.value) && !missing.includes(n.raw)) missing.push(n.raw);
+  for (const n of numbersIn(rowText, unitRe)) if (!inQuote.has(n.value) && !missing.includes(n.raw)) missing.push(n.raw);
   return missing;
 }
 
-module.exports = { parseNumber, numbersIn, quotedStrings, buildSources, checkTestCase, stripNoise, numbersMissingFromQuote };
+module.exports = { UNIT_AFTER, unitPattern, parseNumber, numbersIn, quotedStrings, buildSources, checkTestCase, stripNoise, numbersMissingFromQuote };

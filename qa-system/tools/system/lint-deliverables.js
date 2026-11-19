@@ -14,6 +14,10 @@
  *   D. 02 — the 06W matrix (every BR/FD/AF of 01, valid cells, MRs exist in §3),
  *      the question table schema, OQ reconciliation, verdict consistency.
  *   E. Table cells — no blank cells outside the columns humans fill later.
+ *   F. Knowledge — answers still holding template slots; BR/FD/AF citing a domain pack.
+ *
+ * A domain pack (qa-system/domains/, chosen in knowledge/_sut.json) only ADDS unit words to the
+ * number check; it is never accepted as the source of a BR/FD/AF (QA_STANDARD §10.3).
  *
  * Usage:
  *   lint-deliverables.js [slug] [--json]
@@ -25,6 +29,7 @@ const path = require('path');
 const { PATHS, taskDir, listTaskSlugs } = require('../lib/paths');
 const S = require('../lib/schema');
 const P = require('../lib/provenance');
+const { loadDomain } = require('../lib/domain');
 
 // ───────────────────────────── Rules ─────────────────────────────
 
@@ -67,6 +72,13 @@ const NEEDS_META = [
   '06_coverage_review.md',
 ];
 
+/**
+ * A pack is a checklist, not a fact (QA_STANDARD §10.3): `[DOMAIN]` or a path into qa-system/domains/
+ * in the source/quote of a BR/FD/AF row is rejected even if the text happens to exist in INPUT/.
+ */
+const DOMAIN_SOURCE = /\[\s*DOMAIN\s*\]|qa-system\/domains\//i;
+const DOMAIN_SOURCE_MSG = 'Cites a domain pack (`[DOMAIN]` / qa-system/domains/) as its source — a pack is a checklist, not a fact. Turn it into an OQ/MR question, or cite the project document (QA_STANDARD §10.3)';
+
 /** Columns humans fill later, or that are legitimately empty (§9.4, §9.6). */
 const MAY_BE_EMPTY = new Set(['phản hồi chính thức', 'người trả lời', 'ngày', 'trích nguyên văn', 'người phê duyệt', 'ngày chốt']);
 
@@ -103,9 +115,12 @@ function context(slug, dir) {
   const mrKnown = new Set(k.questions.filter((q) => /^MR-/.test(q.id)).map((q) => q.id));
   if (t02) for (const q of S.read02Questions(t02)) if (/^MR-/.test(q.id)) mrKnown.add(q.id);
 
+  // Đơn vị thêm của pack ngành đã chọn. Chưa chọn ⇒ [] ⇒ lint đếm con số y như trước.
+  const { units } = loadDomain({ root: PATHS.ROOT });
+  const sources = P.buildSources({ t01, k, units });
+
   return {
-    slug, dir, t01, t02, t03, t04, k, d01, ruleDefs, mrResolved, mrKnown,
-    sources: P.buildSources({ t01, k }),
+    slug, dir, t01, t02, t03, t04, k, d01, ruleDefs, mrResolved, mrKnown, sources,
     vps: S.read03Viewpoints(t03),
     ideas: S.read04Ideas(t04),
   };
@@ -323,6 +338,7 @@ function lint01(ctx, R) {
         const quote = r.cells[qi] || '';
         const src = S.stripMd(S.cell(t, r, 'source'));
         const where = `§${num} line ${r.line}`;
+        if (DOMAIN_SOURCE.test(src) || DOMAIN_SOURCE.test(quote)) { R.error(name, where, DOMAIN_SOURCE_MSG); continue; }
         if (S.isBlank(quote)) {
           if (!/^knowledge\s*§\s*8/i.test(src)) {
             R.error(name, where, '"Trích nguyên văn" is empty — only allowed when Nguồn is `knowledge §8 #n`');
@@ -352,7 +368,7 @@ function lint01(ctx, R) {
 
         // Câu trích có thật chưa đủ: các con số của dòng phải nằm TRONG câu trích, và chữ thông báo phải có trong nguồn.
         const rowText = ['condition', 'behavior', 'constraint'].map((c) => S.stripMd(S.cell(t, r, c))).join(' ');
-        const missingNums = P.numbersMissingFromQuote(rowText, S.stripMd(quote));
+        const missingNums = P.numbersMissingFromQuote(rowText, S.stripMd(quote), ctx.sources.unitRe);
         if (missingNums.length) {
           R.error(name, where, `The row states ${missingNums.join(', ')} but the quote does not contain ${missingNums.length > 1 ? 'them' : 'it'} — the quote proves a different sentence, not this value`);
         }
@@ -488,6 +504,18 @@ function lintKnowledge(ctx, R) {
   }
   for (const d of ctx.k.decisions) {
     if (d.placeholder) R.error(name, `line ${d.line}`, `§8 ${d.related.join(', ') || '#' + d.num}: ${S.NOT_CONCRETE_HINT}`);
+  }
+  // BR/FD/AF đã ghi vào knowledge cũng không được lấy pack ngành làm nguồn.
+  for (const num of ['3', '3b', '5']) {
+    const sec = S.sectionAt(ctx.k.text, num);
+    if (!sec) continue;
+    for (const t of S.parseTables(sec.body, sec.offset)) {
+      for (const r of t.rows) {
+        const src = S.stripMd(S.cell(t, r, 'source'));
+        const quote = S.col(t, 'quote') === -1 ? '' : S.stripMd(S.cell(t, r, 'quote'));
+        if (DOMAIN_SOURCE.test(src) || DOMAIN_SOURCE.test(quote)) R.error(name, `§${num} line ${r.line}`, DOMAIN_SOURCE_MSG);
+      }
+    }
   }
 }
 

@@ -1,7 +1,7 @@
 {
   "system_name": "CW QA Agent Ecosystem",
   "version": "2.0.0",
-  "last_updated": "2026-11-04",
+  "last_updated": "2026-11-19",
   "ssot_policy": "Tri thức trong knowledge/ là tối cao. CẤM đọc dò từng file, tra cứu bảng routing_table để mở đúng file đích.",
   "project_conventions": {
     "project_name": "<Tên Dự Án>",
@@ -91,7 +91,12 @@
     "scaffold_command": "npm run scaffold -- <slug> 02",
     "diff_runs_command": "npm run diff-runs -- <dirA> <dirB> [--min N]",
     "ids_assign_command": "npm run ids -- <slug> --assign <file>",
-    "cr_impact_analysis": "qa-system/qa-test-design/skills/cr-impact-analysis.md"
+    "cr_impact_analysis": "qa-system/qa-test-design/skills/cr-impact-analysis.md",
+    "domain_catalogue": "qa-system/domains/README.md",
+    "domain_pack_template": "qa-system/domains/_template/README.md",
+    "domain_loader": "qa-system/tools/lib/domain.js",
+    "domain_command": "npm run domain",
+    "domain_override_template": "qa-system/templates/knowledge/_domain.md"
   },
   "specialized_agents": {
     "qa_lead": {
@@ -135,18 +140,7 @@
       "role": "Cổng Go/No-Go trước Automation: số liệu do npm run readiness đo bằng máy, agent diễn giải thành 15_readiness_report.md"
     }
   },
-  "features_inventory": {
-    "function-d-voucher": {
-      "name": "function-d-voucher",
-      "input_file": "INPUT/function-d-voucher.md",
-      "knowledge_file": "knowledge/features/function-d-voucher.md",
-      "output_dir": "OUTPUT/function-d-voucher/",
-      "plan_file": "OUTPUT/function-d-voucher/00_plan.md",
-      "status": "IN-PROGRESS",
-      "total_testcases": 0,
-      "last_verdict": "UNKNOWN"
-    }
-  },
+  "features_inventory": {},
   "tools_layout": {
     "policy": "Tool gom theo nhóm chức năng. Mở đúng thư mục, không quét cả qa-system/tools/.",
     "index": "qa-system/tools/README.md",
@@ -158,6 +152,15 @@
       "testdata": "Sinh dữ liệu kiểm thử",
       "jira": "Mọi giao tiếp Jira (pull/push/sync/mcp)",
       "system": "Tự kiểm, tiến độ, bản đồ, cổng ASK"
+    }
+  },
+  "domains_index": {
+    "catalogue": "qa-system/domains/README.md",
+    "template": "qa-system/domains/_template/",
+    "selected_in": "knowledge/_sut.json → domain",
+    "rule": "qa-system/core/QA_STANDARD.md §10.3 — pack là checklist, không phải nguồn sự thật",
+    "packs": {
+      "ecommerce-retail": "qa-system/domains/ecommerce-retail/"
     }
   }
 }

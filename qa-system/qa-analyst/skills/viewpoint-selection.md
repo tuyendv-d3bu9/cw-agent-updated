@@ -18,6 +18,8 @@ test idea không sót và không chồng chéo.
 - `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `BR`, `FD`, `AF`, `RK`.
 - `OUTPUT/<task-slug>/02_missing_rule_report.md` — `MR` và trạng thái.
 - `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` — §7/§8 (MR đã chốt).
+- Chỉ khi `knowledge/_sut.json` có `domain`: các file `risks` mà `npm run domain` liệt kê (QA_STANDARD §10.3).
+  `_sut.json` không có `domain` ⇒ bỏ qua bước 2b.
 
 > Trước khi chạy: `npm run gate <task-slug>` phải exit `0` (QA_STANDARD §1). Exit `1` ⇒ dừng.
 > Chỉ `MR` trạng thái `Confirmed` là nguồn; `Rejected` không sinh viewpoint.
@@ -49,6 +51,10 @@ Ngoài registry ⇒ `VP-9x` + `[GIẢ ĐỊNH]` + mã nguồn. Không có mã ng
 ## Các bước
 1. **Rủi ro** — chép nguyên `RK` của 01 (giữ mã, Likelihood, Impact). Thêm `RK` mới cho rủi ro sinh từ `MR` `Confirmed`.
 2. **Chọn viewpoint** — đi qua bảng quy ước, chọn VP có điều kiện "Chọn khi" đúng, ghi mã nguồn và lý do.
+2b. **Ứng viên từ pack ngành** (chỉ khi có `domain`) — mỗi mục `risks` mà 01/02 đã dẫn (`[DOMAIN] …` ở `OQ`/`MR`)
+   là một ứng viên; cột đặc tính ISO/IEC 25010:2023 của mục chỉ gợi ý VP nào trong bảng quy ước. Chỉ chọn khi đã có
+   mã nguồn (`BR`/`FD`/`AF`/`MR Confirmed`) đúng điều kiện "Chọn khi"; cột `Lý do` ghi thêm `[DOMAIN] <pack-id>/risks.md#<mục>`.
+   Không có mã nguồn ⇒ không chọn.
 3. **Đặc tả** từng VP: mục tiêu, danh sách mã trong phạm vi, `RK` liên quan, phần giao thoa chuyển cho VP nào.
 4. **Kiểm** — mọi `BR`/`FD`/`AF`/`MR Confirmed` nằm trong ít nhất một VP; mọi `RK` mức `CRITICAL`/`HIGH` có VP phủ.
 

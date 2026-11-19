@@ -30,6 +30,7 @@
     "ids": "node qa-system/tools/system/ids.js",
     "json": "node qa-system/tools/system/json.js",
     "map": "node qa-system/tools/system/map.js",
+    "domain": "node qa-system/tools/system/domain.js",
     "boundary": "node qa-system/tools/system/boundary.js",
     "scaffold": "node qa-system/tools/system/scaffold.js",
     "diff-runs": "node qa-system/tools/system/diff-runs.js",

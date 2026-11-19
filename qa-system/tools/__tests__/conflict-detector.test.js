@@ -71,6 +71,7 @@ test('#16 — CLI exit 1 khi có xung đột; require không chạy main', () =>
   fs.mkdirSync(path.join(toolsDir, 'lib'), { recursive: true });
   fs.mkdirSync(path.join(toolsDir, 'knowledge'), { recursive: true });
   fs.copyFileSync(path.join(__dirname, '..', 'lib', 'paths.js'), path.join(toolsDir, 'lib', 'paths.js'));
+  fs.copyFileSync(path.join(__dirname, '..', 'lib', 'domain.js'), path.join(toolsDir, 'lib', 'domain.js'));
   fs.copyFileSync(path.join(__dirname, '..', 'knowledge', 'conflict-detector.js'), path.join(toolsDir, 'knowledge', 'conflict-detector.js'));
   fs.mkdirSync(path.join(tmp, 'knowledge', 'features'), { recursive: true });
   fs.writeFileSync(path.join(tmp, 'knowledge', 'features', 'a.md'), '# a\nĐược cộng dồn.\n');

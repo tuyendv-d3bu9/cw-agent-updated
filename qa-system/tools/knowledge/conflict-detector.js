@@ -5,7 +5,8 @@
  *   parseFeatureFile(path)          { slug, title, content, text, rules, constants }
  *   phraseStance(text, topic)       'allow' | 'deny' | 'both' | null
  *   detectConflicts(features, o)    Danh sách xung đột (chủ đề + hằng số §9)
- *   loadTopics()                    Chủ đề mặc định, hoặc knowledge/_conflict_topics.json nếu có
+ *   loadTopics(file, base)          Chủ đề gốc (mặc định, hoặc của pack ngành) + knowledge/_conflict_topics.json nếu có
+ *   baseTopics(domain)              Chủ đề gốc: pack ngành đã chọn, hoặc DEFAULT_TOPICS khi chưa chọn ngành
  *
  * Đây là HEURISTIC từ khoá — không chứng minh được hai tính năng "nhất quán". Không phát hiện
  * gì chỉ có nghĩa là heuristic không bắt được, KHÔNG phải PASS.
@@ -23,13 +24,17 @@
  *
  * Tuỳ biến chủ đề cho dự án: tạo knowledge/_conflict_topics.json dạng
  *   { "replaceDefaults": false, "topics": { "<key>": { "category": "...", "allow": [...], "deny": [...] } } }
+ * File này luôn chồng lên chủ đề gốc, dù chủ đề gốc là mặc định hay của pack ngành
+ * (knowledge/_sut.json → "domain", xem qa-system/domains/README.md).
  */
 
 const fs = require('fs');
 const path = require('path');
 const { PATHS } = require('../lib/paths');
+const { loadDomain } = require('../lib/domain');
 
-// Chủ đề mặc định (thương mại điện tử). Dự án khác: thêm/thay qua knowledge/_conflict_topics.json.
+// Chủ đề mặc định (thương mại điện tử) — dùng khi dự án CHƯA chọn ngành, để dự án cũ chạy y như trước.
+// Bản dữ liệu của cùng bộ chủ đề nằm ở qa-system/domains/ecommerce-retail/conflict_topics.json; test giữ hai bên bằng nhau.
 const DEFAULT_TOPICS = {
   stacking: {
     category: 'Cộng dồn khuyến mãi / quyền lợi',
@@ -53,11 +58,16 @@ const DEFAULT_TOPICS = {
   },
 };
 
-function loadTopics(file = path.join(PATHS.KNOWLEDGE, '_conflict_topics.json')) {
-  if (!fs.existsSync(file)) return DEFAULT_TOPICS;
+/** Chủ đề gốc: chưa chọn ngành (`conflictTopics` null) ⇒ đúng DEFAULT_TOPICS cũ; có ngành ⇒ chủ đề của pack. */
+function baseTopics(domain) {
+  return domain && domain.conflictTopics ? domain.conflictTopics : DEFAULT_TOPICS;
+}
+
+function loadTopics(file = path.join(PATHS.KNOWLEDGE, '_conflict_topics.json'), base = DEFAULT_TOPICS) {
+  if (!fs.existsSync(file)) return base;
   const cfg = JSON.parse(fs.readFileSync(file, 'utf-8'));
   const topics = cfg.topics || {};
-  return cfg.replaceDefaults ? topics : { ...DEFAULT_TOPICS, ...topics };
+  return cfg.replaceDefaults ? topics : { ...base, ...topics };
 }
 
 const norm = (s) => String(s || '').normalize('NFC').toLowerCase();
@@ -229,7 +239,7 @@ function main() {
   console.log(`🔍 So chéo ${features.length} tính năng${target ? ` (trọng tâm: ${target})` : ''}:`);
   features.forEach((f) => console.log(`  - [${f.slug}] ${f.title} · ${f.rules.length} BR · ${f.constants.length} hằng số §9`));
 
-  const conflicts = detectConflicts(features, { topics: loadTopics(), target });
+  const conflicts = detectConflicts(features, { topics: loadTopics(undefined, baseTopics(loadDomain({ root: PATHS.ROOT }))), target });
   if (!conflicts.length) {
     console.log('\nKhông phát hiện xung đột bằng heuristic.');
   } else {
@@ -251,6 +261,7 @@ if (require.main === module) {
 
 module.exports = {
   DEFAULT_TOPICS,
+  baseTopics,
   loadTopics,
   phraseStance,
   numbersIn,

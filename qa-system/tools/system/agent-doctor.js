@@ -380,13 +380,38 @@ try {
   warn('workflow', `Could not validate workflows: ${e.message}`);
 }
 
+// ─── I. Domain packs ───
+// Pack ngành là checklist dùng chung mọi dự án: thiếu file, JSON hỏng, không có nguồn, hay lẫn mã BR/FD
+// (giả làm sự thật) đều phải chặn ở đây, trước khi một dự án chọn pack đó (QA_STANDARD §10.3).
+console.log('\n--- Cross-checking domain packs (qa-system/domains/) ---');
+try {
+  const { listPacks, validatePack, loadDomain } = require('../lib/domain');
+  const { ENGINES } = require('../testdata/generate-dataset');
+  const domainsDir = path.join(PATHS.SYSTEM, 'domains');
+  if (!fs.existsSync(domainsDir)) {
+    console.log('   No qa-system/domains/ directory');
+  } else {
+    const targets = [...(fs.existsSync(path.join(domainsDir, '_template')) ? ['_template'] : []), ...listPacks(domainsDir)];
+    for (const id of targets) {
+      const found = validatePack(path.join(domainsDir, id), { template: id === '_template', engines: ENGINES });
+      found.forEach((p) => (p.level === 'FAIL' ? fail : warn)(`domains/${id}`, `${p.file}: ${p.msg}`));
+      const icon = found.some((p) => p.level === 'FAIL') ? '❌' : found.length ? '⚠️ ' : '✅';
+      console.log(`   ${id.padEnd(26)} ${icon} ${id === '_template' ? 'template' : 'pack'}`);
+    }
+    const chosen = loadDomain({ root: PATHS.ROOT });
+    console.log(`   Selected in knowledge/_sut.json: ${chosen.ids.length ? chosen.ids.join(', ') : '(none — legacy defaults)'}`);
+  }
+} catch (e) {
+  fail('domains', e.message);
+}
+
 // ─── Summary ───
 const fails = problems.filter((p) => p.level === 'FAIL');
 const warns = problems.filter((p) => p.level === 'WARN');
 
 console.log('\n---------------------------------------------------------------');
 if (problems.length === 0) {
-  console.log('INTACT: agents, skills, system map, workflow, package scripts and gates all agree.');
+  console.log('INTACT: agents, skills, system map, workflow, package scripts, gates and domain packs all agree.');
 } else {
   if (fails.length) {
     console.log(`${fails.length} ERROR(S) to fix:`);

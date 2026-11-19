@@ -1,0 +1,7 @@
+{
+  "_comment": [
+    "Đơn vị khiến một con số là giới hạn nghiệp vụ trong lint nguồn gốc giá trị (qa-system/tools/lib/provenance.js).",
+    "Bốn đơn vị tiền dưới đây đã có sẵn trong provenance.js — pack chỉ được THÊM đơn vị, không bớt."
+  ],
+  "units": ["vnđ", "vnd", "đồng", "đ"]
+}

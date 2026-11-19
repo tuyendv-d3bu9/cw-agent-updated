@@ -1,0 +1,28 @@
+{
+  "_comment": [
+    "Kiểu dữ liệu sinh riêng của pack. Mỗi kiểu = một engine trung tính của generate-dataset + tham số mặc định.",
+    "Ba kiểu dưới đây mô tả lại bằng dữ liệu đúng hành vi đang viết cứng trong qa-system/tools/testdata/generate-dataset.js",
+    "(voucher_code, currency_vnd, bank_vn) — cùng seed ra cùng giá trị. Bản cứng vẫn giữ cho dự án chưa chọn ngành.",
+    "Tham số trong schema của dự án thắng tham số mặc định ở đây (như cách generator cũ dùng `spec.x || mặc định`)."
+  ],
+  "types": {
+    "voucher_code": {
+      "generator": "code",
+      "defaults": {
+        "prefixes": ["PROMO", "SALE", "FREESHIP", "VIP"],
+        "values": ["10K", "20K", "50K", "100K", "2026"]
+      }
+    },
+    "currency_vnd": {
+      "generator": "money",
+      "defaults": { "min": 10000, "max": 2000000, "step": 10000, "locale": "vi-VN", "unit": "VND" }
+    },
+    "bank_vn": {
+      "generator": "bank_account",
+      "defaults": {
+        "banks": ["Vietcombank", "Techcombank", "MB Bank", "BIDV", "VietinBank", "VPBank", "ACB", "TPBank", "Sacombank", "HDBank", "VIB"]
+      }
+    }
+  },
+  "enums": {}
+}

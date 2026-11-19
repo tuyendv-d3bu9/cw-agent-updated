@@ -124,6 +124,8 @@ agent vẫn nhớ; xoá \`knowledge/\` thì phải đi hỏi lại BA từ đầ
 |---|---|
 | \`_project.md\` | Con người — quy ước dự án: tiền tệ, timezone, môi trường test |
 | \`_glossary.md\` | Con người — từ điển thuật ngữ nghiệp vụ |
+| \`_sut.json\` | Con người — hệ thống đang kiểm thử; \`domain\` = pack ngành (trống = không chọn) |
+| \`_domain.md\` | Con người, tuỳ chọn — bổ sung riêng của dự án cho pack ngành |
 | \`_system_map.json\` | Agent tự đồng bộ — bản đồ định tuyến, đừng sửa tay |
 | \`features/<task>.md\` | Agent ghi, **bạn duyệt** — quy tắc đã chốt, câu trả lời của BA |
 

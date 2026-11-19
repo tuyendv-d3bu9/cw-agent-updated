@@ -20,6 +20,8 @@ Biến mọi chỗ nguồn **chưa trả lời** thành câu hỏi đóng `MR-xx
   thiếu trong nguồn trước khi kết luận `Có kẽ hở` (01 có thể đã nén mất chi tiết).
 - `OUTPUT/<task-slug>/01_conflict_warning.md` nếu có.
 - `knowledge/_project.md` · `knowledge/features/<feature-slug>.md` — §7 (câu đã hỏi), §8 (quyết định đã chốt), §9.
+- Chỉ khi `knowledge/_sut.json` có `domain`: các file `rule-patterns` mà `npm run domain` liệt kê (QA_STANDARD §10.3).
+  `_sut.json` không có `domain` ⇒ bỏ qua bước 2b.
 
 ## KHÔNG được (riêng skill này)
 - Sinh test idea / test case / test data / expected result.
@@ -39,6 +41,10 @@ Biến mọi chỗ nguồn **chưa trả lời** thành câu hỏi đóng `MR-xx
    - `Không áp dụng` — chiều W này không liên quan đối tượng (vd `W5` cho field không phụ thuộc actor).
    - `MR-xx` — có kẽ hở. Một kẽ hở dùng chung cho nhiều ô ⇒ cùng một mã.
    Field thiếu min/max/độ dài ⇒ một `MR` ở ô `W1` của `FD` đó (chuỗi biên thuộc §6, không hỏi từng điểm biên).
+2b. **Họ quy tắc của ngành** (chỉ khi có `domain`) — dùng `rule-patterns` làm lời nhắc khi chấm ô đúng nhóm W
+   của dòng pack, **không** thêm hàng hay cột ngoài ma trận. Ô đó nguồn chưa trả lời ⇒ `MR-xx`, `Nguồn phát hiện`
+   ghi thêm `[DOMAIN] <pack-id>/rule-patterns.md#<mục>`. Họ quy tắc **không bao giờ** thành `BR`, và không dùng
+   làm `Phương án gợi ý`.
 3. **Đối chiếu OQ** — mỗi `OQ-xx` của 01 ⇒ đúng một `MR-xx` (có thể trùng MR đã sinh ở bước 2), hoặc
    `Nguồn: <...>` nếu nguồn/knowledge thực ra đã trả lời.
 4. **Cấp mã** — kẽ hở trùng một câu đã có ở knowledge §7 ⇒ **giữ mã cũ** và chép trạng thái/phản hồi hiện có.

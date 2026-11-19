@@ -19,6 +19,9 @@ Chi tiết hoá mỗi Test Idea `Giữ` thành một hoặc nhiều Test Case 8 
 - `OUTPUT/<task-slug>/02_missing_rule_report.md` — `MR` và trạng thái.
 - `OUTPUT/<task-slug>/03_viewpoint_report.md` — `VP`, `RK`.
 - `knowledge/_project.md` (§1 mã `MODULE`, §2 định dạng ngày/tiền) · `knowledge/features/<feature-slug>.md` (§8 quyết định, §9 hằng số).
+- Chỉ khi `knowledge/_sut.json` có `domain`: các file `vocab` mà `npm run domain` liệt kê — chỉ để gọi đúng tên
+  vai trò / thực thể / trạng thái trong `Title`, `Precondition`, `Test Steps` khi nguồn dùng đúng tên đó. Không phải
+  nguồn của giá trị (QA_STANDARD §10.3). `_sut.json` không có `domain` ⇒ bỏ qua.
 
 > Trước khi ghi: `npm run gate <task-slug>` phải exit `0` (QA_STANDARD §1).
 > `_project.md` §1 chưa khai mã `MODULE` ⇒ hỏi người dùng, không tự đặt.

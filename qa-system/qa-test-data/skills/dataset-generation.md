@@ -22,6 +22,8 @@ Sinh record **Valid** cho từng test case cần data, xuất định dạng dù
 - `OUTPUT/<task-slug>/01_requirement_risk_summary.md` — `FD`, `BR`.
 - `knowledge/_project.md` (§2 định dạng ngày/tiền, NULL vs rỗng, được dùng dữ liệu giống production không) ·
   `knowledge/features/<feature-slug>.md` (§9 hằng số).
+- Chỉ khi `knowledge/_sut.json` có `domain`: kiểu dữ liệu / enum của pack (`npm run domain` liệt kê) và `vocab`
+  (QA_STANDARD §10.3). `_sut.json` không có `domain` ⇒ bỏ qua; mọi generator cũ vẫn dùng như trước.
 
 ## KHÔNG được (riêng skill này)
 - Đặt khoảng giá trị, định dạng mã, đơn vị, mức "phổ biến của ngành" không có trong `FD`/knowledge §9.
@@ -42,6 +44,8 @@ npm run data:gen -- --slug <task-slug> --schema OUTPUT/<task-slug>/dataset_schem
 Khuôn schema và danh sách generator: `qa-system/templates/dataset-schema.example.json`. Khoá bắt đầu bằng `_`
 là chú thích. Ràng buộc trong schema (min/max, enum, định dạng) phải chép từ Field Map; ngày dùng `YYYY-MM-DD`
 (hoặc định dạng `_project.md` §2).
+Có `domain`: engine tự nhận kiểu của pack (`"type": "<kiểu của pack>"`) và enum của pack (`"type": "enum", "enum": "<tên>"`) —
+chỉ dùng cho field **không có ràng buộc nghiệp vụ** trong Field Map; field có ràng buộc vẫn chép từ Field Map.
 
 ## Chọn format
 | Format | Dùng khi | Lưu ý |
